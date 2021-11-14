@@ -1,0 +1,4 @@
+.github/workflows/
+deps/.*
+.*\.lock
+tests/

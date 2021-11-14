@@ -1,0 +1,94 @@
+#
+# Copyright 2021 Splunk Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http: //www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{
+  branches: [
+    "+([0-9])?(.{+([0-9]),x}).x",
+    "main",
+    { name: "develop", prerelease: "beta", channel: "beta"
+    },
+  ],
+  plugins: [
+    "@semantic-release/commit-analyzer",
+    [
+      "@google/semantic-release-replace-plugin",
+      {
+        "replacements": [
+          {
+            "files": [
+              "pysmi/__init__.py"
+            ],
+            "from": "__version__ ?=.*",
+            "to": "__version__ = \"${nextRelease.version}\"",
+            "results": [
+              {
+                "file": "pysmi/__init__.py",
+                "hasChanged": true,
+                "numMatches": 1,
+                "numReplacements": 1
+              }
+            ],
+            "countMatches": true
+          },
+          {
+            "files": [
+              "pyproject.toml"
+            ],
+            "from": "version ?=.*",
+            "to": "version = \"${nextRelease.version}\"",
+            "results": [
+              {
+                "file": "pyproject.toml",
+                "hasChanged": true,
+                "numMatches": 1,
+                "numReplacements": 1
+              }
+            ],
+            "countMatches": true
+          }
+        ]
+      }
+    ],
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "./.github/workflows/sr-prepare.sh ${nextRelease.version}",
+        "publishCmd": "./.github/workflows/sr-release.sh",
+        "shell": "bash"
+      },
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "NOTICE",
+          "pyproject.toml",
+          "pyasn1/__init__.py"
+        ],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}",
+      },
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          "NOTICE",
+          "pyproject.toml"
+        ]
+      }
+    ],
+  ],
+}
