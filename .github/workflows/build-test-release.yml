@@ -112,7 +112,7 @@ jobs:
     name: Build Release
     needs:
       #- pre-commit
-      - review_secrets
+      #- review_secrets
       - semgrep
       - build
       #- run-unit-tests
