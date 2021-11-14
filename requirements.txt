@@ -1,3 +1,0 @@
-pysmi
-pycryptodomex
-pyasn1>=0.2.3
