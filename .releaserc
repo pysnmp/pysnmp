@@ -28,13 +28,13 @@
         "replacements": [
           {
             "files": [
-              "pysmi/__init__.py"
+              "pysnmp/__init__.py"
             ],
             "from": "__version__ ?=.*",
             "to": "__version__ = \"${nextRelease.version}\"",
             "results": [
               {
-                "file": "pysmi/__init__.py",
+                "file": "pysnmp/__init__.py",
                 "hasChanged": true,
                 "numMatches": 1,
                 "numReplacements": 1
