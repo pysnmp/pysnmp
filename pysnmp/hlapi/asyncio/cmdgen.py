@@ -41,11 +41,8 @@ from pysnmp.hlapi.varbinds import *
 from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.entity.rfc3413 import cmdgen
 
-try:
-    import asyncio
+import asyncio
 
-except ImportError:
-    import trollius as asyncio
 
 __all__ = ['getCmd', 'nextCmd', 'setCmd', 'bulkCmd', 'isEndOfMib']
 

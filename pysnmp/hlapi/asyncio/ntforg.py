@@ -18,11 +18,8 @@ from pysnmp.hlapi.varbinds import *
 from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.entity.rfc3413 import ntforg
 
-try:
-    import asyncio
+import asyncio
 
-except ImportError:
-    import trollius as asyncio
 
 __all__ = ['sendNotification']
 

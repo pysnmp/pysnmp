@@ -30,27 +30,8 @@ solve your SNMP needs.
 .. toctree::
    :maxdepth: 2
 
-   /examples/hlapi/asyncore/sync/contents
-
-.. toctree::
-   :maxdepth: 2
-
-   /examples/hlapi/asyncore/contents
-
-.. toctree::
-   :maxdepth: 2
-
    /examples/hlapi/asyncio/contents
 
-.. toctree::
-   :maxdepth: 2
-
-   /examples/hlapi/trollius/contents
-
-.. toctree::
-   :maxdepth: 2
-
-   /examples/hlapi/twisted/contents
 
 Native SNMP API
 ---------------
@@ -65,11 +46,8 @@ framework being used.
 .. toctree::
    :maxdepth: 2
 
-   /examples/v3arch/asyncore/contents
    /examples/v3arch/asyncio/contents
-   /examples/v3arch/trollius/contents
-   /examples/v3arch/twisted/contents
-
+   
 Packet-level SNMP
 -----------------
 

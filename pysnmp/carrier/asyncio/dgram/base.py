@@ -37,10 +37,7 @@ from pysnmp.carrier.asyncio.base import AbstractAsyncioTransport
 from pysnmp.carrier import error
 from pysnmp import debug
 
-try:
-    import asyncio
-except ImportError:
-    import trollius as asyncio
+import asyncio
 
 IS_PYTHON_344_PLUS = platform.python_version_tuple() >= ('3', '4', '4')
 

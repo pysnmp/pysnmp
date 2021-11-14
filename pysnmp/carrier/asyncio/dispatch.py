@@ -36,10 +36,8 @@ import traceback
 from pysnmp.carrier.base import AbstractTransportDispatcher
 from pysnmp.error import PySnmpError
 
-try:
-    import asyncio
-except ImportError:
-    import trollius as asyncio
+import asyncio
+
 
 IS_PYTHON_344_PLUS = platform.python_version_tuple() >= ('3', '4', '4')
 
@@ -93,13 +91,3 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
             self.loopingcall = None
 
 
-# Trollius or Tulip?
-if not hasattr(asyncio, "From"):
-    exec ("""\
-@asyncio.coroutine
-def handle_timeout(self):
-    while True:
-        yield from asyncio.sleep(self.getTimerResolution())
-        self.handleTimerTick(self.loop.time())
-AsyncioDispatcher.handle_timeout = handle_timeout\
-""")
