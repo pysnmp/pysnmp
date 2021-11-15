@@ -223,7 +223,7 @@ class ObjectIdentity(object):
 
         Examples
         --------
-        >>> ObjectIdentity('SNMPv2-MIB', 'sysDescr').addAsn1Source('http://mibs.snmplabs.com/asn1/@mib@')
+        >>> ObjectIdentity('SNMPv2-MIB', 'sysDescr').addAsn1Source('https://pysnmp.github.io/mibs/asn1/@mib@')
         ObjectIdentity('SNMPv2-MIB', 'sysDescr')
         >>>
 
@@ -741,7 +741,7 @@ class ObjectType(object):
 
         Examples
         --------
-        >>> ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addAsn1Source('http://mibs.snmplabs.com/asn1/@mib@')
+        >>> ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addAsn1Source('https://pysnmp.github.io/mibs/asn1/@mib@')
         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'))
         >>>
 
@@ -1046,7 +1046,7 @@ class NotificationType(object):
 
         Examples
         --------
-        >>> NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {}).addAsn1Source('http://mibs.snmplabs.com/asn1/@mib@')
+        >>> NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {}).addAsn1Source('https://pysnmp.github.io/mibs/asn1/@mib@')
         NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {})
         >>>
 
