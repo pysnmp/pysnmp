@@ -213,7 +213,7 @@ python-versions = ">=3.7,<4.0"
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "1.1.2"
+version = "1.1.3"
 description = ""
 category = "main"
 optional = false
@@ -577,8 +577,8 @@ pysnmp-pyasn1 = [
     {file = "pysnmp_pyasn1-1.0.2-py3-none-any.whl", hash = "sha256:6a2deea2efb91a753baabb0b1b5ffeb2df55a0b5d0d8ca4030f89b316f12bcd1"},
 ]
 pysnmp-pysmi = [
-    {file = "pysnmp-pysmi-1.1.2.tar.gz", hash = "sha256:ac8b867aa97a937eecb72d7919f4072931671e2bcd6cb6097b009bb4c0c44ac9"},
-    {file = "pysnmp_pysmi-1.1.2-py3-none-any.whl", hash = "sha256:e6e1f1d9099ce38e922d331341de21293a1994f46ead6dac4320a46e92f6bab4"},
+    {file = "pysnmp-pysmi-1.1.3.tar.gz", hash = "sha256:369d2e5c0dbc092054d4400aa361286aebb2256afda881a57a88cfee10b757e2"},
+    {file = "pysnmp_pysmi-1.1.3-py3-none-any.whl", hash = "sha256:83cb89ead90de657eb092ee85bc453769ffc322bafa0f8ff72f0763f516c0f73"},
 ]
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
