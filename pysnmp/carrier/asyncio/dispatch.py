@@ -39,7 +39,8 @@ from pysnmp.error import PySnmpError
 import asyncio
 
 
-IS_PYTHON_344_PLUS = platform.python_version_tuple() >= ('3', '4', '4')
+IS_PYTHON_344_PLUS = tuple(int(version) for version in platform.python_version_tuple()) >= (3, 4, 4)
+
 
 class AsyncioDispatcher(AbstractTransportDispatcher):
     """AsyncioDispatcher based on asyncio event loop"""

@@ -39,7 +39,7 @@ from pysnmp import debug
 
 import asyncio
 
-IS_PYTHON_344_PLUS = platform.python_version_tuple() >= ('3', '4', '4')
+IS_PYTHON_344_PLUS = tuple(int(version) for version in platform.python_version_tuple()) >= (3, 4, 4)
 
 
 class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
