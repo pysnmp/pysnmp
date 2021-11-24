@@ -9,7 +9,7 @@ import random
 random.seed()
 
 
-class Integer(object):
+class Integer:
     """Return a next value in a reasonably MT-safe manner"""
 
     def __init__(self, maximum, increment=256):

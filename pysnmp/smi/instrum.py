@@ -12,7 +12,7 @@ from pysnmp import debug
 __all__ = ['AbstractMibInstrumController', 'MibInstrumController']
 
 
-class AbstractMibInstrumController(object):
+class AbstractMibInstrumController:
     def readVars(self, varBinds, acInfo=(None, None)):
         raise error.NoSuchInstanceError(idx=0)
 
@@ -145,7 +145,7 @@ class MibInstrumController(AbstractMibInstrumController):
                 cols[inst.typeName].registerSubtrees(inst)
             else:
                 raise error.SmiError(
-                    'Orphan MIB scalar instance %r at %r' % (inst, self)
+                    f'Orphan MIB scalar instance {inst!r} at {self!r}'
                 )
             lastBuildSyms[inst.name] = inst.typeName
 
@@ -156,7 +156,7 @@ class MibInstrumController(AbstractMibInstrumController):
                 rows[rowName].registerSubtrees(col)
             else:
                 raise error.SmiError(
-                    'Orphan MIB table column %r at %r' % (col, self)
+                    f'Orphan MIB table column {col!r} at {self!r}'
                 )
             lastBuildSyms[col.name] = rowName
 
@@ -185,7 +185,7 @@ class MibInstrumController(AbstractMibInstrumController):
 
     def flipFlopFsm(self, fsmTable, inputVarBinds, acInfo):
         self.__indexMib()
-        debug.logger & debug.flagIns and debug.logger('flipFlopFsm: input var-binds %r' % (inputVarBinds,))
+        debug.logger & debug.flagIns and debug.logger(f'flipFlopFsm: input var-binds {inputVarBinds!r}')
         mibTree, = self.mibBuilder.importSymbols('SNMPv2-SMI', 'iso')
         outputVarBinds = []
         state, status = 'start', 'ok'
@@ -200,10 +200,10 @@ class MibInstrumController(AbstractMibInstrumController):
                     fsmState = fsmTable[k]
                 else:
                     raise error.SmiError(
-                        'Unresolved FSM state %s, %s' % (state, status)
+                        f'Unresolved FSM state {state}, {status}'
                     )
             debug.logger & debug.flagIns and debug.logger(
-                'flipFlopFsm: state %s status %s -> fsmState %s' % (state, status, fsmState))
+                f'flipFlopFsm: state {state} status {status} -> fsmState {fsmState}')
             state = fsmState
             status = 'ok'
             if state == 'stop':
@@ -213,7 +213,7 @@ class MibInstrumController(AbstractMibInstrumController):
                 f = getattr(mibTree, state, None)
                 if f is None:
                     raise error.SmiError(
-                        'Unsupported state handler %s at %s' % (state, self)
+                        f'Unsupported state handler {state} at {self}'
                     )
                 try:
                     # Convert to tuple to avoid ObjectName instantiation
@@ -222,7 +222,7 @@ class MibInstrumController(AbstractMibInstrumController):
                 except error.SmiError:
                     exc_t, exc_v, exc_tb = sys.exc_info()
                     debug.logger & debug.flagIns and debug.logger(
-                        'flipFlopFsm: fun %s exception %s for %s=%r with traceback: %s' % (
+                        'flipFlopFsm: fun {} exception {} for {}={!r} with traceback: {}'.format(
                             f, exc_t, name, val, traceback.format_exception(exc_t, exc_v, exc_tb)))
                     if origExc is None:  # Take the first exception
                         origExc, origTraceback = exc_v, exc_tb
@@ -230,7 +230,7 @@ class MibInstrumController(AbstractMibInstrumController):
                     break
                 else:
                     debug.logger & debug.flagIns and debug.logger(
-                        'flipFlopFsm: fun %s suceeded for %s=%r' % (f, name, val))
+                        f'flipFlopFsm: fun {f} suceeded for {name}={val!r}')
                     if rval is not None:
                         outputVarBinds.append((rval[0], rval[1]))
                 idx += 1

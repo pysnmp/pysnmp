@@ -35,7 +35,7 @@ class AbstractAesBlumenthal(aes.Aes):
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
             raise error.ProtocolError(
-                'Unknown auth protocol %s' % (authProtocol,)
+                f'Unknown auth protocol {authProtocol}'
             )
 
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
@@ -76,7 +76,7 @@ class AbstractAesReeder(aes.Aes):
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
             raise error.ProtocolError(
-                'Unknown auth protocol %s' % (authProtocol,)
+                f'Unknown auth protocol {authProtocol}'
             )
 
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)

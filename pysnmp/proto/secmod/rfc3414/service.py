@@ -91,7 +91,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 except NoSuchInstanceError:
                     self.__paramsBranchId = usmUserEngineID.branchVersionId
                     debug.logger & debug.flagSM and debug.logger(
-                        '_sec2usr: built snmpEngineId + securityName to userName map, version %s: %r' % (
+                        '_sec2usr: built snmpEngineId + securityName to userName map, version {}: {!r}'.format(
                             self.__paramsBranchId, self.__securityToUserMap))
                     break
 
@@ -115,11 +115,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             userName = self.__securityToUserMap[(securityEngineID, securityName)]
         except KeyError:
             debug.logger & debug.flagSM and debug.logger(
-                '_sec2usr: no entry exists for snmpEngineId %r, securityName %r' % (securityEngineID, securityName))
+                f'_sec2usr: no entry exists for snmpEngineId {securityEngineID!r}, securityName {securityName!r}')
             raise NoSuchInstanceError()  # emulate MIB lookup
 
         debug.logger & debug.flagSM and debug.logger(
-            '_sec2usr: using userName %r for snmpEngineId %r, securityName %r' % (
+            '_sec2usr: using userName {!r} for snmpEngineId {!r}, securityName {!r}'.format(
                 userName, securityEngineID, securityName))
 
         return userName
@@ -365,7 +365,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
             except PyAsn1Error:
                 debug.logger & debug.flagSM and debug.logger(
-                    '__generateRequestOrResponseMsg: %s' % (sys.exc_info()[1],))
+                    f'__generateRequestOrResponseMsg: {sys.exc_info()[1]}')
                 snmpInGenErrs, = mibBuilder.importSymbols('__SNMPv2-MIB', 'snmpInGenErrs')
                 snmpInGenErrs.syntax += 1
                 raise error.StatusInformation(
@@ -456,7 +456,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 # 2.3 XXX is this correct?
                 snmpEngineBoots = snmpEngineTime = 0
                 debug.logger & debug.flagSM and debug.logger(
-                    '__generateRequestOrResponseMsg: no timeline for securityEngineID %r' % (securityEngineID,))
+                    f'__generateRequestOrResponseMsg: no timeline for securityEngineID {securityEngineID!r}')
         # 3.1.6.b
         elif securityStateReference is not None:  # XXX Report?
             (snmpEngineBoots,
@@ -472,7 +472,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 '__generateRequestOrResponseMsg: assuming zero snmpEngineBoots, snmpEngineTime')
 
         debug.logger & debug.flagSM and debug.logger(
-            '__generateRequestOrResponseMsg: use snmpEngineBoots %s snmpEngineTime %s for securityEngineID %r' % (
+            '__generateRequestOrResponseMsg: use snmpEngineBoots {} snmpEngineTime {} for securityEngineID {!r}'.format(
                 snmpEngineBoots, snmpEngineTime, securityEngineID))
 
         # 3.1.4a
@@ -554,7 +554,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
             debug.logger & debug.flagSM and debug.logger(
-                '__generateRequestOrResponseMsg: %s' % (securityParameters.prettyPrint(),))
+                f'__generateRequestOrResponseMsg: {securityParameters.prettyPrint()}')
 
             try:
                 msg.setComponentByPosition(2, encoder.encode(securityParameters), verifyConstraints=False)
@@ -591,7 +591,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
             debug.logger & debug.flagSM and debug.logger(
-                '__generateRequestOrResponseMsg: %s' % (securityParameters.prettyPrint(),))
+                f'__generateRequestOrResponseMsg: {securityParameters.prettyPrint()}')
 
             try:
                 msg.setComponentByPosition(2, encoder.encode(securityParameters), verifyConstraints=False, matchTags=False, matchConstraints=False)
@@ -615,7 +615,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     errorIndication=errind.serializationError
                 )
 
-        debug.logger & debug.flagSM and debug.logger('__generateRequestOrResponseMsg: %s outgoing msg: %s' % (
+        debug.logger & debug.flagSM and debug.logger('__generateRequestOrResponseMsg: {} outgoing msg: {}'.format(
             securityLevel > 1 and "authenticated" or "plain", debug.hexdump(authenticatedWholeMsg)))
 
         # 3.1.9
@@ -665,7 +665,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             securityParameters, asn1Spec=self.__securityParametersSpec
         )
 
-        debug.logger & debug.flagSM and debug.logger('processIncomingMsg: %s' % (securityParameters.prettyPrint(),))
+        debug.logger & debug.flagSM and debug.logger(f'processIncomingMsg: {securityParameters.prettyPrint()}')
 
         if eoo.endOfOctets.isSameTypeWith(securityParameters):
             raise error.StatusInformation(errorIndication=errind.parseError)
@@ -677,7 +677,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         )
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: cache write securityStateReference %s by msgUserName %s' % (
+            'processIncomingMsg: cache write securityStateReference {} by msgUserName {}'.format(
                 securityStateReference, securityParameters.getComponentByPosition(3)))
 
         scopedPduData = msg.getComponentByPosition(3)
@@ -695,7 +695,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     4 < len(msgAuthoritativeEngineId) < 33):
                 # 3.2.3a - cloned user when request was sent
                 debug.logger & debug.flagSM and debug.logger(
-                    'processIncomingMsg: non-synchronized securityEngineID %r' % (msgAuthoritativeEngineId,))
+                    f'processIncomingMsg: non-synchronized securityEngineID {msgAuthoritativeEngineId!r}')
             else:
                 # 3.2.3b
                 debug.logger & debug.flagSM and debug.logger(
@@ -745,7 +745,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         msgUserName = securityParameters.getComponentByPosition(3)
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: read from securityParams msgAuthoritativeEngineId %r msgUserName %r' % (
+            'processIncomingMsg: read from securityParams msgAuthoritativeEngineId {!r} msgUserName {!r}'.format(
                 msgAuthoritativeEngineId, msgUserName))
 
         if msgUserName:
@@ -780,7 +780,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 except NoSuchInstanceError:
 
                     debug.logger & debug.flagSM and debug.logger(
-                        'processIncomingMsg: unknown securityEngineID %r msgUserName %r' % (
+                        'processIncomingMsg: unknown securityEngineID {!r} msgUserName {!r}'.format(
                             msgAuthoritativeEngineId, msgUserName))
 
                     usmStatsUnknownUserNames, = mibBuilder.importSymbols(
@@ -800,7 +800,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     )
 
             except PyAsn1Error:
-                debug.logger & debug.flagSM and debug.logger('processIncomingMsg: %s' % (sys.exc_info()[1],))
+                debug.logger & debug.flagSM and debug.logger(f'processIncomingMsg: {sys.exc_info()[1]}')
                 snmpInGenErrs, = mibBuilder.importSymbols('__SNMPv2-MIB', 'snmpInGenErrs')
                 snmpInGenErrs.syntax += 1
                 raise error.StatusInformation(errorIndication=errind.invalidMsg)
@@ -812,7 +812,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             usmUserAuthKeyLocalized = usmUserPrivKeyLocalized = None
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: now have usmUserName %r usmUserSecurityName %r usmUserAuthProtocol %r usmUserPrivProtocol %r for msgUserName %r' % (
+            'processIncomingMsg: now have usmUserName {!r} usmUserSecurityName {!r} usmUserAuthProtocol {!r} usmUserPrivProtocol {!r} for msgUserName {!r}'.format(
                 usmUserName, usmUserSecurityName, usmUserAuthProtocol, usmUserPrivProtocol, msgUserName))
 
         # 3.2.11 (moved up here to let Reports be authenticated & encrypted)
@@ -872,7 +872,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     '__SNMP-USER-BASED-SM-MIB', 'usmStatsUnsupportedSecLevels')
                 usmStatsUnsupportedSecLevels.syntax += 1
                 debug.logger & debug.flagSM and debug.logger(
-                    'processIncomingMsg: reporting inappropriate security level for user %s: %s' % (
+                    'processIncomingMsg: reporting inappropriate security level for user {}: {}'.format(
                         msgUserName, badSecIndication))
                 raise error.StatusInformation(
                     errorIndication=errind.unsupportedSecurityLevel,
@@ -935,7 +935,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             self.__timelineExpQueue[expireAt].append(msgAuthoritativeEngineId)
 
             debug.logger & debug.flagSM and debug.logger(
-                'processIncomingMsg: store timeline for securityEngineID %r' % (msgAuthoritativeEngineId,))
+                f'processIncomingMsg: store timeline for securityEngineID {msgAuthoritativeEngineId!r}')
 
         # 3.2.7
         if securityLevel == 3 or securityLevel == 2:
@@ -948,7 +948,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 snmpEngineTime = snmpEngineTime.syntax.clone()
                 idleTime = 0
                 debug.logger & debug.flagSM and debug.logger(
-                    'processIncomingMsg: read snmpEngineBoots (%s), snmpEngineTime (%s) from LCD' % (
+                    'processIncomingMsg: read snmpEngineBoots ({}), snmpEngineTime ({}) from LCD'.format(
                         snmpEngineBoots, snmpEngineTime))
             else:
                 # Non-authoritative SNMP engine: use cached estimates
@@ -961,7 +961,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     # time passed since last talk with this SNMP engine
                     idleTime = int(time.time()) - latestUpdateTimestamp
                     debug.logger & debug.flagSM and debug.logger(
-                        'processIncomingMsg: read timeline snmpEngineBoots %s snmpEngineTime %s for msgAuthoritativeEngineId %r, idle time %s secs' % (
+                        'processIncomingMsg: read timeline snmpEngineBoots {} snmpEngineTime {} for msgAuthoritativeEngineId {!r}, idle time {} secs'.format(
                             snmpEngineBoots, snmpEngineTime, msgAuthoritativeEngineId, idleTime))
                 else:
                     raise error.ProtocolError('Peer SNMP engine info missing')
@@ -1006,7 +1006,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     self.__timelineExpQueue[expireAt].append(msgAuthoritativeEngineId)
 
                     debug.logger & debug.flagSM and debug.logger(
-                        'processIncomingMsg: stored timeline msgAuthoritativeEngineBoots %s msgAuthoritativeEngineTime %s for msgAuthoritativeEngineId %r' % (
+                        'processIncomingMsg: stored timeline msgAuthoritativeEngineBoots {} msgAuthoritativeEngineTime {} for msgAuthoritativeEngineId {!r}'.format(
                             msgAuthoritativeEngineBoots, msgAuthoritativeEngineTime, msgAuthoritativeEngineId))
 
                 # 3.2.7b.2
@@ -1094,7 +1094,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         securityName = usmUserSecurityName
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: cached msgUserName %s info by securityStateReference %s' % (
+            'processIncomingMsg: cached msgUserName {} info by securityStateReference {}'.format(
                 msgUserName, securityStateReference))
 
         # Delayed to include details
@@ -1125,7 +1125,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             for engineIdKey in self.__timelineExpQueue[self.__expirationTimer]:
                 if engineIdKey in self.__timeline:
                     del self.__timeline[engineIdKey]
-                    debug.logger & debug.flagSM and debug.logger('__expireTimelineInfo: expiring %r' % (engineIdKey,))
+                    debug.logger & debug.flagSM and debug.logger(f'__expireTimelineInfo: expiring {engineIdKey!r}')
             del self.__timelineExpQueue[self.__expirationTimer]
         self.__expirationTimer += 1
 

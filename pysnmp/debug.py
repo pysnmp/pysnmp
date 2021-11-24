@@ -35,7 +35,7 @@ flagMap = {'io': flagIO,
            'all': flagAll}
 
 
-class Printer(object):
+class Printer:
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
             logger = logging.getLogger('pysnmp')
@@ -65,7 +65,7 @@ else:
             pass
 
 
-class Debug(object):
+class Debug:
     defaultPrinter = None
 
     def __init__(self, *flags, **options):
@@ -96,10 +96,10 @@ class Debug(object):
             except KeyError:
                 raise error.PySnmpError('bad debug flag %s' % f)
 
-            self('debug category \'%s\' %s' % (f, inverse and 'disabled' or 'enabled'))
+            self('debug category \'{}\' {}'.format(f, inverse and 'disabled' or 'enabled'))
 
     def __str__(self):
-        return 'logger %s, flags %x' % (self._printer, self._flags)
+        return f'logger {self._printer}, flags {self._flags:x}'
 
     def __call__(self, msg):
         self._printer(msg)
@@ -123,4 +123,4 @@ def setLogger(l):
 
 def hexdump(octets):
     return ' '.join(
-        ['%s%.2X' % (n % 16 == 0 and ('\n%.5d: ' % n) or '', x) for n, x in zip(range(len(octets)), octs2ints(octets))])
+        ['{}{:.2X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x) for n, x in zip(range(len(octets)), octs2ints(octets))])

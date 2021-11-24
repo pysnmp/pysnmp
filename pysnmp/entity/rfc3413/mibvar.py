@@ -65,7 +65,7 @@ def oidToMibName(mibView, oid):
         return (symName, modName), __scalarSuffix
     else:
         raise NoSuchObjectError(
-            str='No MIB registered that defines %s object, closest known parent is %s (%s::%s)' % (
+            str='No MIB registered that defines {} object, closest known parent is {} ({}::{})'.format(
                 univ.ObjectIdentifier(oid), univ.ObjectIdentifier(mibNode.name), modName, symName)
         )
 

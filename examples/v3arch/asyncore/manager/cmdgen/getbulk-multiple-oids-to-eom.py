@@ -58,12 +58,12 @@ def cbFun(snmpEngine, sendRequesthandle, errorIndication,
         print(errorIndication)
         return  # stop on error
     if errorStatus:
-        print('%s at %s' % (errorStatus.prettyPrint(),
+        print('{} at {}'.format(errorStatus.prettyPrint(),
                             errorIndex and varBindTable[-1][int(errorIndex) - 1][0] or '?'))
         return  # stop on error
     for varBindRow in varBindTable:
         for oid, val in varBindRow:
-            print('%s = %s' % (oid.prettyPrint(), val.prettyPrint()))
+            print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
     return True  # signal dispatcher to continue walking
 
 

@@ -7,7 +7,7 @@
 from pysnmp.proto import error
 
 
-class Cache(object):
+class Cache:
     def __init__(self):
         self.__cacheRepository = {}
 

@@ -10,7 +10,7 @@ from pysnmp import debug
 
 
 # 3.2
-class Vacm(object):
+class Vacm:
     """View-based Access Control Model"""
     accessModelID = 3
 

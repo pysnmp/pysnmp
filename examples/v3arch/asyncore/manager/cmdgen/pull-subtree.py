@@ -61,13 +61,13 @@ def cbFun(snmpEngine, sendRequestHandle, errorIndication,
         print(errorIndication)
         return
     if errorStatus:
-        print('%s at %s' % (errorStatus.prettyPrint(),
+        print('{} at {}'.format(errorStatus.prettyPrint(),
                             errorIndex and varBindTable[-1][int(errorIndex) - 1][0] or '?'))
         return  # stop on error
     for varBindRow in varBindTable:
         for oid, val in varBindRow:
             if initialOID.isPrefixOf(oid):
-                print('%s = %s' % (oid.prettyPrint(), val.prettyPrint()))
+                print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
             else:
                 return False  # signal dispatcher to stop
     return True  # signal dispatcher to continue

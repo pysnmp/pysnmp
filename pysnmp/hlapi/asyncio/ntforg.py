@@ -30,7 +30,7 @@ lcd = NotificationOriginatorLcdConfigurator()
 @asyncio.coroutine
 def sendNotification(snmpEngine, authData, transportTarget, contextData,
                      notifyType, varBinds, **options):
-    """Creates a generator to send SNMP notification.
+    r"""Creates a generator to send SNMP notification.
 
     When iterator gets advanced by :py:mod:`asyncio` main loop,
     SNMP TRAP or INFORM notification is send (:RFC:`1905#section-4.2.6`).

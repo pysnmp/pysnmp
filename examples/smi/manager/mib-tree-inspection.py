@@ -69,7 +69,7 @@ oid, label, suffix = mibView.getFirstNodeName()
 while 1:
     try:
         modName, nodeDesc, suffix = mibView.getNodeLocation(oid)
-        print('%s::%s == %s' % (modName, nodeDesc, oid))
+        print(f'{modName}::{nodeDesc} == {oid}')
         oid, label, suffix = mibView.getNextNodeName(oid)
     except error.NoSuchObjectError:
         break

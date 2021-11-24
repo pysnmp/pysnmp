@@ -70,7 +70,7 @@ ntfOrg = ntforg.NotificationOriginator()
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def cbFun(snmpEngine, sendRequestHandle, errorIndication,
           errorStatus, errorIndex, varBinds, cbCtx):
-    print('Notification %s, status - %s' % (
+    print('Notification {}, status - {}'.format(
         sendRequestHandle, errorIndication and errorIndication or 'delivered'
     )
           )

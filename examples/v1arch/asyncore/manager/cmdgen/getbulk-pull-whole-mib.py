@@ -62,7 +62,7 @@ def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
             errorStatus = v2c.apiBulkPDU.getErrorStatus(rspPDU)
             if errorStatus and errorStatus != 2:
                 errorIndex = v2c.apiBulkPDU.getErrorIndex(rspPDU)
-                print('%s at %s' % (errorStatus.prettyPrint(),
+                print('{} at {}'.format(errorStatus.prettyPrint(),
                                     errorIndex and varBindTable[int(errorIndex) - 1] or '?'))
                 transportDispatcher.jobFinished(1)
                 break
@@ -70,7 +70,7 @@ def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
             # Report SNMP table
             for tableRow in varBindTable:
                 for name, val in tableRow:
-                    print('from: %s, %s = %s' % (
+                    print('from: {}, {} = {}'.format(
                         transportAddress, name.prettyPrint(), val.prettyPrint()
                     )
                           )

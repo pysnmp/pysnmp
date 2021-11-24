@@ -92,7 +92,7 @@ varBinds = rfc1902.NotificationType(
     rfc1902.ObjectIdentity('SNMPv2-MIB', 'coldStart')
 ).resolveWithMib(mibView)
 
-print(['%s = %s(%s)' % (x[0].prettyPrint(), x[1].__class__.__name__, x[1].prettyPrint()) for x in varBinds])
+print([f'{x[0].prettyPrint()} = {x[1].__class__.__name__}({x[1].prettyPrint()})' for x in varBinds])
 
 # Create var-binds from MIB notification object (with OBJECTS clause)
 varBinds = rfc1902.NotificationType(

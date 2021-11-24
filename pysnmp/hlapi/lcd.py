@@ -14,7 +14,7 @@ __all__ = ['CommandGeneratorLcdConfigurator',
            'NotificationOriginatorLcdConfigurator']
 
 
-class AbstractLcdConfigurator(object):
+class AbstractLcdConfigurator:
     nextID = nextid.Integer(0xffffffff)
     cacheKeys = []
 
@@ -22,7 +22,7 @@ class AbstractLcdConfigurator(object):
         cacheId = self.__class__.__name__
         cache = snmpEngine.getUserContext(cacheId)
         if cache is None:
-            cache = dict([(x, {}) for x in self.cacheKeys])
+            cache = {x: {} for x in self.cacheKeys}
             snmpEngine.setUserContext(**{cacheId: cache})
         return cache
 
@@ -133,7 +133,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             if authDataKey in cache['auth']:
                 authDataKeys = (authDataKey,)
             else:
-                raise error.PySnmpError('Unknown authData %s' % (authData,))
+                raise error.PySnmpError(f'Unknown authData {authData}')
         else:
             authDataKeys = list(cache['auth'].keys())
 
@@ -171,7 +171,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
                     )
                     paramsNames.add(paramsName)
             else:
-                raise error.PySnmpError('Unknown target %s' % (paramsKey,))
+                raise error.PySnmpError(f'Unknown target {paramsKey}')
 
             addrKeys = [x for x in cache['addr'] if x[0] == paramsName]
 
@@ -255,7 +255,7 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
             if authDataKey in cache['auth']:
                 authDataKeys = (authDataKey,)
             else:
-                raise error.PySnmpError('Unknown authData %s' % (authData,))
+                raise error.PySnmpError(f'Unknown authData {authData}')
         else:
             authDataKeys = tuple(cache['auth'])
 

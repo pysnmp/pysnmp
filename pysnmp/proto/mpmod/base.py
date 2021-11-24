@@ -8,7 +8,7 @@ from pysnmp.proto.mpmod import cache
 from pysnmp.proto import error
 
 
-class AbstractMessageProcessingModel(object):
+class AbstractMessageProcessingModel:
     snmpMsgSpec = NotImplementedError
 
     def __init__(self):

@@ -63,7 +63,7 @@ def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
             # Report SNMP table
             for tableRow in varBindTable:
                 for name, val in tableRow:
-                    print('from: %s, %s = %s' % (
+                    print('from: {}, {} = {}'.format(
                         transportAddress, name.prettyPrint(), val.prettyPrint()
                     )
                           )

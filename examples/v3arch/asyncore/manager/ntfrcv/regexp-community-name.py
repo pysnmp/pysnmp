@@ -43,7 +43,7 @@ snmpEngine = engine.SnmpEngine()
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def requestObserver(snmpEngine, execpoint, variables, cbCtx):
     if re.match('.*love.*', str(variables['communityName'])):
-        print('Rewriting communityName \'%s\' from %s into \'public\'' % (variables['communityName'], ':'.join([str(x) for x in variables['transportInformation'][1]])))
+        print('Rewriting communityName \'{}\' from {} into \'public\''.format(variables['communityName'], ':'.join([str(x) for x in variables['transportInformation'][1]])))
         variables['communityName'] = variables['communityName'].clone('public')
 
 
@@ -71,10 +71,10 @@ config.addV1System(snmpEngine, 'my-area', 'public')
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def cbFun(snmpEngine, stateReference, contextEngineId, contextName,
           varBinds, cbCtx):
-    print('Notification from ContextEngineId "%s", ContextName "%s"' % (contextEngineId.prettyPrint(),
+    print('Notification from ContextEngineId "{}", ContextName "{}"'.format(contextEngineId.prettyPrint(),
                                                                         contextName.prettyPrint()))
     for name, val in varBinds:
-        print('%s = %s' % (name.prettyPrint(), val.prettyPrint()))
+        print(f'{name.prettyPrint()} = {val.prettyPrint()}')
 
 
 # Register SNMP Application at the SNMP engine

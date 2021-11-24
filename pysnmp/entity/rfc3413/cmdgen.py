@@ -40,7 +40,7 @@ def getNextVarBinds(varBinds, origVarBinds=None):
     return errorIndication, rspVarBinds
 
 
-class CommandGenerator(object):
+class CommandGenerator:
     _null = univ.Null('')
 
     def __init__(self, **options):
@@ -69,7 +69,7 @@ class CommandGenerator(object):
         # 3.1.3
         if statusInformation:
             debug.logger & debug.flagApp and debug.logger(
-                'processResponsePdu: sendPduHandle %s, statusInformation %s' % (sendPduHandle, statusInformation))
+                f'processResponsePdu: sendPduHandle {sendPduHandle}, statusInformation {statusInformation}')
 
             errorIndication = statusInformation['errorIndication']
 
@@ -117,7 +117,7 @@ class CommandGenerator(object):
             except StatusInformation:
                 statusInformation = sys.exc_info()[1]
                 debug.logger & debug.flagApp and debug.logger(
-                    'processResponsePdu: origSendRequestHandle %s, _sendPdu() failed with %r' % (
+                    'processResponsePdu: origSendRequestHandle {}, _sendPdu() failed with {!r}'.format(
                     sendPduHandle, statusInformation))
                 cbFun(snmpEngine, origSendRequestHandle,
                       statusInformation['errorIndication'],
@@ -321,7 +321,7 @@ class NextCommandGenerator(NextCommandGeneratorSingleRun):
         except StatusInformation:
             statusInformation = sys.exc_info()[1]
             debug.logger & debug.flagApp and debug.logger(
-                'sendVarBinds: sendPduHandle %s: sendPdu() failed with %r' % (sendRequestHandle, statusInformation))
+                f'sendVarBinds: sendPduHandle {sendRequestHandle}: sendPdu() failed with {statusInformation!r}')
             cbFun(snmpEngine, sendRequestHandle,
                   statusInformation['errorIndication'],
                   0, 0, (), cbCtx)
@@ -406,7 +406,7 @@ class BulkCommandGenerator(BulkCommandGeneratorSingleRun):
         except StatusInformation:
             statusInformation = sys.exc_info()[1]
             debug.logger & debug.flagApp and debug.logger(
-                'processResponseVarBinds: sendPduHandle %s: _sendPdu() failed with %r' % (
+                'processResponseVarBinds: sendPduHandle {}: _sendPdu() failed with {!r}'.format(
                     sendRequestHandle, statusInformation))
             cbFun(snmpEngine, sendRequestHandle,
                   statusInformation['errorIndication'], 0, 0, (), cbCtx)

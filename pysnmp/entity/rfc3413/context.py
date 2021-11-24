@@ -10,7 +10,7 @@ from pysnmp import error
 from pysnmp import debug
 
 
-class SnmpContext(object):
+class SnmpContext:
     def __init__(self, snmpEngine, contextEngineId=None):
         snmpEngineId, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB',
                                                                                               'snmpEngineID')
@@ -19,7 +19,7 @@ class SnmpContext(object):
             self.contextEngineId = snmpEngineId.syntax
         else:
             self.contextEngineId = snmpEngineId.syntax.clone(contextEngineId)
-        debug.logger & debug.flagIns and debug.logger('SnmpContext: contextEngineId \"%r\"' % (self.contextEngineId,))
+        debug.logger & debug.flagIns and debug.logger(f'SnmpContext: contextEngineId \"{self.contextEngineId!r}\"')
         self.contextNames = {
             null: snmpEngine.msgAndPduDsp.mibInstrumController  # Default name
         }
@@ -31,7 +31,7 @@ class SnmpContext(object):
                 'Duplicate contextName %s' % contextName
             )
         debug.logger & debug.flagIns and debug.logger(
-            'registerContextName: registered contextName %r, mibInstrum %r' % (contextName, mibInstrum))
+            f'registerContextName: registered contextName {contextName!r}, mibInstrum {mibInstrum!r}')
         if mibInstrum is None:
             self.contextNames[contextName] = self.contextNames[null]
         else:
@@ -53,5 +53,5 @@ class SnmpContext(object):
             )
         else:
             debug.logger & debug.flagIns and debug.logger(
-                'getMibInstrum: contextName %r, mibInstum %r' % (contextName, self.contextNames[contextName]))
+                f'getMibInstrum: contextName {contextName!r}, mibInstum {self.contextNames[contextName]!r}')
             return self.contextNames[contextName]

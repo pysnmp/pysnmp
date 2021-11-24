@@ -9,7 +9,7 @@ from pyasn1.compat.octets import null
 __all__ = ['ContextData']
 
 
-class ContextData(object):
+class ContextData:
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
     This object can be used by
@@ -51,6 +51,6 @@ class ContextData(object):
         self.contextName = contextName
 
     def __repr__(self):
-        return '%s(contextEngineId=%r, contextName=%r)' % (
+        return '{}(contextEngineId={!r}, contextName={!r})'.format(
             self.__class__.__name__, self.contextEngineId, self.contextName
         )

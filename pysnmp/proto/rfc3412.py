@@ -14,7 +14,7 @@ from pysnmp.error import PySnmpError
 from pysnmp import nextid, debug
 
 
-class MsgAndPduDispatcher(object):
+class MsgAndPduDispatcher:
     """SNMP engine PDU & message dispatcher. Exchanges SNMP PDU's with
        applications and serialized messages with transport level.
     """
@@ -65,14 +65,14 @@ class MsgAndPduDispatcher(object):
             k = (contextEngineId, pduType)
             if k in self.__appsRegistration:
                 raise error.ProtocolError(
-                    'Duplicate registration %r/%s' % (contextEngineId, pduType)
+                    f'Duplicate registration {contextEngineId!r}/{pduType}'
                 )
 
             # 4.3.4
             self.__appsRegistration[k] = processPdu
 
         debug.logger & debug.flagDsp and debug.logger(
-            'registerContextEngineId: contextEngineId %r pduTypes %s' % (contextEngineId, pduTypes))
+            f'registerContextEngineId: contextEngineId {contextEngineId!r} pduTypes {pduTypes}')
 
     # 4.4.1
     def unregisterContextEngineId(self, contextEngineId, pduTypes):
@@ -89,7 +89,7 @@ class MsgAndPduDispatcher(object):
                 del self.__appsRegistration[k]
 
         debug.logger & debug.flagDsp and debug.logger(
-            'unregisterContextEngineId: contextEngineId %r pduTypes %s' % (contextEngineId, pduTypes))
+            f'unregisterContextEngineId: contextEngineId {contextEngineId!r} pduTypes {pduTypes}')
 
     def getRegisteredApp(self, contextEngineId, pduType):
         k = (contextEngineId, pduType)
@@ -119,7 +119,7 @@ class MsgAndPduDispatcher(object):
             )
 
         debug.logger & debug.flagDsp and debug.logger(
-            'sendPdu: securityName %s, PDU\n%s' % (securityName, PDU.prettyPrint()))
+            f'sendPdu: securityName {securityName}, PDU\n{PDU.prettyPrint()}')
 
         # 4.1.1.3
         sendPduHandle = self.__sendPduHandle()
@@ -137,7 +137,7 @@ class MsgAndPduDispatcher(object):
                 snmpEngine.transportDispatcher.getTimerTicks(), snmpEngine.transportDispatcher.getTimerResolution()))
 
         debug.logger & debug.flagDsp and debug.logger(
-            'sendPdu: new sendPduHandle %s, timeout %s ticks, cbFun %s' % (sendPduHandle, timeout, cbFun))
+            f'sendPdu: new sendPduHandle {sendPduHandle}, timeout {timeout} ticks, cbFun {cbFun}')
 
         origTransportDomain = transportDomain
         origTransportAddress = transportAddress
@@ -223,7 +223,7 @@ class MsgAndPduDispatcher(object):
             )
 
         debug.logger & debug.flagDsp and debug.logger(
-            'returnResponsePdu: PDU %s' % (PDU and PDU.prettyPrint() or "<empty>",))
+            'returnResponsePdu: PDU {}'.format(PDU and PDU.prettyPrint() or "<empty>"))
 
         # 4.1.2.2
         try:
@@ -346,7 +346,7 @@ class MsgAndPduDispatcher(object):
             return restOfWholeMsg
 
         except PyAsn1Error:
-            debug.logger & debug.flagMP and debug.logger('receiveMessage: %s' % (sys.exc_info()[1],))
+            debug.logger & debug.flagMP and debug.logger(f'receiveMessage: {sys.exc_info()[1]}')
             snmpInASNParseErrs, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('__SNMPv2-MIB', 'snmpInASNParseErrs')
             snmpInASNParseErrs.syntax += 1
 

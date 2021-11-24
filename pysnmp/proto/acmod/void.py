@@ -10,7 +10,7 @@ from pysnmp import debug
 
 # rfc3415 3.2
 # noinspection PyUnusedLocal
-class Vacm(object):
+class Vacm:
     """Void Access Control Model"""
     accessModelID = 0
 
@@ -23,7 +23,7 @@ class Vacm(object):
                         contextName,
                         variableName):
         debug.logger & debug.flagACL and debug.logger(
-            'isAccessAllowed: viewType %s for variableName %s - OK' % (viewType, variableName)
+            f'isAccessAllowed: viewType {viewType} for variableName {variableName} - OK'
         )
 
         # rfc3415 3.2.5c

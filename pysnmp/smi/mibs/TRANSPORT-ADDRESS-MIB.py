@@ -38,8 +38,8 @@ else:
             if address_family == socket.AF_INET:
                 return socket.inet_aton(ip_string)
             elif address_family != socket.AF_INET6:
-                raise socket.error(
-                    'Unknown address family %s' % (address_family,)
+                raise OSError(
+                    f'Unknown address family {address_family}'
                 )
 
             groups = ip_string.split(":")
@@ -58,25 +58,25 @@ else:
                 elif ip_string.endswith('::'):
                     groups[-2:] = zeros
                 else:
-                    raise socket.error(
-                        'Invalid IPv6 address: "%s"' % (ip_string,)
+                    raise OSError(
+                        f'Invalid IPv6 address: "{ip_string}"'
                     )
             elif spaces == 3:
                 if ip_string != '::':
-                    raise socket.error(
-                        'Invalid IPv6 address: "%s"' % (ip_string,)
+                    raise OSError(
+                        f'Invalid IPv6 address: "{ip_string}"'
                     )
                 return '\x00' * 16
             elif spaces > 3:
-                raise socket.error(
-                    'Invalid IPv6 address: "%s"' % (ip_string,)
+                raise OSError(
+                    f'Invalid IPv6 address: "{ip_string}"'
                 )
 
             groups = [t for t in [int(t, 16) for t in groups] if t & 0xFFFF == t]
 
             if len(groups) != 8:
-                raise socket.error(
-                    'Invalid IPv6 address: "%s"' % (ip_string,)
+                raise OSError(
+                    f'Invalid IPv6 address: "{ip_string}"'
                 )
 
             return struct.pack('!8H', *groups)
@@ -86,12 +86,12 @@ else:
             if address_family == socket.AF_INET:
                 return socket.inet_ntop(packed_ip)
             elif address_family != socket.AF_INET6:
-                raise socket.error(
-                    'Unknown address family %s' % (address_family,)
+                raise OSError(
+                    f'Unknown address family {address_family}'
                 )
 
             if len(packed_ip) != 16:
-                raise socket.error(
+                raise OSError(
                     'incorrect address length: %s' % len(packed_ip)
                 )
 

@@ -8,7 +8,7 @@ from pysnmp.proto.secmod import cache
 from pysnmp.proto import error
 
 
-class AbstractSecurityModel(object):
+class AbstractSecurityModel:
     securityModelID = None
 
     def __init__(self):

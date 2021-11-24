@@ -33,7 +33,7 @@ def run():
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
-        print('%s at %s' % (
+        print('{} at {}'.format(
             errorStatus.prettyPrint(),
             errorIndex and varBinds[int(errorIndex) - 1][0] or '?'
         )

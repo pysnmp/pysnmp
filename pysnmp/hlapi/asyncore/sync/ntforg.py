@@ -19,7 +19,7 @@ if version_info[:2] < (2, 6):
 
 def sendNotification(snmpEngine, authData, transportTarget, contextData,
                      notifyType, varBinds, **options):
-    """Creates a generator to send one or more SNMP notifications.
+    r"""Creates a generator to send one or more SNMP notifications.
 
     On each iteration, new SNMP TRAP or INFORM notification is send
     (:RFC:`1905#section-4,2,6`). The iterator blocks waiting for

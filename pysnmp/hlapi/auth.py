@@ -19,7 +19,7 @@ __all__ = ['CommunityData', 'UsmUserData',
            'usmNoPrivProtocol']
 
 
-class CommunityData(object):
+class CommunityData:
     """Creates SNMP v1/v2c configuration entry.
 
     This object can be used by
@@ -134,7 +134,7 @@ class CommunityData(object):
         raise TypeError('%s is not hashable' % self.__class__.__name__)
 
     def __repr__(self):
-        return '%s(communityIndex=%r, communityName=<COMMUNITY>, mpModel=%r, contextEngineId=%r, contextName=%r, tag=%r, securityName=%r)' % (
+        return '{}(communityIndex={!r}, communityName=<COMMUNITY>, mpModel={!r}, contextEngineId={!r}, contextName={!r}, tag={!r}, securityName={!r})'.format(
             self.__class__.__name__,
             self.communityIndex,
             self.mpModel,
@@ -215,7 +215,7 @@ usmKeyTypeLocalized = config.usmKeyTypeLocalized
 """USM key material type - hashed pass-phrase hashed with Context SNMP Engine ID (:RFC:`3414#section-2.6`)"""
 
 
-class UsmUserData(object):
+class UsmUserData:
     """Creates SNMP v3 User Security Model (USM) configuration entry.
 
     This object can be used by
@@ -389,7 +389,7 @@ class UsmUserData(object):
         raise TypeError('%s is not hashable' % self.__class__.__name__)
 
     def __repr__(self):
-        return '%s(userName=%r, authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol=%r, privProtocol=%r, securityEngineId=%r, securityName=%r, authKeyType=%r, privKeyType=%r)' % (
+        return '{}(userName={!r}, authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol={!r}, privProtocol={!r}, securityEngineId={!r}, securityName={!r}, authKeyType={!r}, privKeyType={!r})'.format(
             self.__class__.__name__,
             self.userName,
             self.authProtocol,

@@ -9,7 +9,7 @@ import sys
 from pysnmp.carrier import error
 
 
-class TimerCallable(object):
+class TimerCallable:
     def __init__(self, cbFun, callInterval):
         self.__cbFun = cbFun
         self.__nextCall = 0
@@ -52,7 +52,7 @@ class TimerCallable(object):
             self.__callInterval = callInterval
 
 
-class AbstractTransportDispatcher(object):
+class AbstractTransportDispatcher:
     def __init__(self):
         self.__transports = {}
         self.__transportDomainMap = {}
@@ -70,7 +70,7 @@ class AbstractTransportDispatcher(object):
             transportDomain = self.__transportDomainMap[incomingTransport]
         else:
             raise error.CarrierError(
-                'Unregistered transport %s' % (incomingTransport,)
+                f'Unregistered transport {incomingTransport}'
             )
 
         if self.__routingCbFun:
@@ -86,7 +86,7 @@ class AbstractTransportDispatcher(object):
             )
         else:
             raise error.CarrierError(
-                'No callback for "%r" found - loosing incoming event' % (recvId,)
+                f'No callback for "{recvId!r}" found - loosing incoming event'
             )
 
     # Dispatcher API
@@ -105,7 +105,7 @@ class AbstractTransportDispatcher(object):
     def registerRecvCbFun(self, recvCb, recvId=None):
         if recvId in self.__recvCallables:
             raise error.CarrierError(
-                'Receive callback %r already registered' % (recvId is None and '<default>' or recvId,)
+                'Receive callback {!r} already registered'.format(recvId is None and '<default>' or recvId)
             )
         self.__recvCallables[recvId] = recvCb
 
@@ -127,7 +127,7 @@ class AbstractTransportDispatcher(object):
     def registerTransport(self, tDomain, transport):
         if tDomain in self.__transports:
             raise error.CarrierError(
-                'Transport %s already registered' % (tDomain,)
+                f'Transport {tDomain} already registered'
             )
         transport.registerCbFun(self._cbFun)
         self.__transports[tDomain] = transport
@@ -136,7 +136,7 @@ class AbstractTransportDispatcher(object):
     def unregisterTransport(self, tDomain):
         if tDomain not in self.__transports:
             raise error.CarrierError(
-                'Transport %s not registered' % (tDomain,)
+                f'Transport {tDomain} not registered'
             )
         self.__transports[tDomain].unregisterCbFun()
         del self.__transportDomainMap[self.__transports[tDomain]]
@@ -146,7 +146,7 @@ class AbstractTransportDispatcher(object):
         if transportDomain in self.__transports:
             return self.__transports[transportDomain]
         raise error.CarrierError(
-            'Transport %s not registered' % (transportDomain,)
+            f'Transport {transportDomain} not registered'
         )
 
     def sendMessage(self, outgoingMessage, transportDomain,
@@ -157,7 +157,7 @@ class AbstractTransportDispatcher(object):
             )
         else:
             raise error.CarrierError(
-                'No suitable transport domain for %s' % (transportDomain,)
+                f'No suitable transport domain for {transportDomain}'
             )
 
     def getTimerResolution(self):
@@ -217,7 +217,7 @@ class AbstractTransportDispatcher(object):
         self.unregisterTimerCbFun()
 
 
-class AbstractTransportAddress(object):
+class AbstractTransportAddress:
     _localAddress = None
 
     def setLocalAddress(self, s):
@@ -231,7 +231,7 @@ class AbstractTransportAddress(object):
         return self.__class__(self).setLocalAddress(localAddress is None and self.getLocalAddress() or localAddress)
 
 
-class AbstractTransport(object):
+class AbstractTransport:
     protoTransportDispatcher = None
     addressType = AbstractTransportAddress
     _cbFun = None
@@ -243,7 +243,7 @@ class AbstractTransport(object):
     def registerCbFun(self, cbFun):
         if self._cbFun:
             raise error.CarrierError(
-                'Callback function %s already registered at %s' % (self._cbFun, self)
+                f'Callback function {self._cbFun} already registered at {self}'
             )
         self._cbFun = cbFun
 

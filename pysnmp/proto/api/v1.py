@@ -32,7 +32,7 @@ TrapPDU = rfc1157.TrapPDU
 Message = rfc1157.Message
 
 
-class VarBindAPI(object):
+class VarBindAPI:
     @staticmethod
     def setOIDVal(varBind, oidVal):
         oid, val = oidVal[0], oidVal[1]
@@ -52,7 +52,7 @@ apiVarBind = VarBindAPI()
 getNextRequestID = nextid.Integer(0xffffff)
 
 
-class PDUAPI(object):
+class PDUAPI:
     _errorStatus = rfc1157.errorStatus.clone(0)
     _errorIndex = Integer(0)
 
@@ -92,7 +92,7 @@ class PDUAPI(object):
             if muteErrors:
                 return errorIndex.clone(len(pdu[3]))
             raise error.ProtocolError(
-                'Error index out of range: %s > %s' % (errorIndex, len(pdu[3]))
+                f'Error index out of range: {errorIndex} > {len(pdu[3])}'
             )
         return errorIndex
 
@@ -151,7 +151,7 @@ class PDUAPI(object):
 apiPDU = PDUAPI()
 
 
-class TrapPDUAPI(object):
+class TrapPDUAPI:
     _networkAddress = None
     _entOid = ObjectIdentifier((1, 3, 6, 1, 4, 1, 20408))
     _genericTrap = rfc1157.genericTrap.clone('coldStart')
@@ -248,7 +248,7 @@ class TrapPDUAPI(object):
 apiTrapPDU = TrapPDUAPI()
 
 
-class MessageAPI(object):
+class MessageAPI:
     _version = rfc1157.version.clone(0)
     _community = univ.OctetString('public')
 

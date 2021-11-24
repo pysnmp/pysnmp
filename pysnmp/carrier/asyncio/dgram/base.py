@@ -115,7 +115,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         AbstractAsyncioTransport.closeTransport(self)
 
     def sendMessage(self, outgoingMessage, transportAddress):
-        debug.logger & debug.flagIO and debug.logger('sendMessage: %s transportAddress %r outgoingMessage %s' % (
+        debug.logger & debug.flagIO and debug.logger('sendMessage: {} transportAddress {!r} outgoingMessage {}'.format(
             (self.transport is None and "queuing" or "sending"),
             transportAddress, debug.hexdump(outgoingMessage)
         ))

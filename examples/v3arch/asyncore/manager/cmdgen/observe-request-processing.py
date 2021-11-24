@@ -38,7 +38,7 @@ def requestObserver(snmpEngine, execpoint, variables, cbCtx):
     print('* securityModel: %s' % variables['securityModel'])
     print('* securityName: %s' % variables['securityName'])
     print('* securityLevel: %s' % variables['securityLevel'])
-    print('* contextEngineId: %s' % (variables['contextEngineId'] and variables['contextEngineId'].prettyPrint() or '<empty>',))
+    print('* contextEngineId: {}'.format(variables['contextEngineId'] and variables['contextEngineId'].prettyPrint() or '<empty>'))
     print('* contextName: %s' % variables['contextName'].prettyPrint())
     print('* PDU: %s' % variables['pdu'].prettyPrint())
 
@@ -86,11 +86,11 @@ def cbFun(snmpEngine, sendRequestHandle, errorIndication,
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
-        print('%s at %s' % (errorStatus.prettyPrint(),
+        print('{} at {}'.format(errorStatus.prettyPrint(),
                             errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
     else:
         for oid, val in varBinds:
-            print('%s = %s' % (oid.prettyPrint(), val.prettyPrint()))
+            print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
 
 
 # Prepare and send a request message

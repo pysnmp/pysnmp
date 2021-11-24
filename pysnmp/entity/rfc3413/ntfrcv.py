@@ -13,7 +13,7 @@ from pysnmp import debug
 
 
 # 3.4
-class NotificationReceiver(object):
+class NotificationReceiver:
     pduTypes = (v1.TrapPDU.tagSet, v2c.SNMPv2TrapPDU.tagSet,
                 v2c.InformRequestPDU.tagSet)
 
@@ -55,7 +55,7 @@ class NotificationReceiver(object):
         varBinds = v2c.apiPDU.getVarBinds(PDU)
 
         debug.logger & debug.flagApp and debug.logger(
-            'processPdu: stateReference %s, varBinds %s' % (stateReference, varBinds))
+            f'processPdu: stateReference {stateReference}, varBinds {varBinds}')
 
         # 3.4
         if PDU.tagSet in rfc3411.confirmedClassPDUs:
@@ -69,7 +69,7 @@ class NotificationReceiver(object):
             v2c.apiPDU.setVarBinds(rspPDU, varBinds)
 
             debug.logger & debug.flagApp and debug.logger(
-                'processPdu: stateReference %s, confirm PDU %s' % (stateReference, rspPDU.prettyPrint()))
+                f'processPdu: stateReference {stateReference}, confirm PDU {rspPDU.prettyPrint()}')
 
             # Agent-side API complies with SMIv2
             if messageProcessingModel == 0:
@@ -87,7 +87,7 @@ class NotificationReceiver(object):
 
             except error.StatusInformation:
                 debug.logger & debug.flagApp and debug.logger(
-                    'processPdu: stateReference %s, statusInformation %s' % (stateReference, sys.exc_info()[1]))
+                    f'processPdu: stateReference {stateReference}, statusInformation {sys.exc_info()[1]}')
                 snmpSilentDrops, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('__SNMPv2-MIB',
                                                                                                          'snmpSilentDrops')
                 snmpSilentDrops.syntax += 1
@@ -98,7 +98,7 @@ class NotificationReceiver(object):
             raise error.ProtocolError('Unexpected PDU class %s' % PDU.tagSet)
 
         debug.logger & debug.flagApp and debug.logger(
-            'processPdu: stateReference %s, user cbFun %s, cbCtx %s, varBinds %s' % (
+            'processPdu: stateReference {}, user cbFun {}, cbCtx {}, varBinds {}'.format(
                 stateReference, self.__cbFun, self.__cbCtx, varBinds))
 
         if self.__cbFunVer:

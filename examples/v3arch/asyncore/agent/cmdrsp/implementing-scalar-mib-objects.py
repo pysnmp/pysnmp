@@ -58,7 +58,7 @@ class MyStaticMibScalarInstance(MibScalarInstance):
     # noinspection PyUnusedLocal,PyUnusedLocal
     def getValue(self, name, idx):
         return self.getSyntax().clone(
-            'Python %s running on a %s platform' % (sys.version, sys.platform)
+            f'Python {sys.version} running on a {sys.platform} platform'
         )
 
 

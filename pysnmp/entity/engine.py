@@ -22,7 +22,7 @@ from pysnmp import error
 __all__ = ['SnmpEngine']
 
 
-class SnmpEngine(object):
+class SnmpEngine:
     """Creates SNMP engine object.
 
     SNMP engine object is central in SNMP v3 architecture. It is an umbrella
@@ -142,7 +142,7 @@ class SnmpEngine(object):
                     'SnmpEngine: stored SNMP Engine Boots: %s' % snmpEngineBoots.syntax.prettyPrint())
 
     def __repr__(self):
-        return '%s(snmpEngineID=%r)' % (self.__class__.__name__, self.snmpEngineID)
+        return f'{self.__class__.__name__}(snmpEngineID={self.snmpEngineID!r})'
 
     # Transport dispatcher bindings
 
@@ -189,7 +189,7 @@ class SnmpEngine(object):
     # User app may attach opaque objects to SNMP Engine
     def setUserContext(self, **kwargs):
         self.cache.update(
-            dict([('__%s' % k, kwargs[k]) for k in kwargs])
+            {'__%s' % k: kwargs[k] for k in kwargs}
         )
 
     def getUserContext(self, arg):

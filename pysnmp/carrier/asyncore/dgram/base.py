@@ -45,16 +45,16 @@ class DgramSocketTransport(AbstractSocketTransport):
         if iface is not None:
             try:
                 self.socket.bind(iface)
-            except socket.error:
+            except OSError:
                 raise error.CarrierError(
-                    'bind() for %s failed: %s' % (iface is None and "<all local>" or iface, sys.exc_info()[1]))
+                    'bind() for {} failed: {}'.format(iface is None and "<all local>" or iface, sys.exc_info()[1]))
         return self
 
     def openServerMode(self, iface):
         try:
             self.socket.bind(iface)
-        except socket.error:
-            raise error.CarrierError('bind() for %s failed: %s' % (iface, sys.exc_info()[1],))
+        except OSError:
+            raise error.CarrierError(f'bind() for {iface} failed: {sys.exc_info()[1]}')
         return self
 
     def enableBroadcast(self, flag=1):
@@ -62,9 +62,9 @@ class DgramSocketTransport(AbstractSocketTransport):
             self.socket.setsockopt(
                 socket.SOL_SOCKET, socket.SO_BROADCAST, flag
             )
-        except socket.error:
-            raise error.CarrierError('setsockopt() for SO_BROADCAST failed: %s' % (sys.exc_info()[1],))
-        debug.logger & debug.flagIO and debug.logger('enableBroadcast: %s option SO_BROADCAST on socket %s' % (flag and "enabled" or "disabled", self.socket.fileno()))
+        except OSError:
+            raise error.CarrierError(f'setsockopt() for SO_BROADCAST failed: {sys.exc_info()[1]}')
+        debug.logger & debug.flagIO and debug.logger('enableBroadcast: {} option SO_BROADCAST on socket {}'.format(flag and "enabled" or "disabled", self.socket.fileno()))
         return self
 
     def enablePktInfo(self, flag=1):
@@ -79,13 +79,13 @@ class DgramSocketTransport(AbstractSocketTransport):
             if self.socket.family == socket.AF_INET6:
                 self.socket.setsockopt(socket.SOL_IPV6, socket.IPV6_RECVPKTINFO, flag)
 
-        except socket.error:
-            raise error.CarrierError('setsockopt() for %s failed: %s' % (self.socket.family == socket.AF_INET6 and "IPV6_RECVPKTINFO" or "IP_PKTINFO", sys.exc_info()[1]))
+        except OSError:
+            raise error.CarrierError('setsockopt() for {} failed: {}'.format(self.socket.family == socket.AF_INET6 and "IPV6_RECVPKTINFO" or "IP_PKTINFO", sys.exc_info()[1]))
 
         self._sendto = sockmsg.getSendTo(self.addressType)
         self._recvfrom = sockmsg.getRecvFrom(self.addressType)
 
-        debug.logger & debug.flagIO and debug.logger('enablePktInfo: %s option %s on socket %s' % (self.socket.family == socket.AF_INET6 and "IPV6_RECVPKTINFO" or "IP_PKTINFO", flag and "enabled" or "disabled", self.socket.fileno()))
+        debug.logger & debug.flagIO and debug.logger('enablePktInfo: {} option {} on socket {}'.format(self.socket.family == socket.AF_INET6 and "IPV6_RECVPKTINFO" or "IP_PKTINFO", flag and "enabled" or "disabled", self.socket.fileno()))
         return self
 
     def enableTransparent(self, flag=1):
@@ -99,13 +99,13 @@ class DgramSocketTransport(AbstractSocketTransport):
                     socket.SOL_IPV6, socket.IPV6_TRANSPARENT, flag
                 )
 
-        except socket.error:
+        except OSError:
             raise error.CarrierError('setsockopt() for IP_TRANSPARENT failed: %s' % sys.exc_info()[1])
 
         except OSError:
             raise error.CarrierError('IP_TRANSPARENT socket option requires superusre previleges')
 
-        debug.logger & debug.flagIO and debug.logger('enableTransparent: %s option IP_TRANSPARENT on socket %s' % (flag and "enabled" or "disabled", self.socket.fileno()))
+        debug.logger & debug.flagIO and debug.logger('enableTransparent: {} option IP_TRANSPARENT on socket {}'.format(flag and "enabled" or "disabled", self.socket.fileno()))
         return self
 
     def sendMessage(self, outgoingMessage, transportAddress):
@@ -148,11 +148,11 @@ class DgramSocketTransport(AbstractSocketTransport):
             self._sendto(
                 self.socket, outgoingMessage, transportAddress
             )
-        except socket.error:
+        except OSError:
             if sys.exc_info()[1].args[0] in sockErrors:
-                debug.logger & debug.flagIO and debug.logger('handle_write: ignoring socket error %s' % (sys.exc_info()[1],))
+                debug.logger & debug.flagIO and debug.logger(f'handle_write: ignoring socket error {sys.exc_info()[1]}')
             else:
-                raise error.CarrierError('sendto() failed for %s: %s' % (transportAddress, sys.exc_info()[1]))
+                raise error.CarrierError(f'sendto() failed for {transportAddress}: {sys.exc_info()[1]}')
 
     def readable(self):
         return 1
@@ -169,13 +169,13 @@ class DgramSocketTransport(AbstractSocketTransport):
             else:
                 self._cbFun(self, transportAddress, incomingMessage)
                 return
-        except socket.error:
+        except OSError:
             if sys.exc_info()[1].args[0] in sockErrors:
-                debug.logger & debug.flagIO and debug.logger('handle_read: known socket error %s' % (sys.exc_info()[1],))
+                debug.logger & debug.flagIO and debug.logger(f'handle_read: known socket error {sys.exc_info()[1]}')
                 sockErrors[sys.exc_info()[1].args[0]] and self.handle_close()
                 return
             else:
-                raise error.CarrierError('recvfrom() failed: %s' % (sys.exc_info()[1],))
+                raise error.CarrierError(f'recvfrom() failed: {sys.exc_info()[1]}')
 
     def handle_close(self):
         pass  # no datagram connection
