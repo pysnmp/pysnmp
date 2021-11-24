@@ -42,12 +42,7 @@ from pysnmp import version as pysnmp_version
 from pysnmp.smi import error
 from pysnmp import debug
 
-if sys.version_info[0] <= 2:
-    import types
-
-    classTypes = (types.ClassType, type)
-else:
-    classTypes = (type,)
+classTypes = (type,)
 
 
 class __AbstractMibSource:

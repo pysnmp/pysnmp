@@ -14,10 +14,7 @@ class TimerCallable:
         self.__cbFun = cbFun
         self.__nextCall = 0
 
-        if sys.version_info > (2, 6):
-            self.__callInterval = callInterval
-        else:
-            self.interval = callInterval
+        self.__callInterval = callInterval
 
     def __call__(self, timeNow):
         if self.__nextCall <= timeNow:
@@ -42,14 +39,13 @@ class TimerCallable:
     def __ge__(self, cbFun):
         return self.__cbFun >= cbFun
 
-    if sys.version_info > (2, 6):
-        @property
-        def interval(self):
-            return self.__callInterval
+    @property
+    def interval(self):
+        return self.__callInterval
 
-        @interval.setter
-        def interval(self, callInterval):
-            self.__callInterval = callInterval
+    @interval.setter
+    def interval(self, callInterval):
+        self.__callInterval = callInterval
 
 
 class AbstractTransportDispatcher:

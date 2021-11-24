@@ -576,15 +576,12 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                     debug.logger & debug.flagMP and debug.logger('prepareDataElements: error reported')
 
             # 7.2.6b
-            if sys.version_info[0] <= 2:
-                raise statusInformation
-            else:
-                try:
-                    raise statusInformation.with_traceback(origTraceback)
-                finally:
-                    # Break cycle between locals and traceback object
-                    # (seems to be irrelevant on Py3 but just in case)
-                    del origTraceback
+            try:
+                raise statusInformation.with_traceback(origTraceback)
+            finally:
+                # Break cycle between locals and traceback object
+                # (seems to be irrelevant on Py3 but just in case)
+                del origTraceback
         else:
             # Sniff for engineIdCache
             k = (transportDomain, transportAddress)

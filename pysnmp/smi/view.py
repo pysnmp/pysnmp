@@ -11,14 +11,8 @@ from pysnmp import debug
 
 __all__ = ['MibViewController']
 
-if sys.version_info[0] <= 2:
-    import types
-
-    classTypes = (types.ClassType, type)
-    instanceTypes = (types.InstanceType, object)
-else:
-    classTypes = (type,)
-    instanceTypes = (object,)
+classTypes = (type,)
+instanceTypes = (object,)
 
 
 class MibViewController:

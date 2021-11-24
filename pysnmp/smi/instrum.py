@@ -235,15 +235,12 @@ class MibInstrumController(AbstractMibInstrumController):
                         outputVarBinds.append((rval[0], rval[1]))
                 idx += 1
         if origExc:
-            if sys.version_info[0] <= 2:
-                raise origExc
-            else:
-                try:
-                    raise origExc.with_traceback(origTraceback)
-                finally:
-                    # Break cycle between locals and traceback object
-                    # (seems to be irrelevant on Py3 but just in case)
-                    del origTraceback
+            try:
+                raise origExc.with_traceback(origTraceback)
+            finally:
+                # Break cycle between locals and traceback object
+                # (seems to be irrelevant on Py3 but just in case)
+                del origTraceback
         return outputVarBinds
 
     def readVars(self, varBinds, acInfo=(None, None)):

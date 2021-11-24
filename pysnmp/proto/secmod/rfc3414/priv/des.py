@@ -11,7 +11,6 @@ from pysnmp.proto.secmod.rfc3414 import localkey
 from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 from pysnmp.proto import errind, error
 from pyasn1.type import univ
-from sys import version_info
 
 try:
     from Cryptodome.Cipher import DES
@@ -35,10 +34,7 @@ class Des(base.AbstractEncryptionService):
     serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 2, 2)  # usmDESPrivProtocol
     keySize = 16
 
-    if version_info < (2, 3):
-        _localInt = int(random.random() * 0xffffffff)
-    else:
-        _localInt = random.randrange(0, 0xffffffff)
+    _localInt = random.randrange(0, 0xffffffff)
 
     def hashPassphrase(self, authProtocol, privKey):
         if authProtocol == hmacmd5.HmacMd5.serviceID:
