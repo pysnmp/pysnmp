@@ -19,7 +19,7 @@ ConstraintsIntersection, ConstraintsUnion, SingleValueConstraint, ValueRangeCons
 Counter32, Unsigned32, TimeTicks, Counter64 = mibBuilder.importSymbols('SNMPv2-SMI', 'Counter32', 'Unsigned32', 'TimeTicks', 'Counter64')
 
 
-class TextualConvention(object):
+class TextualConvention:
     displayHint = ''
     status = 'current'
     description = ''
@@ -77,7 +77,7 @@ class TextualConvention(object):
                 return ''.join(outputValue)
             else:
                 raise SmiError(
-                    'Unsupported numeric type spec "%s" at %s' % (displayHintType, self.__class__.__name__)
+                    f'Unsupported numeric type spec "{displayHintType}" at {self.__class__.__name__}'
                 )
         elif self.displayHint and self.__octetString.isSuperTypeOf(self, matchConstraints=False):
             outputValue = ''
@@ -242,7 +242,7 @@ class TextualConvention(object):
                 return base.prettyIn(self, binValue)
             else:
                 raise SmiError(
-                    'Unsupported numeric type spec "%s" at %s' % (displayHintType, self.__class__.__name__)
+                    f'Unsupported numeric type spec "{displayHintType}" at {self.__class__.__name__}'
                 )
 
         elif self.displayHint and self.__octetString.isSuperTypeOf(self, matchConstraints=False):
@@ -502,12 +502,12 @@ class RowStatus(TextualConvention, Integer):
         newState = self.clone(newState)
 
         debug.logger & debug.flagIns and debug.logger(
-            'RowStatus state change from %r to %r produced new state %r, error indication %r' % (
+            'RowStatus state change from {!r} to {!r} produced new state {!r}, error indication {!r}'.format(
                 self, value, newState, excValue))
 
         if excValue is not None:
             excValue = excValue(
-                msg='Exception at row state transition from %r to %r yields state %r and exception' % (
+                msg='Exception at row state transition from {!r} to {!r} yields state {!r} and exception'.format(
                     self, value, newState), syntax=newState
             )
             raise excValue

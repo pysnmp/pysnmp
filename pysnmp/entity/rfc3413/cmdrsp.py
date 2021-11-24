@@ -13,7 +13,7 @@ from pysnmp import debug
 
 
 # 3.2
-class CommandResponderBase(object):
+class CommandResponderBase:
     acmID = 3  # default MIB access control method to use
     pduTypes = ()
 
@@ -46,7 +46,7 @@ class CommandResponderBase(object):
         v2c.apiPDU.setVarBinds(PDU, varBinds)
 
         debug.logger & debug.flagApp and debug.logger(
-            'sendVarBinds: stateReference %s, errorStatus %s, errorIndex %s, varBinds %s' % (
+            'sendVarBinds: stateReference {}, errorStatus {}, errorIndex {}, varBinds {}'.format(
             stateReference, errorStatus, errorIndex, varBinds)
         )
 
@@ -84,7 +84,7 @@ class CommandResponderBase(object):
 
         except error.StatusInformation:
             debug.logger & debug.flagApp and debug.logger(
-                'sendPdu: stateReference %s, statusInformation %s' % (stateReference, sys.exc_info()[1]))
+                f'sendPdu: stateReference {stateReference}, statusInformation {sys.exc_info()[1]}')
             snmpSilentDrops, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('__SNMPv2-MIB',
                                                                                                      'snmpSilentDrops')
             snmpSilentDrops.syntax += 1
@@ -132,7 +132,7 @@ class CommandResponderBase(object):
         errorStatus, errorIndex = 'noError', 0
 
         debug.logger & debug.flagApp and debug.logger(
-            'processPdu: stateReference %s, varBinds %s' % (stateReference, varBinds))
+            f'processPdu: stateReference {stateReference}, varBinds {varBinds}')
 
         try:
             self.handleMgmtOperation(snmpEngine, stateReference,
@@ -143,7 +143,7 @@ class CommandResponderBase(object):
         except pysnmp.smi.error.GenError:
             errorIndication = sys.exc_info()[1]
             debug.logger & debug.flagApp and debug.logger(
-                'processPdu: stateReference %s, errorIndication %s' % (stateReference, errorIndication))
+                f'processPdu: stateReference {stateReference}, errorIndication {errorIndication}')
             if 'oid' in errorIndication:
                 # Request REPORT generation
                 statusInformation['oid'] = errorIndication['oid']
@@ -239,7 +239,7 @@ class CommandResponderBase(object):
         except error.StatusInformation:
             statusInformation = sys.exc_info()[1]
             debug.logger & debug.flagApp and debug.logger(
-                '__verifyAccess: name %s, statusInformation %s' % (name, statusInformation))
+                f'__verifyAccess: name {name}, statusInformation {statusInformation}')
             errorIndication = statusInformation['errorIndication']
             # 3.2.5...
             if (errorIndication == errind.noSuchView or

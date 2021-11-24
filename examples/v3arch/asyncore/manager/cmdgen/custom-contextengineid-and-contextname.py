@@ -61,11 +61,11 @@ def cbFun(snmpEngine, sendRequestHandle, errorIndication,
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
-        print('%s at %s' % (errorStatus.prettyPrint(),
+        print('{} at {}'.format(errorStatus.prettyPrint(),
                             errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
     else:
         for oid, val in varBinds:
-            print('%s = %s' % (oid.prettyPrint(), val.prettyPrint()))
+            print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
 
 
 # Prepare and send a request message, pass custom ContextEngineId & ContextName

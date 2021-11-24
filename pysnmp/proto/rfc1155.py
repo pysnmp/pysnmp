@@ -76,7 +76,7 @@ class NetworkAddress(univ.Choice):
             try:
                 tagSet = value.tagSet
             except AttributeError:
-                raise PyAsn1Error('component value %r has no tag set' % (value,))
+                raise PyAsn1Error(f'component value {value!r} has no tag set')
             cloned.setComponentByType(tagSet, value)
         return cloned
 
@@ -94,7 +94,7 @@ class NetworkAddress(univ.Choice):
             clone['internet'] = tuple(value[1:5])
             return clone, value[5:]
         else:
-            raise SmiError('unknown NetworkAddress type %r' % (kind,))
+            raise SmiError(f'unknown NetworkAddress type {kind!r}')
 
     def cloneAsName(self, impliedFlag, parentRow, parentIndices):
         kind = self.getName()
@@ -102,7 +102,7 @@ class NetworkAddress(univ.Choice):
         if kind == 'internet':
             return (1,) + tuple(component.asNumbers())
         else:
-            raise SmiError('unknown NetworkAddress type %r' % (kind,))
+            raise SmiError(f'unknown NetworkAddress type {kind!r}')
 
 
 
@@ -144,7 +144,7 @@ class TypeCoercionHackMixIn:  # XXX keep this old-style class till pyasn1 types 
                 raise PyAsn1Error('Component type error out of range')
             t = componentType[idx].getType()
             if not t.getTagSet().isSuperTagSetOf(value.getTagSet()):
-                raise PyAsn1Error('Component type error %r vs %r' % (t, value))
+                raise PyAsn1Error(f'Component type error {t!r} vs {value!r}')
 
 
 class SimpleSyntax(TypeCoercionHackMixIn, univ.Choice):

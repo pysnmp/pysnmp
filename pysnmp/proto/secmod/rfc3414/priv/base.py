@@ -7,7 +7,7 @@
 from pysnmp.proto import error
 
 
-class AbstractEncryptionService(object):
+class AbstractEncryptionService:
     serviceID = None
     keySize = 0
 

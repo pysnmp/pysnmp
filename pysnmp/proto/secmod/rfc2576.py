@@ -57,7 +57,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_sec2com: table entries %r/%r hashing failed' % (
+                        '_sec2com: table entries {!r}/{!r} hashing failed'.format(
                             nextMibNode.syntax, mibNode.syntax)
                     )
                     continue
@@ -104,7 +104,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_sec2com: table entries %r/%r/%r hashing failed' % (
+                        '_sec2com: table entries {!r}/{!r}/{!r} hashing failed'.format(
                             _securityName, _contextEngineId, _contextName)
                     )
                     continue
@@ -112,7 +112,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             self.__securityBranchId = snmpCommunityName.branchVersionId
 
             debug.logger & debug.flagSM and debug.logger(
-                '_sec2com: built securityName to communityName map, version %s: %s' % (
+                '_sec2com: built securityName to communityName map, version {}: {}'.format(
                     self.__securityBranchId, self.__securityMap))
 
         try:
@@ -183,14 +183,14 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_com2sec: table entries %r/%r hashing failed' % (
+                        '_com2sec: table entries {!r}/{!r} hashing failed'.format(
                             targetAddr, targetAddrTagList)
                     )
                     continue
 
             self.__transportBranchId = snmpTargetAddrTAddress.branchVersionId
 
-            debug.logger & debug.flagSM and debug.logger('_com2sec: built transport-to-tag map version %s: %s' % (
+            debug.logger & debug.flagSM and debug.logger('_com2sec: built transport-to-tag map version {}: {}'.format(
                 self.__transportBranchId, self.__transportToTagMap))
 
         snmpTargetParamsSecurityName, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
@@ -223,7 +223,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_com2sec: table entries %r/%r hashing failed' % (
+                        '_com2sec: table entries {!r}/{!r} hashing failed'.format(
                             nextMibNode.syntax, mibNode.syntax)
                     )
                     continue
@@ -234,7 +234,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             self.__communityBranchId = -1
 
             debug.logger & debug.flagSM and debug.logger(
-                '_com2sec: built securityName to securityModel map, version %s: %s' % (
+                '_com2sec: built securityName to securityModel map, version {}: {}'.format(
                     self.__paramsBranchId, self.__nameToModelMap))
 
         snmpCommunityName, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('SNMP-COMMUNITY-MIB',
@@ -288,7 +288,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_com2sec: table entries %r/%r hashing failed' % (
+                        '_com2sec: table entries {!r}/{!r} hashing failed'.format(
                             _tagAndCommunity, nextMibNode.syntax)
                     )
                     continue
@@ -296,11 +296,11 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             self.__communityBranchId = snmpCommunityName.branchVersionId
 
             debug.logger & debug.flagSM and debug.logger(
-                '_com2sec: built communityName to tag map (securityModel %s), version %s: %s' % (
+                '_com2sec: built communityName to tag map (securityModel {}), version {}: {}'.format(
                     self.securityModelID, self.__communityBranchId, self.__communityToTagMap))
 
             debug.logger & debug.flagSM and debug.logger(
-                '_com2sec: built tag & community to securityName map (securityModel %s), version %s: %s' % (
+                '_com2sec: built tag & community to securityName map (securityModel {}), version {}: {}'.format(
                     self.securityModelID, self.__communityBranchId, self.__tagAndCommunityToSecurityMap))
 
         if communityName in self.__communityToTagMap:
@@ -326,7 +326,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 )
                 chosenSecurityName = candidateSecurityNames[0]  # min()
                 debug.logger & debug.flagSM and debug.logger(
-                    '_com2sec: securityName candidates for communityName \'%s\' are %s; choosing securityName \'%s\'' % (
+                    '_com2sec: securityName candidates for communityName \'{}\' are {}; choosing securityName \'{}\''.format(
                         communityName, candidateSecurityNames, chosenSecurityName[0]))
                 return chosenSecurityName
 
@@ -344,7 +344,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                                       contextEngineId, contextName)
 
         debug.logger & debug.flagSM and debug.logger(
-            'generateRequestMsg: using community %r for securityModel %r, securityName %r, contextEngineId %r contextName %r' % (
+            'generateRequestMsg: using community {!r} for securityModel {!r}, securityName {!r}, contextEngineId {!r} contextName {!r}'.format(
                 communityName, securityModel, securityName, contextEngineId, contextName))
 
         securityParameters = communityName
@@ -355,7 +355,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
         )
 
-        debug.logger & debug.flagMP and debug.logger('generateRequestMsg: %s' % (msg.prettyPrint(),))
+        debug.logger & debug.flagMP and debug.logger(f'generateRequestMsg: {msg.prettyPrint()}')
 
         try:
             return securityParameters, encoder.encode(msg)
@@ -376,7 +376,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         communityName = cachedSecurityData['communityName']
 
         debug.logger & debug.flagSM and debug.logger(
-            'generateResponseMsg: recovered community %r by securityStateReference %s' % (
+            'generateResponseMsg: recovered community {!r} by securityStateReference {}'.format(
                 communityName, securityStateReference))
 
         msg.setComponentByPosition(1, communityName)
@@ -385,7 +385,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
         )
 
-        debug.logger & debug.flagMP and debug.logger('generateResponseMsg: %s' % (msg.prettyPrint(),))
+        debug.logger & debug.flagMP and debug.logger(f'generateResponseMsg: {msg.prettyPrint()}')
 
         try:
             return communityName, encoder.encode(msg)
@@ -445,7 +445,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         )
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: looked up securityName %r securityModel %r contextEngineId %r contextName %r by communityName %r AND transportInformation %r' % (
+            'processIncomingMsg: looked up securityName {!r} securityModel {!r} contextEngineId {!r} contextName {!r} by communityName {!r} AND transportInformation {!r}'.format(
                 securityName, self.securityModelID, contextEngineId, contextName, communityName, transportInformation))
 
         stateReference = self._cache.push(communityName=communityName)
@@ -456,7 +456,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         securityStateReference = stateReference
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: generated maxSizeResponseScopedPDU %s securityStateReference %s' % (
+            'processIncomingMsg: generated maxSizeResponseScopedPDU {} securityStateReference {}'.format(
                 maxSizeResponseScopedPDU, securityStateReference))
 
         return (securityEngineID, securityName, scopedPDU,

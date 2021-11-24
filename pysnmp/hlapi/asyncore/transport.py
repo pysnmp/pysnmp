@@ -59,7 +59,7 @@ class UdpTransportTarget(AbstractTransportTarget):
                                       socket.SOCK_DGRAM,
                                       socket.IPPROTO_UDP)[0][4][:2]
         except socket.gaierror:
-            raise error.PySnmpError('Bad IPv4/UDP transport address %s: %s' % (
+            raise error.PySnmpError('Bad IPv4/UDP transport address {}: {}'.format(
                 '@'.join([str(x) for x in transportAddr]), sys.exc_info()[1]))
 
 
@@ -117,7 +117,7 @@ class Udp6TransportTarget(AbstractTransportTarget):
                                       socket.SOCK_DGRAM,
                                       socket.IPPROTO_UDP)[0][4][:2]
         except socket.gaierror:
-            raise error.PySnmpError('Bad IPv6/UDP transport address %s: %s' % (
+            raise error.PySnmpError('Bad IPv6/UDP transport address {}: {}'.format(
                 '@'.join([str(x) for x in transportAddr]), sys.exc_info()[1]))
 
 

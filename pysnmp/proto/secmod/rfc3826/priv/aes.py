@@ -82,7 +82,7 @@ class Aes(base.AbstractEncryptionService):
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
             raise error.ProtocolError(
-                'Unknown auth protocol %s' % (authProtocol,)
+                f'Unknown auth protocol {authProtocol}'
             )
         return localkey.hashPassphrase(privKey, hashAlgo)
 
@@ -95,7 +95,7 @@ class Aes(base.AbstractEncryptionService):
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
             raise error.ProtocolError(
-                'Unknown auth protocol %s' % (authProtocol,)
+                f'Unknown auth protocol {authProtocol}'
             )
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
         return localPrivKey[:self.keySize]

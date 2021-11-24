@@ -43,14 +43,14 @@ class ExtUTCTime(OctetString):
 
 # MIB tree foundation class
 
-class MibNode(object):
+class MibNode:
     label = ''
 
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.name)
+        return f'{self.__class__.__name__}({self.name!r})'
 
     def getName(self):
         return self.name
@@ -134,11 +134,11 @@ class ModuleIdentity(MibNode):
     def asn1Print(self):
         return """\
 MODULE-IDENTITY
-  LAST-UPDATED %s
-  ORGANIZATION "%s"
-  CONTACT-INFO "%s"
-  DESCRIPTION "%s"
-  %s""" % (self.getLastUpdated(),
+  LAST-UPDATED {}
+  ORGANIZATION "{}"
+  CONTACT-INFO "{}"
+  DESCRIPTION "{}"
+  {}""".format(self.getLastUpdated(),
            self.getOrganization(),
            self.getContactInfo(),
            self.getDescription(),
@@ -174,10 +174,10 @@ class ObjectIdentity(MibNode):
     def asn1Print(self):
         return """\
 OBJECT-IDENTITY
-  STATUS %s
-  DESCRIPTION "%s"
-  REFERENCE "%s"
-""" % (self.getStatus(),
+  STATUS {}
+  DESCRIPTION "{}"
+  REFERENCE "{}"
+""".format(self.getStatus(),
        self.getDescription(),
        self.getReference())
 
@@ -235,11 +235,11 @@ class NotificationType(MibNode):
     def asn1Print(self):
         return """\
 NOTIFICATION-TYPE
-  OBJECTS { %s }
-  STATUS %s
-  DESCRIPTION "%s"
-  REFERENCE "%s"
-""" % (', '.join([x for x in self.getObjects()]),
+  OBJECTS {{ {} }}
+  STATUS {}
+  DESCRIPTION "{}"
+  REFERENCE "{}"
+""".format(', '.join([x for x in self.getObjects()]),
            self.getStatus(),
            self.getDescription(),
            self.getReference())
@@ -282,7 +282,7 @@ class ObjectType(MibNode):
         return self.syntax >= other
 
     def __repr__(self):
-        return '%s(%r, %r)' % (
+        return '{}({!r}, {!r})'.format(
             self.__class__.__name__, self.name, self.syntax
         )
 
@@ -331,12 +331,12 @@ class ObjectType(MibNode):
     def asn1Print(self):
         return """
 OBJECT-TYPE
-  SYNTAX %s
-  UNITS "%s"
-  MAX-ACCESS %s
-  STATUS %s
-  DESCRIPTION "%s"
-  REFERENCE "%s" """ % (self.getSyntax().__class__.__name__,
+  SYNTAX {}
+  UNITS "{}"
+  MAX-ACCESS {}
+  STATUS {}
+  DESCRIPTION "{}"
+  REFERENCE "{}" """.format(self.getSyntax().__class__.__name__,
                         self.getUnits(),
                         self.getMaxAccess(),
                         self.getStatus(),
@@ -359,7 +359,7 @@ class MibTree(ObjectType):
         for subTree in subTrees:
             if subTree.name in self._vars:
                 raise error.SmiError(
-                    'MIB subtree %s already registered at %s' % (subTree.name, self)
+                    f'MIB subtree {subTree.name} already registered at {self}'
                 )
             self._vars[subTree.name] = subTree
 
@@ -370,7 +370,7 @@ class MibTree(ObjectType):
             # but later drop them through SNMP.
             if name not in self._vars:
                 raise error.SmiError(
-                    'MIB subtree %s not registered at %s' % (name, self)
+                    f'MIB subtree {name} not registered at {self}'
                 )
             del self._vars[name]
 
@@ -648,7 +648,7 @@ class MibScalarInstance(MibTree):
 
     # noinspection PyUnusedLocal
     def getValue(self, name, idx):
-        debug.logger & debug.flagIns and debug.logger('getValue: returning %r for %s' % (self.syntax, self.name))
+        debug.logger & debug.flagIns and debug.logger(f'getValue: returning {self.syntax!r} for {self.name}')
         return self.syntax.clone()
 
     def setValue(self, value, name, idx):
@@ -661,7 +661,7 @@ class MibScalarInstance(MibTree):
                 return self.syntax.clone(value)
         except PyAsn1Error:
             exc_t, exc_v, exc_tb = sys.exc_info()
-            debug.logger & debug.flagIns and debug.logger('setValue: %s=%r failed with traceback %s' % (
+            debug.logger & debug.flagIns and debug.logger('setValue: {}={!r} failed with traceback {}'.format(
                 self.name, value, traceback.format_exception(exc_t, exc_v, exc_tb)))
             if isinstance(exc_v, error.TableRowManagement):
                 raise exc_v
@@ -706,7 +706,7 @@ class MibScalarInstance(MibTree):
     def readGet(self, name, val, idx, acInfo):
         # Return current variable (name, value)
         if name == self.name:
-            debug.logger & debug.flagIns and debug.logger('readGet: %s=%r' % (self.name, self.syntax))
+            debug.logger & debug.flagIns and debug.logger(f'readGet: {self.name}={self.syntax!r}')
             return self.name, self.getValue(name, idx)
         else:
             raise error.NoSuchInstanceError(idx=idx, name=name)
@@ -717,7 +717,7 @@ class MibScalarInstance(MibTree):
 
     def readGetNext(self, name, val, idx, acInfo, oName=None):
         if name == self.name and name > oName:
-            debug.logger & debug.flagIns and debug.logger('readGetNext: %s=%r' % (self.name, self.syntax))
+            debug.logger & debug.flagIns and debug.logger(f'readGetNext: {self.name}={self.syntax!r}')
             return self.readGet(name, val, idx, acInfo)
         else:
             raise error.NoSuchInstanceError(idx=idx, name=name)
@@ -751,7 +751,7 @@ class MibScalarInstance(MibTree):
     # noinspection PyAttributeOutsideInit
     def writeCleanup(self, name, val, idx, acInfo):
         self.branchVersionId += 1
-        debug.logger & debug.flagIns and debug.logger('writeCleanup: %s=%r' % (name, val))
+        debug.logger & debug.flagIns and debug.logger(f'writeCleanup: {name}={val!r}')
         # Drop previous value
         self.__newSyntax = self.__oldSyntax = None
 
@@ -786,7 +786,7 @@ class MibScalarInstance(MibTree):
 
     def createCleanup(self, name, val, idx, acInfo):
         self.branchVersionId += 1
-        debug.logger & debug.flagIns and debug.logger('createCleanup: %s=%r' % (name, val))
+        debug.logger & debug.flagIns and debug.logger(f'createCleanup: {name}={val!r}')
         if val is not None:
             self.writeCleanup(name, val, idx, acInfo)
 
@@ -860,7 +860,7 @@ class MibTableColumn(MibScalar):
             if val is not None and self.maxAccess != 'readcreate' or \
                     acFun(name, self.syntax, idx, 'write', acCtx):
                 debug.logger & debug.flagACL and debug.logger(
-                    'createTest: %s=%r %s at %s' % (name, val, self.maxAccess, self.name))
+                    f'createTest: {name}={val!r} {self.maxAccess} at {self.name}')
                 raise error.NoCreationError(idx=idx, name=name)
         # Create instances if either it does not yet exist (row creation)
         # or a value is passed (multiple OIDs in SET PDU)
@@ -938,7 +938,7 @@ class MibTableColumn(MibScalar):
         if name in self.__destroyedInstances:
             self.__destroyedInstances[name].destroyCleanup(name, val,
                                                            idx, acInfo)
-            debug.logger & debug.flagIns and debug.logger('destroyCleanup: %s=%r' % (name, val))
+            debug.logger & debug.flagIns and debug.logger(f'destroyCleanup: {name}={val!r}')
             del self.__destroyedInstances[name]
 
     def destroyUndo(self, name, val, idx, acInfo):
@@ -968,7 +968,7 @@ class MibTableColumn(MibScalar):
             self.destroyTest(name, val, idx, acInfo)
         if name in self.__rowOpWanted:
             debug.logger & debug.flagIns and debug.logger(
-                '%s flagged by %s=%r, exception %s' % (self.__rowOpWanted[name], name, val, sys.exc_info()[1]))
+                f'{self.__rowOpWanted[name]} flagged by {name}={val!r}, exception {sys.exc_info()[1]}')
             raise self.__rowOpWanted[name]
 
     def __delegateWrite(self, subAction, name, val, idx, acInfo):
@@ -991,7 +991,7 @@ class MibTableColumn(MibScalar):
         if name in self.__rowOpWanted:
             e = self.__rowOpWanted[name]
             del self.__rowOpWanted[name]
-            debug.logger & debug.flagIns and debug.logger('%s dropped by %s=%r' % (e, name, val))
+            debug.logger & debug.flagIns and debug.logger(f'{e} dropped by {name}={val!r}')
             raise e
 
     def writeUndo(self, name, val, idx, acInfo):
@@ -1001,7 +1001,7 @@ class MibTableColumn(MibScalar):
         if name in self.__rowOpWanted:
             e = self.__rowOpWanted[name]
             del self.__rowOpWanted[name]
-            debug.logger & debug.flagIns and debug.logger('%s dropped by %s=%r' % (e, name, val))
+            debug.logger & debug.flagIns and debug.logger(f'{e} dropped by {name}={val!r}')
             raise e
 
 
@@ -1030,7 +1030,7 @@ class MibTableRow(MibTree):
 
     def setFromName(self, obj, value, impliedFlag=None, parentIndices=None):
         if not value:
-            raise error.SmiError('Short OID for index %r' % (obj,))
+            raise error.SmiError(f'Short OID for index {obj!r}')
         if hasattr(obj, 'cloneFromName'):
             return obj.cloneFromName(value, impliedFlag, parentRow=self, parentIndices=parentIndices)
         baseTag = obj.getTagSet().getBaseTag()
@@ -1056,7 +1056,7 @@ class MibTableRow(MibTree):
         elif baseTag == self.__bitsBaseTag:
             return obj.clone(tuple(value[1:value[0] + 1])), value[value[0] + 1:]
         else:
-            raise error.SmiError('Unknown value type for index %r' % (obj,))
+            raise error.SmiError(f'Unknown value type for index {obj!r}')
 
     def getAsName(self, obj, impliedFlag=None, parentIndices=None):
         if hasattr(obj, 'cloneAsName'):
@@ -1082,7 +1082,7 @@ class MibTableRow(MibTree):
         elif baseTag == self.__bitsBaseTag:
             return (len(obj),) + obj.asNumbers()
         else:
-            raise error.SmiError('Unknown value type for index %r' % (obj,))
+            raise error.SmiError(f'Unknown value type for index {obj!r}')
 
     # Fate sharing mechanics
 
@@ -1102,14 +1102,14 @@ class MibTableRow(MibTree):
             indices.append(syntax)
 
         if instId:
-            raise error.SmiError('Excessive instance identifier sub-OIDs left at %s: %s' % (self, instId))
+            raise error.SmiError(f'Excessive instance identifier sub-OIDs left at {self}: {instId}')
 
         if not baseIndices:
             return
 
         for modName, mibSym in self.augmentingRows.keys():
             mibObj, = mibBuilder.importSymbols(modName, mibSym)
-            debug.logger & debug.flagIns and debug.logger('announceManagementEvent %s to %s' % (action, mibObj))
+            debug.logger & debug.flagIns and debug.logger(f'announceManagementEvent {action} to {mibObj}')
             mibObj.receiveManagementEvent(
                 action, baseIndices, val, idx, acInfo
             )
@@ -1128,14 +1128,14 @@ class MibTableRow(MibTree):
 
         if newSuffix:
             debug.logger & debug.flagIns and debug.logger(
-                'receiveManagementEvent %s for suffix %s' % (action, newSuffix))
+                f'receiveManagementEvent {action} for suffix {newSuffix}')
             self.__manageColumns(action, (), newSuffix, val, idx, acInfo)
 
     def registerAugmentions(self, *names):
         for modName, symName in names:
             if (modName, symName) in self.augmentingRows:
                 raise error.SmiError(
-                    'Row %s already augmented by %s::%s' % (self.name, modName, symName)
+                    f'Row {self.name} already augmented by {modName}::{symName}'
                 )
             self.augmentingRows[(modName, symName)] = 1
         return self
@@ -1171,7 +1171,7 @@ class MibTableRow(MibTree):
             else:
                 getattr(var, action)(name + nameSuffix, val, idx, acInfo)
 
-            debug.logger & debug.flagIns and debug.logger('__manageColumns: action %s name %s suffix %s %svalue %r' % (
+            debug.logger & debug.flagIns and debug.logger('__manageColumns: action {} name {} suffix {} {}value {!r}'.format(
                 action, name, nameSuffix, name in indexVals and "index " or "", indexVals.get(name, val)))
 
     def __delegate(self, subAction, name, val, idx, acInfo):
@@ -1245,7 +1245,7 @@ class MibTableRow(MibTree):
             try:
                 syntax, instId = self.setFromName(mibObj.syntax, instId, impliedFlag, indices)
             except PyAsn1Error:
-                debug.logger & debug.flagIns and debug.logger('error resolving table indices at %s, %s: %s' % (self.__class__.__name__, instId, sys.exc_info()[1]))
+                debug.logger & debug.flagIns and debug.logger(f'error resolving table indices at {self.__class__.__name__}, {instId}: {sys.exc_info()[1]}')
                 indices = [instId]
                 instId = ()
                 break

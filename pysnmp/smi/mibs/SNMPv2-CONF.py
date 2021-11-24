@@ -45,9 +45,9 @@ class ObjectGroup(MibNode):
     def asn1Print(self):
         return """\
 OBJECT-GROUP
-  OBJECTS { %s }
-  DESCRIPTION "%s"
-""" % (', '.join([x for x in self.getObjects()]), self.getDescription())
+  OBJECTS {{ {} }}
+  DESCRIPTION "{}"
+""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
 
 
 class NotificationGroup(MibNode):
@@ -82,9 +82,9 @@ class NotificationGroup(MibNode):
     def asn1Print(self):
         return """\
 NOTIFICATION-GROUP
-  NOTIFICATIONS { %s }
-  DESCRIPTION "%s"
-""" % (', '.join([x for x in self.getObjects()]), self.getDescription())
+  NOTIFICATIONS {{ {} }}
+  DESCRIPTION "{}"
+""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
 
 
 class ModuleCompliance(MibNode):
@@ -119,9 +119,9 @@ class ModuleCompliance(MibNode):
     def asn1Print(self):
         return """\
 MODULE-COMPLIANCE
-  OBJECT { %s }
-  DESCRIPTION "%s"
-""" % (', '.join([x for x in self.getObjects()]), self.getDescription())
+  OBJECT {{ {} }}
+  DESCRIPTION "{}"
+""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
 
 
 class AgentCapabilities(MibNode):
@@ -163,10 +163,10 @@ class AgentCapabilities(MibNode):
     def asn1Print(self):
         return """\
 AGENT-CAPABILITIES
-  STATUS "%s"
-  PRODUCT-RELEASE "%s"
-  DESCRIPTION "%s"
-""" % (self.getStatus(), self.getProductRelease(), self.getDescription())
+  STATUS "{}"
+  PRODUCT-RELEASE "{}"
+  DESCRIPTION "{}"
+""".format(self.getStatus(), self.getProductRelease(), self.getDescription())
 
 
 mibBuilder.exportSymbols('SNMPv2-CONF', ObjectGroup=ObjectGroup, NotificationGroup=NotificationGroup, ModuleCompliance=ModuleCompliance, AgentCapabilities=AgentCapabilities)

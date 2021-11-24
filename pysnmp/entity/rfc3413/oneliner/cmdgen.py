@@ -19,7 +19,7 @@ __all__ = ['AsynCommandGenerator', 'CommandGenerator', 'MibVariable']
 MibVariable = ObjectIdentity
 
 
-class AsynCommandGenerator(object):
+class AsynCommandGenerator:
     _null = univ.Null('')
 
     vbProcessor = CommandGeneratorVarBinds()
@@ -160,7 +160,7 @@ class AsynCommandGenerator(object):
     asyncBulkCmd = bulkCmd
 
 
-class CommandGenerator(object):
+class CommandGenerator:
     _null = univ.Null('')
 
     def __init__(self, snmpEngine=None, asynCmdGen=None):

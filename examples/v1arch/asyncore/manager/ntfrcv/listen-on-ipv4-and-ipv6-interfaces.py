@@ -38,7 +38,7 @@ def cbFun(transportDispatcher, transportDomain, transportAddress, wholeMsg):
         reqMsg, wholeMsg = decoder.decode(
             wholeMsg, asn1Spec=pMod.Message(),
         )
-        print('Notification message from %s:%s: ' % (
+        print('Notification message from {}:{}: '.format(
             transportDomain, transportAddress
         )
               )
@@ -55,7 +55,7 @@ def cbFun(transportDispatcher, transportDomain, transportAddress, wholeMsg):
                 varBinds = pMod.apiPDU.getVarBinds(reqPDU)
             print('Var-binds:')
             for oid, val in varBinds:
-                print('%s = %s' % (oid.prettyPrint(), val.prettyPrint()))
+                print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
     return wholeMsg
 
 

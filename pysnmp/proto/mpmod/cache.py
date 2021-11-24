@@ -8,7 +8,7 @@ from pysnmp.proto import error
 from pysnmp import nextid
 
 
-class Cache(object):
+class Cache:
     __stateReference = nextid.Integer(0xffffff)
     __msgID = nextid.Integer(0xffffff)
 
@@ -27,7 +27,7 @@ class Cache(object):
 
     def pushByStateRef(self, stateReference, **msgInfo):
         if stateReference in self.__stateReferenceIndex:
-            raise error.ProtocolError('Cache dup for stateReference=%s at %s' % (stateReference, self))
+            raise error.ProtocolError(f'Cache dup for stateReference={stateReference} at {self}')
         expireAt = self.__expirationTimer + 600
         self.__stateReferenceIndex[stateReference] = msgInfo, expireAt
 
@@ -42,7 +42,7 @@ class Cache(object):
         if stateReference in self.__stateReferenceIndex:
             cacheInfo = self.__stateReferenceIndex[stateReference]
         else:
-            raise error.ProtocolError('Cache miss for stateReference=%s at %s' % (stateReference, self))
+            raise error.ProtocolError(f'Cache miss for stateReference={stateReference} at {self}')
         del self.__stateReferenceIndex[stateReference]
         cacheEntry, expireAt = cacheInfo
         del self.__expirationQueue[expireAt]['stateReference'][stateReference]
@@ -56,7 +56,7 @@ class Cache(object):
     def pushByMsgId(self, msgId, **msgInfo):
         if msgId in self.__msgIdIndex:
             raise error.ProtocolError(
-                'Cache dup for msgId=%s at %s' % (msgId, self)
+                f'Cache dup for msgId={msgId} at {self}'
             )
         expireAt = self.__expirationTimer + 600
         self.__msgIdIndex[msgId] = msgInfo, expireAt
@@ -75,7 +75,7 @@ class Cache(object):
             cacheInfo = self.__msgIdIndex[msgId]
         else:
             raise error.ProtocolError(
-                'Cache miss for msgId=%s at %s' % (msgId, self)
+                f'Cache miss for msgId={msgId} at {self}'
             )
         msgInfo, expireAt = cacheInfo
         del self.__sendPduHandleIdx[msgInfo['sendPduHandle']]

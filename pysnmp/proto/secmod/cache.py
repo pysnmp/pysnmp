@@ -8,7 +8,7 @@ from pysnmp import nextid
 from pysnmp.proto import error
 
 
-class Cache(object):
+class Cache:
     __stateReference = nextid.Integer(0xffffff)
 
     def __init__(self):
@@ -24,7 +24,7 @@ class Cache(object):
             securityData = self.__cacheEntries[stateReference]
         else:
             raise error.ProtocolError(
-                'Cache miss for stateReference=%s at %s' % (stateReference, self)
+                f'Cache miss for stateReference={stateReference} at {self}'
             )
         del self.__cacheEntries[stateReference]
         return securityData

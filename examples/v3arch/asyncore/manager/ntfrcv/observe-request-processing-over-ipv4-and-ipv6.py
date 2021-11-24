@@ -77,10 +77,10 @@ config.addV1System(snmpEngine, 'my-area', 'public')
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def cbFun(snmpEngine, stateReference, contextEngineId, contextName,
           varBinds, cbCtx):
-    print('Notification from ContextEngineId "%s", ContextName "%s"' % (contextEngineId.prettyPrint(),
+    print('Notification from ContextEngineId "{}", ContextName "{}"'.format(contextEngineId.prettyPrint(),
                                                                         contextName.prettyPrint()))
     for name, val in varBinds:
-        print('%s = %s' % (name.prettyPrint(), val.prettyPrint()))
+        print(f'{name.prettyPrint()} = {val.prettyPrint()}')
 
 
 # Register SNMP Application at the SNMP engine

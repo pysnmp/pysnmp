@@ -49,11 +49,11 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName,
     )
 
     # ... and use inner SNMP engine data to figure out peer address
-    print('Notification from %s, ContextEngineId "%s", ContextName "%s"' % ('@'.join([str(x) for x in execContext['transportAddress']]),
+    print('Notification from {}, ContextEngineId "{}", ContextName "{}"'.format('@'.join([str(x) for x in execContext['transportAddress']]),
                                                                             contextEngineId.prettyPrint(),
                                                                             contextName.prettyPrint()))
     for name, val in varBinds:
-        print('%s = %s' % (name.prettyPrint(), val.prettyPrint()))
+        print(f'{name.prettyPrint()} = {val.prettyPrint()}')
 
 
 # Register SNMP Application at the SNMP engine

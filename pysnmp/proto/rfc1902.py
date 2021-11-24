@@ -659,7 +659,7 @@ class Bits(OctetString):
                 if v & (0x01 << j):
                     name = self.namedValues.getName(i * 8 + 7 - j)
                     if name is None:
-                        name = 'UnknownBit-%s' % (i * 8 + 7 - j,)
+                        name = f'UnknownBit-{i * 8 + 7 - j}'
                     names.append(name)
                 j -= 1
         return ', '.join([str(x) for x in names])

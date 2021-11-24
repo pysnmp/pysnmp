@@ -116,7 +116,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             peerSnmpEngineData = None
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareOutgoingMessage: peer SNMP engine data %s for transport %s, address %s' % (
+            'prepareOutgoingMessage: peer SNMP engine data {} for transport {}, address {}'.format(
                 peerSnmpEngineData, transportDomain, transportAddress))
 
         # 7.1.4
@@ -135,7 +135,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             contextName = self._emptyStr
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareOutgoingMessage: using contextEngineId %r, contextName %r' % (contextEngineId, contextName))
+            f'prepareOutgoingMessage: using contextEngineId {contextEngineId!r}, contextName {contextName!r}')
 
         # 7.1.6
         scopedPDU = self.__scopedPDU
@@ -191,7 +191,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         # XXX need to coerce MIB value as it has incompatible constraints set
         headerData.setComponentByPosition(3, int(securityModel))
 
-        debug.logger & debug.flagMP and debug.logger('prepareOutgoingMessage: %s' % (msg.prettyPrint(),))
+        debug.logger & debug.flagMP and debug.logger(f'prepareOutgoingMessage: {msg.prettyPrint()}')
 
         if securityModel in snmpEngine.securityModels:
             smHandler = snmpEngine.securityModels[securityModel]
@@ -215,7 +215,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 securityEngineId = peerSnmpEngineData['securityEngineId']
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareOutgoingMessage: securityModel %r, securityEngineId %r, securityName %r, securityLevel %r' % (
+            'prepareOutgoingMessage: securityModel {!r}, securityEngineId {!r}, securityName {!r}, securityLevel {!r}'.format(
                 securityModel, securityEngineId, securityName, securityLevel))
 
         # 7.1.9.b
@@ -345,7 +345,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             contextName = self._emptyStr
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareResponseMessage: using contextEngineId %r, contextName %r' % (contextEngineId, contextName))
+            f'prepareResponseMessage: using contextEngineId {contextEngineId!r}, contextName {contextName!r}')
 
         # 7.1.6
         scopedPDU = self.__scopedPDU
@@ -401,7 +401,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             3, securityModel, verifyConstraints=False, matchTags=False, matchConstraints=False
         )
 
-        debug.logger & debug.flagMP and debug.logger('prepareResponseMessage: %s' % (msg.prettyPrint(),))
+        debug.logger & debug.flagMP and debug.logger(f'prepareResponseMessage: {msg.prettyPrint()}')
 
         if securityModel in snmpEngine.securityModels:
             smHandler = snmpEngine.securityModels[securityModel]
@@ -409,7 +409,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareResponseMessage: securityModel %r, securityEngineId %r, securityName %r, securityLevel %r' % (
+            'prepareResponseMessage: securityModel {!r}, securityEngineId {!r}, securityName {!r}, securityLevel {!r}'.format(
                 securityModel, snmpEngineID, securityName, securityLevel))
 
         # 7.1.8a
@@ -457,7 +457,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         # 7.2.2
         msg, restOfwholeMsg = decoder.decode(wholeMsg, asn1Spec=self._snmpMsgSpec)
 
-        debug.logger & debug.flagMP and debug.logger('prepareDataElements: %s' % (msg.prettyPrint(),))
+        debug.logger & debug.flagMP and debug.logger(f'prepareDataElements: {msg.prettyPrint()}')
 
         if eoo.endOfOctets.isSameTypeWith(msg):
             raise error.StatusInformation(errorIndication=errind.parseError)
@@ -472,7 +472,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         securityParameters = msg.getComponentByPosition(2)
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareDataElements: msg data msgVersion %s msgID %s securityModel %s' % (
+            'prepareDataElements: msg data msgVersion {} msgID {} securityModel {}'.format(
                 msgVersion, msgID, securityModel))
 
         # 7.2.4
@@ -608,7 +608,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                     self.__engineIdCacheExpQueue[expireAt].append(k)
 
                     debug.logger & debug.flagMP and debug.logger(
-                        'prepareDataElements: cache securityEngineId %r for %r %r' % (
+                        'prepareDataElements: cache securityEngineId {!r} for {!r} {!r}'.format(
                             securityEngineId, transportDomain, transportAddress))
 
         snmpEngineID, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
@@ -644,7 +644,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             sendPduHandle = None
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareDataElements: using sendPduHandle %s for msgID %s' % (sendPduHandle, msgID))
+            f'prepareDataElements: using sendPduHandle {sendPduHandle} for msgID {msgID}')
 
         # 7.2.11
         if pduType in rfc3411.internalClassPDUs:
@@ -820,7 +820,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         if self.__expirationTimer in self.__engineIdCacheExpQueue:
             for engineKey in self.__engineIdCacheExpQueue[self.__expirationTimer]:
                 del self.__engineIdCache[engineKey]
-                debug.logger & debug.flagMP and debug.logger('__expireEnginesInfo: expiring %r' % (engineKey,))
+                debug.logger & debug.flagMP and debug.logger(f'__expireEnginesInfo: expiring {engineKey!r}')
             del self.__engineIdCacheExpQueue[self.__expirationTimer]
         self.__expirationTimer += 1
 

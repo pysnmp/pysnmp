@@ -188,10 +188,10 @@ def addV3User(snmpEngine, userName,
     )
 
     if authProtocol not in authServices:
-        raise error.PySnmpError('Unknown auth protocol %s' % (authProtocol,))
+        raise error.PySnmpError(f'Unknown auth protocol {authProtocol}')
 
     if privProtocol not in privServices:
-        raise error.PySnmpError('Unknown privacy protocol %s' % (privProtocol,))
+        raise error.PySnmpError(f'Unknown privacy protocol {privProtocol}')
 
     pysnmpUsmKeyType, = mibBuilder.importSymbols('__PYSNMP-USM-MIB', 'pysnmpUsmKeyType')
 
@@ -435,7 +435,7 @@ def addTransport(snmpEngine, transportDomain, transport):
     if snmpEngine.transportDispatcher:
         if not transport.isCompatibleWithDispatcher(snmpEngine.transportDispatcher):
             raise error.PySnmpError(
-                'Transport %r is not compatible with dispatcher %r' % (transport, snmpEngine.transportDispatcher))
+                f'Transport {transport!r} is not compatible with dispatcher {snmpEngine.transportDispatcher!r}')
     else:
         snmpEngine.registerTransportDispatcher(
             transport.protoTransportDispatcher()

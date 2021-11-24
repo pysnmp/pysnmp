@@ -84,7 +84,7 @@ class InetAddress(TextualConvention, OctetString):
                 except KeyError:
                     pass
 
-        raise error.SmiError('%s object encountered without preceding InetAddressType-like index: %r' % (cls.__name__, value))
+        raise error.SmiError(f'{cls.__name__} object encountered without preceding InetAddressType-like index: {value!r}')
 
     def cloneAsName(self, impliedFlag, parentRow, parentIndices):
         for parentIndex in reversed(parentIndices):
@@ -94,7 +94,7 @@ class InetAddress(TextualConvention, OctetString):
                 except KeyError:
                     pass
 
-        raise error.SmiError('%s object encountered without preceding InetAddressType-like index: %r' % (self.__class__.__name__, self))
+        raise error.SmiError(f'{self.__class__.__name__} object encountered without preceding InetAddressType-like index: {self!r}')
 
 class InetAddressPrefixLength(TextualConvention, Unsigned32):
     description = "Denotes the length of a generic Internet network address prefix. A value of n corresponds to an IP address mask that has n contiguous 1-bits from the most significant bit (MSB), with all other bits set to 0. An InetAddressPrefixLength value is always interpreted within the context of an InetAddressType value. Every usage of the InetAddressPrefixLength textual convention is required to specify the InetAddressType object that provides the context. It is suggested that the InetAddressType object be logically registered before the object(s) that use the InetAddressPrefixLength textual convention, if they appear in the same logical row. InetAddressPrefixLength values larger than the maximum length of an IP address for a specific InetAddressType are treated as the maximum significant value applicable for the InetAddressType. The maximum significant value is 32 for the InetAddressType 'ipv4(1)' and 'ipv4z(3)' and 128 for the InetAddressType 'ipv6(2)' and 'ipv6z(4)'. The maximum significant value for the InetAddressType 'dns(16)' is 0. The value zero is object-specific and must be defined as part of the description of any object that uses this syntax. Examples of the usage of zero might include situations where the Internet network address prefix is unknown or does not apply. The upper bound of the prefix length has been chosen to be consistent with the maximum size of an InetAddress."

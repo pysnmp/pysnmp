@@ -40,7 +40,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             msgID = self._cache.newMsgID()
             reqID = pdu.getComponentByPosition(0)
             debug.logger & debug.flagMP and debug.logger(
-                'prepareOutgoingMessage: PDU request-id %s replaced with unique ID %s' % (reqID, msgID))
+                f'prepareOutgoingMessage: PDU request-id {reqID} replaced with unique ID {msgID}')
 
         # rfc3412: 7.1.4
         # Since there's no SNMP engine identification in v1/2c,
@@ -53,7 +53,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             contextName = null
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareOutgoingMessage: using contextEngineId %r contextName %r' % (contextEngineId, contextName))
+            f'prepareOutgoingMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}')
 
         # rfc3412: 7.1.6
         scopedPDU = (contextEngineId, contextName, pdu)
@@ -162,7 +162,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         transportAddress = cachedParams['transportAddress']
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareResponseMessage: cache read msgID %s transportDomain %s transportAddress %s by stateReference %s' % (
+            'prepareResponseMessage: cache read msgID {} transportDomain {} transportAddress {} by stateReference {}'.format(
                 msgID, transportDomain, transportAddress, stateReference))
 
         # rfc3412: 7.1.3
@@ -186,7 +186,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         scopedPDU = (contextEngineId, contextName, pdu)
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareResponseMessage: using contextEngineId %r contextName %r' % (contextEngineId, contextName))
+            f'prepareResponseMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}')
 
         msg = self._snmpMsgSpec
         msg.setComponentByPosition(0, messageProcessingModel)
@@ -249,7 +249,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # rfc3412: 7.2.2
         msg, restOfWholeMsg = decoder.decode(wholeMsg, asn1Spec=self._snmpMsgSpec)
 
-        debug.logger & debug.flagMP and debug.logger('prepareDataElements: %s' % (msg.prettyPrint(),))
+        debug.logger & debug.flagMP and debug.logger(f'prepareDataElements: {msg.prettyPrint()}')
 
         if eoo.endOfOctets.isSameTypeWith(msg):
             raise error.StatusInformation(errorIndication=errind.parseError)
@@ -290,7 +290,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             )
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: SM returned securityEngineId %r securityName %r' % (securityEngineId, securityName))
+                f'prepareDataElements: SM returned securityEngineId {securityEngineId!r} securityName {securityName!r}')
 
         except error.StatusInformation:
             statusInformation = sys.exc_info()[1]
@@ -337,7 +337,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             pdu.setComponentByPosition(0, cachedReqParams['reqID'])
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: unique PDU request-id %s replaced with original ID %s' % (
+                'prepareDataElements: unique PDU request-id {} replaced with original ID {}'.format(
                     msgID, cachedReqParams['reqID']))
 
             # 7.2.10b
@@ -399,7 +399,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             msgID = self._cache.newMsgID()
             pdu.setComponentByPosition(0, msgID)
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: received PDU request-id %s replaced with unique ID %s' % (reqID, msgID))
+                f'prepareDataElements: received PDU request-id {reqID} replaced with unique ID {msgID}')
 
             # rfc3412: 7.2.13a
             snmpEngineId, = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')

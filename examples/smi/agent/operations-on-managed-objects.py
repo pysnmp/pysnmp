@@ -33,7 +33,7 @@ varBinds = mibInstrum.writeVars(
      (snmpCommunityEntry.name + (7,) + instanceId, 'volatile'))
 )
 for oid, val in varBinds:
-    print('%s = %s' % ('.'.join([str(x) for x in oid]), not val.isValue and 'N/A' or val.prettyPrint()))
+    print('{} = {}'.format('.'.join([str(x) for x in oid]), not val.isValue and 'N/A' or val.prettyPrint()))
 print('done')
 
 print('Read whole MIB (table walk)')
@@ -42,7 +42,7 @@ while True:
     oid, val = mibInstrum.readNextVars(((oid, val),))[0]
     if exval.endOfMib.isSameTypeWith(val):
         break
-    print('%s = %s' % ('.'.join([str(x) for x in oid]), not val.isValue and 'N/A' or val.prettyPrint()))
+    print('{} = {}'.format('.'.join([str(x) for x in oid]), not val.isValue and 'N/A' or val.prettyPrint()))
 print('done')
 
 print('Unloading MIB modules...'),

@@ -7,7 +7,7 @@
 from pysnmp import error
 
 
-class MetaObserver(object):
+class MetaObserver:
     """This is a simple facility for exposing internal SNMP Engine
        working details to pysnmp applications. These details are
        basically local scope variables at a fixed point of execution.

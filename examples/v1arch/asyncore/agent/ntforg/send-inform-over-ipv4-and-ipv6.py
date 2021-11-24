@@ -56,7 +56,7 @@ def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
             else:
                 print('INFORM message delivered, response var-binds follow')
                 for oid, val in pMod.apiPDU.getVarBinds(rspPDU):
-                    print('%s = %s' % (oid.prettyPrint(), val.prettyPrint()))
+                    print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
             transportDispatcher.jobFinished(1)
     return wholeMsg
 

@@ -13,26 +13,26 @@ class OrderedDict(dict):
     def __init__(self, *args, **kwargs):
         self.__keys = []
         self.__dirty = True
-        super(OrderedDict, self).__init__()
+        super().__init__()
         if args:
             self.update(*args)
         if kwargs:
             self.update(**kwargs)
 
     def __setitem__(self, key, value):
-        super(OrderedDict, self).__setitem__(key, value)
+        super().__setitem__(key, value)
         if key not in self.__keys:
             self.__keys.append(key)
             self.__dirty = True
 
     def __delitem__(self, key):
-        super(OrderedDict, self).__delitem__(key)
+        super().__delitem__(key)
         if key in self.__keys:
             self.__keys.remove(key)
             self.__dirty = True
 
     def clear(self):
-        super(OrderedDict, self).clear()
+        super().clear()
         self.__keys = []
         self.__dirty = True
 
@@ -70,7 +70,7 @@ class OrderedDict(dict):
 
     def __order(self):
         self.sortingFun(self.__keys)
-        self.__keysLens = sorted(set(len(k) for k in self.__keys), reverse=True)
+        self.__keysLens = sorted({len(k) for k in self.__keys}, reverse=True)
         self.__dirty = False
 
     def nextKey(self, key):

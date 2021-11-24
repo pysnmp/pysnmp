@@ -36,7 +36,7 @@ snmpEngine = engine.SnmpEngine()
 def requestObserver(snmpEngine, execpoint, variables, cbCtx):
     print('Execution point: %s' % execpoint)
     print('* transportDomain: %s' % '.'.join([str(x) for x in variables['transportDomain']]))
-    print('* transportAddress: %s (local %s)' % ('@'.join([str(x) for x in variables['transportAddress']]), '@'.join([str(x) for x in variables['transportAddress'].getLocalAddress()])))
+    print('* transportAddress: {} (local {})'.format('@'.join([str(x) for x in variables['transportAddress']]), '@'.join([str(x) for x in variables['transportAddress'].getLocalAddress()])))
     print('* securityModel: %s' % variables['securityModel'])
     print('* securityName: %s' % variables['securityName'])
     print('* securityLevel: %s' % variables['securityLevel'])
