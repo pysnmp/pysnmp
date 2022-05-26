@@ -20,16 +20,16 @@ class OrderedDict(dict):
             self.update(**kwargs)
 
     def __setitem__(self, key, value):
-        super().__setitem__(key, value)
-        if key not in self.__keys:
+        if key not in self:
             self.__keys.append(key)
             self.__dirty = True
+        super().__setitem__(key, value)
 
     def __delitem__(self, key):
-        super().__delitem__(key)
-        if key in self.__keys:
+        if key in self:
             self.__keys.remove(key)
             self.__dirty = True
+        super().__delitem__(key)
 
     def clear(self):
         super().clear()
