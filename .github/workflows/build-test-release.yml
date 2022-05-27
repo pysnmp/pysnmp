@@ -115,7 +115,7 @@ jobs:
             @google/semantic-release-replace-plugin
         env:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_USERNAME: "__token__"
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
   update-semver:
