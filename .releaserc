@@ -31,7 +31,7 @@
               "pysnmp/__init__.py"
             ],
             "from": "__version__ ?=.*",
-            "to": "__version__ = \"${nextRelease.version}\"",
+            "to": "__version__ = '${nextRelease.version}'",
             "results": [
               {
                 "file": "pysnmp/__init__.py",
