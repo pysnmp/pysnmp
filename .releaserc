@@ -30,8 +30,8 @@
             "files": [
               "pysnmp/__init__.py"
             ],
-            "from": "__version__ ?=.*",
-            "to": "__version__ = \"${nextRelease.version}\"",
+            "from": "__version__ ?= '.*'",
+            "to": "__version__ = '${nextRelease.version}'",
             "results": [
               {
                 "file": "pysnmp/__init__.py",
@@ -76,7 +76,7 @@
         "assets": [
           "NOTICE",
           "pyproject.toml",
-          "pyasn1/__init__.py"
+          "pysnmp/__init__.py"
         ],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}",
       },
