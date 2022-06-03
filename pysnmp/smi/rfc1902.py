@@ -303,7 +303,7 @@ class ObjectIdentity:
 
     # this would eventually be called by an entity which posses a
     # reference to MibViewController
-    def resolveWithMib(self, mibViewController):
+    def resolveWithMib(self, mibViewController, ignoreErrors=True):
         """Perform MIB variable ID conversion.
 
         Parameters
@@ -383,7 +383,7 @@ class ObjectIdentity:
         self.__indices = ()
 
         if isinstance(self.__args[0], ObjectIdentity):
-            self.__args[0].resolveWithMib(mibViewController)
+            self.__args[0].resolveWithMib(mibViewController, ignoreErrors)
 
         if len(self.__args) == 1:  # OID or label or MIB module
             debug.logger & debug.flagMIB and debug.logger('resolving %s as OID or label' % self.__args)
@@ -448,9 +448,6 @@ class ObjectIdentity:
                         rowModName, rowSymName
                     )
                     self.__indices = rowNode.getIndicesFromInstId(suffix)
-            elif isinstance(mibNode, MibScalar):  # scalar
-                if suffix:
-                    self.__indices = (rfc1902.ObjectName(suffix),)
             else:
                 if suffix:
                     self.__indices = (rfc1902.ObjectName(suffix),)

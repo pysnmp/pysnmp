@@ -123,4 +123,5 @@ def setLogger(l):
 
 def hexdump(octets):
     return ' '.join(
-        ['{}{:.2X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x) for n, x in zip(range(len(octets)), octs2ints(octets))])
+        ['{}{:02X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x) for n, x in zip(range(len(octets)),
+                                                                                      octs2ints(octets))])
