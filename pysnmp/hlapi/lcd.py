@@ -36,7 +36,8 @@ class AbstractLcdConfigurator:
 class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
     cacheKeys = ['auth', 'parm', 'tran', 'addr']
 
-    def configure(self, snmpEngine, authData, transportTarget, contextName, **options):
+    def configure(self, snmpEngine, authData, transportTarget, contextName=null,
+                  **options):
         cache = self._getCache(snmpEngine)
         if isinstance(authData, CommunityData):
             if authData.communityIndex not in cache['auth']:
