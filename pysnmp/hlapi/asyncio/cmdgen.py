@@ -53,7 +53,7 @@ isEndOfMib = lambda x: not cmdgen.getNextVarBinds(x)[1]
 
 
 
-def getCmd(snmpEngine, authData, transportTarget, contextData,
+async def getCmd(snmpEngine, authData, transportTarget, contextData,
            *varBinds, **options):
     r"""Creates a generator to perform SNMP GET query.
 
