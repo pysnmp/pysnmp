@@ -147,7 +147,7 @@ def getCmd(snmpEngine, authData, transportTarget, contextData,
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName)
 
-    future = asyncio.get_running_loop().create_future()()
+    future = asyncio.get_running_loop().create_future()
 
     cmdgen.GetCommandGenerator().sendVarBinds(
         snmpEngine, addrName, contextData.contextEngineId,
@@ -252,7 +252,7 @@ def asyncsetCmd(snmpEngine, authData, transportTarget, contextData,
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName)
 
-    future = asyncio.get_running_loop().create_future()()
+    future = asyncio.get_running_loop().create_future()
 
     cmdgen.SetCommandGenerator().sendVarBinds(
         snmpEngine, addrName, contextData.contextEngineId,
@@ -363,7 +363,7 @@ def asyncnextCmd(snmpEngine, authData, transportTarget, contextData,
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName)
 
-    future = asyncio.get_running_loop().create_future()()
+    future = asyncio.get_running_loop().create_future()
 
     cmdgen.NextCommandGenerator().sendVarBinds(
         snmpEngine, addrName, contextData.contextEngineId,
@@ -503,7 +503,7 @@ def asyncbulkCmd(snmpEngine, authData, transportTarget, contextData,
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName)
 
-    future = asyncio.get_running_loop().create_future()()
+    future = asyncio.get_running_loop().create_future()
 
     cmdgen.BulkCommandGenerator().sendVarBinds(
         snmpEngine, addrName, contextData.contextEngineId,
