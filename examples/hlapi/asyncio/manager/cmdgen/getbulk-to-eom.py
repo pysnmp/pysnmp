@@ -21,7 +21,7 @@ import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-def asyncrun(varBinds):
+async def run(varBinds):
     snmpEngine = SnmpEngine()
     while True:
         (errorIndication,

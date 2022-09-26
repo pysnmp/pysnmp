@@ -21,7 +21,7 @@ import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-def asyncgetone(snmpEngine, hostname):
+async def getone(snmpEngine, hostname):
     errorIndication, errorStatus, errorIndex, varBinds = yield getCmd(
         snmpEngine,
         CommunityData('public'),
@@ -43,7 +43,7 @@ def asyncgetone(snmpEngine, hostname):
             print(' = '.join([x.prettyPrint() for x in varBind]))
 
 
-def asyncgetall(snmpEngine, hostnames):
+async def getall(snmpEngine, hostnames):
     for hostname in hostnames:
         yield getone(snmpEngine, hostname)
 

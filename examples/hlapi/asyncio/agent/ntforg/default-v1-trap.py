@@ -24,7 +24,7 @@ import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-def asyncrun():
+async def run():
     snmpEngine = SnmpEngine()
     errorIndication, errorStatus, errorIndex, varBinds = yield sendNotification(
         snmpEngine,

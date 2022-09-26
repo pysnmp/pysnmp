@@ -27,7 +27,7 @@ import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-def asyncsendone(snmpEngine, hostname, notifyType):
+async def sendone(snmpEngine, hostname, notifyType):
     (errorIndication,
      errorStatus,
      errorIndex,
