@@ -21,9 +21,8 @@ import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-@asyncio.coroutine
-def getone(snmpEngine, hostname):
-    errorIndication, errorStatus, errorIndex, varBinds = yield from getCmd(
+def asyncgetone(snmpEngine, hostname):
+    errorIndication, errorStatus, errorIndex, varBinds = yield getCmd(
         snmpEngine,
         CommunityData('public'),
         UdpTransportTarget(hostname),
@@ -44,10 +43,9 @@ def getone(snmpEngine, hostname):
             print(' = '.join([x.prettyPrint() for x in varBind]))
 
 
-@asyncio.coroutine
-def getall(snmpEngine, hostnames):
+def asyncgetall(snmpEngine, hostnames):
     for hostname in hostnames:
-        yield from getone(snmpEngine, hostname)
+        yield getone(snmpEngine, hostname)
 
 
 snmpEngine = SnmpEngine()

@@ -27,14 +27,13 @@ vbProcessor = NotificationOriginatorVarBinds()
 lcd = NotificationOriginatorLcdConfigurator()
 
 
-@asyncio.coroutine
-def sendNotification(snmpEngine, authData, transportTarget, contextData,
+def asyncsendNotification(snmpEngine, authData, transportTarget, contextData,
                      notifyType, varBinds, **options):
     r"""Creates a generator to send SNMP notification.
 
     When iterator gets advanced by :py:mod:`asyncio` main loop,
     SNMP TRAP or INFORM notification is send (:RFC:`1905#section-4.2.6`).
-    The iterator yields :py:class:`asyncio.Future` which gets done whenever
+    The iterator yields :py:class:`asyncio.get_running_loop().create_future()` which gets done whenever
     response arrives or error occurs.
 
     Parameters
@@ -101,9 +100,8 @@ def sendNotification(snmpEngine, authData, transportTarget, contextData,
     >>> import asyncio
     >>> from pysnmp.hlapi.asyncio import *
     >>>
-    >>> @asyncio.coroutine
-    ... def run():
-    ...     errorIndication, errorStatus, errorIndex, varBinds = yield from sendNotification(
+    >>> async def run():
+    ...     errorIndication, errorStatus, errorIndex, varBinds = yield sendNotification(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('demo.snmplabs.com', 162)),
@@ -139,7 +137,7 @@ def sendNotification(snmpEngine, authData, transportTarget, contextData,
         snmpEngine, authData, transportTarget, notifyType,
         contextData.contextName)
 
-    future = asyncio.Future()
+    future = asyncio.get_running_loop().create_future()()
 
     ntforg.NotificationOriginator().sendVarBinds(
         snmpEngine,
