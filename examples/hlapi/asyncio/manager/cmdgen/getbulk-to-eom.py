@@ -21,14 +21,13 @@ import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-@asyncio.coroutine
-def run(varBinds):
+async def run(varBinds):
     snmpEngine = SnmpEngine()
     while True:
         (errorIndication,
          errorStatus,
          errorIndex,
-         varBindTable) = yield from bulkCmd(
+         varBindTable) = yield bulkCmd(
             snmpEngine,
             UsmUserData('usr-none-none'),
             UdpTransportTarget(('demo.snmplabs.com', 161)),

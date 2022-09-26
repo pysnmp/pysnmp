@@ -27,12 +27,11 @@ import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-@asyncio.coroutine
-def sendone(snmpEngine, hostname, notifyType):
+async def sendone(snmpEngine, hostname, notifyType):
     (errorIndication,
      errorStatus,
      errorIndex,
-     varBinds) = yield from sendNotification(
+     varBinds) = yield sendNotification(
         snmpEngine,
         CommunityData('public', tag=hostname),
         UdpTransportTarget((hostname, 162), tagList=hostname),
