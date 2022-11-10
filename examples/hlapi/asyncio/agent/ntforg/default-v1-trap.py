@@ -26,10 +26,10 @@ from pysnmp.hlapi.asyncio import *
 
 async def run():
     snmpEngine = SnmpEngine()
-    errorIndication, errorStatus, errorIndex, varBinds = yield sendNotification(
+    trap_result = await sendNotification(
         snmpEngine,
         CommunityData('public', mpModel=0),
-        UdpTransportTarget(('demo.snmplabs.com', 162)),
+        UdpTransportTarget(('localhost', 162)),
         ContextData(),
         'trap',
         NotificationType(
@@ -39,11 +39,11 @@ async def run():
             ('1.3.6.1.2.1.1.1.0', OctetString('my system'))
         )
     )
-
+    errorIndication, errorStatus, errorIndex, varBinds = await trap_result
     if errorIndication:
         print(errorIndication)
 
     snmpEngine.transportDispatcher.closeDispatcher()
 
 
-asyncio.get_event_loop().run_until_complete(run())
+asyncio.run(run())
