@@ -18,9 +18,9 @@ what leads to excessive tables information.
 
 Functionally similar to:
 
-| $ snmptrap -v2c -c public demo.snmplabs.com 12345 1.3.6.1.6.3.1.1.5.2
-| $ snmpinform -v2c -c public demo.snmplabs.com 12345 1.3.6.1.6.3.1.1.5.2
-| $ snmptrap -v2c -c public demo.snmplabs.com 12345 1.3.6.1.6.3.1.1.5.2
+| $ snmptrap -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
+| $ snmpinform -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
+| $ snmptrap -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
 
 """#
 import asyncio
