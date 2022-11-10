@@ -5,46 +5,58 @@ Agent operations on MIB
 This script explains how SNMP Agent application manipulates
 its MIB possibly triggered by SNMP Manager's commands.
 
-"""#
+"""  #
 # SNMP agent backend e.g. Agent access to Managed Objects
 from pysnmp.smi import builder, instrum, exval
 
-print('Loading MIB modules...'),
+print("Loading MIB modules..."),
 mibBuilder = builder.MibBuilder().loadModules(
-    'SNMPv2-MIB', 'SNMP-FRAMEWORK-MIB', 'SNMP-COMMUNITY-MIB'
+    "SNMPv2-MIB", "SNMP-FRAMEWORK-MIB", "SNMP-COMMUNITY-MIB"
 )
-print('done')
+print("done")
 
-print('Building MIB tree...'),
+print("Building MIB tree..."),
 mibInstrum = instrum.MibInstrumController(mibBuilder)
-print('done')
+print("done")
 
-print('Building table entry index from human-friendly representation...'),
-snmpCommunityEntry, = mibBuilder.importSymbols(
-    'SNMP-COMMUNITY-MIB', 'snmpCommunityEntry'
+print("Building table entry index from human-friendly representation..."),
+(snmpCommunityEntry,) = mibBuilder.importSymbols(
+    "SNMP-COMMUNITY-MIB", "snmpCommunityEntry"
 )
-instanceId = snmpCommunityEntry.getInstIdFromIndices('my-router')
-print('done')
+instanceId = snmpCommunityEntry.getInstIdFromIndices("my-router")
+print("done")
 
-print('Create/update SNMP-COMMUNITY-MIB::snmpCommunityEntry table row: ')
+print("Create/update SNMP-COMMUNITY-MIB::snmpCommunityEntry table row: ")
 varBinds = mibInstrum.writeVars(
-    ((snmpCommunityEntry.name + (2,) + instanceId, 'mycomm'),
-     (snmpCommunityEntry.name + (3,) + instanceId, 'mynmsname'),
-     (snmpCommunityEntry.name + (7,) + instanceId, 'volatile'))
+    (
+        (snmpCommunityEntry.name + (2,) + instanceId, "mycomm"),
+        (snmpCommunityEntry.name + (3,) + instanceId, "mynmsname"),
+        (snmpCommunityEntry.name + (7,) + instanceId, "volatile"),
+    )
 )
 for oid, val in varBinds:
-    print('{} = {}'.format('.'.join([str(x) for x in oid]), not val.isValue and 'N/A' or val.prettyPrint()))
-print('done')
+    print(
+        "{} = {}".format(
+            ".".join([str(x) for x in oid]),
+            not val.isValue and "N/A" or val.prettyPrint(),
+        )
+    )
+print("done")
 
-print('Read whole MIB (table walk)')
+print("Read whole MIB (table walk)")
 oid, val = (), None
 while True:
     oid, val = mibInstrum.readNextVars(((oid, val),))[0]
     if exval.endOfMib.isSameTypeWith(val):
         break
-    print('{} = {}'.format('.'.join([str(x) for x in oid]), not val.isValue and 'N/A' or val.prettyPrint()))
-print('done')
+    print(
+        "{} = {}".format(
+            ".".join([str(x) for x in oid]),
+            not val.isValue and "N/A" or val.prettyPrint(),
+        )
+    )
+print("done")
 
-print('Unloading MIB modules...'),
+print("Unloading MIB modules..."),
 mibBuilder.unloadModules()
-print('done')
+print("done")

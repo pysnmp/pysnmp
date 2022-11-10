@@ -15,7 +15,7 @@ receiver:
 
 | $ snmptrap -v2c -c public 127.0.0.1:162 123 1.3.6.1.6.3.1.1.5.1 1.3.6.1.2.1.1.5.0 s test
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
@@ -30,30 +30,33 @@ snmpEngine = engine.SnmpEngine()
 config.addTransport(
     snmpEngine,
     udp.domainName + (1,),
-    udp.UdpTransport().openServerMode(('127.0.0.1', 162))
+    udp.UdpTransport().openServerMode(("127.0.0.1", 162)),
 )
 
 # SNMPv1/2c setup
 
 # SecurityName <-> CommunityName mapping
-config.addV1System(snmpEngine, 'my-area', 'public')
+config.addV1System(snmpEngine, "my-area", "public")
 
 
 # Callback function for receiving notifications
 # noinspection PyUnusedLocal,PyUnusedLocal
-def cbFun(snmpEngine, stateReference, contextEngineId, contextName,
-          varBinds, cbCtx):
+def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cbCtx):
     # Get an execution context...
     execContext = snmpEngine.observer.getExecutionContext(
-        'rfc3412.receiveMessage:request'
+        "rfc3412.receiveMessage:request"
     )
 
     # ... and use inner SNMP engine data to figure out peer address
-    print('Notification from {}, ContextEngineId "{}", ContextName "{}"'.format('@'.join([str(x) for x in execContext['transportAddress']]),
-                                                                            contextEngineId.prettyPrint(),
-                                                                            contextName.prettyPrint()))
+    print(
+        'Notification from {}, ContextEngineId "{}", ContextName "{}"'.format(
+            "@".join([str(x) for x in execContext["transportAddress"]]),
+            contextEngineId.prettyPrint(),
+            contextName.prettyPrint(),
+        )
+    )
     for name, val in varBinds:
-        print(f'{name.prettyPrint()} = {val.prettyPrint()}')
+        print(f"{name.prettyPrint()} = {val.prettyPrint()}")
 
 
 # Register SNMP Application at the SNMP engine

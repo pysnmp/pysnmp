@@ -22,7 +22,7 @@ Functionally similar to:
 | $ snmpinform -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
 | $ snmptrap -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
 
-"""#
+"""  #
 import asyncio
 from pysnmp.hlapi.asyncio import *
 
@@ -30,33 +30,37 @@ from pysnmp.hlapi.asyncio import *
 async def sendone(snmpEngine, hostname, notifyType):
     trap_result = await sendNotification(
         snmpEngine,
-        CommunityData('public', tag=hostname),
+        CommunityData("public", tag=hostname),
         UdpTransportTarget((hostname, 161), tagList=hostname),
         ContextData(),
         notifyType,
-        NotificationType(
-            ObjectIdentity('1.3.6.1.6.3.1.1.6.1.0')
-        ).addVarBinds(
-            ('1.3.6.1.2.1.1.1.0', OctetString('my system'))
-        )
+        NotificationType(ObjectIdentity("1.3.6.1.6.3.1.1.6.1.0")).addVarBinds(
+            ("1.3.6.1.2.1.1.1.0", OctetString("my system"))
+        ),
     )
 
-    (errorIndication,
-     errorStatus,
-     errorIndex,
-     varBinds) = await trap_result
+    (errorIndication, errorStatus, errorIndex, varBinds) = await trap_result
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
-        print('{}: at {}'.format(errorStatus.prettyPrint(), errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
+        print(
+            "{}: at {}".format(
+                errorStatus.prettyPrint(),
+                errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
+            )
+        )
     else:
         for varBind in varBinds:
-            print(' = '.join([x.prettyPrint() for x in varBind]))
+            print(" = ".join([x.prettyPrint() for x in varBind]))
 
 
 snmpEngine = SnmpEngine()
 
 asyncio.run(
-    asyncio.wait([sendone(snmpEngine, 'localhost', 'trap'),
-                  sendone(snmpEngine, 'localhost', 'inform')])
+    asyncio.wait(
+        [
+            sendone(snmpEngine, "localhost", "trap"),
+            sendone(snmpEngine, "localhost", "inform"),
+        ]
+    )
 )

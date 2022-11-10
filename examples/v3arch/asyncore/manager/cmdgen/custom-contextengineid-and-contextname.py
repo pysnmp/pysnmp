@@ -16,7 +16,7 @@ This script performs similar to the following Net-SNMP command:
 
 | $ snmpget -v3 -l authNoPriv -u usr-md5-none -A authkey1 -E 80004fb805636c6f75644dab22cc -n da761cfc8c94d3aceef4f60f049105ba -ObentU 104.236.166.95:161  1.3.6.1.2.1.1.1.0
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity.rfc3413 import cmdgen
@@ -30,11 +30,8 @@ snmpEngine = engine.SnmpEngine()
 #
 
 # user: usr-md5-none, auth: MD5, priv: NONE
-config.addV3User(
-    snmpEngine, 'usr-md5-none',
-    config.usmHMACMD5AuthProtocol, 'authkey1'
-)
-config.addTargetParams(snmpEngine, 'my-creds', 'usr-md5-none', 'authNoPriv')
+config.addV3User(snmpEngine, "usr-md5-none", config.usmHMACMD5AuthProtocol, "authkey1")
+config.addTargetParams(snmpEngine, "my-creds", "usr-md5-none", "authNoPriv")
 
 #
 # Setup transport endpoint and bind it with security settings yielding
@@ -43,41 +40,48 @@ config.addTargetParams(snmpEngine, 'my-creds', 'usr-md5-none', 'authNoPriv')
 
 # UDP/IPv4
 config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udp.UdpSocketTransport().openClientMode()
+    snmpEngine, udp.domainName, udp.UdpSocketTransport().openClientMode()
 )
 config.addTargetAddr(
-    snmpEngine, 'my-router',
-    udp.domainName, ('104.236.166.95', 161),
-    'my-creds'
+    snmpEngine, "my-router", udp.domainName, ("104.236.166.95", 161), "my-creds"
 )
 
 
 # Error/response receiver
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def cbFun(snmpEngine, sendRequestHandle, errorIndication,
-          errorStatus, errorIndex, varBinds, cbCtx):
+def cbFun(
+    snmpEngine,
+    sendRequestHandle,
+    errorIndication,
+    errorStatus,
+    errorIndex,
+    varBinds,
+    cbCtx,
+):
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
-        print('{} at {}'.format(errorStatus.prettyPrint(),
-                            errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
+        print(
+            "{} at {}".format(
+                errorStatus.prettyPrint(),
+                errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
+            )
+        )
     else:
         for oid, val in varBinds:
-            print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
+            print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
 
 
 # Prepare and send a request message, pass custom ContextEngineId & ContextName
 cmdgen.GetCommandGenerator().sendVarBinds(
     snmpEngine,
-    'my-router',
+    "my-router",
     # contextEngineId
-    rfc1902.OctetString(hexValue='80004fb805636c6f75644dab22cc'),
+    rfc1902.OctetString(hexValue="80004fb805636c6f75644dab22cc"),
     # contextName
-    rfc1902.OctetString('da761cfc8c94d3aceef4f60f049105ba'),
+    rfc1902.OctetString("da761cfc8c94d3aceef4f60f049105ba"),
     [((1, 3, 6, 1, 2, 1, 1, 1, 0), None)],
-    cbFun
+    cbFun,
 )
 
 # Run I/O dispatcher which would send pending queries and process responses

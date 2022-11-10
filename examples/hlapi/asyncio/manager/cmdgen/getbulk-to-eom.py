@@ -13,10 +13,10 @@ Send a series of SNMP GETBULK requests using the following options:
 
 Functionally similar to:
 
-| $ snmpbulkwalk -v3 -lnoAuthNoPriv -u usr-none-none -Cn0 -Cr50 \
+| $ snmpbulkwalk -v3 -lnoAuthNoPriv -u public -Cn0 -Cr50 \
 |                localhost  SNMPv2-MIB::system
 
-"""#
+"""  #
 import asyncio
 from pysnmp.hlapi.asyncio import *
 
@@ -26,28 +26,28 @@ async def run(varBinds):
     while True:
         bulk_task = await bulkCmd(
             snmpEngine,
-            CommunityData('public'),
-            UdpTransportTarget(('localhost', 161)),
+            CommunityData("public"),
+            UdpTransportTarget(("localhost", 161)),
             ContextData(),
-            0, 50,
-            *varBinds)
-        (errorIndication,
-         errorStatus,
-         errorIndex,
-         varBindTable) = await bulk_task
+            0,
+            50,
+            *varBinds
+        )
+        (errorIndication, errorStatus, errorIndex, varBindTable) = await bulk_task
         if errorIndication:
             print(errorIndication)
             break
         elif errorStatus:
-            print('{} at {}'.format(
-                errorStatus.prettyPrint(),
-                errorIndex and varBinds[int(errorIndex) - 1][0] or '?'
+            print(
+                "{} at {}".format(
+                    errorStatus.prettyPrint(),
+                    errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
+                )
             )
-                  )
         else:
             for varBindRow in varBindTable:
                 for varBind in varBindRow:
-                    print(' = '.join([x.prettyPrint() for x in varBind]))
+                    print(" = ".join([x.prettyPrint() for x in varBind]))
 
         varBinds = varBindTable[-1]
         if isEndOfMib(varBinds):
@@ -55,5 +55,6 @@ async def run(varBinds):
     return
 
 
-asyncio.run(run([ObjectType(ObjectIdentity('TCP-MIB')), ObjectType(ObjectIdentity('IP-MIB'))]))
-
+asyncio.run(
+    run([ObjectType(ObjectIdentity("TCP-MIB")), ObjectType(ObjectIdentity("IP-MIB"))])
+)

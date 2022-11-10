@@ -16,7 +16,7 @@ The following Net-SNMP command will send GET request to this Agent:
 
 | $ snmpget -v3 -u usr-none-none -l noAuthNoPriv -n my-context -Ir 127.0.0.1 sysDescr.0
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import cmdrsp, context
 from pysnmp.carrier.asyncore.dgram import udp
@@ -30,20 +30,23 @@ snmpEngine = engine.SnmpEngine()
 
 # UDP over IPv4
 config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udp.UdpTransport().openServerMode(('127.0.0.1', 161))
+    snmpEngine, udp.domainName, udp.UdpTransport().openServerMode(("127.0.0.1", 161))
 )
 
 # SNMPv3/USM setup
 
 # user: usr-none-none, auth: NONE, priv NONE
-config.addV3User(
-    snmpEngine, 'usr-none-none'
-)
+config.addV3User(snmpEngine, "usr-none-none")
 
 # Allow full MIB access for each user at VACM
-config.addVacmUser(snmpEngine, 3, 'usr-none-none', 'noAuthNoPriv', (1, 3, 6, 1, 2, 1), (1, 3, 6, 1, 2, 1))
+config.addVacmUser(
+    snmpEngine,
+    3,
+    "usr-none-none",
+    "noAuthNoPriv",
+    (1, 3, 6, 1, 2, 1),
+    (1, 3, 6, 1, 2, 1),
+)
 
 # Create an SNMP context
 snmpContext = context.SnmpContext(snmpEngine)
@@ -54,14 +57,16 @@ snmpContext = context.SnmpContext(snmpEngine)
 # always echos request var-binds in response.
 class EchoMibInstrumController(instrum.AbstractMibInstrumController):
     def readVars(self, varBinds, acInfo=(None, None)):
-        return [(ov[0], v2c.OctetString('You queried OID %s' % ov[0])) for ov in varBinds]
+        return [
+            (ov[0], v2c.OctetString("You queried OID %s" % ov[0])) for ov in varBinds
+        ]
 
 
 # Create a custom Management Instrumentation Controller and register at
 # SNMP Context under ContextName 'my-context'
 snmpContext.registerContextName(
-    v2c.OctetString('my-context'),  # Context Name
-    EchoMibInstrumController()  # Management Instrumentation
+    v2c.OctetString("my-context"),  # Context Name
+    EchoMibInstrumController(),  # Management Instrumentation
 )
 
 # Register GET&SET Applications at the SNMP engine for a custom SNMP context

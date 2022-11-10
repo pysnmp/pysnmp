@@ -12,11 +12,11 @@ Send multiple SNMP GET requests at once using the following options:
 
 Functionally similar to:
 
-| $ snmpget -v2c -c public localhost:1161 SNMPv2-MIB::sysDescr.0
-| $ snmpget -v2c -c public localhost:2161 SNMPv2-MIB::sysDescr.0
-| $ snmpget -v2c -c public localhost:3161 SNMPv2-MIB::sysDescr.0
+| $ snmpget -v2c -c public localhost:161 SNMPv2-MIB::sysDescr.0
+| $ snmpget -v2c -c public localhost:162 SNMPv2-MIB::sysDescr.0
+| $ snmpget -v2c -c public localhost:163 SNMPv2-MIB::sysDescr.0
 
-"""#
+"""  #
 import asyncio
 from pysnmp.hlapi.asyncio import *
 
@@ -24,29 +24,35 @@ from pysnmp.hlapi.asyncio import *
 async def getone(snmpEngine, hostname):
     get_result = await getCmd(
         snmpEngine,
-        CommunityData('public'),
+        CommunityData("public"),
         UdpTransportTarget(hostname),
         ContextData(),
-        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0))
+        ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)),
     )
 
     errorIndication, errorStatus, errorIndex, varBinds = await get_result
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
-        print('{} at {}'.format(
-            errorStatus.prettyPrint(),
-            errorIndex and varBinds[int(errorIndex) - 1][0] or '?'
+        print(
+            "{} at {}".format(
+                errorStatus.prettyPrint(),
+                errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
+            )
         )
-              )
     else:
         for varBind in varBinds:
-            print(' = '.join([x.prettyPrint() for x in varBind]))
+            print(" = ".join([x.prettyPrint() for x in varBind]))
 
 
 snmpEngine = SnmpEngine()
 
-asyncio.run(asyncio.wait([getone(snmpEngine, ('localhost', 161)),
-                  getone(snmpEngine, ('localhost', 162)),
-                  getone(snmpEngine, ('localhost', 163))]))
-
+asyncio.run(
+    asyncio.wait(
+        [
+            getone(snmpEngine, ("localhost", 161)),
+            getone(snmpEngine, ("localhost", 162)),
+            getone(snmpEngine, ("localhost", 163)),
+        ]
+    )
+)
