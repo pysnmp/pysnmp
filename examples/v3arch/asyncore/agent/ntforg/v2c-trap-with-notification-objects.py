@@ -25,7 +25,7 @@ Functionally similar to:
 
 | $ snmptrap -v2c -c public 104.236.166.95 0 1.3.6.1.6.3.1.1.5.3 IF-MIB::ifIndex."1" IF-MIB::ifAdminStatus."1" IF-MIB::ifOperStatus."1" IF-MIB::ifDescr."1"
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity.rfc3413 import ntforg
@@ -39,10 +39,10 @@ from pysnmp.smi import rfc1902, view
 #
 instanceIndex = (1,)
 objects = {
-    ('IF-MIB', 'ifIndex'): instanceIndex[0],
-    ('IF-MIB', 'ifAdminStatus'): 'up',
-    ('IF-MIB', 'ifOperStatus'): 'down',
-    ('IF-MIB', 'ifDescr'): 'eth0'
+    ("IF-MIB", "ifIndex"): instanceIndex[0],
+    ("IF-MIB", "ifAdminStatus"): "up",
+    ("IF-MIB", "ifOperStatus"): "down",
+    ("IF-MIB", "ifDescr"): "eth0",
 }
 
 # Create SNMP engine instance
@@ -52,57 +52,58 @@ snmpEngine = engine.SnmpEngine()
 mibViewController = view.MibViewController(snmpEngine.getMibBuilder())
 
 # SecurityName <-> CommunityName mapping
-config.addV1System(snmpEngine, 'my-area', 'public', transportTag='all-my-managers')
+config.addV1System(snmpEngine, "my-area", "public", transportTag="all-my-managers")
 
 # Specify security settings per SecurityName (SNMPv2c -> 1)
-config.addTargetParams(snmpEngine, 'my-creds', 'my-area', 'noAuthNoPriv', 1)
+config.addTargetParams(snmpEngine, "my-creds", "my-area", "noAuthNoPriv", 1)
 
 # Setup transport endpoints and bind it with security settings yielding
 # a target name:
 
 # UDP/IPv4
 config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udp.UdpSocketTransport().openClientMode()
+    snmpEngine, udp.domainName, udp.UdpSocketTransport().openClientMode()
 )
 config.addTargetAddr(
-    snmpEngine, 'my-nms-1',
-    udp.domainName, ('104.236.166.95', 162),
-    'my-creds',
-    tagList='all-my-managers'
+    snmpEngine,
+    "my-nms-1",
+    udp.domainName,
+    ("104.236.166.95", 162),
+    "my-creds",
+    tagList="all-my-managers",
 )
 
 # Specify what kind of notification should be sent (TRAP or INFORM),
 # to what targets (chosen by tag) and what filter should apply to
 # the set of targets (selected by tag)
 config.addNotificationTarget(
-    snmpEngine, 'my-notification', 'my-filter', 'all-my-managers', 'trap'
+    snmpEngine, "my-notification", "my-filter", "all-my-managers", "trap"
 )
 
 # Allow NOTIFY access to Agent's MIB by this SNMP model (2), securityLevel
 # and SecurityName
-config.addContext(snmpEngine, '')
-config.addVacmUser(snmpEngine, 2, 'my-area', 'noAuthNoPriv', (), (), (1, 3, 6))
+config.addContext(snmpEngine, "")
+config.addVacmUser(snmpEngine, 2, "my-area", "noAuthNoPriv", (), (), (1, 3, 6))
 
 # *** SNMP engine configuration is complete by this line ***
 
-# Create Notification Originator App instance. 
+# Create Notification Originator App instance.
 ntfOrg = ntforg.NotificationOriginator()
 
 # Build and submit notification message to dispatcher
 ntfOrg.sendVarBinds(
     snmpEngine,
-    'my-notification',  # notification targets
-    None, '',  # contextEngineId, contextName
+    "my-notification",  # notification targets
+    None,
+    "",  # contextEngineId, contextName
     rfc1902.NotificationType(
-        rfc1902.ObjectIdentity('IF-MIB', 'linkUp'),
+        rfc1902.ObjectIdentity("IF-MIB", "linkUp"),
         instanceIndex=instanceIndex,
-        objects=objects
-    ).resolveWithMib(mibViewController)
+        objects=objects,
+    ).resolveWithMib(mibViewController),
 )
 
-print('Notification is scheduled to be sent')
+print("Notification is scheduled to be sent")
 
 # Run I/O dispatcher which would send pending message and process response
 snmpEngine.transportDispatcher.runDispatcher()

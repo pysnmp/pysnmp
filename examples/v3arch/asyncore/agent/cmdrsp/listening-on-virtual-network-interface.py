@@ -31,7 +31,7 @@ address field.
 To respond from a non-local (e.g. spoofed) IP address, uncomment the
 .enableTransparent() method call and run this script as root.
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import cmdrsp, context
 from pysnmp.carrier.asyncore.dgram import udp
@@ -42,7 +42,7 @@ snmpEngine = engine.SnmpEngine()
 # Transport setup
 
 # Initialize asyncore-based UDP/IPv4 transport
-udpSocketTransport = udp.UdpSocketTransport().openServerMode(('0.0.0.0', 161))
+udpSocketTransport = udp.UdpSocketTransport().openServerMode(("0.0.0.0", 161))
 
 # Use sendmsg()/recvmsg() for socket communication (used for preserving
 # original destination IP address when responding)
@@ -52,23 +52,24 @@ udpSocketTransport.enablePktInfo()
 # udpSocketTransport.enableTransparent()
 
 # Register this transport at SNMP Engine
-config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udpSocketTransport
-)
+config.addTransport(snmpEngine, udp.domainName, udpSocketTransport)
 
 # SNMPv3/USM setup
 
 # user: usr-md5-des, auth: MD5, priv DES
 config.addV3User(
-    snmpEngine, 'usr-md5-des',
-    config.usmHMACMD5AuthProtocol, 'authkey1',
-    config.usmDESPrivProtocol, 'privkey1'
+    snmpEngine,
+    "usr-md5-des",
+    config.usmHMACMD5AuthProtocol,
+    "authkey1",
+    config.usmDESPrivProtocol,
+    "privkey1",
 )
 
 # Allow full MIB access for each user at VACM
-config.addVacmUser(snmpEngine, 3, 'usr-md5-des', 'authPriv', (1, 3, 6, 1, 2, 1), (1, 3, 6, 1, 2, 1))
+config.addVacmUser(
+    snmpEngine, 3, "usr-md5-des", "authPriv", (1, 3, 6, 1, 2, 1), (1, 3, 6, 1, 2, 1)
+)
 
 # Get default SNMP context this SNMP engine serves
 snmpContext = context.SnmpContext(snmpEngine)

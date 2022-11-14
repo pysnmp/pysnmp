@@ -19,7 +19,7 @@ This script will report some details on request processing as seen
 by rfc3412.receiveMessage() and rfc3412.returnResponsePdu()
 abstract interfaces.
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import cmdrsp, context
 from pysnmp.carrier.asyncore.dgram import udp
@@ -30,47 +30,56 @@ snmpEngine = engine.SnmpEngine()
 
 # Execution point observer setup
 
-# Register a callback to be invoked at specified execution point of 
+# Register a callback to be invoked at specified execution point of
 # SNMP Engine and passed local variables at code point's local scope
 # noinspection PyUnusedLocal,PyUnusedLocal
 def requestObserver(snmpEngine, execpoint, variables, cbCtx):
-    print('Execution point: %s' % execpoint)
-    print('* transportDomain: %s' % '.'.join([str(x) for x in variables['transportDomain']]))
-    print('* transportAddress: {} (local {})'.format('@'.join([str(x) for x in variables['transportAddress']]), '@'.join([str(x) for x in variables['transportAddress'].getLocalAddress()])))
-    print('* securityModel: %s' % variables['securityModel'])
-    print('* securityName: %s' % variables['securityName'])
-    print('* securityLevel: %s' % variables['securityLevel'])
-    print('* contextEngineId: %s' % variables['contextEngineId'].prettyPrint())
-    print('* contextName: %s' % variables['contextName'].prettyPrint())
-    print('* PDU: %s' % variables['pdu'].prettyPrint())
+    print("Execution point: %s" % execpoint)
+    print(
+        "* transportDomain: %s"
+        % ".".join([str(x) for x in variables["transportDomain"]])
+    )
+    print(
+        "* transportAddress: {} (local {})".format(
+            "@".join([str(x) for x in variables["transportAddress"]]),
+            "@".join([str(x) for x in variables["transportAddress"].getLocalAddress()]),
+        )
+    )
+    print("* securityModel: %s" % variables["securityModel"])
+    print("* securityName: %s" % variables["securityName"])
+    print("* securityLevel: %s" % variables["securityLevel"])
+    print("* contextEngineId: %s" % variables["contextEngineId"].prettyPrint())
+    print("* contextName: %s" % variables["contextName"].prettyPrint())
+    print("* PDU: %s" % variables["pdu"].prettyPrint())
 
 
 snmpEngine.observer.registerObserver(
-    requestObserver,
-    'rfc3412.receiveMessage:request',
-    'rfc3412.returnResponsePdu'
+    requestObserver, "rfc3412.receiveMessage:request", "rfc3412.returnResponsePdu"
 )
 
 # Transport setup
 
 # UDP over IPv4
 config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udp.UdpTransport().openServerMode(('127.0.0.1', 161))
+    snmpEngine, udp.domainName, udp.UdpTransport().openServerMode(("127.0.0.1", 161))
 )
 
 # SNMPv3/USM setup
 
 # user: usr-md5-des, auth: MD5, priv DES
 config.addV3User(
-    snmpEngine, 'usr-md5-des',
-    config.usmHMACMD5AuthProtocol, 'authkey1',
-    config.usmDESPrivProtocol, 'privkey1'
+    snmpEngine,
+    "usr-md5-des",
+    config.usmHMACMD5AuthProtocol,
+    "authkey1",
+    config.usmDESPrivProtocol,
+    "privkey1",
 )
 
 # Allow full MIB access for each user at VACM
-config.addVacmUser(snmpEngine, 3, 'usr-md5-des', 'authPriv', (1, 3, 6, 1, 2, 1), (1, 3, 6, 1, 2, 1))
+config.addVacmUser(
+    snmpEngine, 3, "usr-md5-des", "authPriv", (1, 3, 6, 1, 2, 1), (1, 3, 6, 1, 2, 1)
+)
 
 # Get default SNMP context this SNMP engine serves
 snmpContext = context.SnmpContext(snmpEngine)

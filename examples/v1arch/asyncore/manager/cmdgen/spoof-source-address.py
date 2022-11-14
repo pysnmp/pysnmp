@@ -27,7 +27,7 @@ Agent would respond to the IP address you used as a source. So this script
 could only get a response if that source address is somehow routed to the 
 host this script is running on. Otherwise it just times out.
 
-"""#
+"""  #
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.proto import api
@@ -35,10 +35,10 @@ from pyasn1.codec.ber import encoder, decoder
 from time import time
 
 # Send request message to this address
-transportAddress = udp.UdpTransportAddress(('104.236.166.95', 161))
+transportAddress = udp.UdpTransportAddress(("104.236.166.95", 161))
 
 # Send request message from this non-local (!) IP address
-transportAddress.setLocalAddress(('1.2.3.4', 0))
+transportAddress.setLocalAddress(("1.2.3.4", 0))
 
 # Protocol version to use
 # pMod = api.protoModules[api.protoVersion1]
@@ -48,20 +48,20 @@ pMod = api.protoModules[api.protoVersion2c]
 reqPDU = pMod.GetRequestPDU()
 pMod.apiPDU.setDefaults(reqPDU)
 pMod.apiPDU.setVarBinds(
-    reqPDU, (('1.3.6.1.2.1.1.1.0', pMod.Null('')),
-             ('1.3.6.1.2.1.1.3.0', pMod.Null('')))
+    reqPDU, (("1.3.6.1.2.1.1.1.0", pMod.Null("")), ("1.3.6.1.2.1.1.3.0", pMod.Null("")))
 )
 
 # Build message
 reqMsg = pMod.Message()
 pMod.apiMessage.setDefaults(reqMsg)
-pMod.apiMessage.setCommunity(reqMsg, 'public')
+pMod.apiMessage.setCommunity(reqMsg, "public")
 pMod.apiMessage.setPDU(reqMsg, reqPDU)
 
 startedAt = time()
 
 
-class StopWaiting(Exception): pass
+class StopWaiting(Exception):
+    pass
 
 
 def cbTimerFun(timeNow):
@@ -70,8 +70,9 @@ def cbTimerFun(timeNow):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
-def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
-              wholeMsg, reqPDU=reqPDU):
+def cbRecvFun(
+    transportDispatcher, transportDomain, transportAddress, wholeMsg, reqPDU=reqPDU
+):
     while wholeMsg:
         rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=pMod.Message())
         rspPDU = pMod.apiMessage.getPDU(rspMsg)
@@ -83,7 +84,7 @@ def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
                 print(errorStatus.prettyPrint())
             else:
                 for oid, val in pMod.apiPDU.getVarBinds(rspPDU):
-                    print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
+                    print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
             transportDispatcher.jobFinished(1)
     return wholeMsg
 

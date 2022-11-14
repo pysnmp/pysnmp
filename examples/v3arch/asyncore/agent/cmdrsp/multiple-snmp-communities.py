@@ -16,7 +16,7 @@ The following Net-SNMP's commands will GET/SET a value at this Agent:
 | $ snmpget -v1 -c public 127.0.0.1 SNMPv2-MIB::sysLocation.0
 | $ snmpset -v1 -c private 127.0.0.1 SNMPv2-MIB::sysLocation.0 s "far away"
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import cmdrsp, context
 from pysnmp.carrier.asyncore.dgram import udp
@@ -29,9 +29,7 @@ snmpEngine = engine.SnmpEngine()
 
 # UDP over IPv4
 config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udp.UdpTransport().openServerMode(('127.0.0.1', 161))
+    snmpEngine, udp.domainName, udp.UdpTransport().openServerMode(("127.0.0.1", 161))
 )
 
 # SNMPv1 setup
@@ -39,12 +37,19 @@ config.addTransport(
 # SecurityName <-> CommunityName mapping.
 # Here we configure two distinct CommunityName's to control read and write
 # operations.
-config.addV1System(snmpEngine, 'my-read-area', 'public')
-config.addV1System(snmpEngine, 'my-write-area', 'private')
+config.addV1System(snmpEngine, "my-read-area", "public")
+config.addV1System(snmpEngine, "my-write-area", "private")
 
 # Allow full MIB access for this user / securityModels at VACM
-config.addVacmUser(snmpEngine, 1, 'my-read-area', 'noAuthNoPriv', (1, 3, 6, 1, 2, 1))
-config.addVacmUser(snmpEngine, 1, 'my-write-area', 'noAuthNoPriv', (1, 3, 6, 1, 2, 1), (1, 3, 6, 1, 2, 1))
+config.addVacmUser(snmpEngine, 1, "my-read-area", "noAuthNoPriv", (1, 3, 6, 1, 2, 1))
+config.addVacmUser(
+    snmpEngine,
+    1,
+    "my-write-area",
+    "noAuthNoPriv",
+    (1, 3, 6, 1, 2, 1),
+    (1, 3, 6, 1, 2, 1),
+)
 
 # Get default SNMP context this SNMP engine serves
 snmpContext = context.SnmpContext(snmpEngine)

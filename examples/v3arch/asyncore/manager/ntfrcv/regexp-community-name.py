@@ -24,7 +24,7 @@ Engine, and may modify it to match the only locally configured CommunityName
 'public'. This effectively makes NotificationReceiver accepting messages with
 CommunityName's, not explicitly configured to local SNMP Engine.
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
@@ -42,39 +42,43 @@ snmpEngine = engine.SnmpEngine()
 # selection.
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def requestObserver(snmpEngine, execpoint, variables, cbCtx):
-    if re.match('.*love.*', str(variables['communityName'])):
-        print('Rewriting communityName \'{}\' from {} into \'public\''.format(variables['communityName'], ':'.join([str(x) for x in variables['transportInformation'][1]])))
-        variables['communityName'] = variables['communityName'].clone('public')
+    if re.match(".*love.*", str(variables["communityName"])):
+        print(
+            "Rewriting communityName '{}' from {} into 'public'".format(
+                variables["communityName"],
+                ":".join([str(x) for x in variables["transportInformation"][1]]),
+            )
+        )
+        variables["communityName"] = variables["communityName"].clone("public")
 
 
 snmpEngine.observer.registerObserver(
-    requestObserver,
-    'rfc2576.processIncomingMsg:writable'
+    requestObserver, "rfc2576.processIncomingMsg:writable"
 )
 
 # Transport setup
 
 # UDP over IPv4
 config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udp.UdpTransport().openServerMode(('127.0.0.1', 162))
+    snmpEngine, udp.domainName, udp.UdpTransport().openServerMode(("127.0.0.1", 162))
 )
 
 # SNMPv1/2c setup
 
 # SecurityName <-> CommunityName mapping
-config.addV1System(snmpEngine, 'my-area', 'public')
+config.addV1System(snmpEngine, "my-area", "public")
 
 
 # Callback function for receiving notifications
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def cbFun(snmpEngine, stateReference, contextEngineId, contextName,
-          varBinds, cbCtx):
-    print('Notification from ContextEngineId "{}", ContextName "{}"'.format(contextEngineId.prettyPrint(),
-                                                                        contextName.prettyPrint()))
+def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cbCtx):
+    print(
+        'Notification from ContextEngineId "{}", ContextName "{}"'.format(
+            contextEngineId.prettyPrint(), contextName.prettyPrint()
+        )
+    )
     for name, val in varBinds:
-        print(f'{name.prettyPrint()} = {val.prettyPrint()}')
+        print(f"{name.prettyPrint()} = {val.prettyPrint()}")
 
 
 # Register SNMP Application at the SNMP engine

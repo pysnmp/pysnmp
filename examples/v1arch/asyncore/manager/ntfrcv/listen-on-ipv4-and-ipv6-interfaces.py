@@ -19,7 +19,7 @@ receiver:
 Notification Receiver below uses two different transports for communication 
 with Notification Originators - UDP over IPv4 and UDP over IPv6.
 
-"""#
+"""  #
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pysnmp.carrier.asyncore.dgram import udp, udp6, unix
 from pyasn1.codec.ber import decoder
@@ -33,29 +33,45 @@ def cbFun(transportDispatcher, transportDomain, transportAddress, wholeMsg):
         if msgVer in api.protoModules:
             pMod = api.protoModules[msgVer]
         else:
-            print('Unsupported SNMP version %s' % msgVer)
+            print("Unsupported SNMP version %s" % msgVer)
             return
         reqMsg, wholeMsg = decoder.decode(
-            wholeMsg, asn1Spec=pMod.Message(),
+            wholeMsg,
+            asn1Spec=pMod.Message(),
         )
-        print('Notification message from {}:{}: '.format(
-            transportDomain, transportAddress
+        print(
+            "Notification message from {}:{}: ".format(
+                transportDomain, transportAddress
+            )
         )
-              )
         reqPDU = pMod.apiMessage.getPDU(reqMsg)
         if reqPDU.isSameTypeWith(pMod.TrapPDU()):
             if msgVer == api.protoVersion1:
-                print('Enterprise: %s' % (pMod.apiTrapPDU.getEnterprise(reqPDU).prettyPrint()))
-                print('Agent Address: %s' % (pMod.apiTrapPDU.getAgentAddr(reqPDU).prettyPrint()))
-                print('Generic Trap: %s' % (pMod.apiTrapPDU.getGenericTrap(reqPDU).prettyPrint()))
-                print('Specific Trap: %s' % (pMod.apiTrapPDU.getSpecificTrap(reqPDU).prettyPrint()))
-                print('Uptime: %s' % (pMod.apiTrapPDU.getTimeStamp(reqPDU).prettyPrint()))
+                print(
+                    "Enterprise: %s"
+                    % (pMod.apiTrapPDU.getEnterprise(reqPDU).prettyPrint())
+                )
+                print(
+                    "Agent Address: %s"
+                    % (pMod.apiTrapPDU.getAgentAddr(reqPDU).prettyPrint())
+                )
+                print(
+                    "Generic Trap: %s"
+                    % (pMod.apiTrapPDU.getGenericTrap(reqPDU).prettyPrint())
+                )
+                print(
+                    "Specific Trap: %s"
+                    % (pMod.apiTrapPDU.getSpecificTrap(reqPDU).prettyPrint())
+                )
+                print(
+                    "Uptime: %s" % (pMod.apiTrapPDU.getTimeStamp(reqPDU).prettyPrint())
+                )
                 varBinds = pMod.apiTrapPDU.getVarBinds(reqPDU)
             else:
                 varBinds = pMod.apiPDU.getVarBinds(reqPDU)
-            print('Var-binds:')
+            print("Var-binds:")
             for oid, val in varBinds:
-                print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
+                print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
     return wholeMsg
 
 
@@ -65,12 +81,12 @@ transportDispatcher.registerRecvCbFun(cbFun)
 
 # UDP/IPv4
 transportDispatcher.registerTransport(
-    udp.domainName, udp.UdpSocketTransport().openServerMode(('localhost', 162))
+    udp.domainName, udp.UdpSocketTransport().openServerMode(("localhost", 162))
 )
 
 # UDP/IPv6
 transportDispatcher.registerTransport(
-    udp6.domainName, udp6.Udp6SocketTransport().openServerMode(('::1', 162))
+    udp6.domainName, udp6.Udp6SocketTransport().openServerMode(("::1", 162))
 )
 
 ## Local domain socket

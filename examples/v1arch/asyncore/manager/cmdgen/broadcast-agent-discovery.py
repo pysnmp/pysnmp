@@ -19,7 +19,7 @@ This script performs similar to the following Net-SNMP command:
 
 | $ snmpget -v2c -c public -ObentU 255.255.255.255 1.3.6.1.2.1.1.1.0 1.3.6.1.2.1.1.3.0
 
-"""#
+"""  #
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pysnmp.carrier.asyncore.dgram import udp
 from pyasn1.codec.ber import encoder, decoder
@@ -38,20 +38,20 @@ pMod = api.protoModules[api.protoVersion2c]
 reqPDU = pMod.GetRequestPDU()
 pMod.apiPDU.setDefaults(reqPDU)
 pMod.apiPDU.setVarBinds(
-    reqPDU, (('1.3.6.1.2.1.1.1.0', pMod.Null('')),
-             ('1.3.6.1.2.1.1.3.0', pMod.Null('')))
+    reqPDU, (("1.3.6.1.2.1.1.1.0", pMod.Null("")), ("1.3.6.1.2.1.1.3.0", pMod.Null("")))
 )
 
 # Build message
 reqMsg = pMod.Message()
 pMod.apiMessage.setDefaults(reqMsg)
-pMod.apiMessage.setCommunity(reqMsg, 'public')
+pMod.apiMessage.setCommunity(reqMsg, "public")
 pMod.apiMessage.setPDU(reqMsg, reqPDU)
 
 startedAt = time()
 
 
-class StopWaiting(Exception): pass
+class StopWaiting(Exception):
+    pass
 
 
 def cbTimerFun(timeNow):
@@ -60,8 +60,9 @@ def cbTimerFun(timeNow):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
-def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
-              wholeMsg, reqPDU=reqPDU):
+def cbRecvFun(
+    transportDispatcher, transportDomain, transportAddress, wholeMsg, reqPDU=reqPDU
+):
     while wholeMsg:
         rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=pMod.Message())
         rspPDU = pMod.apiMessage.getPDU(rspMsg)
@@ -73,7 +74,7 @@ def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
                 print(errorStatus.prettyPrint())
             else:
                 for oid, val in pMod.apiPDU.getVarBinds(rspPDU):
-                    print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
+                    print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
             transportDispatcher.jobFinished(1)
     return wholeMsg
 
@@ -89,7 +90,7 @@ transportDispatcher.registerTransport(udp.domainName, udpSocketTransport)
 
 # Pass message to dispatcher
 transportDispatcher.sendMessage(
-    encoder.encode(reqMsg), udp.domainName, ('255.255.255.255', 161)
+    encoder.encode(reqMsg), udp.domainName, ("255.255.255.255", 161)
 )
 
 # wait for a maximum of 10 responses or time out
