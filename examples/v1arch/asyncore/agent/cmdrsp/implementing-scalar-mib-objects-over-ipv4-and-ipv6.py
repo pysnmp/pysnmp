@@ -18,7 +18,7 @@ Either of the following Net-SNMP commands will walk this Agent:
 The Command Receiver below uses two distinct transports for communication 
 with Command Generators - UDP over IPv4 and UDP over IPv6.
 
-"""#
+"""  #
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pysnmp.carrier.asyncore.dgram import udp, udp6, unix
 from pyasn1.codec.ber import encoder, decoder
@@ -29,21 +29,27 @@ import time, bisect
 class SysDescr:
     name = (1, 3, 6, 1, 2, 1, 1, 1, 0)
 
-    def __eq__(self, other): return self.name == other
+    def __eq__(self, other):
+        return self.name == other
 
-    def __ne__(self, other): return self.name != other
+    def __ne__(self, other):
+        return self.name != other
 
-    def __lt__(self, other): return self.name < other
+    def __lt__(self, other):
+        return self.name < other
 
-    def __le__(self, other): return self.name <= other
+    def __le__(self, other):
+        return self.name <= other
 
-    def __gt__(self, other): return self.name > other
+    def __gt__(self, other):
+        return self.name > other
 
-    def __ge__(self, other): return self.name >= other
+    def __ge__(self, other):
+        return self.name >= other
 
     def __call__(self, protoVer):
         return api.protoModules[protoVer].OctetString(
-            'PySNMP example command responder'
+            "PySNMP example command responder"
         )
 
 
@@ -51,27 +57,29 @@ class Uptime:
     name = (1, 3, 6, 1, 2, 1, 1, 3, 0)
     birthday = time.time()
 
-    def __eq__(self, other): return self.name == other
+    def __eq__(self, other):
+        return self.name == other
 
-    def __ne__(self, other): return self.name != other
+    def __ne__(self, other):
+        return self.name != other
 
-    def __lt__(self, other): return self.name < other
+    def __lt__(self, other):
+        return self.name < other
 
-    def __le__(self, other): return self.name <= other
+    def __le__(self, other):
+        return self.name <= other
 
-    def __gt__(self, other): return self.name > other
+    def __gt__(self, other):
+        return self.name > other
 
-    def __ge__(self, other): return self.name >= other
+    def __ge__(self, other):
+        return self.name >= other
 
     def __call__(self, protoVer):
-        return api.protoModules[protoVer].TimeTicks(
-            (time.time() - self.birthday) * 100
-        )
+        return api.protoModules[protoVer].TimeTicks((time.time() - self.birthday) * 100)
 
 
-mibInstr = (
-    SysDescr(), Uptime()  # sorted by object name
-)
+mibInstr = (SysDescr(), Uptime())  # sorted by object name
 
 mibInstrIdx = {}
 for mibVar in mibInstr:
@@ -84,10 +92,11 @@ def cbFun(transportDispatcher, transportDomain, transportAddress, wholeMsg):
         if msgVer in api.protoModules:
             pMod = api.protoModules[msgVer]
         else:
-            print('Unsupported SNMP version %s' % msgVer)
+            print("Unsupported SNMP version %s" % msgVer)
             return
         reqMsg, wholeMsg = decoder.decode(
-            wholeMsg, asn1Spec=pMod.Message(),
+            wholeMsg,
+            asn1Spec=pMod.Message(),
         )
         rspMsg = pMod.apiMessage.getResponse(reqMsg)
         rspPDU = pMod.apiMessage.getPDU(rspMsg)
@@ -105,14 +114,10 @@ def cbFun(transportDispatcher, transportDomain, transportAddress, wholeMsg):
                 if nextIdx == len(mibInstr):
                     # Out of MIB
                     varBinds.append((oid, val))
-                    pendingErrors.append(
-                        (pMod.apiPDU.setEndOfMibError, errorIndex)
-                    )
+                    pendingErrors.append((pMod.apiPDU.setEndOfMibError, errorIndex))
                 else:
                     # Report value if OID is found
-                    varBinds.append(
-                        (mibInstr[nextIdx].name, mibInstr[nextIdx](msgVer))
-                    )
+                    varBinds.append((mibInstr[nextIdx].name, mibInstr[nextIdx](msgVer)))
         elif reqPDU.isSameTypeWith(pMod.GetRequestPDU()):
             for oid, val in pMod.apiPDU.getVarBinds(reqPDU):
                 if oid in mibInstrIdx:
@@ -126,7 +131,7 @@ def cbFun(transportDispatcher, transportDomain, transportAddress, wholeMsg):
                     break
         else:
             # Report unsupported request type
-            pMod.apiPDU.setErrorStatus(rspPDU, 'genErr')
+            pMod.apiPDU.setErrorStatus(rspPDU, "genErr")
         pMod.apiPDU.setVarBinds(rspPDU, varBinds)
         # Commit possible error indices to response PDU
         for f, i in pendingErrors:
@@ -142,12 +147,12 @@ transportDispatcher.registerRecvCbFun(cbFun)
 
 # UDP/IPv4
 transportDispatcher.registerTransport(
-    udp.domainName, udp.UdpSocketTransport().openServerMode(('localhost', 161))
+    udp.domainName, udp.UdpSocketTransport().openServerMode(("localhost", 161))
 )
 
 # UDP/IPv6
 transportDispatcher.registerTransport(
-    udp6.domainName, udp6.Udp6SocketTransport().openServerMode(('::1', 161))
+    udp6.domainName, udp6.Udp6SocketTransport().openServerMode(("::1", 161))
 )
 
 ## Local domain socket

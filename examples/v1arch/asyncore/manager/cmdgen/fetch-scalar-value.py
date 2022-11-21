@@ -6,14 +6,14 @@ Perform SNMP GET operation with the following options:
 
 * with SNMPv1, community 'public'
 * over IPv4/UDP
-* to an Agent at demo.snmplabs.com:161
+* to an Agent at localhost:161
 * for OIDs in tuple form
 
 This script performs similar to the following Net-SNMP command:
 
-| $ snmpget -v1 -c public -ObentU demo.snmplabs.com 1.3.6.1.2.1.1.1.0 1.3.6.1.2.1.1.3.0
+| $ snmpget -v1 -c public -ObentU localhost 1.3.6.1.2.1.1.1.0 1.3.6.1.2.1.1.3.0
 
-"""#
+"""  #
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pysnmp.carrier.asyncore.dgram import udp, udp6, unix
 from pyasn1.codec.ber import encoder, decoder
@@ -28,14 +28,13 @@ pMod = api.protoModules[api.protoVersion1]
 reqPDU = pMod.GetRequestPDU()
 pMod.apiPDU.setDefaults(reqPDU)
 pMod.apiPDU.setVarBinds(
-    reqPDU, (('1.3.6.1.2.1.1.1.0', pMod.Null('')),
-             ('1.3.6.1.2.1.1.3.0', pMod.Null('')))
+    reqPDU, (("1.3.6.1.2.1.1.1.0", pMod.Null("")), ("1.3.6.1.2.1.1.3.0", pMod.Null("")))
 )
 
 # Build message
 reqMsg = pMod.Message()
 pMod.apiMessage.setDefaults(reqMsg)
-pMod.apiMessage.setCommunity(reqMsg, 'public')
+pMod.apiMessage.setCommunity(reqMsg, "public")
 pMod.apiMessage.setPDU(reqMsg, reqPDU)
 
 startedAt = time()
@@ -47,8 +46,9 @@ def cbTimerFun(timeNow):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
-def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
-              wholeMsg, reqPDU=reqPDU):
+def cbRecvFun(
+    transportDispatcher, transportDomain, transportAddress, wholeMsg, reqPDU=reqPDU
+):
     while wholeMsg:
         rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=pMod.Message())
         rspPDU = pMod.apiMessage.getPDU(rspMsg)
@@ -60,7 +60,7 @@ def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
                 print(errorStatus.prettyPrint())
             else:
                 for oid, val in pMod.apiPDU.getVarBinds(rspPDU):
-                    print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
+                    print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
             transportDispatcher.jobFinished(1)
     return wholeMsg
 
@@ -77,7 +77,7 @@ transportDispatcher.registerTransport(
 
 # Pass message to dispatcher
 transportDispatcher.sendMessage(
-    encoder.encode(reqMsg), udp.domainName, ('demo.snmplabs.com', 161)
+    encoder.encode(reqMsg), udp.domainName, ("localhost", 161)
 )
 transportDispatcher.jobStarted(1)
 

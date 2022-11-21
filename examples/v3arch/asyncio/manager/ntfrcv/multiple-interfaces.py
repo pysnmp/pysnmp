@@ -19,7 +19,7 @@ receiver:
 
 Requires Python 3.4 and later!
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity.rfc3413 import ntfrcv
@@ -38,35 +38,35 @@ snmpEngine = engine.SnmpEngine()
 config.addTransport(
     snmpEngine,
     udp.domainName + (1,),
-    udp.UdpTransport().openServerMode(('127.0.0.1', 162))
+    udp.UdpTransport().openServerMode(("127.0.0.1", 162)),
 )
 
 # UDP over IPv4, second listening interface/port
 config.addTransport(
     snmpEngine,
     udp.domainName + (2,),
-    udp.UdpTransport().openServerMode(('127.0.0.1', 2162))
+    udp.UdpTransport().openServerMode(("127.0.0.1", 2162)),
 )
 
 # SNMPv1/2c setup
 
 # SecurityName <-> CommunityName mapping
-config.addV1System(snmpEngine, 'my-area', 'public')
+config.addV1System(snmpEngine, "my-area", "public")
 
 
 # Callback function for receiving notifications
 # noinspection PyUnusedLocal
-def cbFun(snmpEngine,
-          stateReference,
-          contextEngineId, contextName,
-          varBinds,
-          cbCtx):
-    transportDomain, transportAddress = snmpEngine.msgAndPduDsp.getTransportInfo(stateReference)
-    print('Notification from {}, SNMP Engine {}, Context {}'.format(transportAddress,
-                                                                contextEngineId.prettyPrint(),
-                                                                contextName.prettyPrint()))
+def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cbCtx):
+    transportDomain, transportAddress = snmpEngine.msgAndPduDsp.getTransportInfo(
+        stateReference
+    )
+    print(
+        "Notification from {}, SNMP Engine {}, Context {}".format(
+            transportAddress, contextEngineId.prettyPrint(), contextName.prettyPrint()
+        )
+    )
     for name, val in varBinds:
-        print(f'{name.prettyPrint()} = {val.prettyPrint()}')
+        print(f"{name.prettyPrint()} = {val.prettyPrint()}")
 
 
 # Register SNMP Application at the SNMP engine

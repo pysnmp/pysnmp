@@ -18,47 +18,49 @@ what leads to excessive tables information.
 
 Functionally similar to:
 
-| $ snmptrap -v2c -c public demo.snmplabs.com 12345 1.3.6.1.6.3.1.1.5.2
-| $ snmpinform -v2c -c public demo.snmplabs.com 12345 1.3.6.1.6.3.1.1.5.2
-| $ snmptrap -v2c -c public demo.snmplabs.com 12345 1.3.6.1.6.3.1.1.5.2
+| $ snmptrap -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
+| $ snmpinform -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
+| $ snmptrap -v2c -c public localhost 12345 1.3.6.1.6.3.1.1.5.2
 
-"""#
+"""  #
 import asyncio
 from pysnmp.hlapi.asyncio import *
 
 
-@asyncio.coroutine
-def sendone(snmpEngine, hostname, notifyType):
-    (errorIndication,
-     errorStatus,
-     errorIndex,
-     varBinds) = yield from sendNotification(
+async def sendone(snmpEngine, hostname, notifyType):
+    trap_result = await sendNotification(
         snmpEngine,
-        CommunityData('public', tag=hostname),
-        UdpTransportTarget((hostname, 162), tagList=hostname),
+        CommunityData("public", tag=hostname),
+        UdpTransportTarget((hostname, 161), tagList=hostname),
         ContextData(),
         notifyType,
-        NotificationType(
-            ObjectIdentity('1.3.6.1.6.3.1.1.5.2')
-        ).addVarBinds(
-            ('1.3.6.1.6.3.1.1.4.3.0', '1.3.6.1.4.1.20408.4.1.1.2'),
-            ('1.3.6.1.2.1.1.1.0', OctetString('my system'))
-        )
+        NotificationType(ObjectIdentity("1.3.6.1.6.3.1.1.6.1.0")).addVarBinds(
+            ("1.3.6.1.2.1.1.1.0", OctetString("my system"))
+        ),
     )
 
+    (errorIndication, errorStatus, errorIndex, varBinds) = await trap_result
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
-        print('{}: at {}'.format(errorStatus.prettyPrint(), errorIndex and varBinds[int(errorIndex) - 1][0] or '?'))
+        print(
+            "{}: at {}".format(
+                errorStatus.prettyPrint(),
+                errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
+            )
+        )
     else:
         for varBind in varBinds:
-            print(' = '.join([x.prettyPrint() for x in varBind]))
+            print(" = ".join([x.prettyPrint() for x in varBind]))
 
 
 snmpEngine = SnmpEngine()
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(
-    asyncio.wait([sendone(snmpEngine, 'demo.snmplabs.com', 'trap'),
-                  sendone(snmpEngine, 'demo.snmplabs.com', 'inform')])
+asyncio.run(
+    asyncio.wait(
+        [
+            sendone(snmpEngine, "localhost", "trap"),
+            sendone(snmpEngine, "localhost", "inform"),
+        ]
+    )
 )

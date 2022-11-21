@@ -50,10 +50,9 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         self.loopingcall = None
         self.loop = kwargs.pop('loop', asyncio.get_event_loop())
 
-    @asyncio.coroutine
-    def handle_timeout(self):
+    async def handle_timeout(self):
         while True:
-            yield from(asyncio.sleep(self.getTimerResolution()))
+            await asyncio.sleep(self.getTimerResolution())
             self.handleTimerTick(self.loop.time())
 
     def runDispatcher(self, timeout=0.0):
@@ -64,7 +63,7 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
                 raise
             except Exception:
                 raise PySnmpError(';'.join(traceback.format_exception(*sys.exc_info())))
-    
+
     def registerTransport(self, tDomain, transport):
         if self.loopingcall is None and self.getTimerResolution() > 0:
             self.loopingcall = asyncio.ensure_future(self.handle_timeout())

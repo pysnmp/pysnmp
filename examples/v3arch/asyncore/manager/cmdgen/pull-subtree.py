@@ -13,14 +13,14 @@ This script performs similar to the following Net-SNMP command:
 
 | $ snmpwalk -v3 -l noAuthNoPriv -u usr-none-none -ObentU 104.236.166.95:161  1.3.6.1.2.1.1 
 
-"""#
+"""  #
 from pysnmp.entity import engine, config
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity.rfc3413 import cmdgen
 from pysnmp.proto import rfc1902
 
 # Initial OID prefix
-initialOID = rfc1902.ObjectName('1.3.6.1.2.1.1')
+initialOID = rfc1902.ObjectName("1.3.6.1.2.1.1")
 
 # Create SNMP engine instance
 snmpEngine = engine.SnmpEngine()
@@ -31,9 +31,10 @@ snmpEngine = engine.SnmpEngine()
 
 # user: usr-none-none, auth: none, priv: none
 config.addV3User(
-    snmpEngine, 'usr-none-none',
+    snmpEngine,
+    "usr-none-none",
 )
-config.addTargetParams(snmpEngine, 'my-creds', 'usr-none-none', 'noAuthNoPriv')
+config.addTargetParams(snmpEngine, "my-creds", "usr-none-none", "noAuthNoPriv")
 
 #
 # Setup transport endpoint and bind it with security settings yielding
@@ -42,32 +43,39 @@ config.addTargetParams(snmpEngine, 'my-creds', 'usr-none-none', 'noAuthNoPriv')
 
 # UDP/IPv4
 config.addTransport(
-    snmpEngine,
-    udp.domainName,
-    udp.UdpSocketTransport().openClientMode()
+    snmpEngine, udp.domainName, udp.UdpSocketTransport().openClientMode()
 )
 config.addTargetAddr(
-    snmpEngine, 'my-router',
-    udp.domainName, ('104.236.166.95', 161),
-    'my-creds'
+    snmpEngine, "my-router", udp.domainName, ("104.236.166.95", 161), "my-creds"
 )
 
 
 # Error/response receiver
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def cbFun(snmpEngine, sendRequestHandle, errorIndication,
-          errorStatus, errorIndex, varBindTable, cbCtx):
+def cbFun(
+    snmpEngine,
+    sendRequestHandle,
+    errorIndication,
+    errorStatus,
+    errorIndex,
+    varBindTable,
+    cbCtx,
+):
     if errorIndication:
         print(errorIndication)
         return
     if errorStatus:
-        print('{} at {}'.format(errorStatus.prettyPrint(),
-                            errorIndex and varBindTable[-1][int(errorIndex) - 1][0] or '?'))
+        print(
+            "{} at {}".format(
+                errorStatus.prettyPrint(),
+                errorIndex and varBindTable[-1][int(errorIndex) - 1][0] or "?",
+            )
+        )
         return  # stop on error
     for varBindRow in varBindTable:
         for oid, val in varBindRow:
             if initialOID.isPrefixOf(oid):
-                print(f'{oid.prettyPrint()} = {val.prettyPrint()}')
+                print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
             else:
                 return False  # signal dispatcher to stop
     return True  # signal dispatcher to continue
@@ -76,10 +84,11 @@ def cbFun(snmpEngine, sendRequestHandle, errorIndication,
 # Prepare initial request to be sent
 cmdgen.NextCommandGenerator().sendVarBinds(
     snmpEngine,
-    'my-router',
-    None, '',  # contextEngineId, contextName
+    "my-router",
+    None,
+    "",  # contextEngineId, contextName
     [(initialOID, None)],
-    cbFun
+    cbFun,
 )
 
 # Run I/O dispatcher which would send pending queries and process responses

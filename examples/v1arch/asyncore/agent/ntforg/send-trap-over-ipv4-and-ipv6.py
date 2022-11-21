@@ -9,7 +9,7 @@ following options:
 * with community name 'public'
 * over IPv4/UDP and IPv6/UDP
 * send TRAP notification
-* to a Manager at demo.snmplabs.com:162 and [::1]
+* to a Manager at localhost:162 and [::1]
 * with TRAP ID 'coldStart' specified as an OID
 * include managed objects information:
 * with default Uptime value
@@ -18,10 +18,10 @@ following options:
 
 The following Net-SNMP commands will produce similar SNMP notification:
 
-| $ snmptrap -v1 -c public udp:demo.snmplabs.com 1.3.6.1.4.1.20408.4.1.1.2 127.0.0.1 1 0 12345
+| $ snmptrap -v1 -c public udp:localhost 1.3.6.1.4.1.20408.4.1.1.2 127.0.0.1 1 0 12345
 | $ snmptrap -v1 -c public udp6:[::1] 1.3.6.1.4.1.20408.4.1.1.2 127.0.0.1 1 0 12345
 
-"""#
+"""  #
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pysnmp.carrier.asyncore.dgram import udp, udp6, unix
 from pyasn1.codec.ber import encoder
@@ -38,12 +38,12 @@ pMod.apiTrapPDU.setDefaults(trapPDU)
 # Traps have quite different semantics across proto versions
 if pMod == api.protoModules[api.protoVersion1]:
     pMod.apiTrapPDU.setEnterprise(trapPDU, (1, 3, 6, 1, 1, 2, 3, 4, 1))
-    pMod.apiTrapPDU.setGenericTrap(trapPDU, 'coldStart')
+    pMod.apiTrapPDU.setGenericTrap(trapPDU, "coldStart")
 
 # Build message
 trapMsg = pMod.Message()
 pMod.apiMessage.setDefaults(trapMsg)
-pMod.apiMessage.setCommunity(trapMsg, 'public')
+pMod.apiMessage.setCommunity(trapMsg, "public")
 pMod.apiMessage.setPDU(trapMsg, trapPDU)
 
 transportDispatcher = AsyncoreDispatcher()
@@ -53,16 +53,14 @@ transportDispatcher.registerTransport(
     udp.domainName, udp.UdpSocketTransport().openClientMode()
 )
 transportDispatcher.sendMessage(
-    encoder.encode(trapMsg), udp.domainName, ('demo.snmplabs.com', 162)
+    encoder.encode(trapMsg), udp.domainName, ("localhost", 162)
 )
 
 # UDP/IPv6
 transportDispatcher.registerTransport(
     udp6.domainName, udp6.Udp6SocketTransport().openClientMode()
 )
-transportDispatcher.sendMessage(
-    encoder.encode(trapMsg), udp6.domainName, ('::1', 162)
-)
+transportDispatcher.sendMessage(encoder.encode(trapMsg), udp6.domainName, ("::1", 162))
 
 ## Local domain socket
 # transportDispatcher.registerTransport(
