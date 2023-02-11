@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Sequential queries
 ++++++++++++++++++
@@ -22,7 +23,7 @@ from pysnmp.hlapi.asyncio import *
 
 
 async def getone(snmpEngine, hostname):
-    result_get = await getCmd(
+    errorIndication, errorStatus, errorIndex, varBinds = await getCmd(
         snmpEngine,
         CommunityData("public"),
         UdpTransportTarget(hostname),
@@ -30,7 +31,6 @@ async def getone(snmpEngine, hostname):
         ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)),
     )
 
-    errorIndication, errorStatus, errorIndex, varBinds = await result_get
     if errorIndication:
         print(errorIndication)
     elif errorStatus:

@@ -29,12 +29,7 @@ lcd = NotificationOriginatorLcdConfigurator()
 
 async def sendNotification(snmpEngine, authData, transportTarget, contextData,
                      notifyType, varBinds, **options):
-    r"""Creates a generator to send SNMP notification.
-
-    When iterator gets advanced by :py:mod:`asyncio` main loop,
-    SNMP TRAP or INFORM notification is send (:RFC:`1905#section-4.2.6`).
-    The iterator yields :py:class:`asyncio.get_running_loop().create_future()` which gets done whenever
-    response arrives or error occurs.
+    r"""Send SNMP notification.
 
     Parameters
     ----------
@@ -70,7 +65,7 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
-    Yields
+    Result
     ------
     errorIndication : str
         True value indicates SNMP engine error.
@@ -88,13 +83,6 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
-    Notes
-    -----
-    The `sendNotification` generator will be exhausted immidiately unless
-    an instance of :py:class:`~pysnmp.smi.rfc1902.NotificationType` class
-    or a sequence of :py:class:`~pysnmp.smi.rfc1902.ObjectType` `varBinds`
-    are send back into running generator (supported since Python 2.6).
-
     Examples
     --------
     >>> import asyncio
@@ -108,7 +96,7 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
     ...         ContextData(),
     ...         'trap',
     ...         NotificationType(ObjectIdentity('IF-MIB', 'linkDown')))
-    ...     errorIndication, errorStatus, errorIndex, varBinds = await send_result
+    ...     errorIndication, errorStatus, errorIndex, varBinds = send_result
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     ...
     >>> asyncio.run(run())
@@ -159,4 +147,4 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
         loop = asyncio.get_event_loop()
         loop.call_soon(__trapFun, future)
 
-    return future
+    return await future

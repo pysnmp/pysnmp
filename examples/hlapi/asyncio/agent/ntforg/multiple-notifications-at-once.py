@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Multiple concurrent notifications
 +++++++++++++++++++++++++++++++++
@@ -28,7 +29,7 @@ from pysnmp.hlapi.asyncio import *
 
 
 async def sendone(snmpEngine, hostname, notifyType):
-    trap_result = await sendNotification(
+    (errorIndication, errorStatus, errorIndex, varBinds) = await sendNotification(
         snmpEngine,
         CommunityData("public", tag=hostname),
         UdpTransportTarget((hostname, 161), tagList=hostname),
@@ -39,9 +40,8 @@ async def sendone(snmpEngine, hostname, notifyType):
         ),
     )
 
-    (errorIndication, errorStatus, errorIndex, varBinds) = await trap_result
     if errorIndication:
-        print(errorIndication)
+        print(f"{notifyType}: {errorIndication}")
     elif errorStatus:
         print(
             "{}: at {}".format(
@@ -56,11 +56,12 @@ async def sendone(snmpEngine, hostname, notifyType):
 
 snmpEngine = SnmpEngine()
 
-asyncio.run(
-    asyncio.wait(
-        [
-            sendone(snmpEngine, "localhost", "trap"),
-            sendone(snmpEngine, "localhost", "inform"),
-        ]
+
+async def main():
+    await asyncio.gather(
+        sendone(snmpEngine, "localhost", "trap"),
+        sendone(snmpEngine, "localhost", "inform"),
     )
-)
+
+
+asyncio.run(main())

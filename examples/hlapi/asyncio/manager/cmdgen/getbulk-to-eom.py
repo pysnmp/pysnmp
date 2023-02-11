@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Bulk walk MIB
 +++++++++++++
@@ -24,7 +25,7 @@ from pysnmp.hlapi.asyncio import *
 async def run(varBinds):
     snmpEngine = SnmpEngine()
     while True:
-        bulk_task = await bulkCmd(
+        errorIndication, errorStatus, errorIndex, varBindTable = await bulkCmd(
             snmpEngine,
             CommunityData("public"),
             UdpTransportTarget(("localhost", 161)),
@@ -33,7 +34,6 @@ async def run(varBinds):
             50,
             *varBinds
         )
-        (errorIndication, errorStatus, errorIndex, varBindTable) = await bulk_task
         if errorIndication:
             print(errorIndication)
             break

@@ -55,12 +55,9 @@ isEndOfMib = lambda x: not cmdgen.getNextVarBinds(x)[1]
 
 async def getCmd(snmpEngine, authData, transportTarget, contextData,
            *varBinds, **options):
-    r"""Creates a generator to perform SNMP GET query.
+    r"""Perform SNMP GET.
 
-    When iterator gets advanced by :py:mod:`asyncio` main loop,
-    SNMP GET request is send (:RFC:`1905#section-4.2.1`).
-    The iterator yields :py:class:`asyncio.get_running_loop().create_future()` which gets done whenever
-    response arrives or error occurs.
+    (:RFC:`1905#section-4.2.1`)
 
     Parameters
     ----------
@@ -88,7 +85,7 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
-    Yields
+    Returns
     ------
     errorIndication : str
         True value indicates SNMP engine error.
@@ -119,7 +116,7 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0))
     ...     )
-    ...     errorIndication, errorStatus, errorIndex, varBinds = await result_get
+    ...     errorIndication, errorStatus, errorIndex, varBinds = result_get
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
     >>> asyncio.get_event_loop().run_until_complete(run())
@@ -156,17 +153,14 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
         vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
         (options.get('lookupMib', True), future)
     )
-    return future
+    return await future
 
 
 async def setCmd(snmpEngine, authData, transportTarget, contextData,
            *varBinds, **options):
-    r"""Creates a generator to perform SNMP SET query.
+    r"""Perform SNMP SET.
 
-    When iterator gets advanced by :py:mod:`asyncio` main loop,
-    SNMP SET request is send (:RFC:`1905#section-4.2.5`).
-    The iterator yields :py:class:`asyncio.get_running_loop().create_future()` which gets done whenever
-    response arrives or error occurs.
+    (:RFC:`1905#section-4.2.5`)
 
     Parameters
     ----------
@@ -194,7 +188,7 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
-    Yields
+    Returns
     ------
     errorIndication : str
         True value indicates SNMP engine error.
@@ -218,7 +212,7 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     errorIndication, errorStatus, errorIndex, varBinds = yield setCmd(
+    ...     errorIndication, errorStatus, errorIndex, varBinds = await setCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
@@ -261,17 +255,14 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
         vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
         (options.get('lookupMib', True), future)
     )
-    return future
+    return await future
 
 
 async def nextCmd(snmpEngine, authData, transportTarget, contextData,
             *varBinds, **options):
-    r"""Creates a generator to perform SNMP GETNEXT query.
+    r"""Perform SNMP GETNEXT.
 
-    When iterator gets advanced by :py:mod:`asyncio` main loop,
-    SNMP GETNEXT request is send (:RFC:`1905#section-4.2.2`).
-    The iterator yields :py:class:`asyncio.get_running_loop().create_future()` which gets done whenever
-    response arrives or error occurs.
+    (:RFC:`1905#section-4.2.2`)
 
     Parameters
     ----------
@@ -299,7 +290,7 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
-    Yields
+    Returns
     ------
     errorIndication : str
         True value indicates SNMP engine error.
@@ -327,7 +318,7 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     errorIndication, errorStatus, errorIndex, varBinds = yield nextCmd(
+    ...     errorIndication, errorStatus, errorIndex, varBinds = await nextCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
@@ -372,17 +363,14 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
         vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
         (options.get('lookupMib', True), future)
     )
-    return future
+    return await future
 
 
 async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
             nonRepeaters, maxRepetitions, *varBinds, **options):
-    r"""Creates a generator to perform SNMP GETBULK query.
+    r"""Perform SNMP GETBULK.
 
-    When iterator gets advanced by :py:mod:`asyncio` main loop,
-    SNMP GETBULK request is send (:RFC:`1905#section-4.2.3`).
-    The iterator yields :py:class:`asyncio.get_running_loop().create_future()` which gets done whenever
-    response arrives or error occurs.
+    (:RFC:`1905#section-4.2.3`)
 
     Parameters
     ----------
@@ -420,8 +408,8 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
-    Yields
-    ------
+    Returns
+    -------
     errorIndication : str
         True value indicates SNMP engine error.
     errorStatus : str
@@ -474,7 +462,7 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     ...         0, 2,
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system'))
     ...     )
-    ...     errorIndication, errorStatus, errorIndex, varBinds = await result_bulk
+    ...     errorIndication, errorStatus, errorIndex, varBinds = result_bulk
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
     >>> asyncio.run(run())
@@ -513,4 +501,4 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
         vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
         (options.get('lookupMib', True), future)
     )
-    return future
+    return await future

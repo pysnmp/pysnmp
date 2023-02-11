@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Concurrent queries
 ++++++++++++++++++
@@ -22,7 +23,7 @@ from pysnmp.hlapi.asyncio import *
 
 
 async def getone(snmpEngine, hostname):
-    get_result = await getCmd(
+    errorIndication, errorStatus, errorIndex, varBinds = await getCmd(
         snmpEngine,
         CommunityData("public"),
         UdpTransportTarget(hostname),
@@ -30,7 +31,6 @@ async def getone(snmpEngine, hostname):
         ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)),
     )
 
-    errorIndication, errorStatus, errorIndex, varBinds = await get_result
     if errorIndication:
         print(errorIndication)
     elif errorStatus:
@@ -47,12 +47,13 @@ async def getone(snmpEngine, hostname):
 
 snmpEngine = SnmpEngine()
 
-asyncio.run(
-    asyncio.wait(
-        [
-            getone(snmpEngine, ("localhost", 161)),
-            getone(snmpEngine, ("localhost", 162)),
-            getone(snmpEngine, ("localhost", 163)),
-        ]
+
+async def main():
+    await asyncio.gather(
+        getone(snmpEngine, ("localhost", 161)),
+        getone(snmpEngine, ("localhost", 162)),
+        getone(snmpEngine, ("localhost", 163)),
     )
-)
+
+
+asyncio.run(main())
