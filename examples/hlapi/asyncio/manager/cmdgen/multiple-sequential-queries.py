@@ -32,7 +32,7 @@ async def getone(snmpEngine, hostname):
     )
 
     if errorIndication:
-        print(errorIndication)
+        print(f'{hostname}: {errorIndication}')
     elif errorStatus:
         print(
             "{} at {}".format(
@@ -53,5 +53,5 @@ async def getall(snmpEngine, hostnames):
 snmpEngine = SnmpEngine()
 
 asyncio.run(
-    getall(snmpEngine, [("localhost", 161), ("localhost", 162), ("localhost", 163)])
+    getall(snmpEngine, [("localhost", 161), ("localhost6", 161), ("localhost", 163)])
 )
