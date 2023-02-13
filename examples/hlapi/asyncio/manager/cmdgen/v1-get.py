@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 SNMPv1
 ++++++
@@ -21,7 +22,7 @@ from pysnmp.hlapi.asyncio import *
 
 async def run():
     snmpEngine = SnmpEngine()
-    get_result = await getCmd(
+    errorIndication, errorStatus, errorIndex, varBinds = await getCmd(
         snmpEngine,
         CommunityData("public", mpModel=0),
         UdpTransportTarget(("localhost", 161)),
@@ -29,7 +30,6 @@ async def run():
         ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)),
     )
 
-    errorIndication, errorStatus, errorIndex, varBinds = await get_result
     if errorIndication:
         print(errorIndication)
     elif errorStatus:

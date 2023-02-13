@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 SNMPv1 TRAP with defaults
 +++++++++++++++++++++++++
@@ -26,7 +27,7 @@ from pysnmp.hlapi.asyncio import *
 
 async def run():
     snmpEngine = SnmpEngine()
-    trap_result = await sendNotification(
+    errorIndication, errorStatus, errorIndex, varBinds = await sendNotification(
         snmpEngine,
         CommunityData("public", mpModel=0),
         UdpTransportTarget(("localhost", 161)),
@@ -37,7 +38,6 @@ async def run():
             ("1.3.6.1.2.1.1.1.0", OctetString("my system")),
         ),
     )
-    errorIndication, errorStatus, errorIndex, varBinds = await trap_result
     if errorIndication:
         print(errorIndication)
 
