@@ -107,16 +107,13 @@ jobs:
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4.0.0
         with:
-          semantic_version: 19.0.5
+          #semantic_version: 19.0.5
           extra_plugins: |
-            @semantic-release/commit-analyzer@9.0.2
-            @semantic-release/release-notes-generator@10.0.3
+            semantic-release-replace-plugin
             @semantic-release/git@10.0.1
-            @semantic-release/github@8.1.0
             @semantic-release/changelog@6.0.3
             conventional-changelog-conventionalcommits@6.1.0
-            @semantic-release/exec@6.0.3   
-            semantic-release-replace-plugin
+            @semantic-release/exec@6.0.3               
         env:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
           PYPI_USERNAME: "__token__"
