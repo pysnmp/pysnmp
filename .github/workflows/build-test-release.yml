@@ -76,6 +76,12 @@ jobs:
 
   publish:
     name: Build Release
+    permissions:
+      actions: write
+      contents: write
+      issues: write
+      id-token: write
+    environment: release    
     needs:
       #- pre-commit
       #- review_secrets
