@@ -65,11 +65,11 @@ jobs:
         run: |
           poetry install
           poetry build
-      - uses: actions/upload-artifact
+      - uses: actions/upload-artifact@v2
         with:
           name: dist
           path: dist
-      - uses: actions/upload-artifact
+      - uses: actions/upload-artifact@v2
         with:
           name: output
           path: output
