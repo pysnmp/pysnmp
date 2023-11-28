@@ -21,7 +21,7 @@ jobs:
       - name: Install actionlint
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/v1.6.3/scripts/download-actionlint.bash)
-      - uses: pre-commit/action@v3
+      - uses: pre-commit/action@v3.0.0
 
   review_secrets:
     name: security-detect-secrets
