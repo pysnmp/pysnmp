@@ -21,7 +21,7 @@ jobs:
       - name: Install actionlint
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/v1.6.3/scripts/download-actionlint.bash)
-      - uses: pre-commit/action@v2.0.3
+      - uses: pre-commit/action@v3
 
   review_secrets:
     name: security-detect-secrets
@@ -65,11 +65,11 @@ jobs:
         run: |
           poetry install
           poetry build
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: output
           path: output
