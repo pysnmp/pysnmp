@@ -89,7 +89,7 @@ jobs:
             conventional-changelog-conventionalcommits@6.1.0
             @semantic-release/exec@6.0.3               
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
       - name: Publish package distributions to PyPI
         if: steps.semantic.outputs.new_release_published == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1          
