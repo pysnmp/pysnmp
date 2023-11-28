@@ -48,32 +48,6 @@ jobs:
         with:
           publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
 
-  build:
-    name: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.7
-      - name: Run image
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: "1.3.2"
-      - name: Build
-        run: |
-          poetry install
-          poetry build
-      - uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist
-      - uses: actions/upload-artifact@v3
-        with:
-          name: output
-          path: output
-
   publish:
     name: Build Release
     permissions:
@@ -86,7 +60,6 @@ jobs:
       #- pre-commit
       #- review_secrets
       - semgrep
-      - build
       #- run-unit-tests
     runs-on: ubuntu-latest
     steps:
@@ -103,15 +76,12 @@ jobs:
         uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: "1.3.2"
-      - name: Build
-        run: |
-          poetry install
-          poetry build
       - uses: actions/setup-node@v3
         with:
           node-version: "20"          
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4.0.0
+        id: semantic   # Need an `id` for output variables
         with:
           #semantic_version: 19.0.5
           extra_plugins: |
@@ -123,4 +93,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
       - name: Publish package distributions to PyPI
+        if: steps.semantic.outputs.new_release_published == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1          
+      - uses: actions/upload-artifact@v3
+        if: steps.semantic.outputs.new_release_published == 'true'
+        with:
+          name: dist
+          path: dist
