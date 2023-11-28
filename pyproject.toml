@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysnmplib"
-version = "5.0.21"
+version = "5.0.22-beta.1"
 description = ""
 authors = ["omrozowicz <omrozowicz@splunk.com>", "rfaircloth-splunk <rfaircloth@splunk.com>"]
 license = "BSD-2-Clause"
@@ -36,6 +36,9 @@ Sphinx = "^4.3.0"
 pytest = "^6.2.5"
 codecov = "^2.1.12"
 pytest-codecov = "^0.4.0"
+
+[tool.poetry.group.dev.dependencies]
+codecov = "^2.1.13"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
