@@ -23,7 +23,7 @@
   plugins: [
     "@semantic-release/commit-analyzer",
     [
-      "@google/semantic-release-replace-plugin",
+      "semantic-release-replace-plugin",
       {
         "replacements": [
           {
@@ -63,14 +63,6 @@
     ],
     "@semantic-release/release-notes-generator",
     [
-      "@semantic-release/exec",
-      {
-        "prepareCmd": "./.github/workflows/sr-prepare.sh ${nextRelease.version}",
-        "publishCmd": "./.github/workflows/sr-release.sh",
-        "shell": "bash"
-      },
-    ],
-    [
       "@semantic-release/git",
       {
         "assets": [
@@ -89,6 +81,13 @@
           "pyproject.toml"
         ]
       }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "publishCmd": "poetry build",
+        "shell": "bash"
+      },
     ],
   ],
 }
