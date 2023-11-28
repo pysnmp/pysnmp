@@ -118,3 +118,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
           PYPI_USERNAME: "__token__"
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1          
