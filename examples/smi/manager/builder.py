@@ -11,41 +11,17 @@ import marshal
 import time
 import traceback
 
-try:
-    import importlib
-
-    try:
-        PY_MAGIC_NUMBER = importlib.util.MAGIC_NUMBER
-        SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
-        BYTECODE_SUFFIXES = importlib.machinery.BYTECODE_SUFFIXES
-
-    except Exception:
-        raise ImportError()
-
-except ImportError:
-    import imp
-
-    PY_MAGIC_NUMBER = imp.get_magic()
-    SOURCE_SUFFIXES = [s[0] for s in imp.get_suffixes() if s[2] == imp.PY_SOURCE]
-    BYTECODE_SUFFIXES = [s[0] for s in imp.get_suffixes() if s[2] == imp.PY_COMPILED]
-
-PY_SUFFIXES = SOURCE_SUFFIXES + BYTECODE_SUFFIXES
-
-try:
-    from errno import ENOENT
-except ImportError:
-    ENOENT = -1
+from errno import ENOENT
+from importlib.machinery import SOURCE_SUFFIXES, BYTECODE_SUFFIXES
+from importlib.util import MAGIC_NUMBER as PY_MAGIC_NUMBER
 
 from pysnmp import version as pysnmp_version
 from pysnmp.smi import error
 from pysnmp import debug
 
-if sys.version_info[0] <= 2:
-    import types
+PY_SUFFIXES = SOURCE_SUFFIXES + BYTECODE_SUFFIXES
 
-    classTypes = (types.ClassType, type)
-else:
-    classTypes = (type,)
+classTypes = (type,)
 
 
 class __AbstractMibSource:

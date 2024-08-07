@@ -13,15 +13,7 @@ from pysnmp.proto import errind, error
 from pyasn1.type import univ
 from pyasn1.compat.octets import null
 from math import ceil
-
-try:
-    from hashlib import md5, sha1
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
+from hashlib import md5, sha1
 
 try:
     from Cryptodome.Cipher import DES3

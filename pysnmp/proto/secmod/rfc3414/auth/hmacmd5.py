@@ -4,12 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pysnmp/license.html
 #
-try:
-    from hashlib import md5
-except ImportError:
-    import md5
-
-    md5 = md5.new
+from hashlib import md5
 from pyasn1.type import univ
 from pysnmp.proto.secmod.rfc3414.auth import base
 from pysnmp.proto.secmod.rfc3414 import localkey

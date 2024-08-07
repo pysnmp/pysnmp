@@ -4,16 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pysnmp/license.html
 #
-try:
-    from hashlib import md5, sha1
-
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
-
+from hashlib import md5, sha1
 from pyasn1.type import univ
 
 

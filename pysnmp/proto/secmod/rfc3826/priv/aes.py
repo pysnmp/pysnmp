@@ -11,19 +11,12 @@ from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
 from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 from pysnmp.proto.secmod.rfc3414 import localkey
 from pysnmp.proto import errind, error
+from hashlib import md5, sha1
 
 try:
     from Cryptodome.Cipher import AES
 except ImportError:
     AES = None
-try:
-    from hashlib import md5, sha1
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
 
 random.seed()
 
