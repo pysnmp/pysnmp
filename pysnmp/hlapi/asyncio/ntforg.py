@@ -144,7 +144,7 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
                 return
             future.set_result((None, 0, 0, []))
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         loop.call_soon(__trapFun, future)
 
     return await future
