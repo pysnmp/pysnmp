@@ -104,9 +104,18 @@ class __AbstractMibSource:
 
             else:
                 if PY_MAGIC_NUMBER == pycData[:4]:
-                    pycData = pycData[4:]
-                    pycTime = struct.unpack('<L', pycData[:4])[0]
-                    pycData = pycData[4:]
+                    # PEP 552 (Python 3.7+) uses a 16-byte header:
+                    #   magic (4) + bitfield (4) + word3 (4) + word4 (4)
+                    # When bitfield & 1 == 0, word3 is the timestamp and
+                    # word4 is the source size (timestamp-based invalidation).
+                    # When bitfield & 1 == 1, word3+word4 form a hash
+                    # (hash-based invalidation, no timestamp).
+                    bitfield = struct.unpack('<L', pycData[4:8])[0]
+                    if not (bitfield & 1):
+                        # Timestamp-based: extract timestamp for staleness check
+                        pycTime = struct.unpack('<L', pycData[8:12])[0]
+                    # Strip the full 16-byte header to get marshalled code
+                    pycData = pycData[16:]
                     debug.logger & debug.flagBld and debug.logger(
                         'file %s mtime %d' % (pycPath, pycTime)
                     )
