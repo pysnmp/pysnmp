@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: "3.8"
       - name: Install actionlint
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/v1.6.3/scripts/download-actionlint.bash)
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@v3.0.1
 
   review_secrets:
     name: security-detect-secrets
@@ -67,14 +67,14 @@ jobs:
           submodules: false
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: "3.8"
       - name: Run image
         uses: abatilo/actions-poetry@v2.3.0
         with:
           poetry-version: "1.3.2"
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"          
       - name: Semantic Release
@@ -93,7 +93,7 @@ jobs:
       - name: Publish package distributions to PyPI
         if: steps.semantic.outputs.new_release_published == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1          
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: steps.semantic.outputs.new_release_published == 'true'
         with:
           name: dist
