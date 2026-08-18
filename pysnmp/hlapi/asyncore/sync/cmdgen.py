@@ -2,7 +2,6 @@
 # This file is part of pysnmp software.
 #
 # Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
 #
 from pysnmp.hlapi.asyncore import cmdgen
 from pysnmp.hlapi.varbinds import *
@@ -75,11 +74,11 @@ def getCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi import *
     >>> g = getCmd(SnmpEngine(),
     ...            CommunityData('public'),
-    ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...            UdpTransportTarget(('localhost', 161)),
     ...            ContextData(),
     ...            ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)))
     >>> next(g)
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))])
+    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))])
     >>>
 
     """
@@ -181,7 +180,7 @@ def setCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi import *
     >>> g = setCmd(SnmpEngine(),
     ...            CommunityData('public'),
-    ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...            UdpTransportTarget(('localhost', 161)),
     ...            ContextData(),
     ...            ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386'))
     >>> next(g)
@@ -311,11 +310,11 @@ def nextCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi import *
     >>> g = nextCmd(SnmpEngine(),
     ...             CommunityData('public'),
-    ...             UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...             UdpTransportTarget(('localhost', 161)),
     ...             ContextData(),
     ...             ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')))
     >>> next(g)
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))])
+    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))])
     >>> g.send( [ ObjectType(ObjectIdentity('IF-MIB', 'ifInOctets')) ] )
     (None, 0, 0, [(ObjectName('1.3.6.1.2.1.2.2.1.10.1'), Counter32(284817787))])
     """
@@ -510,12 +509,12 @@ def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi import *
     >>> g = bulkCmd(SnmpEngine(),
     ...             CommunityData('public'),
-    ...             UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...             UdpTransportTarget(('localhost', 161)),
     ...             ContextData(),
     ...             0, 25,
     ...             ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')))
     >>> next(g)
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))])
+    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))])
     >>> g.send( [ ObjectType(ObjectIdentity('IF-MIB', 'ifInOctets')) ] )
     (None, 0, 0, [(ObjectName('1.3.6.1.2.1.2.2.1.10.1'), Counter32(284817787))])
     """

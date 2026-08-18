@@ -2,7 +2,6 @@
 # This file is part of pysnmp software.
 #
 # Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
 #
 # THESE FUNCTIONS ARE OBSOLETE AND MUST NOT BE USED!
 # USE pysnmp.entity.rfc3413.oneliner.mibvar INSTEAD

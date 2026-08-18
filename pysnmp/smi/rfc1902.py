@@ -2,7 +2,6 @@
 # This file is part of pysnmp software.
 #
 # Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
 #
 import sys
 from pysnmp.proto import rfc1902, rfc1905
@@ -257,7 +256,7 @@ class ObjectIdentity:
         Normally, ASN.1-to-Python MIB modules conversion is performed
         automatically through PySNMP/PySMI interaction. ASN1 MIB modules
         could also be manually compiled into Python via the
-        `mibdump.py <http://snmplabs.com/pysmi/mibdump.html>`_
+        `mibdump.py`
         tool.
 
         Examples
@@ -765,7 +764,7 @@ class ObjectType:
         Normally, ASN.1-to-Python MIB modules conversion is performed
         automatically through PySNMP/PySMI interaction. ASN1 MIB modules
         could also be manually compiled into Python via the
-        `mibdump.py <http://snmplabs.com/pysmi/mibdump.html>`_
+        `mibdump.py`
         tool.
 
         Examples
@@ -1070,7 +1069,7 @@ class NotificationType:
         Normally, ASN.1-to-Python MIB modules conversion is performed
         automatically through PySNMP/PySMI interaction. ASN1 MIB modules
         could also be manually compiled into Python via the
-        `mibdump.py <http://snmplabs.com/pysmi/mibdump.html>`_
+        `mibdump.py`
         tool.
 
         Examples

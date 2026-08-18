@@ -309,8 +309,6 @@ texinfo_documents = [
 # Configuration for Intersphinx
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.4/', None),
-    'pyasn1': ('http://snmplabs.com/pyasn1/', None),
-    'pysmi': ('http://snmplabs.com/pysmi/', None),
 }
 
 # this merges constructor docstring with class docstring

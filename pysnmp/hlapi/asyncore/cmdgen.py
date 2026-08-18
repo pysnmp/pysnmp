@@ -2,7 +2,6 @@
 # This file is part of pysnmp software.
 #
 # Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
 #
 from pysnmp.entity.rfc3413 import cmdgen
 from pysnmp.smi.rfc1902 import *
@@ -100,12 +99,12 @@ def getCmd(snmpEngine, authData, transportTarget, contextData,
     >>> snmpEngine = SnmpEngine()
     >>> getCmd(snmpEngine,
     ...        CommunityData('public'),
-    ...        UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...        UdpTransportTarget(('localhost', 161)),
     ...        ContextData(),
     ...        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)),
     ...        cbFun=cbFun)
     >>> snmpEngine.transportDispatcher.runDispatcher()
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))])
+    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))])
     >>>
 
     """
@@ -213,12 +212,12 @@ def setCmd(snmpEngine, authData, transportTarget, contextData,
     >>> snmpEngine = SnmpEngine()
     >>> setCmd(snmpEngine,
     ...        CommunityData('public'),
-    ...        UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...        UdpTransportTarget(('localhost', 161)),
     ...        ContextData(),
-    ...        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysContact', 0), 'info@snmplabs.com'),
+    ...        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysContact', 0), 'info@example.com'),
     ...        cbFun=cbFun)
     >>> snmpEngine.transportDispatcher.runDispatcher()
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.4.0')), DisplayString('info@snmplabs.com'))])
+    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.4.0')), DisplayString('info@example.com'))])
     >>>
 
     """
@@ -326,12 +325,12 @@ def nextCmd(snmpEngine, authData, transportTarget, contextData,
     >>> snmpEngine = SnmpEngine()
     >>> nextCmd(snmpEngine,
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system')),
     ...         cbFun=cbFun)
     >>> snmpEngine.transportDispatcher.runDispatcher()
-    (None, 0, 0, [ [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))] ])
+    (None, 0, 0, [ [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))] ])
     >>>
 
     """
@@ -467,13 +466,13 @@ def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     >>> snmpEngine = SnmpEngine()
     >>> bulkCmd(snmpEngine,
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         0, 2,
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system')),
     ...         cbFun=cbFun)
     >>> snmpEngine.transportDispatcher.runDispatcher()
-    (None, 0, 0, [[ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))], [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.2.0')), ObjectIdentifier('1.3.6.1.4.1.424242.1.1'))]])
+    (None, 0, 0, [[ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))], [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.2.0')), ObjectIdentifier('1.3.6.1.4.1.424242.1.1'))]])
     >>>
 
     """

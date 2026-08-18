@@ -2,7 +2,6 @@
 # This file is part of pysnmp software.
 #
 # Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
 #
 from pysnmp.proto import rfc1901, rfc1902, rfc1905
 from pysnmp.proto.api import v1
