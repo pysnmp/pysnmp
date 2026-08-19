@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 from pysnmp.hlapi.asyncore import ntforg
 
@@ -81,7 +80,7 @@ def sendNotification(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi import *
     >>> g = sendNotification(SnmpEngine(),
     ...                      CommunityData('public'),
-    ...                      UdpTransportTarget(('demo.snmplabs.com', 162)),
+    ...                      UdpTransportTarget(('localhost', 162)),
     ...                      ContextData(),
     ...                      'trap',
     ...                      NotificationType(ObjectIdentity('IF-MIB', 'linkDown')))
