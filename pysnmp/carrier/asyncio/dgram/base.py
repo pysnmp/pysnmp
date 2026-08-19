@@ -48,7 +48,10 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         self._writeQ = []
         self._lport = None
         if loop is None:
-            loop = asyncio.get_event_loop()
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
         self.loop = loop
 
     def datagram_received(self, datagram, transportAddress):
