@@ -1,7 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 # PySNMP MIB module PYSNMP-MIB
 # ASN.1 source: bundled
@@ -19,7 +19,7 @@ pysnmp = ModuleIdentity((1, 3, 6, 1, 4, 1, 20408))
 if mibBuilder.loadTexts: pysnmp.setRevisions(('2017-04-14 00:00', '2005-05-14 00:00',))
 if mibBuilder.loadTexts: pysnmp.setLastUpdated('201704140000Z')
 if mibBuilder.loadTexts: pysnmp.setOrganization('The PySNMP Project')
-if mibBuilder.loadTexts: pysnmp.setContactInfo('E-mail: Ilya Etingof <etingof@gmail.com> GitHub: https://github.com/etingof/pysnmp')
+if mibBuilder.loadTexts: pysnmp.setContactInfo('E-mail: Ilya Etingof deceased  GitHub: https://github.com/etingof/pysnmp')
 if mibBuilder.loadTexts: pysnmp.setDescription('PySNMP top-level MIB tree infrastructure')
 pysnmpObjects = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 1))
 pysnmpExamples = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 2))

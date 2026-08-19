@@ -1,7 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 # PySNMP MIB module PYSNMP-SOURCE-MIB
 # ASN.1 source: bundled
@@ -21,7 +21,7 @@ pysnmpSourceMIB = ModuleIdentity((1, 3, 6, 1, 4, 1, 20408, 3, 1, 8))
 if mibBuilder.loadTexts: pysnmpSourceMIB.setRevisions(('2017-04-14 00:00', '2015-01-16 00:00',))
 if mibBuilder.loadTexts: pysnmpSourceMIB.setLastUpdated('201704140000Z')
 if mibBuilder.loadTexts: pysnmpSourceMIB.setOrganization('The PySNMP Project')
-if mibBuilder.loadTexts: pysnmpSourceMIB.setContactInfo('E-mail: Ilya Etingof <etingof@gmail.com> GitHub: https://github.com/etingof/pysnmp')
+if mibBuilder.loadTexts: pysnmpSourceMIB.setContactInfo('E-mail: Ilya Etingof deceased  GitHub: https://github.com/etingof/pysnmp')
 if mibBuilder.loadTexts: pysnmpSourceMIB.setDescription('This MIB module defines implementation specific objects that provide variable source transport endpoints feature to SNMP Engine and Standard SNMP Applications.')
 pysnmpSourceMIBObjects = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 3, 1, 8, 1))
 pysnmpSourceMIBConformance = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 3, 1, 8, 2))

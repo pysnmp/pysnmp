@@ -1,6 +1,4 @@
-
-SNMP library for Python
------------------------
+## SNMP library for Python
 
 [![PyPI](https://img.shields.io/pypi/v/pysnmplib.svg?maxAge=2592000)](https://pypi.python.org/pypi/pysnmplib)
 [![Python Versions](https://img.shields.io/pypi/pyversions/pysnmplib.svg)](https://pypi.python.org/pypi/pysnmplib/)
@@ -13,38 +11,35 @@ SNMP engine distributed under 2-clause [BSD license](LICENSE.rst).
 The PySNMP project was initially sponsored by a [PSF](http://www.python.org/psf/) grant.
 Thank you!
 
-This version is a fork of Ilya Etingof's project [etingof/pysnmp](https://github.com/etingof/pysnmp). Ilya sadly passed away on 10-Aug-2022. Announcement [here](https://lists.openstack.org/pipermail/openstack-discuss/2022-August/030062.html).  His work is still of great use to the Python community and he will be missed.
+This version is a fork of Ilya Etingof deceased's project [etingof/pysnmp](https://github.com/etingof/pysnmp). Ilya sadly passed away on 10-Aug-2022. Announcement [here](https://lists.openstack.org/pipermail/openstack-discuss/2022-August/030062.html). His work is still of great use to the Python community and he will be missed.
 
-Features
---------
+## Features
 
-* Complete SNMPv1/v2c and SNMPv3 support
-* SMI framework for resolving MIB information and implementing SMI
+- Complete SNMPv1/v2c and SNMPv3 support
+- SMI framework for resolving MIB information and implementing SMI
   Managed Objects
-* Complete SNMP entity implementation
-* USM Extended Security Options support (3DES, 192/256-bit AES encryption)
-* Extensible network transports framework (UDP/IPv4, UDP/IPv6)
-* Asynchronous socket-based IO API support
-* [Asyncio](https://docs.python.org/3/library/asyncio.html) integration
-* [PySMI](https://github.com/pysnmp/pysmi) integration for dynamic MIB compilation
-* Built-in instrumentation exposing protocol engine operations
-* Python eggs and py2exe friendly
-* 100% Python, works with Python 2.4 though 3.7
-* MT-safe (if SnmpEngine is thread-local)
+- Complete SNMP entity implementation
+- USM Extended Security Options support (3DES, 192/256-bit AES encryption)
+- Extensible network transports framework (UDP/IPv4, UDP/IPv6)
+- Asynchronous socket-based IO API support
+- [Asyncio](https://docs.python.org/3/library/asyncio.html) integration
+- [PySMI](https://github.com/pysnmp/pysmi) integration for dynamic MIB compilation
+- Built-in instrumentation exposing protocol engine operations
+- Python eggs and py2exe friendly
+- 100% Python, works with Python 2.4 though 3.7
+- MT-safe (if SnmpEngine is thread-local)
 
 Features, specific to SNMPv3 model include:
 
-* USM authentication (MD5/SHA-1/SHA-2) and privacy (DES/AES) protocols (RFC3414, RFC7860)
-* View-based access control to use with any SNMP model (RFC3415)
-* Built-in SNMP proxy PDU converter for building multi-lingual
+- USM authentication (MD5/SHA-1/SHA-2) and privacy (DES/AES) protocols (RFC3414, RFC7860)
+- View-based access control to use with any SNMP model (RFC3415)
+- Built-in SNMP proxy PDU converter for building multi-lingual
   SNMP entities (RFC2576)
-* Remote SNMP engine configuration
-* Optional SNMP engine discovery
-* Shipped with standard SNMP applications (RC3413)
+- Remote SNMP engine configuration
+- Optional SNMP engine discovery
+- Shipped with standard SNMP applications (RC3413)
 
-
-Download & Install
-------------------
+## Download & Install
 
 The PySNMP software is freely available for download from [PyPI](https://pypi.python.org/pypi/pysnmplib)
 and [GitHub](https://github.com/pysnmp/pysnmp.git).
@@ -57,9 +52,9 @@ $ pip install pysnmplib
 
 To download and install PySNMP along with its dependencies:
 
-* [PyASN1](https://github.com/pysnmp/pyasn1)
-* [PyCryptodomex](https://pycryptodome.readthedocs.io) (required only if SNMPv3 encryption is in use)
-* [PySMI](https://github.com/pysnmp/pysmi) (required for MIB services only)
+- [PyASN1](https://github.com/pysnmp/pyasn1)
+- [PyCryptodomex](https://pycryptodome.readthedocs.io) (required only if SNMPv3 encryption is in use)
+- [PySMI](https://github.com/pysnmp/pysmi) (required for MIB services only)
 
 Besides the library, command-line [SNMP utilities](https://github.com/etingof/snmpclitools)
 written in pure-Python could be installed via:
@@ -75,11 +70,10 @@ $ snmpget.py -v3 -l authPriv -u usr-md5-des -A authkey1 -X privkey1 localhost sy
 SNMPv2-MIB::sysDescr.0 = STRING: Linux localhost 5.15.0
 ```
 
-Examples
---------
+## Examples
 
 PySNMP is designed in a layered fashion. Top-level and easiest to use API is known as
-*hlapi*. Here's a quick example on how to SNMP GET:
+_hlapi_. Here's a quick example on how to SNMP GET:
 
 ```python
 from pysnmp.hlapi import *
@@ -140,8 +134,7 @@ or local directories. You could configure any MIB source available to you (inclu
 
 For more example scripts please refer to the `examples/` directory in this repository.
 
-Documentation
--------------
+## Documentation
 
 Library documentation and examples can be found in the `docs/` directory in this repository.
 
@@ -152,4 +145,4 @@ post your question [on Stack Overflow](http://stackoverflow.com/questions/ask) o
 
 Bug reports and PRs are appreciated! ;-)
 
-Copyright (c) 2005-2019, [Ilya Etingof](https://lists.openstack.org/pipermail/openstack-discuss/2022-August/030062.html). All rights reserved.
+Copyright (c) 2005-2019, [Ilya Etingof deceased](https://lists.openstack.org/pipermail/openstack-discuss/2022-August/030062.html). All rights reserved.
