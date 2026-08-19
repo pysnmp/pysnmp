@@ -1,11 +1,10 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
-# PySNMP MIB module RFC1213-MIB (http://snmplabs.com/pysnmp)
-# ASN.1 source http://mibs.snmplabs.com:80/asn1/RFC1213-MIB
+# PySNMP MIB module RFC1213-MIB
+# ASN.1 source: bundled
 # Produced by pysmi-0.1.3 at Mon Apr 17 12:12:07 2017
 # On host grommit.local platform Darwin version 16.4.0 by user ilya
 # Using Python version 3.4.2 (v3.4.2:ab2c023a9432, Oct  5 2014, 20:42:22)

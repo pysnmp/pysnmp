@@ -50,8 +50,8 @@ master_doc = 'contents'
 
 # General information about the project.
 project = 'SNMP library for Python'
-copyright = '2005-2019, Ilya Etingof <etingof@gmail.com>'
-author = 'Ilya Etingof <etingof@gmail.com>'
+copyright = '2005-2019, Ilya Etingof deceased '
+author = 'Ilya Etingof deceased '
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -245,7 +245,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'PySNMP.tex', 'PySNMP Documentation',
-   'Ilya Etingof \\textless{}etingof@gmail.com\\textgreater{}', 'manual'),
+   'Ilya Etingof deceased', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -309,8 +309,6 @@ texinfo_documents = [
 # Configuration for Intersphinx
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.4/', None),
-    'pyasn1': ('http://snmplabs.com/pyasn1/', None),
-    'pysmi': ('http://snmplabs.com/pysmi/', None),
 }
 
 # this merges constructor docstring with class docstring

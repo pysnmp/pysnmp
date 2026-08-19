@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 import socket
 import sys
@@ -43,7 +42,7 @@ class UdpTransportTarget(AbstractTransportTarget):
     Examples
     --------
     >>> from pysnmp.hlapi.asyncore import UdpTransportTarget
-    >>> UdpTransportTarget(('demo.snmplabs.com', 161))
+    >>> UdpTransportTarget(('localhost', 161))
     UdpTransportTarget(('195.218.195.228', 161), timeout=1, retries=5, tagList='')
     >>>
 
