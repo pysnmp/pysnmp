@@ -10,14 +10,7 @@ from pysnmp.proto.secmod.rfc3414 import localkey
 from pysnmp.proto import error
 from math import ceil
 
-try:
-    from hashlib import md5, sha1
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
+from hashlib import md5, sha1
 
 
 class AbstractAesBlumenthal(aes.Aes):

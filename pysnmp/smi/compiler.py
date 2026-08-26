@@ -17,13 +17,13 @@ else:
 defaultBorrowers = []
 
 try:
-    from pysmi.reader.url import getReadersFromUrls
+    from pysmi.reader.url import get_readers_from_urls
     from pysmi.searcher.pypackage import PyPackageSearcher
     from pysmi.searcher.stub import StubSearcher
     from pysmi.borrower.pyfile import PyFileBorrower
     from pysmi.writer.pyfile import PyFileWriter
     from pysmi.parser.smi import parserFactory
-    from pysmi.parser.dialect import smiV1Relaxed
+    from pysmi.parser.dialect import smi_v1_relaxed
     from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
     from pysmi.compiler import MibCompiler
 
@@ -47,16 +47,16 @@ else:
         if kwargs.get('ifNotAdded') and mibBuilder.getMibCompiler():
             return
 
-        compiler = MibCompiler(parserFactory(**smiV1Relaxed)(),
+        compiler = MibCompiler(parserFactory(**smi_v1_relaxed)(),
                                PySnmpCodeGen(),
                                PyFileWriter(kwargs.get('destination') or defaultDest))
 
-        compiler.addSources(*getReadersFromUrls(*kwargs.get('sources') or defaultSources))
+        compiler.add_sources(*get_readers_from_urls(*kwargs.get('sources') or defaultSources))
 
-        compiler.addSearchers(StubSearcher(*baseMibs))
-        compiler.addSearchers(*[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()])
-        compiler.addBorrowers(*[PyFileBorrower(x, genTexts=mibBuilder.loadTexts) for x in
-                                getReadersFromUrls(*kwargs.get('borrowers') or defaultBorrowers,
+        compiler.add_searchers(StubSearcher(*baseMibs))
+        compiler.add_searchers(*[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()])
+        compiler.add_borrowers(*[PyFileBorrower(x, genTexts=mibBuilder.loadTexts) for x in
+                                get_readers_from_urls(*kwargs.get('borrowers') or defaultBorrowers,
                                                    **dict(lowcaseMatching=False))])
 
         mibBuilder.setMibCompiler(

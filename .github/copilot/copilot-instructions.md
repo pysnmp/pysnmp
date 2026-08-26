@@ -15,10 +15,10 @@ When generating code for this repository:
 Before generating code, scan the codebase to identify:
 
 1. **Language Versions**: Detect the exact versions of programming languages in use
-   - Examine `pyproject.toml` for the Python version constraint (`python = "^3.8"`)
-   - Target Python 3.8+ syntax and features only; never use features introduced after 3.8
+   - Examine `pyproject.toml` for the Python version constraint (`python = "^3.10"`)
+   - Target Python 3.10+ syntax and features only; never use features introduced after 3.10
    - The codebase uses f-strings (e.g. `pysnmp/error.py`, `pysnmp/entity/engine.py`) — f-strings are permitted
-   - Do not introduce the `match` statement (3.10+), `type` aliases (3.12+), or other post-3.8 syntax
+   - The `match` statement (3.10+) is permitted; do not introduce `type` aliases (3.12+) or other post-3.10 syntax
 
 2. **Framework Versions**: Identify the exact versions of all frameworks
    - Build system: uv with hatchling (`hatchling>=1.0.0`, declared in `pyproject.toml` `[build-system]`)
@@ -141,7 +141,7 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 - `runtests.sh` executes the scripts under `examples/` as the project's integration smoke tests. When adding or changing hlapi behavior, add or update a matching example script in `examples/hlapi/<backend>/...` so `runtests.sh` continues to cover it.
 
 ## Python Guidelines
-- Detect and adhere to the specific Python version in use (3.8+, per `pyproject.toml`)
+- Detect and adhere to the specific Python version in use (3.10+, per `pyproject.toml`)
 - Follow the same import organization found in existing modules: stdlib first, then third-party (`pyasn1.*`, `Cryptodome.*`), then `pysnmp.*` submodules. See `pysnmp/entity/config.py` and `pysnmp/smi/rfc1902.py` for the canonical ordering.
 - Use `from pysnmp.proto.rfc1902 import *` / `from pysnmp.smi.rfc1902 import *` style re-exports in hlapi modules (as done in `pysnmp/hlapi/__init__.py` and `pysnmp/hlapi/asyncio/__init__.py`); define `__all__` in modules that intend a public surface (e.g. `pysnmp/hlapi/auth.py`, `pysnmp/proto/rfc1902.py`).
 - Type hints are **not** used in this codebase. Do not introduce them unless asked; match the untyped style of existing modules.
