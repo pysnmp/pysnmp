@@ -33,10 +33,24 @@ repository = "https://github.com/pysnmp/pysnmp"
 [project.optional-dependencies]
 dev = [
     "sphinx >=4.3.0,<5.0.0",
-    "pytest >=6.2.5,<7.0.0",
+    "pytest >=6.2.5,<9.0.0",
+    "coverage[toml] >=7.2.0,<8.0.0",
     "codecov >=2.1.12,<3.0.0",
     "pytest-codecov >=0.4.0,<1.0.0",
+    "pyasyncore ==1.0.5",
+    "snmpsim ==0.4.7",
 ]
+
+[tool.coverage.run]
+branch = true
+source = ["pysnmp"]
+
+[tool.coverage.report]
+fail_under = 60
+show_missing = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
 
 [build-system]
 requires = ["hatchling>=1.0.0"]

@@ -27,3 +27,4 @@ venv*
 # Tox
 .tox/
 .env
+openspec/
