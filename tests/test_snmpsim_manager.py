@@ -43,6 +43,7 @@ def get_value(result):
     assert error_indication is None
     assert not error_status
     assert not error_index
+    print(f"  SNMP response: OID={var_binds[0][0]} value={var_binds[0][1]}")
     return str(var_binds[0][1])
 
 
@@ -51,6 +52,8 @@ def get_all_values(result):
     assert error_indication is None
     assert not error_status
     assert not error_index
+    for vb in var_binds:
+        print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
     return [str(vb[1]) for vb in var_binds]
 
 
@@ -96,6 +99,12 @@ class TestSyncGetV1:
         )
         # v1 may return noSuchName for some OIDs; just check we get a response
         error_indication, error_status, error_index, var_binds = result
+        if error_indication:
+            print(f"  SNMP error: {error_indication}")
+        elif error_status:
+            print(f"  SNMP PDU error: {error_status} at index {error_index}")
+        else:
+            print(f"  SNMP response: OID={var_binds[0][0]} value={var_binds[0][1]}")
         assert error_indication is None
 
     def test_get_multiple(self, snmpsim_endpoint):
@@ -201,8 +210,10 @@ class TestSyncNextV2c:
         results = []
         for error_indication, error_status, error_index, var_binds in iterator:
             if error_indication:
+                print(f"  SNMP error: {error_indication}")
                 break
             for vb in var_binds:
+                print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
                 results.append(str(vb[1]))
             if len(results) >= 5:
                 break
@@ -223,8 +234,10 @@ class TestSyncBulkV2c:
         results = []
         for error_indication, error_status, error_index, var_binds in iterator:
             if error_indication:
+                print(f"  SNMP error: {error_indication}")
                 break
             for vb in var_binds:
+                print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
                 results.append(str(vb[1]))
             if len(results) >= 10:
                 break
@@ -246,6 +259,7 @@ class TestUnreachableDevice:
             )
         )
         error_indication, error_status, error_index, var_binds = result
+        print(f"  SNMP timeout: {error_indication}")
         assert error_indication is not None
 
     def test_timeout_v1(self):
@@ -259,6 +273,7 @@ class TestUnreachableDevice:
             )
         )
         error_indication, error_status, error_index, var_binds = result
+        print(f"  SNMP timeout: {error_indication}")
         assert error_indication is not None
 
 
@@ -334,6 +349,9 @@ class TestAsyncioNextV2c:
         error_indication, error_status, error_index, var_binds = result
         assert error_indication is None
         assert len(var_binds) > 0
+        for row in var_binds:
+            for vb in row:
+                print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
 
 
 class TestAsyncioBulkV2c:
@@ -354,6 +372,9 @@ class TestAsyncioBulkV2c:
         result = asyncio.run(run())
         error_indication, error_status, error_index, var_binds = result
         assert error_indication is None
+        for vb in var_binds:
+            for row in vb:
+                print(f"  SNMP response: OID={row[0]} value={row[1]}")
         assert len(var_binds) > 0
 
 
@@ -371,4 +392,5 @@ class TestAsyncioTimeout:
 
         result = asyncio.run(run())
         error_indication, error_status, error_index, var_binds = result
+        print(f"  SNMP timeout: {error_indication}")
         assert error_indication is not None

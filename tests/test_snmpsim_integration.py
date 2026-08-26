@@ -21,6 +21,7 @@ def get_value(result):
     assert error_indication is None
     assert not error_status
     assert not error_index
+    print(f"  SNMP response: OID={var_binds[0][0]} value={var_binds[0][1]}")
     return str(var_binds[0][1])
 
 
