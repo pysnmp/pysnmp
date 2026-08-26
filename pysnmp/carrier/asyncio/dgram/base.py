@@ -82,7 +82,6 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily
             )
-            # Avoid deprecation warning for asyncio.async()
             self._lport = asyncio.ensure_future(c)
 
         except Exception:
@@ -94,7 +93,6 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily
             )
-            # Avoid deprecation warning for asyncio.async()
             self._lport = asyncio.ensure_future(c)
         except Exception:
             raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))

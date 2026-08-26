@@ -9,13 +9,7 @@
 # On host grommit.local platform Darwin version 16.4.0 by user ilya
 # Using Python version 3.4.2 (v3.4.2:ab2c023a9432, Oct  5 2014, 20:42:22)
 #
-try:
-    from socket import inet_ntop, inet_pton, AF_INET
-except ImportError:
-    from socket import inet_ntoa, inet_aton, AF_INET
-
-    inet_ntop = lambda x, y: inet_ntoa(y)
-    inet_pton = lambda x, y: inet_aton(y)
+from socket import inet_ntop, inet_pton, AF_INET
 
 from pyasn1.compat.octets import int2oct, oct2int
 

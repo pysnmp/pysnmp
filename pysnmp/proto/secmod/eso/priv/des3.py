@@ -13,19 +13,9 @@ from pyasn1.type import univ
 from pyasn1.compat.octets import null
 from math import ceil
 
-try:
-    from hashlib import md5, sha1
-except ImportError:
-    import md5
-    import sha
+from hashlib import md5, sha1
 
-    md5 = md5.new
-    sha1 = sha.new
-
-try:
-    from Cryptodome.Cipher import DES3
-except ImportError:
-    DES3 = None
+from Cryptodome.Cipher import DES3
 
 random.seed()
 

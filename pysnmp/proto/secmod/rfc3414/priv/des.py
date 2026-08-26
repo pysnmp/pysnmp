@@ -11,18 +11,8 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 from pysnmp.proto import errind, error
 from pyasn1.type import univ
 
-try:
-    from Cryptodome.Cipher import DES
-except ImportError:
-    DES = None
-try:
-    from hashlib import md5, sha1
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
+from Cryptodome.Cipher import DES
+from hashlib import md5, sha1
 
 random.seed()
 
