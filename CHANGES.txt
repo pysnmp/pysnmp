@@ -13,6 +13,9 @@ Revision 5.0.24, released 2026-08-25
   deprecation warnings
 - Updated `pysnmp-pysmi` dependency pin from `<2.0.0` to `<3.0.0` to
   allow pysmi 2.x
+- Promoted `pyasyncore` from a dev-only dependency to a runtime
+  dependency so the `asyncore` backport is available on Python 3.12+
+  where the stdlib `asyncore` module has been removed
 
 Revision 4.4.12, released 2019-09-24
 ------------------------------------
