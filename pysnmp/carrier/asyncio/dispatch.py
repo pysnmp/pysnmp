@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -48,7 +47,12 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         if 'timeout' in kwargs:
             self.setTimerResolution(kwargs['timeout'])
         self.loopingcall = None
-        self.loop = kwargs.pop('loop', asyncio.get_event_loop())
+        self.loop = kwargs.pop('loop', None)
+        if self.loop is None:
+            try:
+                self.loop = asyncio.get_running_loop()
+            except RuntimeError:
+                self.loop = asyncio.new_event_loop()
 
     async def handle_timeout(self):
         while True:

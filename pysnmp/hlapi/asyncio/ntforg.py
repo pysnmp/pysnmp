@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -92,7 +91,7 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
     ...     send_result = await sendNotification(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 162)),
+    ...         UdpTransportTarget(('localhost', 162)),
     ...         ContextData(),
     ...         'trap',
     ...         NotificationType(ObjectIdentity('IF-MIB', 'linkDown')))
@@ -144,7 +143,7 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
                 return
             future.set_result((None, 0, 0, []))
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         loop.call_soon(__trapFun, future)
 
     return await future

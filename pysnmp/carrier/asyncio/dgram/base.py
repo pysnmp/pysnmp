@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -49,7 +48,10 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         self._writeQ = []
         self._lport = None
         if loop is None:
-            loop = asyncio.get_event_loop()
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
         self.loop = loop
 
     def datagram_received(self, datagram, transportAddress):

@@ -1,13 +1,12 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
 #          Zachary Lorusso <zlorusso@gmail.com>
-# Modified by Ilya Etingof <ilya@snmplabs.com>
+# Modified by Ilya Etingof deceased 
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -112,15 +111,15 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
     ...     result_get = await getCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0))
     ...     )
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_get
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.get_event_loop().run_until_complete(run())
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))])
+    >>> asyncio.run(run())
+    >>> (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))])
     >>>
 
     """
@@ -215,13 +214,13 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
     ...     errorIndication, errorStatus, errorIndex, varBinds = await setCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386')
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.get_event_loop().run_until_complete(run())
+    >>> asyncio.run(run())
     (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux i386'))])
     >>>
 
@@ -321,13 +320,13 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
     ...     errorIndication, errorStatus, errorIndex, varBinds = await nextCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system'))
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.get_event_loop().run_until_complete(run())
+    >>> asyncio.run(run())
     (None, 0, 0, [[ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux i386'))]])
     >>>
 
@@ -457,7 +456,7 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     ...     result_bulk = await bulkCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         0, 2,
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system'))
@@ -466,7 +465,7 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
     >>> asyncio.run(run())
-    (None, 0, 0, [[ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))], [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.2.0')), ObjectIdentifier('1.3.6.1.4.1.424242.1.1'))]])
+    (None, 0, 0, [[ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))], [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.2.0')), ObjectIdentifier('1.3.6.1.4.1.424242.1.1'))]])
     >>>
 
     """
