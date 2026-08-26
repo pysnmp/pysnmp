@@ -21,14 +21,14 @@ Before generating code, scan the codebase to identify:
    - Do not introduce the `match` statement (3.10+), `type` aliases (3.12+), or other post-3.8 syntax
 
 2. **Framework Versions**: Identify the exact versions of all frameworks
-   - Build system: Poetry (`poetry-core>=1.0.0`, declared in `pyproject.toml` `[build-system]`)
-   - Package metadata lives in `pyproject.toml` under `[tool.poetry]`; the distribution name is `pysnmplib` (version `5.0.24`)
+   - Build system: uv with hatchling (`hatchling>=1.0.0`, declared in `pyproject.toml` `[build-system]`)
+   - Package metadata lives in `pyproject.toml` under the standard PEP 621 `[project]` table; the distribution name is `pysnmplib` (version `5.0.24`)
    - The in-package version is duplicated in `pysnmp/__init__.py` as `__version__ = '5.0.24'` — keep both in sync when bumping versions
    - Never suggest features not available in the detected framework versions
 
 3. **Library Versions**: Note the exact versions of key libraries and dependencies
-   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi ^1.0.4`, `pycryptodomex ^3.11.0`, `pysnmp-pyasn1 ^1.1.3`
-   - Dev dependencies: `Sphinx ^4.3.0`, `pytest ^6.2.5`, `codecov ^2.1.12`
+   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=1.0.4,<2.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.1.3,<2.0.0`
+   - Dev dependencies (from `pyproject.toml` `[project.optional-dependencies]`): `sphinx >=4.3.0,<5.0.0`, `pytest >=6.2.5,<7.0.0`, `codecov >=2.1.12,<3.0.0`, `pytest-codecov >=0.4.0,<1.0.0`
    - Generate code compatible with these specific versions
    - The project depends on the **pysnmp-pyasn1** fork, not upstream pyasn1. Import from `pyasn1.type`, `pyasn1.codec.ber`, `pyasn1.error`, and `pyasn1.compat.octets` as seen throughout `pysnmp/proto/` and `pysnmp/smi/`
    - Cryptography uses **pycryptodomex** (the `Cryptodome` namespace), imported under `pysnmp/proto/secmod/` for USM auth/priv protocols
@@ -180,7 +180,7 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 ## Version Control Guidelines
 
 - Follow Semantic Versioning patterns as applied in the codebase
-- The version appears in **two** places that must stay in sync: `pyproject.toml` (`version = "..."` under `[tool.poetry]`) and `pysnmp/__init__.py` (`__version__ = '...'`). The `__init__.py` also derives `version` (tuple) and `majorVersionId` — preserve that derivation logic when bumping.
+- The version appears in **two** places that must stay in sync: `pyproject.toml` (`version = "..."` under `[project]`) and `pysnmp/__init__.py` (`__version__ = '...'`). The `__init__.py` also derives `version` (tuple) and `majorVersionId` — preserve that derivation logic when bumping.
 - Match existing patterns for documenting breaking changes in `CHANGES.txt` (Revision-header sections with bulleted notes)
 - Follow the same approach for deprecation notices
 
