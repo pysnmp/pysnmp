@@ -16,6 +16,20 @@ Revision 5.0.24, released 2026-08-25
 - Promoted `pyasyncore` from a dev-only dependency to a runtime
   dependency so the `asyncore` backport is available on Python 3.12+
   where the stdlib `asyncore` module has been removed
+- Removed dead `hashlib` SHA-2 fallback in `hmacsha2.py` (SHA-2
+  algorithms have been in `hashlib` since Python 3.0)
+- Removed dead `socket.inet_ntop`/`inet_pton` fallback in `SNMPv2-TM.py`
+  (available since Python 3.4)
+- Removed dead `errno.ENOENT` fallback in `builder.py`
+- Removed dead `import os` fallback in `SNMP-FRAMEWORK-MIB.py`
+- Removed dead `Cryptodome.Cipher` `ImportError` fallbacks in `des.py`,
+  `aes.py`, and `des3.py` (`pycryptodomex` is a declared dependency)
+- Removed Python 2.6 compatibility directory
+  (`hlapi/asyncore/sync/compat/`) and its `try/except SyntaxError`
+  guard (dead code on Python 3.10+)
+- Removed stale `asyncio.async()` deprecation comments in asyncio
+  transport code
+- Added snmpsim integration tests and renamed CI job to `unit-tests`
 
 Revision 4.4.12, released 2019-09-24
 ------------------------------------

@@ -5,16 +5,7 @@
 #
 import sys
 import hmac
-try:
-    from hashlib import sha224, sha256, sha384, sha512
-
-except ImportError:
-
-    class NotAvailable:
-        def __call__(self, *args, **kwargs):
-            raise errind.authenticationError
-
-    sha224 = sha256 = sha384 = sha512 = NotAvailable()
+from hashlib import sha224, sha256, sha384, sha512
 
 from pyasn1.type import univ
 from pysnmp.proto.secmod.rfc3414.auth import base

@@ -15,10 +15,7 @@ from math import ceil
 
 from hashlib import md5, sha1
 
-try:
-    from Cryptodome.Cipher import DES3
-except ImportError:
-    DES3 = None
+from Cryptodome.Cipher import DES3
 
 random.seed()
 

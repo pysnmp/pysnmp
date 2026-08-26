@@ -18,10 +18,7 @@ BYTECODE_SUFFIXES = importlib.machinery.BYTECODE_SUFFIXES
 
 PY_SUFFIXES = SOURCE_SUFFIXES + BYTECODE_SUFFIXES
 
-try:
-    from errno import ENOENT
-except ImportError:
-    ENOENT = -1
+from errno import ENOENT
 
 from pysnmp import version as pysnmp_version
 from pysnmp.smi import error
