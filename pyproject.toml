@@ -33,9 +33,11 @@ repository = "https://github.com/pysnmp/pysnmp"
 [project.optional-dependencies]
 dev = [
     "sphinx >=4.3.0,<5.0.0",
-    "pytest >=6.2.5,<7.0.0",
+    "pytest >=6.2.5,<9.0.0",
     "codecov >=2.1.12,<3.0.0",
     "pytest-codecov >=0.4.0,<1.0.0",
+    "pyasyncore ==1.0.5",
+    "snmpsim ==0.4.7",
 ]
 
 [build-system]
