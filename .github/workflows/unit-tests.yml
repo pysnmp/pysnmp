@@ -16,6 +16,6 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
-      - run: coverage run --branch --source=pysnmp -m pytest tests
+      - run: coverage run --branch --source=pysnmp -m pytest tests -v -s
       - run: coverage report
       - run: coverage xml
