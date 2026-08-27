@@ -46,7 +46,7 @@ branch = true
 source = ["pysnmp"]
 
 [tool.coverage.report]
-fail_under = 60
+fail_under = 63
 show_missing = true
 
 [tool.coverage.xml]

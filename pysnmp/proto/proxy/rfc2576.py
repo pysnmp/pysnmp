@@ -21,7 +21,7 @@ __v1ToV2ValueMap = {
     v1.Opaque.tagSet: v2c.Opaque()
 }
 
-__v2ToV1ValueMap = {  # XXX do not re-create same-type items?
+__v2ToV1ValueMap = {
     v2c.Integer32.tagSet: v1.Integer(),
     v2c.OctetString.tagSet: v1.OctetString(),
     v2c.Null.tagSet: v1.Null(),
@@ -96,6 +96,19 @@ __v2ToV1ErrorMap = {
 __zeroInt = v1.Integer(0)
 
 
+def _coerceValue(value, valueMap):
+    """Coerce a value using the given tagSet -> prototype map.
+
+    If the value's type already matches the target prototype's type,
+    the value is returned as-is without cloning. Otherwise the value
+    is cloned into the target type.
+    """
+    targetProto = valueMap[value.tagSet]
+    if value.tagSet == targetProto.tagSet:
+        return value
+    return targetProto.clone(value)
+
+
 def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=''):
     pduType = v1Pdu.tagSet
     v2Pdu = __v1ToV2PduMap[pduType].clone()
@@ -138,7 +151,7 @@ def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=''):
         if v1Val.tagSet == v1.NetworkAddress.tagSet:
             v1Val = v1Val.getComponent()
         v2VarBinds.append(
-            (oid, __v1ToV2ValueMap[v1Val.tagSet].clone(v1Val))
+            (oid, _coerceValue(v1Val, __v1ToV2ValueMap))
         )
 
     if pduType not in rfc3411.notificationClassPDUs:
@@ -288,7 +301,7 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
     else:
         for oid, v2Val in v2VarBinds:
             v1VarBinds.append(
-                (oid, __v2ToV1ValueMap[v2Val.tagSet].clone(v2Val))
+                (oid, _coerceValue(v2Val, __v2ToV1ValueMap))
             )
 
     if pduType in rfc3411.notificationClassPDUs:

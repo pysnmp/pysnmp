@@ -419,6 +419,97 @@ class TestErrind:
     def test_serialization_error(self):
         assert str(errind.serializationError) == 'SNMP message serialization error'
 
+
+class TestProxyRfc2576:
+    """Tests for v1 <-> v2c PDU coercion at proxy/rfc2576."""
+
+    def test_v1_to_v2_roundtrip(self):
+        """Verify v1 -> v2 -> v1 round-trip preserves values."""
+        from pysnmp.proto.proxy import rfc2576
+
+        v1Pdu = rfc1157.GetRequestPDU()
+        v1.apiPDU.setDefaults(v1Pdu)
+        v1VarBinds = [
+            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.OctetString('test value')),
+            ((1, 3, 6, 1, 2, 1, 1, 2, 0), rfc1155.ObjectIdentifier((1, 3, 6))),
+        ]
+        v1.apiPDU.setVarBinds(v1Pdu, v1VarBinds)
+
+        v2Pdu = rfc2576.v1ToV2(v1Pdu)
+        assert v2Pdu is not None
+        v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
+        assert len(v2VarBinds) == 2
+        assert str(v2VarBinds[0][1]) == 'test value'
+        assert tuple(v2VarBinds[1][1]) == (1, 3, 6)
+
+        v1Pdu2 = rfc2576.v2ToV1(v2Pdu, v1Pdu)
+        assert v1Pdu2 is not None
+        v1VarBinds2 = v1.apiPDU.getVarBinds(v1Pdu2)
+        assert len(v1VarBinds2) == 2
+        assert str(v1VarBinds2[0][1]) == 'test value'
+        assert tuple(v1VarBinds2[1][1]) == (1, 3, 6)
+
+    def test_v1_to_v2_counter(self):
+        """Verify Counter type coercion from v1 to v2."""
+        from pysnmp.proto.proxy import rfc2576
+
+        v1Pdu = rfc1157.GetResponsePDU()
+        v1.apiPDU.setDefaults(v1Pdu)
+        v1VarBinds = [
+            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.Counter(42)),
+        ]
+        v1.apiPDU.setVarBinds(v1Pdu, v1VarBinds)
+
+        v2Pdu = rfc2576.v1ToV2(v1Pdu)
+        v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
+        assert int(v2VarBinds[0][1]) == 42
+        assert v2VarBinds[0][1].tagSet == rfc1902.Counter32.tagSet
+
+    def test_v2_to_v1_counter32(self):
+        """Verify Counter32 type coercion from v2 to v1."""
+        from pysnmp.proto.proxy import rfc2576
+
+        v2Pdu = rfc1905.GetResponsePDU()
+        v2c.apiPDU.setDefaults(v2Pdu)
+        v2VarBinds = [
+            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.Counter32(99)),
+        ]
+        v2c.apiPDU.setVarBinds(v2Pdu, v2VarBinds)
+
+        v1Pdu = rfc2576.v2ToV1(v2Pdu)
+        v1VarBinds = v1.apiPDU.getVarBinds(v1Pdu)
+        assert int(v1VarBinds[0][1]) == 99
+        assert v1VarBinds[0][1].tagSet == rfc1155.Counter.tagSet
+
+    def test_same_type_not_recreated(self):
+        """Verify that same-type values are not re-created (clone skipped)."""
+        from pysnmp.proto.proxy import rfc2576
+
+        v1Pdu = rfc1157.GetResponsePDU()
+        v1.apiPDU.setDefaults(v1Pdu)
+        v1Val = rfc1155.OctetString('hello')
+        v1VarBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), v1Val)]
+        v1.apiPDU.setVarBinds(v1Pdu, v1VarBinds)
+
+        v2Pdu = rfc2576.v1ToV2(v1Pdu)
+        v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
+
+        assert str(v2VarBinds[0][1]) == 'hello'
+        assert v2VarBinds[0][1].tagSet == v1Val.tagSet
+
+    def test_coerce_value_helper(self):
+        """Test the _coerceValue helper directly."""
+        from pysnmp.proto.proxy import rfc2576
+
+        val = rfc1155.OctetString('test')
+        result = rfc2576._coerceValue(val, rfc2576.__v1ToV2ValueMap)
+        assert result is val
+
+        val = rfc1155.Counter(42)
+        result = rfc2576._coerceValue(val, rfc2576.__v1ToV2ValueMap)
+        assert int(result) == 42
+        assert result.tagSet == rfc1902.Counter32.tagSet
+
     def test_deserialization_error(self):
         assert str(errind.deserializationError) == 'SNMP message deserialization error'
 

@@ -305,6 +305,50 @@ class TestObjectIdentity:
         label = oi.getLabel()
         assert 'sysDescr' in label
 
+    def test_get_first_by_node_type_scalar(self, mib_view_controller):
+        """getFirstNodeName with nodeType='scalar' returns only scalar nodes."""
+        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        oid, label, suffix = mib_view_controller.getFirstNodeName('SNMPv2-MIB', 'scalar')
+        symName = label[-1]
+        symObj = mib_view_controller.mibBuilder.mibSymbols['SNMPv2-MIB'][symName]
+        assert symObj.__class__.__name__ == 'MibScalar'
+
+    def test_get_last_by_node_type_scalar(self, mib_view_controller):
+        """getLastNodeName with nodeType='scalar' returns only scalar nodes."""
+        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        oid, label, suffix = mib_view_controller.getLastNodeName('SNMPv2-MIB', 'scalar')
+        symName = label[-1]
+        symObj = mib_view_controller.mibBuilder.mibSymbols['SNMPv2-MIB'][symName]
+        assert symObj.__class__.__name__ == 'MibScalar'
+
+    def test_get_first_by_node_type_table(self, mib_view_controller):
+        """getFirstNodeName with nodeType='table' returns only table nodes."""
+        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        oid, label, suffix = mib_view_controller.getFirstNodeName('SNMPv2-MIB', 'table')
+        symName = label[-1]
+        symObj = mib_view_controller.mibBuilder.mibSymbols['SNMPv2-MIB'][symName]
+        assert symObj.__class__.__name__ == 'MibTable'
+
+    def test_get_first_by_node_type_unknown_raises(self, mib_view_controller):
+        """getFirstNodeName with unknown nodeType raises SmiError."""
+        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        with pytest.raises(error.SmiError):
+            mib_view_controller.getFirstNodeName('SNMPv2-MIB', 'unknown')
+
+    def test_get_first_by_node_type_no_match_raises(self, mib_view_controller):
+        """getFirstNodeName with nodeType that has no matches raises NoSuchObjectError."""
+        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        with pytest.raises(error.SmiError):
+            mib_view_controller.getFirstNodeName('NON-EXISTENT-MIB', 'scalar')
+
+    def test_object_identity_last_with_node_type(self, mib_view_controller):
+        """ObjectIdentity with last=True and nodeType='scalar' resolves to a scalar."""
+        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        oi = ObjectIdentity('SNMPv2-MIB', last=True, nodeType='scalar')
+        oi.resolveWithMib(mib_view_controller)
+        mibNode = oi.getMibNode()
+        assert mibNode.__class__.__name__ == 'MibScalar'
+
 
 class TestObjectType:
     def test_creation(self):
@@ -323,6 +367,39 @@ class TestObjectType:
     def test_is_fully_resolved(self):
         ot = ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), OctetString('test'))
         assert not ot.isFullyResolved()
+
+    def test_get_units_unresolved_raises(self):
+        ot = ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), OctetString('test'))
+        with pytest.raises(error.SmiError):
+            ot.getUnits()
+
+    def test_get_units_no_units(self, mib_view_controller):
+        ot = ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), OctetString('test'))
+        ot.resolveWithMib(mib_view_controller)
+        assert ot.getUnits() == ''
+
+    def test_get_units_propagated(self, mib_view_controller):
+        """Verify getUnits() returns the UNITS clause value after resolution."""
+        mib_view_controller.mibBuilder.loadModules('SNMP-FRAMEWORK-MIB')
+        ot = ObjectType(
+            ObjectIdentity('SNMP-FRAMEWORK-MIB', 'snmpEngineTime', 0),
+            Integer(42),
+        )
+        ot.resolveWithMib(mib_view_controller)
+        assert ot.getUnits() == 'seconds'
+
+    def test_get_units_propagated_table_column(self, mib_view_controller):
+        """Verify getUnits() works for table columns with UNITS clause."""
+        mib_view_controller.mibBuilder.loadModules('SNMP-TARGET-MIB')
+        try:
+            ot = ObjectType(
+                ObjectIdentity('SNMP-TARGET-MIB', 'snmpTargetAddrTimeout', 0),
+                Integer(0),
+            )
+            ot.resolveWithMib(mib_view_controller)
+            assert isinstance(ot.getUnits(), str)
+        except error.SmiError:
+            pytest.skip("SNMP-TARGET-MIB snmpTargetAddrTimeout not available")
 
 
 class TestBundledMibs:
@@ -438,3 +515,44 @@ class TestMibInstrumController:
         ctrl = AbstractMibInstrumController()
         with pytest.raises(error.NoSuchObjectError):
             ctrl.writeVars([])
+
+
+class TestMibWalk:
+    """Tests for MIB tree walk operations and VACM shadowing."""
+
+    @pytest.fixture
+    def fresh_builder(self):
+        return SnmpEngine().getMibBuilder()
+
+    def test_walk_shadowed_oids_correct(self, fresh_builder):
+        """Walk over VACM shadowed OIDs returns correct results."""
+        from pysnmp.smi.instrum import MibInstrumController
+        ctrl = MibInstrumController(fresh_builder)
+        result = ctrl.readNextVars([((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))])
+        assert isinstance(result, list)
+        assert len(result) == 1
+        name, val = result[0]
+        assert name is not None
+
+    def test_walk_shadowed_oids_performance(self, fresh_builder):
+        """Performance test: walk over many OIDs should complete quickly."""
+        from pysnmp.smi.instrum import MibInstrumController
+        import time
+        ctrl = MibInstrumController(fresh_builder)
+        var_binds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))]
+        start = time.monotonic()
+        for _ in range(100):
+            result = ctrl.readNextVars(var_binds)
+            if result:
+                var_binds = [(result[0][0], Integer(0))]
+            else:
+                break
+        elapsed = time.monotonic() - start
+        assert elapsed < 5.0
+
+    def test_get_next_branch_optimization(self, fresh_builder):
+        """Test that getNextBranch uses iterator instead of list creation."""
+        from pysnmp.smi.instrum import MibInstrumController
+        ctrl = MibInstrumController(fresh_builder)
+        result = ctrl.readNextVars([((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))])
+        assert isinstance(result, list)

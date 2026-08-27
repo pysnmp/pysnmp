@@ -93,8 +93,13 @@ class Vacm:
             pass
 
         # vacmAccessTable #2: fuzzy look-up
+        # Optimized: single-pass best-candidate tracking instead of
+        # building a list and sorting it on every lookup.
+        # Priority: matching securityModel > exact context match (match==1)
+        # > longer partial match > highest securityLevel
 
-        candidates = []
+        bestRating = None
+        bestViewName = None
 
         for match, names in matches.items():
 
@@ -109,22 +114,16 @@ class Vacm:
                 for model, levels in models.items():
                     for level, viewName in levels.items():
 
-                        # priorities:
-                        # - matching securityModel
-                        # - exact context name match
-                        # - longer partial match
-                        # - highest securityLevel
-                        rating = securityModel == model, match == 1, len(context), level
+                        rating = (securityModel == model, match == 1, len(context), level)
 
-                        candidates.append((rating, viewName))
+                        if bestRating is None or rating > bestRating:
+                            bestRating = rating
+                            bestViewName = viewName
 
-        if not candidates:
+        if bestViewName is None:
             raise error.StatusInformation(errorIndication=errind.notInView)
 
-        candidates.sort()
-
-        rating, viewName = candidates[0]
-        return viewName
+        return bestViewName
 
     def isAccessAllowed(self,
                         snmpEngine,

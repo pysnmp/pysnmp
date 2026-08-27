@@ -405,9 +405,9 @@ class ObjectIdentity:
                     modName = self.__args[0]
                     mibViewController.mibBuilder.loadModules(modName)
                     if self.__kwargs.get('last'):
-                        prefix, label, suffix = mibViewController.getLastNodeName(modName)
+                        prefix, label, suffix = mibViewController.getLastNodeName(modName, self.__kwargs.get('nodeType'))
                     else:
-                        prefix, label, suffix = mibViewController.getFirstNodeName(modName)
+                        prefix, label, suffix = mibViewController.getFirstNodeName(modName, self.__kwargs.get('nodeType'))
 
                 if suffix:
                     try:
@@ -464,9 +464,9 @@ class ObjectIdentity:
             elif self.__args[0]:
                 mibViewController.mibBuilder.loadModules(self.__args[0])
                 if self.__kwargs.get('last'):
-                    prefix, label, suffix = mibViewController.getLastNodeName(self.__args[0])
+                    prefix, label, suffix = mibViewController.getLastNodeName(self.__args[0], self.__kwargs.get('nodeType'))
                 else:
-                    prefix, label, suffix = mibViewController.getFirstNodeName(self.__args[0])
+                    prefix, label, suffix = mibViewController.getFirstNodeName(self.__args[0], self.__kwargs.get('nodeType'))
                 self.__modName, self.__symName, _ = mibViewController.getNodeLocation(prefix)
             # '', symbol, index, index
             else:
@@ -696,6 +696,7 @@ class ObjectType:
             raise SmiError(f'initializer should be ObjectIdentity instance, not {objectIdentity!r}')
         self.__args = [objectIdentity, objectSyntax]
         self.__state = self.stDirty
+        self.__units = ''
 
     def __getitem__(self, i):
         if self.__state & self.stClean:
@@ -851,13 +852,18 @@ class ObjectType:
         MibScalar, MibTableColumn = mibViewController.mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalar',
                                                                                'MibTableColumn')
 
-        if not isinstance(self.__args[0].getMibNode(),
-                          (MibScalar, MibTableColumn)):
+        mibNode = self.__args[0].getMibNode()
+
+        if not isinstance(mibNode, (MibScalar, MibTableColumn)):
             if (ignoreErrors and
                     not isinstance(self.__args[1], AbstractSimpleAsn1Item)):
                 raise SmiError(f'MIB object {self.__args[0]!r} is not OBJECT-TYPE (MIB not loaded?)')
             self.__state |= self.stClean
             return self
+
+        # Propagate UNITS clause from MIB node to response object
+        if hasattr(mibNode, 'getUnits'):
+            self.__units = mibNode.getUnits() or ''
 
         if isinstance(self.__args[1], (rfc1905.UnSpecified,
                                        rfc1905.NoSuchObject,
@@ -867,11 +873,11 @@ class ObjectType:
             return self
 
         try:
-            self.__args[1] = self.__args[0].getMibNode().getSyntax().clone(self.__args[1])
+            self.__args[1] = mibNode.getSyntax().clone(self.__args[1])
         except PyAsn1Error:
             err = ('MIB object %r having type %r failed to cast value '
                    '%r: %s' % (self.__args[0].prettyPrint(),
-                               self.__args[0].getMibNode().getSyntax().__class__.__name__,
+                               mibNode.getSyntax().__class__.__name__,
                                self.__args[1],
                                sys.exc_info()[1]))
 
@@ -887,6 +893,25 @@ class ObjectType:
         debug.logger & debug.flagMIB and debug.logger(f'resolved {self.__args[0]!r} syntax is {self.__args[1]!r}')
 
         return self
+
+    def getUnits(self):
+        """Returns UNITS clause value from the resolved MIB node.
+
+        Returns
+        -------
+        : :py:class:`str`
+            The UNITS clause value associated with the MIB object, or
+            empty string if no UNITS clause is defined.
+
+        Raises
+        ------
+        SmiError
+           If MIB variable conversion has not been performed.
+        """
+        if self.__state & self.stClean:
+            return self.__units
+        else:
+            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
 
     def prettyPrint(self):
         if self.__state & self.stClean:
