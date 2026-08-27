@@ -73,7 +73,12 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
                 await asyncio.sleep(timeout or self.getTimerResolution())
 
         try:
-            self.loop.run_until_complete(run_pending_jobs())
+            if self.jobsArePending() or self.transportsAreWorking():
+                self.loop.run_until_complete(run_pending_jobs())
+            else:
+                # Server mode: run the event loop indefinitely so that
+                # registered transports can receive incoming messages.
+                self.loop.run_forever()
         except KeyboardInterrupt:
             raise
         except Exception:
@@ -86,6 +91,14 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         return False
 
     def registerTransport(self, tDomain, transport):
+        # If the transport already has an event loop (e.g. server-mode
+        # transport created before the dispatcher), adopt its loop so
+        # that datagram reception works on the same loop.
+        transportLoop = getattr(transport, 'loop', None)
+        if transportLoop is not None and not self.loop.is_running():
+            if transportLoop is not self.loop:
+                self.loop = transportLoop
+
         if (self.loopingcall is None and self._timerStartHandle is None and
                 self.getTimerResolution() > 0):
             if self.loop.is_running():

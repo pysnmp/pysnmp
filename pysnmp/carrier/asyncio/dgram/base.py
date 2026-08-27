@@ -91,7 +91,6 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 self._lport = self.loop.create_task(c)
             else:
                 self.loop.run_until_complete(c)
-
         except Exception:
             raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
         return self
