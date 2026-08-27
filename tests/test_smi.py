@@ -329,6 +329,25 @@ class TestObjectIdentity:
         symObj = mib_view_controller.mibBuilder.mibSymbols['SNMPv2-MIB'][symName]
         assert symObj.__class__.__name__ == 'MibTable'
 
+    def test_get_first_by_node_type_includes_scalar_subclass(self, mib_view_controller):
+        """Typed lookup recognizes MIB extensions derived from MibScalar."""
+        mibBuilder = mib_view_controller.mibBuilder
+        MibScalar, = mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalar')
+
+        class CustomMibScalar(MibScalar):
+            pass
+
+        mibBuilder.exportSymbols(
+            'TEST-CUSTOM-SMI',
+            customScalar=CustomMibScalar((1, 3, 6, 1, 4, 1, 20408, 1), Integer(0)),
+        )
+
+        oid, label, suffix = mib_view_controller.getFirstNodeName(
+            'TEST-CUSTOM-SMI', 'scalar'
+        )
+        assert oid == (1, 3, 6, 1, 4, 1, 20408, 1)
+        assert label[-1] == 'customScalar'
+
     def test_get_first_by_node_type_unknown_raises(self, mib_view_controller):
         """getFirstNodeName with unknown nodeType raises SmiError."""
         mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')

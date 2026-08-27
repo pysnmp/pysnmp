@@ -728,10 +728,6 @@ class MibScalarInstance(MibTree):
     def writeTest(self, name, val, idx, acInfo):
         # Make sure write's allowed
         if name == self.name:
-            # Reject empty/zero-length OctetString SET values (Phase 3.7)
-            if val is not None and hasattr(val, '__len__') and len(val) == 0:
-                if hasattr(val, 'tagSet') and val.tagSet == rfc1902.OctetString.tagSet:
-                    raise error.InconsistentValueError(idx=idx, name=name, msg='empty SET value not allowed')
             try:
                 self.__newSyntax = self.setValue(val, name, idx)
             except error.MibOperationError:

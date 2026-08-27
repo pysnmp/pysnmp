@@ -247,11 +247,14 @@ class MibViewController:
             )
         if nodeType is not None:
             # Filter by node type (scalar, table, column, row)
+            MibScalar, MibTable, MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
+                'SNMPv2-SMI', 'MibScalar', 'MibTable', 'MibTableColumn', 'MibTableRow'
+            )
             nodeTypeMap = {
-                'scalar': 'MibScalar',
-                'table': 'MibTable',
-                'column': 'MibTableColumn',
-                'row': 'MibTableRow',
+                'scalar': MibScalar,
+                'table': MibTable,
+                'column': MibTableColumn,
+                'row': MibTableRow,
             }
             targetClass = nodeTypeMap.get(nodeType)
             if targetClass is None:
@@ -261,7 +264,7 @@ class MibViewController:
                 symName = label[-1]
                 if symName in self.mibBuilder.mibSymbols[modName]:
                     symObj = self.mibBuilder.mibSymbols[modName][symName]
-                    if symObj.__class__.__name__ == targetClass:
+                    if isinstance(symObj, targetClass):
                         filtered.append((oid, label))
             if not filtered:
                 raise error.NoSuchObjectError(

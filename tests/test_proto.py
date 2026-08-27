@@ -481,8 +481,8 @@ class TestProxyRfc2576:
         assert int(v1VarBinds[0][1]) == 99
         assert v1VarBinds[0][1].tagSet == rfc1155.Counter.tagSet
 
-    def test_same_type_not_recreated(self):
-        """Verify that same-type values are not re-created (clone skipped)."""
+    def test_same_tag_set_value_is_converted_to_destination_type(self):
+        """Values sharing a tag set still use the destination ASN.1 type."""
         from pysnmp.proto.proxy import rfc2576
 
         v1Pdu = rfc1157.GetResponsePDU()
@@ -495,20 +495,20 @@ class TestProxyRfc2576:
         v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
 
         assert str(v2VarBinds[0][1]) == 'hello'
-        assert v2VarBinds[0][1].tagSet == v1Val.tagSet
+        assert type(v2VarBinds[0][1]) is v2c.OctetString
 
-    def test_coerce_value_helper(self):
-        """Test the _coerceValue helper directly."""
+    def test_v1_to_v2_rejects_integer_outside_integer32_range(self):
+        """Proxy conversion must not bypass Integer32's constraints."""
         from pysnmp.proto.proxy import rfc2576
 
-        val = rfc1155.OctetString('test')
-        result = rfc2576._coerceValue(val, rfc2576.__v1ToV2ValueMap)
-        assert result is val
+        v1Pdu = rfc1157.GetResponsePDU()
+        v1.apiPDU.setDefaults(v1Pdu)
+        v1.apiPDU.setVarBinds(v1Pdu, [
+            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.Integer(2147483648)),
+        ])
 
-        val = rfc1155.Counter(42)
-        result = rfc2576._coerceValue(val, rfc2576.__v1ToV2ValueMap)
-        assert int(result) == 42
-        assert result.tagSet == rfc1902.Counter32.tagSet
+        with pytest.raises(Exception):
+            rfc2576.v1ToV2(v1Pdu)
 
     def test_deserialization_error(self):
         assert str(errind.deserializationError) == 'SNMP message deserialization error'
