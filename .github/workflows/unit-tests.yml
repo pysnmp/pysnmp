@@ -19,6 +19,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
+      - run: python -m pip install --no-deps "snmpsim==0.4.7"
       - run: coverage run --branch --source=pysnmp -m pytest tests -v -s
       - run: coverage report
       - run: coverage xml

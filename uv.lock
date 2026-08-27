@@ -411,15 +411,6 @@ wheels = [
 ]
 
 [[package]]
-name = "lark"
-version = "1.3.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/da/34/28fff3ab31ccff1fd4f6c7c7b0ceb2b6968d8ea4950663eadcb5720591a0/lark-1.3.1.tar.gz", hash = "sha256:b426a7a6d6d53189d318f2b6236ab5d6429eaf09259f1ca33eb716eed10d2905", size = 382732, upload-time = "2025-10-27T18:25:56.653Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/3d/14ce75ef66813643812f3093ab17e46d3a206942ce7376d31ec2d36229e7/lark-1.3.1-py3-none-any.whl", hash = "sha256:c629b661023a014c37da873b4ff58a817398d12635d3bbb2c5a03be7fe5d1e12", size = 113151, upload-time = "2025-10-27T18:25:54.882Z" },
-]
-
-[[package]]
 name = "markupsafe"
 version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -541,24 +532,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyasn1"
-version = "0.6.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a4/9a/23310166d960def5897e91fe20e5b724601b02a22e84ba1f94232c0b7f67/pyasn1-0.6.4.tar.gz", hash = "sha256:9c447d8431c947fe4c8febc4ed9e760bc29011a5b01e5c74b67025bd9fb8ce81", size = 151262, upload-time = "2026-07-09T01:12:33.988Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9a/3b/6163796d69c3977d1e4287bea4a6979161cbbdd170ebb430511e8e1999ce/pyasn1-0.6.4-py3-none-any.whl", hash = "sha256:deda9277cfd454080ec40b207fb6df82206a3a2688735233cdcd8d3d565f088b", size = 84410, upload-time = "2026-07-09T01:12:32.92Z" },
-]
-
-[[package]]
-name = "pyasyncore"
-version = "1.0.5"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4e/43/035dfe0cb01687c1940fdc008f46a43c41067e226e862df49327469764a0/pyasyncore-1.0.5.tar.gz", hash = "sha256:dd483d5103a6d59b66b86e0ca2334ad43dca732ff23a0ac5d63c88c52510542e", size = 15854, upload-time = "2026-01-05T19:59:31.893Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/ab/b10cee56269ae150763f3f83b3e9305a11f42f50b3dcd58eeb8f7988f0bb/pyasyncore-1.0.5-py3-none-any.whl", hash = "sha256:269bbc5252671827387636822841a1fb721ec6e858b23a3e12cf92eb1f97da2a", size = 10237, upload-time = "2026-01-05T19:59:30.824Z" },
-]
-
-[[package]]
 name = "pycryptodomex"
 version = "3.23.0"
 source = { registry = "https://pypi.org/simple" }
@@ -603,34 +576,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pysmi"
-version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "jinja2" },
-    { name = "lark" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ce/69/5666ed49ca34b418c3fdd9a6d7754566193ae0b9d2bc4b695ade7ef85b77/pysmi-2.0.0.tar.gz", hash = "sha256:9eeba85ed59c5de38f512fe9858ce3332864526f7efc8135b3e3f552666cf79b", size = 62315, upload-time = "2026-04-26T20:34:40.702Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/6c/646a251c5e5d0858b3956b9f0f6b7bbda538ddbf271f17da6cf3a5aebdd2/pysmi-2.0.0-py3-none-any.whl", hash = "sha256:b5f11cbfa303a325eaaa5e00f9d76aadb63b12c35b2297bde5c4978e9ca06a52", size = 87158, upload-time = "2026-04-26T20:34:39.668Z" },
-]
-
-[[package]]
-name = "pysnmp"
-version = "4.4.12"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyasn1" },
-    { name = "pycryptodomex" },
-    { name = "pysmi" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/4e/75/72f64c451bf5884715f84f8217b69b4025da0b67628d611cd14a5b7db217/pysnmp-4.4.12.tar.gz", hash = "sha256:0c3dbef2f958caca96071fe5c19de43e9c1b0484ab02a0cf08b190bcee768ba9", size = 442270, upload-time = "2019-09-24T16:29:37.521Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/7e/1e17facea54dd21c6a72db6ae57a5bfdd56edd54b8c4850668b554bdddba/pysnmp-4.4.12-py2.py3-none-any.whl", hash = "sha256:d90946c5d7c55b1ddc03e065a99a2ed36e748dcf166ca04ee4126b8f25fc057a", size = 296498, upload-time = "2019-09-24T16:28:57.676Z" },
-]
-
-[[package]]
 name = "pysnmp-pyasn1"
 version = "1.1.3"
 source = { registry = "https://pypi.org/simple" }
@@ -657,7 +602,6 @@ name = "pysnmplib"
 version = "5.0.24"
 source = { editable = "." }
 dependencies = [
-    { name = "pyasyncore" },
     { name = "pycryptodomex" },
     { name = "pysnmp-pyasn1" },
     { name = "pysnmp-pysmi" },
@@ -669,7 +613,6 @@ dev = [
     { name = "coverage", extra = ["toml"] },
     { name = "pytest" },
     { name = "pytest-codecov" },
-    { name = "snmpsim" },
     { name = "sphinx" },
 ]
 
@@ -677,13 +620,11 @@ dev = [
 requires-dist = [
     { name = "codecov", marker = "extra == 'dev'", specifier = ">=2.1.12,<3.0.0" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.2.0,<8.0.0" },
-    { name = "pyasyncore", specifier = ">=1.0.5,<2.0.0" },
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=1.1.3,<2.0.0" },
     { name = "pysnmp-pysmi", specifier = ">=1.0.4,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=6.2.5,<9.0.0" },
     { name = "pytest-codecov", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
-    { name = "snmpsim", marker = "extra == 'dev'", specifier = "==0.4.7" },
     { name = "sphinx", marker = "extra == 'dev'", specifier = ">=4.3.0,<5.0.0" },
 ]
 provides-extras = ["dev"]
@@ -749,18 +690,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ac/c3/e2a2b89f2d3e2179abd6d00ebd70bff6273f37fb3e0cc209f48b39d00cbf/requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed", size = 142856, upload-time = "2026-05-14T19:25:27.735Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0", size = 73075, upload-time = "2026-05-14T19:25:26.443Z" },
-]
-
-[[package]]
-name = "snmpsim"
-version = "0.4.7"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pysnmp" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/20/65/249ae1001678e528f9fada742e09bbc953882c760870d5933047cc14c416/snmpsim-0.4.7.tar.gz", hash = "sha256:2c94acec6f8e7b5278137f9c5d3b1510ea902d8023842f96408f39f5d9859b14", size = 414713, upload-time = "2019-02-09T16:22:26.435Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/40/ca6ca835b258737990cfa9848b45a89364a6b01395af2cb24b43fad5c200/snmpsim-0.4.7-py2.py3-none-any.whl", hash = "sha256:a00b053e7e8f1ad27c381d009eb52fb55ae3bcd02b92ad2c6eae3e6b077da02b", size = 416976, upload-time = "2019-02-09T16:21:53.755Z" },
 ]
 
 [[package]]

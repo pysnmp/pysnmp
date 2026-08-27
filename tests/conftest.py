@@ -1,5 +1,6 @@
 """Shared fixtures for integration tests."""
 
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -23,6 +24,40 @@ def snmpsim_endpoint(tmp_path_factory):
     if not simulator.is_file():
         pytest.fail("snmpsimd.py was not installed alongside the Python executable")
 
+    repository_root = Path(__file__).resolve().parents[1]
+    environment = os.environ.copy()
+    python_path = environment.get("PYTHONPATH")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(repository_root), python_path) if path
+    )
+
+    import_probe = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import pathlib, pysnmp; print(pathlib.Path(pysnmp.__file__).resolve())",
+        ],
+        cwd=work_dir,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if import_probe.returncode:
+        pytest.fail(
+            "could not import pysnmp in simulator environment:\n{}".format(
+                import_probe.stderr
+            )
+        )
+
+    imported_package = Path(import_probe.stdout.strip())
+    if not imported_package.is_relative_to(repository_root):
+        pytest.fail(
+            "simulator resolved pysnmp outside this checkout: {}".format(
+                imported_package
+            )
+        )
+
     with log_path.open("w") as log_file:
         process = subprocess.Popen(
             [
@@ -39,6 +74,7 @@ def snmpsim_endpoint(tmp_path_factory):
             ],
             stdout=subprocess.DEVNULL,
             stderr=log_file,
+            env=environment,
         )
 
         deadline = time.monotonic() + 10

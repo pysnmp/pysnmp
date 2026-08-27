@@ -37,8 +37,10 @@ dev = [
     "coverage[toml] >=7.2.0,<8.0.0",
     "codecov >=2.1.12,<3.0.0",
     "pytest-codecov >=0.4.0,<1.0.0",
-    "snmpsim ==0.4.7",
 ]
+
+# snmpsim 0.4.7 depends on the legacy pysnmp 4.4.12 distribution. Install it
+# separately with --no-deps so it exercises this checkout instead.
 
 [tool.coverage.run]
 branch = true
