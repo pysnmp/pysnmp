@@ -499,6 +499,137 @@ class TestMpCache:
         c.expireCaches()
 
 
+# ---- Auth/priv matrix unit tests (issue #54) ----
+
+AUTH_PROTOCOLS = [
+    (hmacmd5.HmacMd5.serviceID, 'MD5'),
+    (hmacsha.HmacSha.serviceID, 'SHA1'),
+    (hmacsha2.HmacSha2.sha224ServiceID, 'SHA2-224'),
+    (hmacsha2.HmacSha2.sha256ServiceID, 'SHA2-256'),
+    (hmacsha2.HmacSha2.sha384ServiceID, 'SHA2-384'),
+    (hmacsha2.HmacSha2.sha512ServiceID, 'SHA2-512'),
+]
+
+AUTH_HASH_FUNCS = {
+    hmacmd5.HmacMd5.serviceID: __import__('hashlib').md5,
+    hmacsha.HmacSha.serviceID: __import__('hashlib').sha1,
+    hmacsha2.HmacSha2.sha224ServiceID: __import__('hashlib').sha224,
+    hmacsha2.HmacSha2.sha256ServiceID: __import__('hashlib').sha256,
+    hmacsha2.HmacSha2.sha384ServiceID: __import__('hashlib').sha384,
+    hmacsha2.HmacSha2.sha512ServiceID: __import__('hashlib').sha512,
+}
+
+PRIV_SERVICES = [
+    (des.Des(), 'DES'),
+    (des3.Des3(), '3DES'),
+    (aes.Aes(), 'AES128'),
+    (aes192.AesBlumenthal192(), 'AES192B'),
+    (aes192.Aes192(), 'AES192R'),
+    (aes256.AesBlumenthal256(), 'AES256B'),
+    (aes256.Aes256(), 'AES256R'),
+]
+
+ENGINE_ID = univ.OctetString(hexValue='80001234567890abcdef')
+TEST_PASSPHRASE = 'testpassphrase'
+
+
+class TestAuthPrivMatrixKeyLocalization:
+    """Verify key localization produces correct-length keys for every combination."""
+
+    @pytest.mark.parametrize(
+        "priv_svc,priv_name", PRIV_SERVICES, ids=[p[1] for p in PRIV_SERVICES]
+    )
+    @pytest.mark.parametrize(
+        "auth_oid,auth_name", AUTH_PROTOCOLS, ids=[a[1] for a in AUTH_PROTOCOLS]
+    )
+    def test_localize_key_length(self, auth_oid, auth_name, priv_svc, priv_name):
+        hash_func = AUTH_HASH_FUNCS[auth_oid]
+        master_key = localkey.hashPassphrase(TEST_PASSPHRASE, hash_func)
+        local_key = priv_svc.localizeKey(auth_oid, master_key, ENGINE_ID)
+        assert len(local_key) == priv_svc.keySize, (
+            f"{auth_name}+{priv_name}: expected {priv_svc.keySize}, got {len(local_key)}"
+        )
+
+
+class TestAuthPrivMatrixHashPassphrase:
+    """Verify hashPassphrase produces correct-length output for every combination."""
+
+    @pytest.mark.parametrize(
+        "priv_svc,priv_name", PRIV_SERVICES, ids=[p[1] for p in PRIV_SERVICES]
+    )
+    @pytest.mark.parametrize(
+        "auth_oid,auth_name", AUTH_PROTOCOLS, ids=[a[1] for a in AUTH_PROTOCOLS]
+    )
+    def test_hash_passphrase_length(self, auth_oid, auth_name, priv_svc, priv_name):
+        result = priv_svc.hashPassphrase(auth_oid, TEST_PASSPHRASE)
+        hash_func = AUTH_HASH_FUNCS[auth_oid]
+        expected_len = len(hash_func(b'').digest())
+        assert len(result) == expected_len, (
+            f"{auth_name}+{priv_name}: expected {expected_len}, got {len(result)}"
+        )
+
+
+class TestAuthPrivMatrixRoundTrip:
+    """Verify encrypt→decrypt round-trip for every combination."""
+
+    @pytest.mark.parametrize(
+        "priv_svc,priv_name", PRIV_SERVICES, ids=[p[1] for p in PRIV_SERVICES]
+    )
+    @pytest.mark.parametrize(
+        "auth_oid,auth_name", AUTH_PROTOCOLS, ids=[a[1] for a in AUTH_PROTOCOLS]
+    )
+    def test_encrypt_decrypt_roundtrip(self, auth_oid, auth_name, priv_svc, priv_name):
+        hash_func = AUTH_HASH_FUNCS[auth_oid]
+        master_key = localkey.hashPassphrase(TEST_PASSPHRASE, hash_func)
+        local_key = priv_svc.localizeKey(auth_oid, master_key, ENGINE_ID)
+
+        data = b'Test data for encryption round trip!'
+        snmp_engine_boots = 1
+        snmp_engine_time = 100
+
+        encrypted, priv_params = priv_svc.encryptData(
+            local_key,
+            (snmp_engine_boots, snmp_engine_time, None),
+            data,
+        )
+        decrypted = priv_svc.decryptData(
+            local_key,
+            (snmp_engine_boots, snmp_engine_time, priv_params),
+            encrypted,
+        )
+        assert decrypted[:len(data)] == data, (
+            f"{auth_name}+{priv_name}: round-trip mismatch"
+        )
+
+
+class TestAuthProtocolsRoundTrip:
+    """Verify authenticateOutgoing→authenticateIncoming round-trip for SHA2."""
+
+    @pytest.mark.parametrize(
+        "auth_oid,auth_name", AUTH_PROTOCOLS, ids=[a[1] for a in AUTH_PROTOCOLS]
+    )
+    def test_auth_roundtrip(self, auth_oid, auth_name):
+        if auth_oid in (hmacmd5.HmacMd5.serviceID, hmacsha.HmacSha.serviceID):
+            if auth_oid == hmacmd5.HmacMd5.serviceID:
+                svc = hmacmd5.HmacMd5()
+            else:
+                svc = hmacsha.HmacSha()
+        else:
+            svc = hmacsha2.HmacSha2(auth_oid)
+
+        hashed = svc.hashPassphrase(TEST_PASSPHRASE)
+        localized = svc.localizeKey(hashed, ENGINE_ID)
+
+        placeholder = b'\x00' * svc.digestLength
+        msg = b'GET-REQUEST' + placeholder + b'TRAILER'
+        result = svc.authenticateOutgoingMsg(localized, msg)
+
+        auth_params = univ.OctetString(
+            result[len(b'GET-REQUEST'):len(b'GET-REQUEST') + svc.digestLength]
+        )
+        svc.authenticateIncomingMsg(localized, auth_params, result)
+
+
 class TestVoidVacm:
     def test_access_model_id(self):
         assert VoidVacm.accessModelID == 0

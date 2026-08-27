@@ -1,5 +1,9 @@
 """Unit tests for entity, engine, RFC3413 applications, carrier, and transport."""
 
+import asyncio
+import os
+import tempfile
+
 import pytest
 
 from pysnmp.entity.engine import SnmpEngine
@@ -18,13 +22,12 @@ from pysnmp.carrier.base import (
     TimerCallable,
 )
 from pysnmp.carrier.error import CarrierError
-from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
-from pysnmp.carrier.asyncore.dgram import udp
-from pysnmp.carrier.asyncore.dgram.base import DgramSocketTransport
+from pysnmp.carrier.asyncio.dispatch import AsyncioDispatcher
+from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.hlapi.auth import CommunityData, UsmUserData
 from pysnmp.hlapi.context import ContextData
 from pysnmp.hlapi.transport import AbstractTransportTarget
-from pysnmp.hlapi.asyncore.transport import UdpTransportTarget
+from pysnmp.hlapi.asyncio.transport import UdpTransportTarget
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds, NotificationOriginatorVarBinds
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.proto import errind, error
@@ -332,24 +335,26 @@ class TestAbstractTransportAddress:
         assert cloned.getLocalAddress() == ('0.0.0.0', 0)
 
 
-class TestAsyncoreDispatcher:
+class TestAsyncioDispatcher:
     def test_creation(self):
-        td = AsyncoreDispatcher()
+        td = AsyncioDispatcher()
         assert td is not None
-        assert td.timeout == 0.5
+        assert td.getTimerResolution() == 0.5
+        assert not td.loop.is_running()
+        td.loop.close()
 
-    def test_get_socket_map(self):
-        td = AsyncoreDispatcher()
-        assert td.getSocketMap() == {}
+    def test_unregister_final_transport_cancels_timer(self):
+        td = AsyncioDispatcher()
+        transport = udp.UdpAsyncioTransport(loop=td.loop).openClientMode()
+        td.registerTransport(udp.domainName, transport)
+        timer_handle = td._timerStartHandle
+        assert timer_handle is not None
 
-    def test_set_socket_map(self):
-        td = AsyncoreDispatcher()
-        td.setSocketMap({'key': 'value'})
-        assert td.getSocketMap() == {'key': 'value'}
-
-    def test_transports_are_working_empty(self):
-        td = AsyncoreDispatcher()
-        assert not td.transportsAreWorking()
+        td.unregisterTransport(udp.domainName)
+        assert td.loopingcall is None
+        assert timer_handle.cancelled()
+        transport.closeTransport()
+        td.loop.close()
 
 
 class TestUdpTransport:
@@ -364,6 +369,55 @@ class TestUdpTransport:
         addr = udp.UdpTransportAddress(('127.0.0.1', 161))
         addr.setLocalAddress(('0.0.0.0', 0))
         assert addr.getLocalAddress() == ('0.0.0.0', 0)
+
+    def test_broadcast_option_is_applied_after_connection(self):
+        loop = asyncio.new_event_loop()
+        transport = udp.UdpAsyncioTransport(loop=loop).enableBroadcast()
+        transport.openClientMode()
+        loop.run_until_complete(asyncio.sleep(0))
+        assert transport.getLocalAddress() is not None
+        transport.closeTransport()
+        loop.run_until_complete(asyncio.sleep(0))
+        loop.close()
+
+    def test_packet_information_is_explicitly_unsupported(self):
+        with pytest.raises(CarrierError, match='Packet-information'):
+            udp.UdpAsyncioTransport().enablePktInfo()
+
+
+@pytest.mark.skipif(not hasattr(__import__('socket'), 'AF_UNIX'),
+                    reason='Unix-domain datagrams are unavailable on this platform')
+class TestUnixTransport:
+    def test_unix_transport_target(self):
+        from pysnmp.hlapi.asyncio.transport import UnixTransportTarget
+
+        target = UnixTransportTarget('/tmp/pysnmp-test.sock')
+        assert target.transportAddr == '/tmp/pysnmp-test.sock'
+        with pytest.raises(error.PySnmpError, match='path string'):
+            UnixTransportTarget(('127.0.0.1', 161))
+
+    def test_client_and_server_exchange_datagram(self):
+        from pysnmp.carrier.asyncio.dgram import unix
+
+        loop = asyncio.new_event_loop()
+        fd, server_path = tempfile.mkstemp(prefix='pysnmp-server-', dir=tempfile.gettempdir())
+        os.close(fd)
+        os.unlink(server_path)
+        received = []
+        server = unix.UnixAsyncioTransport(loop=loop).openServerMode(server_path)
+        client = unix.UnixAsyncioTransport(loop=loop).openClientMode()
+        server.registerCbFun(lambda _, address, message: received.append((address, message)))
+        try:
+            loop.run_until_complete(asyncio.sleep(0))
+            client.sendMessage(b'ping', unix.UnixTransportAddress(server_path))
+            loop.run_until_complete(asyncio.sleep(0.05))
+            assert received == [(client.getLocalAddress(), b'ping')]
+        finally:
+            client.closeTransport()
+            server.closeTransport()
+            loop.run_until_complete(asyncio.sleep(0))
+            loop.close()
+        assert not os.path.exists(server_path)
 
 
 class TestUdpTransportTarget:
@@ -682,7 +736,7 @@ class TestEntityConfig:
         config.addTransport(
             engine,
             (1, 3, 6, 1, 6, 1, 1),
-            udp.UdpSocketTransport().openClientMode()
+            udp.UdpAsyncioTransport().openClientMode()
         )
         config.addTargetAddr(
             engine, 'test-addr',

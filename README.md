@@ -119,10 +119,10 @@ if errorIndication:
 ```
 
 ```bash
-$ python3 examples/hlapi/asyncore/sync/manager/cmdgen/usm-sha-aes128.py
+$ python3 examples/hlapi/asyncio/manager/cmdgen/v1-get.py
 SNMPv2-MIB::sysDescr.0 = Linux localhost 5.15.0
 $
-$ python3 examples//hlapi/asyncore/sync/agent/ntforg/v3-inform.py
+$ python3 examples/hlapi/asyncio/agent/ntforg/default-v1-trap.py
 SNMPv2-MIB::sysUpTime.0 = 0
 SNMPv2-MIB::snmpTrapOID.0 = SNMPv2-MIB::warmStart
 SNMPv2-MIB::sysName.0 = system name
@@ -133,6 +133,11 @@ or local directories. You could configure any MIB source available to you (inclu
 [this one](https://pysnmp.github.io/mibs/asn1/)) for that purpose.
 
 For more example scripts please refer to the `examples/` directory in this repository.
+
+## Async API migration
+
+PySNMP requires Python 3.10 or later and uses `asyncio` for asynchronous I/O.
+Asyncore was removed in 3.12 as such we have migrated to asyncio
 
 ## Documentation
 

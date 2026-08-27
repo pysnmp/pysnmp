@@ -5,11 +5,11 @@
 #
 import socket
 import sys
-from pysnmp.carrier.asyncio.dgram import udp, udp6
+from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
 from pysnmp.hlapi.transport import AbstractTransportTarget
 from pysnmp.error import PySnmpError
 
-__all__ = ['Udp6TransportTarget', 'UdpTransportTarget']
+__all__ = ['UnixTransportTarget', 'Udp6TransportTarget', 'UdpTransportTarget']
 
 
 class UdpTransportTarget(AbstractTransportTarget):
@@ -120,3 +120,17 @@ class Udp6TransportTarget(AbstractTransportTarget):
         except socket.gaierror:
             raise PySnmpError('Bad IPv6/UDP transport address {}: {}'.format(
                 '@'.join([str(x) for x in transportAddr]), sys.exc_info()[1]))
+
+
+class UnixTransportTarget(AbstractTransportTarget):
+    transportDomain = unix.domainName
+    protoTransport = unix.UnixAsyncioTransport
+
+    def _resolveAddr(self, transportAddr):
+        if not isinstance(transportAddr, str):
+            raise PySnmpError(
+                'Bad Unix-domain transport address {!r}: expected a path string'.format(
+                    transportAddr
+                )
+            )
+        return transportAddr

@@ -6,8 +6,8 @@
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
-from pysnmp.hlapi.asyncore import *
-from pysnmp.hlapi.asyncore import sync
+from pysnmp.hlapi.asyncio import *
+from pysnmp.hlapi.asyncio import sync
 from pysnmp.hlapi.varbinds import *
 from pysnmp.hlapi.lcd import *
 from pyasn1.compat.octets import null

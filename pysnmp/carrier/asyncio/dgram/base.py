@@ -29,8 +29,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
+import socket
 import sys
-import platform
 import traceback
 from pysnmp.carrier.asyncio.base import AbstractAsyncioTransport
 from pysnmp.carrier import error
@@ -42,11 +42,11 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     """Base Asyncio datagram Transport, to be used with AsyncioDispatcher"""
     sockFamily = None
     addressType = lambda x: x
-    transport = None
-
     def __init__(self, sock=None, sockMap=None, loop=None):
         self._writeQ = []
         self._lport = None
+        self._pendingSocketOptions = []
+        self.transport = None
         if loop is None:
             try:
                 loop = asyncio.get_running_loop()
@@ -62,6 +62,10 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
 
     def connection_made(self, transport):
         self.transport = transport
+        sock = transport.get_extra_info('socket')
+        for configureSocket in self._pendingSocketOptions:
+            configureSocket(sock)
+        self._pendingSocketOptions = []
         debug.logger & debug.flagIO and debug.logger('connection_made: invoked')
         while self._writeQ:
             outgoingMessage, transportAddress = self._writeQ.pop(0)
@@ -73,6 +77,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
 
     def connection_lost(self, exc):
+        self.transport = None
         debug.logger & debug.flagIO and debug.logger('connection_lost: invoked')
 
     # AbstractAsyncioTransport API
@@ -82,8 +87,10 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily
             )
-            self._lport = asyncio.ensure_future(c)
-
+            if self.loop.is_running():
+                self._lport = self.loop.create_task(c)
+            else:
+                self.loop.run_until_complete(c)
         except Exception:
             raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
         return self
@@ -93,7 +100,10 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily
             )
-            self._lport = asyncio.ensure_future(c)
+            if self.loop.is_running():
+                self._lport = self.loop.create_task(c)
+            else:
+                self.loop.run_until_complete(c)
         except Exception:
             raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
         return self
@@ -101,6 +111,11 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     def closeTransport(self):
         if self._lport is not None:
             self._lport.cancel()
+            if not self.loop.is_running():
+                self.loop.run_until_complete(
+                    asyncio.gather(self._lport, return_exceptions=True)
+                )
+            self._lport = None
         if self.transport is not None:
             self.transport.close()
         AbstractAsyncioTransport.closeTransport(self)
@@ -118,7 +133,61 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             except Exception:
                 raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
 
+    def getLocalAddress(self):
+        if self.transport is None:
+            return None
+        return self.transport.get_extra_info('sockname')
+
     def normalizeAddress(self, transportAddress):
         if not isinstance(transportAddress, self.addressType):
             transportAddress = self.addressType(transportAddress)
+        if not transportAddress.getLocalAddress():
+            transportAddress.setLocalAddress(self.getLocalAddress())
         return transportAddress
+
+    def _configureSocket(self, configureSocket):
+        if self.transport is None:
+            self._pendingSocketOptions.append(configureSocket)
+            return
+        configureSocket(self.transport.get_extra_info('socket'))
+
+    def enableBroadcast(self, flag=1):
+        def configureSocket(sock):
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, flag)
+
+        try:
+            self._configureSocket(configureSocket)
+        except OSError:
+            raise error.CarrierError(
+                'setsockopt() for SO_BROADCAST failed: {}'.format(
+                    sys.exc_info()[1]
+                )
+            )
+        return self
+
+    def enablePktInfo(self, flag=1):
+        raise error.CarrierError(
+            'Packet-information source-address handling is unavailable with '
+            'asyncio datagram transports; use a raw asyncio socket for this use case'
+        )
+
+    def enableTransparent(self, flag=1):
+        if self.sockFamily == socket.AF_INET:
+            option = socket.SOL_IP, socket.IP_TRANSPARENT
+        elif self.sockFamily == socket.AF_INET6:
+            option = socket.SOL_IPV6, socket.IPV6_TRANSPARENT
+        else:
+            raise error.CarrierError('IP_TRANSPARENT is only supported by IP datagram transports')
+
+        def configureSocket(sock):
+            sock.setsockopt(option[0], option[1], flag)
+
+        try:
+            self._configureSocket(configureSocket)
+        except (AttributeError, OSError):
+            raise error.CarrierError(
+                'setsockopt() for IP_TRANSPARENT failed: {}'.format(
+                    sys.exc_info()[1]
+                )
+            )
+        return self

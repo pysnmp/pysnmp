@@ -1,8 +1,5 @@
-#
-# This file is part of pysnmp software.
-#
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
-#
-from pysnmp.carrier.asyncore.dispatch import *
+"""Deprecated compatibility imports for asyncio dispatch."""
 
-AsynsockDispatcher = AsyncoreDispatcher
+from pysnmp.carrier.asyncio.dispatch import AsyncioDispatcher
+
+AsynsockDispatcher = AsyncioDispatcher

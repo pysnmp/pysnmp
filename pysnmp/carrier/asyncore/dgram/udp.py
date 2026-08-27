@@ -1,22 +1,6 @@
-#
-# This file is part of pysnmp software.
-#
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
-#
-from socket import AF_INET
-from pysnmp.carrier.base import AbstractTransportAddress
-from pysnmp.carrier.asyncore.dgram.base import DgramSocketTransport
+"""Deprecated compatibility imports for asyncio UDP transport."""
 
-domainName = snmpUDPDomain = (1, 3, 6, 1, 6, 1, 1)
+from pysnmp.carrier.asyncio.dgram.udp import *
 
-
-class UdpTransportAddress(tuple, AbstractTransportAddress):
-    pass
-
-
-class UdpSocketTransport(DgramSocketTransport):
-    sockFamily = AF_INET
-    addressType = UdpTransportAddress
-
-
-UdpTransport = UdpSocketTransport
+UdpSocketTransport = UdpAsyncioTransport
+UdpTransport = UdpAsyncioTransport

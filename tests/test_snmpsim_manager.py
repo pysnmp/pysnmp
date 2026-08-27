@@ -7,6 +7,7 @@ import pytest
 from pysnmp.hlapi import (
     CommunityData,
     ContextData,
+    NotificationType,
     ObjectIdentity,
     ObjectType,
     SnmpEngine,
@@ -15,6 +16,7 @@ from pysnmp.hlapi import (
     getCmd,
     nextCmd,
     bulkCmd,
+    sendNotification,
     setCmd,
     usmHMACMD5AuthProtocol,
 )
@@ -57,7 +59,7 @@ def get_all_values(result):
     return [str(vb[1]) for vb in var_binds]
 
 
-# ---- Versioned GET tests (sync asyncore) ----
+# ---- Versioned GET tests (synchronous asyncio facade) ----
 
 class TestSyncGetV1:
     def test_get_sys_descr(self, snmpsim_endpoint):
@@ -195,7 +197,7 @@ class TestSyncGetV3:
         assert get_value(result) == "Test Host"
 
 
-# ---- Traversal tests (sync asyncore) ----
+# ---- Traversal tests (synchronous asyncio facade) ----
 
 class TestSyncNextV2c:
     def test_next_cmd(self, snmpsim_endpoint):
@@ -218,6 +220,22 @@ class TestSyncNextV2c:
             if len(results) >= 5:
                 break
         assert len(results) > 0
+
+
+class TestSyncNotification:
+    def test_trap_uses_asyncio_facade(self, snmpsim_endpoint):
+        host, port = snmpsim_endpoint
+        result = next(
+            sendNotification(
+                SnmpEngine(),
+                CommunityData("public"),
+                UdpTransportTarget((host, port)),
+                ContextData(),
+                "trap",
+                NotificationType(ObjectIdentity("SNMPv2-MIB", "coldStart")),
+            )
+        )
+        assert result == (None, 0, 0, [])
 
 
 class TestSyncBulkV2c:
