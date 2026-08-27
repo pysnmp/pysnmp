@@ -4,7 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
 from pyasn1.compat.octets import null
-from pysnmp.carrier.asyncore.dgram import udp, udp6, unix
+from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
 from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha, noauth
 from pysnmp.proto.secmod.rfc3414.priv import des, nopriv
 from pysnmp.proto.secmod.rfc3826.priv import aes
@@ -436,8 +436,11 @@ def addTransport(snmpEngine, transportDomain, transport):
             raise error.PySnmpError(
                 f'Transport {transport!r} is not compatible with dispatcher {snmpEngine.transportDispatcher!r}')
     else:
+        dispatcherArgs = {}
+        if hasattr(transport, 'loop'):
+            dispatcherArgs['loop'] = transport.loop
         snmpEngine.registerTransportDispatcher(
-            transport.protoTransportDispatcher()
+            transport.protoTransportDispatcher(**dispatcherArgs)
         )
         # here we note that we have created transportDispatcher automatically
         snmpEngine.setUserContext(automaticTransportDispatcher=0)

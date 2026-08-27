@@ -3,4 +3,4 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased 
 #
-from pysnmp.carrier.asyncore.dgram.udp import *
+from pysnmp.carrier.asyncio.dgram.udp import *

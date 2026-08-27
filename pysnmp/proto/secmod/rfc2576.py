@@ -7,7 +7,7 @@ import sys
 from pyasn1.codec.ber import encoder
 from pyasn1.error import PyAsn1Error
 from pysnmp.proto.secmod import base
-from pysnmp.carrier.asyncore.dgram import udp, udp6, unix
+from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
 from pysnmp.smi.error import NoSuchInstanceError
 from pysnmp.proto import errind, error
 from pysnmp import debug

@@ -10,8 +10,8 @@ from pysnmp.hlapi import auth
 from pysnmp.hlapi.context import *
 from pysnmp.entity.engine import *
 
-# default is synchronous asyncore-based API
-from pysnmp.hlapi.asyncore.sync import *
+# default is a synchronous facade over the asyncio API
+from pysnmp.hlapi.asyncio.sync import *
 
 
 CommunityData = auth.CommunityData
@@ -70,4 +70,3 @@ usmKeyTypeMaster = auth.usmKeyTypeMaster
 
 usmKeyTypeLocalized = auth.usmKeyTypeLocalized
 """USM key material type - hashed pass-phrase hashed with Context SNMP Engine ID (:RFC:`3414#section-2.6`)"""
-

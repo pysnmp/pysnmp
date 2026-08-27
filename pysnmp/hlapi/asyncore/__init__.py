@@ -1,13 +1,11 @@
-#
-# This file is part of pysnmp software.
-#
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
-#
-from pysnmp.proto.rfc1902 import *
-from pysnmp.smi.rfc1902 import *
-from pysnmp.hlapi.auth import *
-from pysnmp.hlapi.context import *
-from pysnmp.hlapi.asyncore.transport import *
-from pysnmp.hlapi.asyncore.cmdgen import *
-from pysnmp.hlapi.asyncore.ntforg import *
-from pysnmp.entity.engine import *
+"""Deprecated compatibility imports for the asyncio HLAPI."""
+
+import warnings
+
+warnings.warn(
+    'pysnmp.hlapi.asyncore is deprecated; use pysnmp.hlapi.asyncio',
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+from pysnmp.hlapi.asyncio import *

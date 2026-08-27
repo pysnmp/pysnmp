@@ -8,8 +8,6 @@ import pytest
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.entity import config
-from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
-from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.proto.api import v2c, v1
 from pysnmp.proto.rfc1905 import SNMPv2TrapPDU
 from pysnmp.proto.rfc1157 import TrapPDU
