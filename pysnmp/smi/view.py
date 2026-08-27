@@ -235,7 +235,7 @@ class MibViewController:
             # ...with trailing suffix
             return self.getNodeNameByOid(oid + suffix + nodeName[1:], modName)
 
-    def getOrderedNodeName(self, index, modName=''):
+    def getOrderedNodeName(self, index, modName='', nodeType=None):
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
@@ -245,6 +245,40 @@ class MibViewController:
             raise error.NoSuchObjectError(
                 str=f'No variables at MIB module {modName} at {self}'
             )
+        if nodeType is not None:
+            # Filter by node type (scalar, table, column, row)
+            MibScalar, MibTable, MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
+                'SNMPv2-SMI', 'MibScalar', 'MibTable', 'MibTableColumn', 'MibTableRow'
+            )
+            nodeTypeMap = {
+                'scalar': MibScalar,
+                'table': MibTable,
+                'column': MibTableColumn,
+                'row': MibTableRow,
+            }
+            targetClass = nodeTypeMap.get(nodeType)
+            if targetClass is None:
+                raise error.SmiError(f'Unknown node type {nodeType!r} at {self}')
+            filtered = []
+            for oid, label in mibMod['oidToLabelIdx'].items():
+                symName = label[-1]
+                if symName in self.mibBuilder.mibSymbols[modName]:
+                    symObj = self.mibBuilder.mibSymbols[modName][symName]
+                    if isinstance(symObj, targetClass):
+                        filtered.append((oid, label))
+            if not filtered:
+                raise error.NoSuchObjectError(
+                    str=f'No {nodeType} nodes at MIB module {modName} at {self}'
+                )
+            try:
+                if index < 0:
+                    index += len(filtered)
+                oid, label = filtered[index]
+            except IndexError:
+                raise error.NoSuchObjectError(
+                    str=f'No {nodeType} symbol at position {index} in MIB module {modName} at {self}'
+                )
+            return oid, label, ()
         try:
             oid, label = mibMod['oidToLabelIdx'].items()[index]
         except KeyError:
@@ -253,11 +287,11 @@ class MibViewController:
             )
         return oid, label, ()
 
-    def getFirstNodeName(self, modName=''):
-        return self.getOrderedNodeName(0, modName)
+    def getFirstNodeName(self, modName='', nodeType=None):
+        return self.getOrderedNodeName(0, modName, nodeType)
 
-    def getLastNodeName(self, modName=''):
-        return self.getOrderedNodeName(-1, modName)
+    def getLastNodeName(self, modName='', nodeType=None):
+        return self.getOrderedNodeName(-1, modName, nodeType)
 
     def getNextNodeName(self, nodeName, modName=''):
         oid, label, suffix = self.getNodeName(nodeName, modName)

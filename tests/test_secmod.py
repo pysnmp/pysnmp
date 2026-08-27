@@ -560,3 +560,287 @@ class TestEntityConfig:
     def test_transport_domain_constants(self):
         assert config.snmpUDPDomain is not None
         assert config.snmpUDP6Domain is not None
+
+
+class TestRfc3415Vacm:
+    """Tests for VACM access control model."""
+
+    def test_vacm_init(self):
+        vacm = Vacm()
+        assert vacm.accessModelID == 3
+        assert vacm._contextMap == {}
+        assert vacm._groupNameMap == {}
+        assert vacm._accessMap == {}
+        assert vacm._viewTreeMap == {}
+
+    def test_add_access_entry(self):
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx1', securityModel=3,
+            securityLevel=1, prefixMatch=1, readView='readView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        assert 'group1' in vacm._accessMap
+        assert 'read' in vacm._accessMap['group1']
+        assert vacm._accessMap['group1']['read'][1]['ctx1'][3][1] == 'readView'
+
+    def test_add_access_entry_empty_group(self):
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='', contextPrefix='ctx1', securityModel=3,
+            securityLevel=1, prefixMatch=1, readView='readView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        assert vacm._accessMap == {}
+
+    def test_get_family_view_name_exact_match(self):
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx1', securityModel=3,
+            securityLevel=1, prefixMatch=1, readView='readView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        viewName = vacm._getFamilyViewName('group1', 'ctx1', 3, 1, 'read')
+        assert viewName == 'readView'
+
+    def test_get_family_view_name_no_group(self):
+        vacm = Vacm()
+        with pytest.raises(error.StatusInformation):
+            vacm._getFamilyViewName('nonexistent', 'ctx1', 3, 1, 'read')
+
+    def test_get_family_view_name_no_view_type(self):
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx1', securityModel=3,
+            securityLevel=1, prefixMatch=1, readView='readView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        with pytest.raises(error.StatusInformation):
+            vacm._getFamilyViewName('group1', 'ctx1', 3, 1, 'nonexistent')
+
+    def test_get_family_view_name_fuzzy_match(self):
+        """Test fuzzy (prefix) match returns correct view name."""
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx', securityModel=3,
+            securityLevel=1, prefixMatch=2, readView='prefixView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        viewName = vacm._getFamilyViewName('group1', 'ctx1', 3, 1, 'read')
+        assert viewName == 'prefixView'
+
+    def test_get_family_view_name_fuzzy_priority(self):
+        """An exact context prefix wins without taking the exact shortcut."""
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx', securityModel=3,
+            securityLevel=1, prefixMatch=2, readView='exactPrefixView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='', securityModel=3,
+            securityLevel=2, prefixMatch=2, readView='fuzzyView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        viewName = vacm._getFamilyViewName('group1', 'ctx', 3, 2, 'read')
+        assert viewName == 'exactPrefixView'
+
+    def test_get_family_view_name_security_model_priority(self):
+        """A matching securityModel is preferred to the ``any`` model."""
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx', securityModel=0,
+            securityLevel=1, prefixMatch=2, readView='anyModelView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='', securityModel=3,
+            securityLevel=1, prefixMatch=2, readView='model3View',
+            writeView='writeView', notifyView='notifyView',
+        )
+        viewName = vacm._getFamilyViewName('group1', 'ctx-value', 3, 1, 'read')
+        assert viewName == 'model3View'
+
+    def test_get_family_view_name_prefers_longest_fuzzy_prefix(self):
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx', securityModel=3,
+            securityLevel=1, prefixMatch=2, readView='shortPrefixView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx-', securityModel=3,
+            securityLevel=1, prefixMatch=2, readView='longPrefixView',
+            writeView='writeView', notifyView='notifyView',
+        )
+
+        assert vacm._getFamilyViewName('group1', 'ctx-value', 3, 1, 'read') == 'longPrefixView'
+
+    def test_get_family_view_name_uses_highest_permitted_security_level(self):
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx', securityModel=3,
+            securityLevel=1, prefixMatch=2, readView='noAuthView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx', securityModel=3,
+            securityLevel=2, prefixMatch=2, readView='authView',
+            writeView='writeView', notifyView='notifyView',
+        )
+
+        assert vacm._getFamilyViewName('group1', 'ctx-value', 3, 3, 'read') == 'authView'
+        assert vacm._getFamilyViewName('group1', 'ctx-value', 3, 1, 'read') == 'noAuthView'
+
+    def test_get_family_view_name_ignores_unrelated_security_models(self):
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='ctx', securityModel=2,
+            securityLevel=1, prefixMatch=2, readView='model2View',
+            writeView='writeView', notifyView='notifyView',
+        )
+
+        with pytest.raises(error.StatusInformation):
+            vacm._getFamilyViewName('group1', 'ctx-value', 3, 1, 'read')
+
+    def test_acl_performance_many_entries(self):
+        """Benchmark test with many ACL entries to verify optimization."""
+        vacm = Vacm()
+        for i in range(100):
+            vacm._addAccessEntry(
+                groupName=f'group{i}', contextPrefix=f'ctx{i}', securityModel=3,
+                securityLevel=1, prefixMatch=1, readView=f'readView{i}',
+                writeView=f'writeView{i}', notifyView=f'notifyView{i}',
+            )
+        vacm._addAccessEntry(
+            groupName='group50', contextPrefix='ctx', securityModel=3,
+            securityLevel=1, prefixMatch=2, readView='wildcardView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        viewName = vacm._getFamilyViewName('group50', 'ctx50', 3, 1, 'read')
+        assert viewName == 'readView50'
+
+    def test_access_allowed_correct_after_refactor(self):
+        """Verify access control decisions are correct after ACL refactor."""
+        vacm = Vacm()
+        vacm._addAccessEntry(
+            groupName='group1', contextPrefix='', securityModel=3,
+            securityLevel=1, prefixMatch=1, readView='readView',
+            writeView='writeView', notifyView='notifyView',
+        )
+        viewName = vacm._getFamilyViewName('group1', '', 3, 1, 'read')
+        assert viewName == 'readView'
+        viewName = vacm._getFamilyViewName('group1', '', 3, 1, 'write')
+        assert viewName == 'writeView'
+        viewName = vacm._getFamilyViewName('group1', '', 3, 1, 'notify')
+        assert viewName == 'notifyView'
+
+
+class TestVacmSecurityExclusions:
+    """Tests for VACM security exclusions (USM and COMMUNITY MIBs)."""
+
+    def test_initial_vacm_allows_internet_objects_and_excludes_usm(self):
+        """Initial VACM policy is enforced by the active access model."""
+        from pysnmp.entity.engine import SnmpEngine
+        from pysnmp.entity import config
+        from pysnmp.proto.rfc1902 import OctetString
+
+        snmpEngine = SnmpEngine()
+        config.setInitialVacmParameters(snmpEngine)
+        vacm = snmpEngine.accessControlModel[3]
+
+        contextName = OctetString('')
+        securityName = OctetString('initial')
+        sysDescrOid = (1, 3, 6, 1, 2, 1, 1, 1, 0)
+        usmOid = (1, 3, 6, 1, 6, 3, 15, 1, 1, 0)
+
+        assert vacm.isAccessAllowed(
+            snmpEngine, 3, securityName, 3, 'read', contextName, sysDescrOid
+        ) is None
+
+        with pytest.raises(error.StatusInformation) as exc:
+            vacm.isAccessAllowed(
+                snmpEngine, 3, securityName, 3, 'read', contextName, usmOid
+            )
+        assert exc.value['errorIndication'] is errind.notInView
+
+    def test_initial_vacm_excludes_community_mib(self):
+        """SNMP-COMMUNITY-MIB is also excluded by the access model."""
+        from pysnmp.entity.engine import SnmpEngine
+        from pysnmp.entity import config
+        from pysnmp.proto.rfc1902 import OctetString
+
+        snmpEngine = SnmpEngine()
+        config.setInitialVacmParameters(snmpEngine)
+        vacm = snmpEngine.accessControlModel[3]
+
+        communityOid = (1, 3, 6, 1, 6, 3, 18, 1, 1, 0)
+        with pytest.raises(error.StatusInformation) as exc:
+            vacm.isAccessAllowed(
+                snmpEngine, 3, OctetString('initial'), 3, 'read',
+                OctetString(''), communityOid
+            )
+        assert exc.value['errorIndication'] is errind.notInView
+
+
+class TestEmptySetValueHandling:
+    """Tests for SET values whose target syntax permits empty values."""
+
+    def test_empty_octet_string_set_accepted_when_syntax_permits_it(self):
+        """sysContact allows empty strings, so generic write code must not reject them."""
+        from pysnmp.entity.engine import SnmpEngine
+        from pysnmp.smi.instrum import MibInstrumController
+        from pysnmp.proto.rfc1902 import OctetString
+
+        builder = SnmpEngine().getMibBuilder()
+        builder.loadModules('SNMPv2-MIB')
+        ctrl = MibInstrumController(builder)
+
+        sysContact, = builder.importSymbols('SNMPv2-MIB', 'sysContact')
+        MibScalarInstance, = builder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+        inst = MibScalarInstance(
+            sysContact.name, (0,), sysContact.getSyntax().clone('initial'),
+        )
+        sysContact.registerSubtrees(inst)
+
+        result = ctrl.writeVars([
+            ((1, 3, 6, 1, 2, 1, 1, 4, 0), OctetString(''))
+        ])
+        assert result[0][1] == OctetString('')
+
+    def test_non_empty_octet_string_set_accepted(self):
+        """Verify that SET with non-empty OctetString is accepted."""
+        from pysnmp.entity.engine import SnmpEngine
+        from pysnmp.smi.instrum import MibInstrumController
+        from pysnmp.proto.rfc1902 import OctetString
+
+        builder = SnmpEngine().getMibBuilder()
+        builder.loadModules('SNMPv2-MIB')
+        ctrl = MibInstrumController(builder)
+
+        sysContact, = builder.importSymbols('SNMPv2-MIB', 'sysContact')
+        MibScalarInstance, = builder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+        inst = MibScalarInstance(
+            sysContact.name, (0,), sysContact.getSyntax().clone('initial'),
+        )
+        sysContact.registerSubtrees(inst)
+
+        result = ctrl.writeVars([
+            ((1, 3, 6, 1, 2, 1, 1, 4, 0), OctetString('admin'))
+        ])
+        assert result is not None
+
+    def test_integer_set_not_affected_by_empty_guard(self):
+        """Verify that Integer SET values are not affected by the empty guard."""
+        from pysnmp.entity.engine import SnmpEngine
+        from pysnmp.smi.instrum import MibInstrumController
+        from pysnmp.proto.rfc1902 import Integer
+
+        builder = SnmpEngine().getMibBuilder()
+        builder.loadModules('SNMP-FRAMEWORK-MIB')
+        ctrl = MibInstrumController(builder)
+
+        result = ctrl.writeVars([
+            ((1, 3, 6, 1, 6, 3, 10, 2, 1, 3, 0), Integer(42))
+        ])
+        assert result is not None

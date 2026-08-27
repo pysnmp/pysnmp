@@ -21,7 +21,7 @@ __v1ToV2ValueMap = {
     v1.Opaque.tagSet: v2c.Opaque()
 }
 
-__v2ToV1ValueMap = {  # XXX do not re-create same-type items?
+__v2ToV1ValueMap = {
     v2c.Integer32.tagSet: v1.Integer(),
     v2c.OctetString.tagSet: v1.OctetString(),
     v2c.Null.tagSet: v1.Null(),

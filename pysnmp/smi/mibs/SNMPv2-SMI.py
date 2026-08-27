@@ -393,7 +393,8 @@ class MibTree(ObjectType):
     def getNextBranch(self, name, idx=None):
         # Start from the beginning
         if self._vars:
-            first = list(self._vars.keys())[0]
+            # Use iterator to get first key without creating a full list
+            first = next(iter(self._vars.keys()))
         else:
             first = ()
         if self._vars and name < first:

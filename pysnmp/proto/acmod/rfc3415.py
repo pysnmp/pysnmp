@@ -92,9 +92,11 @@ class Vacm:
         except KeyError:
             pass
 
-        # vacmAccessTable #2: fuzzy look-up
-
-        candidates = []
+        # vacmAccessTable #2: fuzzy look-up.  RFC 3415 selects candidates
+        # matching this model (rather than model ``any``), then candidates
+        # whose prefix equals the context name, followed by the longest
+        # prefix and highest permitted security level.
+        bestCandidate = None
 
         for match, names in matches.items():
 
@@ -107,24 +109,28 @@ class Vacm:
                     continue
 
                 for model, levels in models.items():
+                    if model not in (securityModel, 0):
+                        continue
+
                     for level, viewName in levels.items():
+                        if level > securityLevel:
+                            continue
 
-                        # priorities:
-                        # - matching securityModel
-                        # - exact context name match
-                        # - longer partial match
-                        # - highest securityLevel
-                        rating = securityModel == model, match == 1, len(context), level
+                        candidate = (
+                            securityModel == model,
+                            contextName == context,
+                            len(context),
+                            level,
+                            viewName,
+                        )
 
-                        candidates.append((rating, viewName))
+                        if bestCandidate is None or candidate > bestCandidate:
+                            bestCandidate = candidate
 
-        if not candidates:
+        if bestCandidate is None:
             raise error.StatusInformation(errorIndication=errind.notInView)
 
-        candidates.sort()
-
-        rating, viewName = candidates[0]
-        return viewName
+        return bestCandidate[-1]
 
     def isAccessAllowed(self,
                         snmpEngine,

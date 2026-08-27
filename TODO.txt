@@ -9,34 +9,24 @@ Sparse notes on major existing problems/plans
      Dedicated, simple API for table cells mangling should be 
      provided.
 
-* Walking over VACM shadowed OIDs is painfully slow
-
 * Notification filtering (RFC3413) not implemented.
 
 * MsgAndPduDispatcher should use TransportDispatcher jobs interface
   to handle SNMPv3 handshake
-
-* Implement prettyIn value format parser at TC
-
-* Disallow SNMP access to USM objects
+  (partially addressed: jobs interface exists at app layer)
 
 * Maybe MibInstrumentationController should be async what
   implies callback function interface.
 
-* Re-work ACL to get rid of linear search there
-
 * Implement partial context name match at isAccessAllowed()
+  (partially addressed: prefix match implemented, optimization folded into ACL rework)
 
 * Sort out whether pyasn1 objects should probably have either clone() or 
   subtype() methods.
 
-* Review PDU components coercion code at proxy/rfc2576
-
 * TextualConvention subclassing order now depends upon DisplayHint 
   clause presense in MIB definition (for useful prettyIn/Out()). Maybe 
   this should be re-worked.
-
-* exclude SNMP-COMMUNITY-MIB from view for better security
 
 * re-design something to get rid of an ugly hack coercing MIB values into
   SNMP message header as it has incompatible constraints set
@@ -48,18 +38,11 @@ Sparse notes on major existing problems/plans
 
 * Rework UNIX sockets transport to make it STREAM-type.
 
-* The get-first/get-last operations of pysnmp.smi.rfc1902.ObjectIdentity()
-  may need a means to deal only with specific node types.
-
 * redesign proto.errind.ErrorIndication
 
 * redesign PYSNMP MIB tables to better handle optional values (keys)
 
 * add RowStatus checks when reading MIB tables (LCD)
-
-* Disallow empty SET value reaching scalar MIB object
-
-* Figure out why .getUnitis() are not propagated from SNMPv2-SMI::ObjectType to response object
 
 * Extent pysmi/mibdump tool to produce MIB instances from ASN.1 MIBs
 

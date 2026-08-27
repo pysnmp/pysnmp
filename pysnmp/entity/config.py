@@ -838,6 +838,12 @@ def setInitialVacmParameters(snmpEngine):
     # rfc3415: A.1.5 (semi-secure)
     addVacmView(snmpEngine, "internet",
                 "included", (1, 3, 6, 1), "")
+    # Exclude USM objects from SNMP access for security (Phase 3.6)
+    addVacmView(snmpEngine, "internet",
+                "excluded", (1, 3, 6, 1, 6, 3, 15), "")
+    # Exclude SNMP-COMMUNITY-MIB from SNMP access for security (Phase 3.8)
+    addVacmView(snmpEngine, "internet",
+                "excluded", (1, 3, 6, 1, 6, 3, 18), "")
     addVacmView(snmpEngine, "restricted",
                 "included", (1, 3, 6, 1, 2, 1, 1), "")
     addVacmView(snmpEngine, "restricted",
