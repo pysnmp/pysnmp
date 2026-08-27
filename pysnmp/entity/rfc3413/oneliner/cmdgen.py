@@ -1,17 +1,18 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
-from pysnmp.hlapi.asyncio import *
-from pysnmp.hlapi.asyncio import sync
-from pysnmp.hlapi.varbinds import *
-from pysnmp.hlapi.lcd import *
 from pyasn1.compat.octets import null
 from pyasn1.type import univ
+
+from pysnmp.hlapi.asyncio import *
+from pysnmp.hlapi.asyncio import sync
+from pysnmp.hlapi.lcd import *
+from pysnmp.hlapi.varbinds import *
 
 __all__ = ['AsynCommandGenerator', 'CommandGenerator', 'MibVariable']
 
@@ -53,107 +54,166 @@ class AsynCommandGenerator:
             self.snmpEngine, varBinds, lookupNames or lookupValues
         )
 
-    def getCmd(self, authData, transportTarget, varNames, cbInfo,
-               lookupNames=False, lookupValues=False,
-               contextEngineId=None, contextName=null):
+    def getCmd(
+        self,
+        authData,
+        transportTarget,
+        varNames,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=null,
+    ):
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            cbFun(sendRequestHandle,
-                  errorIndication, errorStatus, errorIndex,
-                  varBindTable, cbCtx)
+            cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
 
         # for backward compatibility
         if contextName is null and authData.contextName:
             contextName = authData.contextName
 
         return getCmd(
-            self.snmpEngine, authData, transportTarget,
+            self.snmpEngine,
+            authData,
+            transportTarget,
             ContextData(contextEngineId, contextName),
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
         )
 
     asyncGetCmd = getCmd
 
-    def setCmd(self, authData, transportTarget, varBinds, cbInfo,
-               lookupNames=False, lookupValues=False,
-               contextEngineId=None, contextName=null):
+    def setCmd(
+        self,
+        authData,
+        transportTarget,
+        varBinds,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=null,
+    ):
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            cbFun(sendRequestHandle,
-                  errorIndication, errorStatus, errorIndex,
-                  varBindTable, cbCtx)
+            cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
 
         # for backward compatibility
         if contextName is null and authData.contextName:
             contextName = authData.contextName
 
         return setCmd(
-            self.snmpEngine, authData, transportTarget,
-            ContextData(contextEngineId, contextName), *varBinds,
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(contextEngineId, contextName),
+            *varBinds,
+            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
         )
 
     asyncSetCmd = setCmd
 
-    def nextCmd(self, authData, transportTarget, varNames, cbInfo,
-                lookupNames=False, lookupValues=False,
-                contextEngineId=None, contextName=null):
+    def nextCmd(
+        self,
+        authData,
+        transportTarget,
+        varNames,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=null,
+    ):
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            return cbFun(sendRequestHandle,
-                         errorIndication, errorStatus, errorIndex,
-                         varBindTable, cbCtx)
+            return cbFun(
+                sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx
+            )
 
         # for backward compatibility
         if contextName is null and authData.contextName:
             contextName = authData.contextName
 
         return nextCmd(
-            self.snmpEngine, authData, transportTarget,
+            self.snmpEngine,
+            authData,
+            transportTarget,
             ContextData(contextEngineId, contextName),
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
         )
 
     asyncNextCmd = nextCmd
 
-    def bulkCmd(self, authData, transportTarget,
-                nonRepeaters, maxRepetitions, varNames, cbInfo,
-                lookupNames=False, lookupValues=False,
-                contextEngineId=None, contextName=null):
+    def bulkCmd(
+        self,
+        authData,
+        transportTarget,
+        nonRepeaters,
+        maxRepetitions,
+        varNames,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=null,
+    ):
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            return cbFun(sendRequestHandle,
-                         errorIndication, errorStatus, errorIndex,
-                         varBindTable, cbCtx)
+            return cbFun(
+                sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx
+            )
 
         # for backward compatibility
         if contextName is null and authData.contextName:
             contextName = authData.contextName
 
         return bulkCmd(
-            self.snmpEngine, authData, transportTarget,
+            self.snmpEngine,
+            authData,
+            transportTarget,
             ContextData(contextEngineId, contextName),
-            nonRepeaters, maxRepetitions,
+            nonRepeaters,
+            maxRepetitions,
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
         )
 
     asyncBulkCmd = bulkCmd
@@ -172,14 +232,14 @@ class CommandGenerator:
         if 'lookupValues' not in kwargs:
             kwargs['lookupValues'] = False
         errorIndication, errorStatus, errorIndex, varBinds = None, 0, 0, []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             varBinds) in sync.getCmd(self.snmpEngine, authData, transportTarget,
-                                      ContextData(kwargs.get('contextEngineId'),
-                                                  kwargs.get('contextName', null)),
-                                      *[(x, self._null) for x in varNames],
-                                      **kwargs):
+        for errorIndication, errorStatus, errorIndex, varBinds in sync.getCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            *[(x, self._null) for x in varNames],
+            **kwargs,
+        ):
             break
         return errorIndication, errorStatus, errorIndex, varBinds
 
@@ -189,14 +249,14 @@ class CommandGenerator:
         if 'lookupValues' not in kwargs:
             kwargs['lookupValues'] = False
         errorIndication, errorStatus, errorIndex, rspVarBinds = None, 0, 0, []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             rspVarBinds) in sync.setCmd(self.snmpEngine, authData, transportTarget,
-                                         ContextData(kwargs.get('contextEngineId'),
-                                                     kwargs.get('contextName', null)),
-                                         *varBinds,
-                                         **kwargs):
+        for errorIndication, errorStatus, errorIndex, rspVarBinds in sync.setCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            *varBinds,
+            **kwargs,
+        ):
             break
 
         return errorIndication, errorStatus, errorIndex, rspVarBinds
@@ -210,14 +270,14 @@ class CommandGenerator:
             kwargs['lexicographicMode'] = False
         errorIndication, errorStatus, errorIndex = None, 0, 0
         varBindTable = []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             varBinds) in sync.nextCmd(self.snmpEngine, authData, transportTarget,
-                                       ContextData(kwargs.get('contextEngineId'),
-                                                   kwargs.get('contextName', null)),
-                                       *[(x, self._null) for x in varNames],
-                                       **kwargs):
+        for errorIndication, errorStatus, errorIndex, varBinds in sync.nextCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            *[(x, self._null) for x in varNames],
+            **kwargs,
+        ):
             if errorIndication or errorStatus:
                 return errorIndication, errorStatus, errorIndex, varBinds
 
@@ -225,8 +285,9 @@ class CommandGenerator:
 
         return errorIndication, errorStatus, errorIndex, varBindTable
 
-    def bulkCmd(self, authData, transportTarget,
-                nonRepeaters, maxRepetitions, *varNames, **kwargs):
+    def bulkCmd(
+        self, authData, transportTarget, nonRepeaters, maxRepetitions, *varNames, **kwargs
+    ):
         if 'lookupNames' not in kwargs:
             kwargs['lookupNames'] = False
         if 'lookupValues' not in kwargs:
@@ -235,16 +296,16 @@ class CommandGenerator:
             kwargs['lexicographicMode'] = False
         errorIndication, errorStatus, errorIndex = None, 0, 0
         varBindTable = []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             varBinds) in sync.bulkCmd(self.snmpEngine, authData,
-                                       transportTarget,
-                                       ContextData(kwargs.get('contextEngineId'),
-                                                   kwargs.get('contextName', null)),
-                                       nonRepeaters, maxRepetitions,
-                                       *[(x, self._null) for x in varNames],
-                                       **kwargs):
+        for errorIndication, errorStatus, errorIndex, varBinds in sync.bulkCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            nonRepeaters,
+            maxRepetitions,
+            *[(x, self._null) for x in varNames],
+            **kwargs,
+        ):
             if errorIndication or errorStatus:
                 return errorIndication, errorStatus, errorIndex, varBinds
 

@@ -1,12 +1,13 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import logging
+
 from pyasn1.compat.octets import octs2ints
-from pysnmp import error
-from pysnmp import __version__
+
+from pysnmp import __version__, error
 
 flagNone = 0x0000
 flagIO = 0x0001
@@ -19,19 +20,21 @@ flagIns = 0x0040
 flagACL = 0x0080
 flagPrx = 0x0100
 flagApp = 0x0200
-flagAll = 0xffff
+flagAll = 0xFFFF
 
-flagMap = {'io': flagIO,
-           'dsp': flagDsp,
-           'msgproc': flagMP,
-           'secmod': flagSM,
-           'mibbuild': flagBld,
-           'mibview': flagMIB,
-           'mibinstrum': flagIns,
-           'acl': flagACL,
-           'proxy': flagPrx,
-           'app': flagApp,
-           'all': flagAll}
+flagMap = {
+    'io': flagIO,
+    'dsp': flagDsp,
+    'msgproc': flagMP,
+    'secmod': flagSM,
+    'mibbuild': flagBld,
+    'mibview': flagMIB,
+    'mibinstrum': flagIns,
+    'acl': flagACL,
+    'proxy': flagPrx,
+    'app': flagApp,
+    'all': flagAll,
+}
 
 
 class Printer:
@@ -77,8 +80,7 @@ class Debug:
             if 'loggerName' in options:
                 # route our logs to parent logger
                 self._printer = Printer(
-                    logger=logging.getLogger(options['loggerName']),
-                    handler=NullHandler()
+                    logger=logging.getLogger(options['loggerName']), handler=NullHandler()
                 )
             else:
                 self._printer = Printer()
@@ -122,5 +124,8 @@ def setLogger(l):
 
 def hexdump(octets):
     return ' '.join(
-        ['{}{:02X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x) for n, x in zip(range(len(octets)),
-                                                                                      octs2ints(octets))])
+        [
+            '{}{:02X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x)
+            for n, x in zip(range(len(octets)), octs2ints(octets))
+        ]
+    )

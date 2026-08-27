@@ -1,7 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import os
 import sys
@@ -9,27 +9,25 @@ import sys
 defaultSources = ['file:///usr/share/snmp/mibs', 'file:///usr/share/mibs']
 
 if sys.platform[:3] == 'win':
-    defaultDest = os.path.join(os.path.expanduser("~"),
-                               'PySNMP Configuration', 'mibs')
+    defaultDest = os.path.join(os.path.expanduser("~"), 'PySNMP Configuration', 'mibs')
 else:
     defaultDest = os.path.join(os.path.expanduser("~"), '.pysnmp', 'mibs')
 
 defaultBorrowers = []
 
 try:
+    from pysmi.borrower.pyfile import PyFileBorrower
+    from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
+    from pysmi.compiler import MibCompiler
+    from pysmi.parser.dialect import smi_v1_relaxed
+    from pysmi.parser.smi import parserFactory
     from pysmi.reader.url import get_readers_from_urls
     from pysmi.searcher.pypackage import PyPackageSearcher
     from pysmi.searcher.stub import StubSearcher
-    from pysmi.borrower.pyfile import PyFileBorrower
     from pysmi.writer.pyfile import PyFileWriter
-    from pysmi.parser.smi import parserFactory
-    from pysmi.parser.dialect import smi_v1_relaxed
-    from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
-    from pysmi.compiler import MibCompiler
 
-except ImportError:
+except ImportError as e:
     from pysnmp.smi import error
-
 
     def addMibCompilerDecorator(errorMsg):
         def addMibCompiler(mibBuilder, **kwargs):
@@ -38,8 +36,7 @@ except ImportError:
 
         return addMibCompiler
 
-
-    addMibCompiler = addMibCompilerDecorator(sys.exc_info()[1])
+    addMibCompiler = addMibCompilerDecorator(e)
 
 else:
 
@@ -47,18 +44,25 @@ else:
         if kwargs.get('ifNotAdded') and mibBuilder.getMibCompiler():
             return
 
-        compiler = MibCompiler(parserFactory(**smi_v1_relaxed)(),
-                               PySnmpCodeGen(),
-                               PyFileWriter(kwargs.get('destination') or defaultDest))
+        compiler = MibCompiler(
+            parserFactory(**smi_v1_relaxed)(),
+            PySnmpCodeGen(),
+            PyFileWriter(kwargs.get('destination') or defaultDest),
+        )
 
         compiler.add_sources(*get_readers_from_urls(*kwargs.get('sources') or defaultSources))
 
         compiler.add_searchers(StubSearcher(*baseMibs))
-        compiler.add_searchers(*[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()])
-        compiler.add_borrowers(*[PyFileBorrower(x, genTexts=mibBuilder.loadTexts) for x in
-                                get_readers_from_urls(*kwargs.get('borrowers') or defaultBorrowers,
-                                                   **dict(lowcaseMatching=False))])
-
-        mibBuilder.setMibCompiler(
-            compiler, kwargs.get('destination') or defaultDest
+        compiler.add_searchers(
+            *[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()]
         )
+        compiler.add_borrowers(
+            *[
+                PyFileBorrower(x, genTexts=mibBuilder.loadTexts)
+                for x in get_readers_from_urls(
+                    *kwargs.get('borrowers') or defaultBorrowers, **dict(lowcaseMatching=False)
+                )
+            ]
+        )
+
+        mibBuilder.setMibCompiler(compiler, kwargs.get('destination') or defaultDest)

@@ -5,8 +5,9 @@ from pysnmp.hlapi.asyncio import ntforg
 __all__ = ['sendNotification']
 
 
-def sendNotification(snmpEngine, authData, transportTarget, contextData,
-                     notifyType, varBinds, **options):
+def sendNotification(
+    snmpEngine, authData, transportTarget, contextData, notifyType, varBinds, **options
+):
     try:
         asyncio.get_running_loop()
     except RuntimeError:
@@ -23,8 +24,13 @@ def sendNotification(snmpEngine, authData, transportTarget, contextData,
         while varBinds:
             result = loop.run_until_complete(
                 ntforg.sendNotification(
-                    snmpEngine, authData, transportTarget, contextData,
-                    notifyType, varBinds, **options
+                    snmpEngine,
+                    authData,
+                    transportTarget,
+                    contextData,
+                    notifyType,
+                    varBinds,
+                    **options,
                 )
             )
             varBinds = yield result

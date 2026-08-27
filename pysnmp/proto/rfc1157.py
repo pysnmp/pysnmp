@@ -1,19 +1,19 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.type import univ, tag, namedtype, namedval
+from pyasn1.type import namedtype, namedval, tag, univ
+
 from pysnmp.proto import rfc1155
 
-__all__ = ['GetNextRequestPDU', 'GetResponsePDU', 'SetRequestPDU',
-           'TrapPDU', 'GetRequestPDU']
+__all__ = ['GetNextRequestPDU', 'GetResponsePDU', 'SetRequestPDU', 'TrapPDU', 'GetRequestPDU']
 
 
 class VarBind(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('name', rfc1155.ObjectName()),
-        namedtype.NamedType('value', rfc1155.ObjectSyntax())
+        namedtype.NamedType('value', rfc1155.ObjectSyntax()),
     )
 
 
@@ -22,8 +22,15 @@ class VarBindList(univ.SequenceOf):
 
 
 errorStatus = univ.Integer(
-    namedValues=namedval.NamedValues(('noError', 0), ('tooBig', 1), ('noSuchName', 2),
-                                     ('badValue', 3), ('readOnly', 4), ('genErr', 5)))
+    namedValues=namedval.NamedValues(
+        ('noError', 0),
+        ('tooBig', 1),
+        ('noSuchName', 2),
+        ('badValue', 3),
+        ('readOnly', 4),
+        ('genErr', 5),
+    )
+)
 
 
 class _RequestBase(univ.Sequence):
@@ -31,7 +38,7 @@ class _RequestBase(univ.Sequence):
         namedtype.NamedType('request-id', univ.Integer()),
         namedtype.NamedType('error-status', errorStatus),
         namedtype.NamedType('error-index', univ.Integer()),
-        namedtype.NamedType('variable-bindings', VarBindList())
+        namedtype.NamedType('variable-bindings', VarBindList()),
     )
 
 
@@ -60,8 +67,16 @@ class SetRequestPDU(_RequestBase):
 
 
 genericTrap = univ.Integer().clone(
-    namedValues=namedval.NamedValues(('coldStart', 0), ('warmStart', 1), ('linkDown', 2), ('linkUp', 3),
-                                     ('authenticationFailure', 4), ('egpNeighborLoss', 5), ('enterpriseSpecific', 6)))
+    namedValues=namedval.NamedValues(
+        ('coldStart', 0),
+        ('warmStart', 1),
+        ('linkDown', 2),
+        ('linkUp', 3),
+        ('authenticationFailure', 4),
+        ('egpNeighborLoss', 5),
+        ('enterpriseSpecific', 6),
+    )
+)
 
 
 class TrapPDU(univ.Sequence):
@@ -74,7 +89,7 @@ class TrapPDU(univ.Sequence):
         namedtype.NamedType('generic-trap', genericTrap),
         namedtype.NamedType('specific-trap', univ.Integer()),
         namedtype.NamedType('time-stamp', rfc1155.TimeTicks()),
-        namedtype.NamedType('variable-bindings', VarBindList())
+        namedtype.NamedType('variable-bindings', VarBindList()),
     )
 
 
@@ -84,7 +99,7 @@ class PDUs(univ.Choice):
         namedtype.NamedType('get-next-request', GetNextRequestPDU()),
         namedtype.NamedType('get-response', GetResponsePDU()),
         namedtype.NamedType('set-request', SetRequestPDU()),
-        namedtype.NamedType('trap', TrapPDU())
+        namedtype.NamedType('trap', TrapPDU()),
     )
 
 
@@ -95,5 +110,5 @@ class Message(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('version', version),
         namedtype.NamedType('community', univ.OctetString()),
-        namedtype.NamedType('data', PDUs())
+        namedtype.NamedType('data', PDUs()),
     )

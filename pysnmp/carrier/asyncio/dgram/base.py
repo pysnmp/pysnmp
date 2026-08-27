@@ -1,7 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -29,19 +29,21 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
-import socket
-import sys
-import traceback
-from pysnmp.carrier.asyncio.base import AbstractAsyncioTransport
-from pysnmp.carrier import error
-from pysnmp import debug
-
 import asyncio
+import socket
+import traceback
+
+from pysnmp import debug
+from pysnmp.carrier import error
+from pysnmp.carrier.asyncio.base import AbstractAsyncioTransport
+
 
 class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     """Base Asyncio datagram Transport, to be used with AsyncioDispatcher"""
+
     sockFamily = None
     addressType = lambda x: x
+
     def __init__(self, sock=None, sockMap=None, loop=None):
         self._writeQ = []
         self._lport = None
@@ -69,12 +71,16 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         debug.logger & debug.flagIO and debug.logger('connection_made: invoked')
         while self._writeQ:
             outgoingMessage, transportAddress = self._writeQ.pop(0)
-            debug.logger & debug.flagIO and debug.logger('connection_made: transportAddress %r outgoingMessage %s' %
-                                                         (transportAddress, debug.hexdump(outgoingMessage)))
+            debug.logger & debug.flagIO and debug.logger(
+                'connection_made: transportAddress %r outgoingMessage %s'
+                % (transportAddress, debug.hexdump(outgoingMessage))
+            )
             try:
                 self.transport.sendto(outgoingMessage, self.normalizeAddress(transportAddress))
-            except Exception:
-                raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
+            except Exception as e:
+                raise error.CarrierError(
+                    ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+                )
 
     def connection_lost(self, exc):
         self.transport = None
@@ -91,8 +97,10 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 self._lport = self.loop.create_task(c)
             else:
                 self.loop.run_until_complete(c)
-        except Exception:
-            raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
+        except Exception as e:
+            raise error.CarrierError(
+                ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+            )
         return self
 
     def openServerMode(self, iface):
@@ -104,34 +112,39 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 self._lport = self.loop.create_task(c)
             else:
                 self.loop.run_until_complete(c)
-        except Exception:
-            raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
+        except Exception as e:
+            raise error.CarrierError(
+                ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+            )
         return self
 
     def closeTransport(self):
         if self._lport is not None:
             self._lport.cancel()
             if not self.loop.is_running():
-                self.loop.run_until_complete(
-                    asyncio.gather(self._lport, return_exceptions=True)
-                )
+                self.loop.run_until_complete(asyncio.gather(self._lport, return_exceptions=True))
             self._lport = None
         if self.transport is not None:
             self.transport.close()
         AbstractAsyncioTransport.closeTransport(self)
 
     def sendMessage(self, outgoingMessage, transportAddress):
-        debug.logger & debug.flagIO and debug.logger('sendMessage: {} transportAddress {!r} outgoingMessage {}'.format(
-            (self.transport is None and "queuing" or "sending"),
-            transportAddress, debug.hexdump(outgoingMessage)
-        ))
+        debug.logger & debug.flagIO and debug.logger(
+            'sendMessage: {} transportAddress {!r} outgoingMessage {}'.format(
+                (self.transport is None and "queuing" or "sending"),
+                transportAddress,
+                debug.hexdump(outgoingMessage),
+            )
+        )
         if self.transport is None:
             self._writeQ.append((outgoingMessage, transportAddress))
         else:
             try:
                 self.transport.sendto(outgoingMessage, self.normalizeAddress(transportAddress))
-            except Exception:
-                raise error.CarrierError(';'.join(traceback.format_exception(*sys.exc_info())))
+            except Exception as e:
+                raise error.CarrierError(
+                    ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+                )
 
     def getLocalAddress(self):
         if self.transport is None:
@@ -157,12 +170,8 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
 
         try:
             self._configureSocket(configureSocket)
-        except OSError:
-            raise error.CarrierError(
-                'setsockopt() for SO_BROADCAST failed: {}'.format(
-                    sys.exc_info()[1]
-                )
-            )
+        except OSError as e:
+            raise error.CarrierError(f'setsockopt() for SO_BROADCAST failed: {e}')
         return self
 
     def enablePktInfo(self, flag=1):
@@ -184,10 +193,6 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
 
         try:
             self._configureSocket(configureSocket)
-        except (AttributeError, OSError):
-            raise error.CarrierError(
-                'setsockopt() for IP_TRANSPARENT failed: {}'.format(
-                    sys.exc_info()[1]
-                )
-            )
+        except (AttributeError, OSError) as e:
+            raise error.CarrierError(f'setsockopt() for IP_TRANSPARENT failed: {e}')
         return self

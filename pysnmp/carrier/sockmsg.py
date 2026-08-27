@@ -1,7 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # The following routines act like sendto()/recvfrom() calls but additionally
 # support local address retrieval (what can be useful when listening on
@@ -14,15 +14,11 @@
 # Parts of the code below is taken from:
 # http://carnivore.it/2012/10/12/python3.3_sendmsg_and_recvmsg
 #
-import sys
-
-from pysnmp import debug
-
 import ctypes
 import ipaddress
 import socket
-from pysnmp.carrier import sockfix
-from pysnmp.carrier import error
+
+from pysnmp import debug
 
 uint32_t = ctypes.c_uint32
 in_addr_t = uint32_t
@@ -83,7 +79,8 @@ def getRecvFrom(addressType):
 
         debug.logger & debug.flagIO and debug.logger(
             'recvfrom: received %d octets from %s to %s; '
-            'iov blob %r' % (len(data), _from, _to, ancdata))
+            'iov blob %r' % (len(data), _from, _to, ancdata)
+        )
 
         return data, addressType(_from).setLocalAddress(_to)
 
@@ -112,7 +109,8 @@ def getSendTo(addressType):
 
         debug.logger & debug.flagIO and debug.logger(
             'sendto: sending %d octets to %s; address %r; '
-            'iov blob %r' % (len(_data), _to, addr, ancdata))
+            'iov blob %r' % (len(_data), _to, addr, ancdata)
+        )
 
         return s.sendmsg([_data], ancdata, 0, _to)
 

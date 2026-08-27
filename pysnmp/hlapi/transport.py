@@ -1,11 +1,12 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 from pyasn1.compat.octets import null
-from pysnmp.carrier.base import AbstractTransport
+
 from pysnmp import error
+from pysnmp.carrier.base import AbstractTransport
 
 __all__ = []
 
@@ -24,8 +25,7 @@ class AbstractTransportTarget:
 
     def __repr__(self):
         return '{}({!r}, timeout={!r}, retries={!r}, tagList={!r})'.format(
-            self.__class__.__name__, self.transportAddr,
-            self.timeout, self.retries, self.tagList
+            self.__class__.__name__, self.transportAddr, self.timeout, self.retries, self.tagList
         )
 
     def getTransportInfo(self):
@@ -54,8 +54,11 @@ class AbstractTransportTarget:
 
     def verifyDispatcherCompatibility(self, snmpEngine):
         if not self.protoTransport.isCompatibleWithDispatcher(snmpEngine.transportDispatcher):
-            raise error.PySnmpError('Transport {!r} is not compatible with dispatcher {!r}'.format(
-                self.protoTransport, snmpEngine.transportDispatcher))
+            raise error.PySnmpError(
+                'Transport {!r} is not compatible with dispatcher {!r}'.format(
+                    self.protoTransport, snmpEngine.transportDispatcher
+                )
+            )
 
     def _resolveAddr(self, transportAddr):
         raise NotImplementedError()

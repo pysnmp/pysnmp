@@ -37,6 +37,11 @@ dev = [
     "coverage[toml] >=7.2.0,<8.0.0",
     "codecov >=2.1.12,<3.0.0",
     "pytest-codecov >=0.4.0,<1.0.0",
+    "mypy >=1.0.0,<2.0.0",
+    "pylint >=3.0.0,<4.0.0",
+    "ruff >=0.4.0,<1.0.0",
+    "black >=24.0.0,<25.0.0",
+    "isort >=5.13.0,<6.0.0",
 ]
 
 # snmpsim 0.4.7 depends on the legacy pysnmp 4.4.12 distribution. Install it
@@ -67,3 +72,88 @@ include = [
     "tests",
     "examples",
 ]
+
+# ---------------------------------------------------------------------------
+# Linting / formatting / typing configuration (Phase 0 of code quality sweep)
+# ---------------------------------------------------------------------------
+
+[tool.black]
+line-length = 99
+skip-string-normalization = true
+target-version = ["py310"]
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 99
+force_single_line = false
+known_first_party = ["pysnmp"]
+skip = [".eggs", ".git", ".hg", ".mypy_cache", ".tox", ".venv", "_build", "buck-out", "build", "dist"]
+
+[tool.ruff]
+line-length = 99
+target-version = "py310"
+extend-exclude = [".eggs", ".git", ".hg", ".mypy_cache", ".tox", ".venv", "_build", "buck-out", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I"]
+ignore = [
+    "E501",  # line-too-long: many legacy lines exceed 99; revisit in a later phase
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pysnmp"]
+force-single-line = false
+
+[tool.pylint.main]
+py-version = "3.10"
+ignore = [".eggs", ".git", ".hg", ".mypy_cache", ".tox", ".venv", "_build", "buck-out", "build", "dist"]
+fail-under = 10.0
+
+[tool.pylint."messages control"]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring
+    "C0103",  # invalid-name: camelCase is intentional legacy convention (Phase 6)
+    "C0104",  # disallowed-name
+    "R0902",  # too-many-instance-attributes
+    "R0903",  # too-few-public-methods
+    "R0912",  # too-many-branches
+    "R0913",  # too-many-arguments
+    "R0914",  # too-many-locals
+    "R0915",  # too-many-statements
+    "W0212",  # protected-access
+    "W0511",  # fixme
+    "W0102",  # dangerous-default-value: pervasive in legacy API
+    "E0401",  # import-error: third-party stubs may be missing in lint env
+]
+
+[tool.pylint.format]
+max-line-length = 99
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+files = ["pysnmp"]
+
+[[tool.mypy.overrides]]
+module = "pysnmp.hlapi.*"
+check_untyped_defs = true

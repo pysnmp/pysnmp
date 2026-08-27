@@ -1,21 +1,39 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import sys
 import inspect
 import string
-from pysnmp.smi.error import *
-from pysnmp import debug
-from pyasn1.type import univ
+
 from pyasn1.compat import octets
+from pyasn1.type import univ
 from pyasn1.type.base import Asn1Item
 
-OctetString, Integer, ObjectIdentifier = mibBuilder.importSymbols('ASN1', 'OctetString', 'Integer', 'ObjectIdentifier')
-NamedValues, = mibBuilder.importSymbols("ASN1-ENUMERATION", "NamedValues")
-ConstraintsIntersection, ConstraintsUnion, SingleValueConstraint, ValueRangeConstraint, ValueSizeConstraint = mibBuilder.importSymbols("ASN1-REFINEMENT", "ConstraintsIntersection", "ConstraintsUnion", "SingleValueConstraint", "ValueRangeConstraint", "ValueSizeConstraint")
-Counter32, Unsigned32, TimeTicks, Counter64 = mibBuilder.importSymbols('SNMPv2-SMI', 'Counter32', 'Unsigned32', 'TimeTicks', 'Counter64')
+from pysnmp import debug
+from pysnmp.smi.error import *
+
+OctetString, Integer, ObjectIdentifier = mibBuilder.importSymbols(
+    'ASN1', 'OctetString', 'Integer', 'ObjectIdentifier'
+)
+(NamedValues,) = mibBuilder.importSymbols("ASN1-ENUMERATION", "NamedValues")
+(
+    ConstraintsIntersection,
+    ConstraintsUnion,
+    SingleValueConstraint,
+    ValueRangeConstraint,
+    ValueSizeConstraint,
+) = mibBuilder.importSymbols(
+    "ASN1-REFINEMENT",
+    "ConstraintsIntersection",
+    "ConstraintsUnion",
+    "SingleValueConstraint",
+    "ValueRangeConstraint",
+    "ValueSizeConstraint",
+)
+Counter32, Unsigned32, TimeTicks, Counter64 = mibBuilder.importSymbols(
+    'SNMPv2-SMI', 'Counter32', 'Unsigned32', 'TimeTicks', 'Counter64'
+)
 
 
 class TextualConvention:
@@ -51,20 +69,24 @@ class TextualConvention:
 
     def prettyOut(self, value):  # override asn1 type method
         """Implements DISPLAY-HINT evaluation"""
-        if self.displayHint and (self.__integer.isSuperTypeOf(self, matchConstraints=False) and not self.getNamedValues() or
-                                 self.__unsigned32.isSuperTypeOf(self, matchConstraints=False) or
-                                 self.__timeticks.isSuperTypeOf(self, matchConstraints=False)):
+        if self.displayHint and (
+            self.__integer.isSuperTypeOf(self, matchConstraints=False)
+            and not self.getNamedValues()
+            or self.__unsigned32.isSuperTypeOf(self, matchConstraints=False)
+            or self.__timeticks.isSuperTypeOf(self, matchConstraints=False)
+        ):
             _ = lambda t, f=0: (t, f)
             displayHintType, decimalPrecision = _(*self.displayHint.split('-'))
             if displayHintType == 'x':
                 return '0x%x' % value
             elif displayHintType == 'd':
                 try:
-                    return '%.*f' % (int(decimalPrecision), float(value) / pow(10, int(decimalPrecision)))
-                except Exception:
-                    raise SmiError(
-                        'float evaluation error: %s' % sys.exc_info()[1]
+                    return '%.*f' % (
+                        int(decimalPrecision),
+                        float(value) / pow(10, int(decimalPrecision)),
                     )
+                except Exception as e:
+                    raise SmiError('float evaluation error: %s' % e)
             elif displayHintType == 'o':
                 return '0%o' % value
             elif displayHintType == 'b':
@@ -105,14 +127,10 @@ class TextualConvention:
                 try:
                     octetLength = int(octetLength)
                 except Exception:
-                    raise SmiError(
-                        'Bad octet length: %s' % octetLength
-                    )
+                    raise SmiError('Bad octet length: %s' % octetLength)
 
                 if not displayHint:
-                    raise SmiError(
-                        'Short octet length: %s' % self.displayHint
-                    )
+                    raise SmiError('Short octet length: %s' % self.displayHint)
 
                 # 3
                 displayFormat = displayHint[0]
@@ -147,10 +165,9 @@ class TextualConvention:
                             try:
                                 number |= octets.oct2int(numberString[0])
                                 numberString = numberString[1:]
-                            except Exception:
+                            except Exception as e:
                                 raise SmiError(
-                                    'Display format eval failure: %s: %s'
-                                    % (numberString, sys.exc_info()[1])
+                                    'Display format eval failure: %s: %s' % (numberString, e)
                                 )
                         if displayFormat == 'x':
                             outputValue += '%02x' % number
@@ -159,10 +176,7 @@ class TextualConvention:
                         else:
                             outputValue += '%d' % number
                     else:
-                        raise SmiError(
-                            'Unsupported display format char: %s' %
-                            displayFormat
-                        )
+                        raise SmiError('Unsupported display format char: %s' % displayFormat)
                     if runningValue and repeatTerminator:
                         outputValue += repeatTerminator
                     runningValue = runningValue[octetLength:]
@@ -195,10 +209,12 @@ class TextualConvention:
         else:
             raise SmiError('TEXTUAL-CONVENTION has no underlying SNMP base type')
 
-        if self.displayHint and (self.__integer.isSuperTypeOf(self, matchConstraints=False) and
-                                 self.getNamedValues() or
-                                 self.__unsigned32.isSuperTypeOf(self, matchConstraints=False) or
-                                 self.__timeticks.isSuperTypeOf(self, matchConstraints=False)):
+        if self.displayHint and (
+            self.__integer.isSuperTypeOf(self, matchConstraints=False)
+            and self.getNamedValues()
+            or self.__unsigned32.isSuperTypeOf(self, matchConstraints=False)
+            or self.__timeticks.isSuperTypeOf(self, matchConstraints=False)
+        ):
             value = str(value)
 
             _ = lambda t, f=0: (t, f)
@@ -209,24 +225,18 @@ class TextualConvention:
                         return base.prettyIn(self, -int(value[3:], 16))
                     else:
                         return base.prettyIn(self, int(value[2:], 16))
-                except Exception:
-                    raise SmiError(
-                        'integer evaluation error: %s' % sys.exc_info()[1]
-                    )
+                except Exception as e:
+                    raise SmiError('integer evaluation error: %s' % e)
             elif displayHintType == 'd':
                 try:
-                    return base.prettyIn(self, int(float(value) * 10**int(decimalPrecision)))
-                except Exception:
-                    raise SmiError(
-                        'float evaluation error: %s' % sys.exc_info()[1]
-                    )
+                    return base.prettyIn(self, int(float(value) * 10 ** int(decimalPrecision)))
+                except Exception as e:
+                    raise SmiError('float evaluation error: %s' % e)
             elif displayHintType == 'o' and (value.startswith('0') or value.startswith('-0')):
                 try:
                     return base.prettyIn(self, int(value, 8))
-                except Exception:
-                    raise SmiError(
-                        'octal evaluation error: %s' % sys.exc_info()[1]
-                    )
+                except Exception as e:
+                    raise SmiError('octal evaluation error: %s' % e)
             elif displayHintType == 'b' and (value.startswith('B') or value.startswith('-B')):
                 negative = value.startswith('-')
                 if negative:
@@ -245,15 +255,11 @@ class TextualConvention:
                 )
 
         elif self.displayHint and self.__octetString.isSuperTypeOf(self, matchConstraints=False):
-            numBase = {
-                'x': 16,
-                'd': 10,
-                'o': 8
-            }
+            numBase = {'x': 16, 'd': 10, 'o': 8}
             numDigits = {
                 'x': octets.str2octs(string.hexdigits),
                 'o': octets.str2octs(string.octdigits),
-                'd': octets.str2octs(string.digits)
+                'd': octets.str2octs(string.digits),
             }
 
             # how do we know if object is initialized with display-hint
@@ -288,14 +294,10 @@ class TextualConvention:
                 try:
                     octetLength = int(octetLength)
                 except Exception:
-                    raise SmiError(
-                        'Bad octet length: %s' % octetLength
-                    )
+                    raise SmiError('Bad octet length: %s' % octetLength)
 
                 if not displayHint:
-                    raise SmiError(
-                        'Short octet length: %s' % self.displayHint
-                    )
+                    raise SmiError('Short octet length: %s' % self.displayHint)
 
                 # 3
                 displayFormat = displayHint[0]
@@ -326,11 +328,14 @@ class TextualConvention:
                             guessedOctetLength = len(runningValue)
 
                     try:
-                        num = int(octets.octs2str(runningValue[:guessedOctetLength]), numBase[displayFormat])
-                    except Exception:
+                        num = int(
+                            octets.octs2str(runningValue[:guessedOctetLength]),
+                            numBase[displayFormat],
+                        )
+                    except Exception as e:
                         raise SmiError(
                             'Display format eval failure: %s: %s'
-                            % (runningValue[:guessedOctetLength], sys.exc_info()[1])
+                            % (runningValue[:guessedOctetLength], e)
                         )
 
                     num_as_bytes = []
@@ -353,10 +358,7 @@ class TextualConvention:
 
                     octetLength = guessedOctetLength
                 else:
-                    raise SmiError(
-                        'Unsupported display format char: %s' %
-                        displayFormat
-                    )
+                    raise SmiError('Unsupported display format char: %s' % displayFormat)
 
                 runningValue = runningValue[octetLength:]
 
@@ -426,7 +428,9 @@ class InstancePointer(TextualConvention, ObjectIdentifier):
 
 
 class VariablePointer(TextualConvention, ObjectIdentifier):
-    description = 'A pointer to a specific object instance. For example, sysContact.0 or ifInOctets.3.'
+    description = (
+        'A pointer to a specific object instance. For example, sysContact.0 or ifInOctets.3.'
+    )
     status = 'current'
 
 
@@ -434,21 +438,34 @@ class RowPointer(TextualConvention, ObjectIdentifier):
     description = 'Represents a pointer to a conceptual row. The value is the name of the instance of the first accessible columnar object in the conceptual row. For example, ifIndex.3 would point to the 3rd row in the ifTable (note that if ifIndex were not-accessible, then ifDescr.3 would be used instead).'
     status = 'current'
 
+
 class RowStatus(TextualConvention, Integer):
     """A special kind of scalar MIB variable responsible for
-       MIB table row creation/destruction.
+    MIB table row creation/destruction.
     """
+
     description = "The RowStatus textual convention is used to manage the creation and deletion of conceptual rows, and is used as the value of the SYNTAX clause for the status column of a conceptual row (as described in Section 7.7.1 of [2].)..."
     status = 'current'
     subtypeSpec = Integer.subtypeSpec + SingleValueConstraint(0, 1, 2, 3, 4, 5, 6)
     namedValues = NamedValues(
-        ('notExists', 0), ('active', 1), ('notInService', 2), ('notReady', 3),
-        ('createAndGo', 4), ('createAndWait', 5), ('destroy', 6)
+        ('notExists', 0),
+        ('active', 1),
+        ('notInService', 2),
+        ('notReady', 3),
+        ('createAndGo', 4),
+        ('createAndWait', 5),
+        ('destroy', 6),
     )
     # Known row states
-    (stNotExists, stActive, stNotInService,
-     stNotReady, stCreateAndGo, stCreateAndWait,
-     stDestroy) = list(range(7))
+    (
+        stNotExists,
+        stActive,
+        stNotInService,
+        stNotReady,
+        stCreateAndGo,
+        stCreateAndWait,
+        stDestroy,
+    ) = list(range(7))
 
     # States transition matrix (see RFC-1903)
     stateMatrix = {
@@ -478,7 +495,7 @@ class RowStatus(TextualConvention, Integer):
         (stDestroy, stNotInService): (RowDestructionWanted, stNotExists),
         (stDestroy, stActive): (RowDestructionWanted, stNotExists),
         # This is used on instantiation
-        (stNotExists, stNotExists): (None, stNotExists)
+        (stNotExists, stNotExists): (None, stNotExists),
     }
 
     def setValue(self, value):
@@ -490,9 +507,11 @@ class RowStatus(TextualConvention, Integer):
         # Run through states transition matrix,
         # resolve new instance value
         excValue, newState = self.stateMatrix.get(
-            (value.hasValue() and value or self.stNotExists,
-             self.hasValue() and self or self.stNotExists),
-            (MibOperationError, None)
+            (
+                value.hasValue() and value or self.stNotExists,
+                self.hasValue() and self or self.stNotExists,
+            ),
+            (MibOperationError, None),
         )
 
         if newState is None:
@@ -502,12 +521,16 @@ class RowStatus(TextualConvention, Integer):
 
         debug.logger & debug.flagIns and debug.logger(
             'RowStatus state change from {!r} to {!r} produced new state {!r}, error indication {!r}'.format(
-                self, value, newState, excValue))
+                self, value, newState, excValue
+            )
+        )
 
         if excValue is not None:
             excValue = excValue(
                 msg='Exception at row state transition from {!r} to {!r} yields state {!r} and exception'.format(
-                    self, value, newState), syntax=newState
+                    self, value, newState
+                ),
+                syntax=newState,
             )
             raise excValue
 
@@ -537,8 +560,7 @@ class StorageType(TextualConvention, Integer):
     status = 'current'
     subtypeSpec = Integer.subtypeSpec + SingleValueConstraint(1, 2, 3, 4, 5)
     namedValues = NamedValues(
-        ('other', 1), ('volatile', 2), ('nonVolatile', 3),
-        ('permanent', 4), ('readOnly', 5)
+        ('other', 1), ('volatile', 2), ('nonVolatile', 3), ('permanent', 4), ('readOnly', 5)
     )
 
 
@@ -556,12 +578,22 @@ class TAddress(TextualConvention, OctetString):
 
 
 mibBuilder.exportSymbols(
-    'SNMPv2-TC', TextualConvention=TextualConvention,
-    DisplayString=DisplayString, PhysAddress=PhysAddress,
-    MacAddress=MacAddress, TruthValue=TruthValue, TestAndIncr=TestAndIncr,
-    AutonomousType=AutonomousType, InstancePointer=InstancePointer,
-    VariablePointer=VariablePointer, RowPointer=RowPointer,
-    RowStatus=RowStatus, TimeStamp=TimeStamp, TimeInterval=TimeInterval,
-    DateAndTime=DateAndTime, StorageType=StorageType, TDomain=TDomain,
-    TAddress=TAddress
+    'SNMPv2-TC',
+    TextualConvention=TextualConvention,
+    DisplayString=DisplayString,
+    PhysAddress=PhysAddress,
+    MacAddress=MacAddress,
+    TruthValue=TruthValue,
+    TestAndIncr=TestAndIncr,
+    AutonomousType=AutonomousType,
+    InstancePointer=InstancePointer,
+    VariablePointer=VariablePointer,
+    RowPointer=RowPointer,
+    RowStatus=RowStatus,
+    TimeStamp=TimeStamp,
+    TimeInterval=TimeInterval,
+    DateAndTime=DateAndTime,
+    StorageType=StorageType,
+    TDomain=TDomain,
+    TAddress=TAddress,
 )

@@ -1,15 +1,15 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pysnmp.proto import error
 from pysnmp import nextid
+from pysnmp.proto import error
 
 
 class Cache:
-    __stateReference = nextid.Integer(0xffffff)
-    __msgID = nextid.Integer(0xffffff)
+    __stateReference = nextid.Integer(0xFFFFFF)
+    __msgID = nextid.Integer(0xFFFFFF)
 
     def __init__(self):
         self.__msgIdIndex = {}
@@ -54,9 +54,7 @@ class Cache:
 
     def pushByMsgId(self, msgId, **msgInfo):
         if msgId in self.__msgIdIndex:
-            raise error.ProtocolError(
-                f'Cache dup for msgId={msgId} at {self}'
-            )
+            raise error.ProtocolError(f'Cache dup for msgId={msgId} at {self}')
         expireAt = self.__expirationTimer + 600
         self.__msgIdIndex[msgId] = msgInfo, expireAt
 
@@ -73,9 +71,7 @@ class Cache:
         if msgId in self.__msgIdIndex:
             cacheInfo = self.__msgIdIndex[msgId]
         else:
-            raise error.ProtocolError(
-                f'Cache miss for msgId={msgId} at {self}'
-            )
+            raise error.ProtocolError(f'Cache miss for msgId={msgId} at {self}')
         msgInfo, expireAt = cacheInfo
         del self.__sendPduHandleIdx[msgInfo['sendPduHandle']]
         del self.__msgIdIndex[msgId]

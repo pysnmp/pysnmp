@@ -1,11 +1,12 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 from pyasn1.type import univ
-from pysnmp.proto import rfc1155, rfc1157, error
+
 from pysnmp import nextid
+from pysnmp.proto import error, rfc1155, rfc1157
 
 # Shortcuts to SNMP types
 Integer = univ.Integer
@@ -38,7 +39,14 @@ class VarBindAPI:
         varBind.setComponentByPosition(0, oid)
         if val is None:
             val = null
-        varBind.setComponentByPosition(1).getComponentByPosition(1).setComponentByType(val.getTagSet(), val, verifyConstraints=False, matchTags=False, matchConstraints=False, innerFlag=True)
+        varBind.setComponentByPosition(1).getComponentByPosition(1).setComponentByType(
+            val.getTagSet(),
+            val,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
+            innerFlag=True,
+        )
         return varBind
 
     @staticmethod
@@ -48,7 +56,7 @@ class VarBindAPI:
 
 apiVarBind = VarBindAPI()
 
-getNextRequestID = nextid.Integer(0xffffff)
+getNextRequestID = nextid.Integer(0xFFFFFF)
 
 
 class PDUAPI:
@@ -90,9 +98,7 @@ class PDUAPI:
         if errorIndex > len(pdu[3]):
             if muteErrors:
                 return errorIndex.clone(len(pdu[3]))
-            raise error.ProtocolError(
-                f'Error index out of range: {errorIndex} > {len(pdu[3])}'
-            )
+            raise error.ProtocolError(f'Error index out of range: {errorIndex} > {len(pdu[3])}')
         return errorIndex
 
     @staticmethod
@@ -127,9 +133,7 @@ class PDUAPI:
                 varBindList.setComponentByPosition(idx, varBind)
             else:
                 varBindList.setComponentByPosition(idx)
-                apiVarBind.setOIDVal(
-                    varBindList.getComponentByPosition(idx), varBind
-                )
+                apiVarBind.setOIDVal(varBindList.getComponentByPosition(idx), varBind)
 
     def getResponse(self, reqPDU):
         rspPDU = GetResponsePDU()
@@ -161,15 +165,30 @@ class TrapPDUAPI:
         if self._networkAddress is None:
             try:
                 import socket
+
                 agentAddress = IpAddress(socket.gethostbyname(socket.gethostname()))
             except Exception:
                 agentAddress = IpAddress('0.0.0.0')
             self._networkAddress = NetworkAddress().setComponentByPosition(0, agentAddress)
-        pdu.setComponentByPosition(0, self._entOid, verifyConstraints=False, matchTags=False, matchConstraints=False)
-        pdu.setComponentByPosition(1, self._networkAddress, verifyConstraints=False, matchTags=False, matchConstraints=False)
-        pdu.setComponentByPosition(2, self._genericTrap, verifyConstraints=False, matchTags=False, matchConstraints=False)
-        pdu.setComponentByPosition(3, self._zeroInt, verifyConstraints=False, matchTags=False, matchConstraints=False)
-        pdu.setComponentByPosition(4, self._zeroTime, verifyConstraints=False, matchTags=False, matchConstraints=False)
+        pdu.setComponentByPosition(
+            0, self._entOid, verifyConstraints=False, matchTags=False, matchConstraints=False
+        )
+        pdu.setComponentByPosition(
+            1,
+            self._networkAddress,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
+        )
+        pdu.setComponentByPosition(
+            2, self._genericTrap, verifyConstraints=False, matchTags=False, matchConstraints=False
+        )
+        pdu.setComponentByPosition(
+            3, self._zeroInt, verifyConstraints=False, matchTags=False, matchConstraints=False
+        )
+        pdu.setComponentByPosition(
+            4, self._zeroTime, verifyConstraints=False, matchTags=False, matchConstraints=False
+        )
         varBindList = pdu.setComponentByPosition(5).getComponentByPosition(5)
         varBindList.clear()
 
@@ -238,9 +257,7 @@ class TrapPDUAPI:
                 varBindList.setComponentByPosition(idx, varBind)
             else:
                 varBindList.setComponentByPosition(idx)
-                apiVarBind.setOIDVal(
-                    varBindList.getComponentByPosition(idx), varBind
-                )
+                apiVarBind.setOIDVal(varBindList.getComponentByPosition(idx), varBind)
             idx += 1
 
 
@@ -252,8 +269,12 @@ class MessageAPI:
     _community = univ.OctetString('public')
 
     def setDefaults(self, msg):
-        msg.setComponentByPosition(0, self._version, verifyConstraints=False, matchTags=False, matchConstraints=False)
-        msg.setComponentByPosition(1, self._community, verifyConstraints=False, matchTags=False, matchConstraints=False)
+        msg.setComponentByPosition(
+            0, self._version, verifyConstraints=False, matchTags=False, matchConstraints=False
+        )
+        msg.setComponentByPosition(
+            1, self._community, verifyConstraints=False, matchTags=False, matchConstraints=False
+        )
         return msg
 
     @staticmethod
@@ -278,7 +299,14 @@ class MessageAPI:
 
     @staticmethod
     def setPDU(msg, value):
-        msg.setComponentByPosition(2).getComponentByPosition(2).setComponentByType(value.getTagSet(), value, verifyConstraints=False, matchTags=False, matchConstraints=False, innerFlag=True)
+        msg.setComponentByPosition(2).getComponentByPosition(2).setComponentByType(
+            value.getTagSet(),
+            value,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
+            innerFlag=True,
+        )
 
     def getResponse(self, reqMsg):
         rspMsg = Message()

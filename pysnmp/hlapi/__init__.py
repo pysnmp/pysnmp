@@ -1,18 +1,17 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pysnmp.proto.rfc1902 import *
-from pysnmp.proto.rfc1905 import NoSuchInstance, NoSuchObject, EndOfMibView
-from pysnmp.smi.rfc1902 import *
-from pysnmp.hlapi import auth
-from pysnmp.hlapi.context import *
 from pysnmp.entity.engine import *
+from pysnmp.hlapi import auth
 
 # default is a synchronous facade over the asyncio API
 from pysnmp.hlapi.asyncio.sync import *
-
+from pysnmp.hlapi.context import *
+from pysnmp.proto.rfc1902 import *
+from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
+from pysnmp.smi.rfc1902 import *
 
 CommunityData = auth.CommunityData
 UsmUserData = auth.UsmUserData

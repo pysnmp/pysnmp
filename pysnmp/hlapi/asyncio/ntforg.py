@@ -1,24 +1,21 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
 #          Zachary Lorusso <zlorusso@gmail.com>
 #
-import sys
+import asyncio
 
-from pysnmp.smi.rfc1902 import *
+from pysnmp.entity.rfc3413 import ntforg
+from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.hlapi.auth import *
 from pysnmp.hlapi.context import *
 from pysnmp.hlapi.lcd import *
 from pysnmp.hlapi.varbinds import *
-from pysnmp.hlapi.asyncio.transport import *
-from pysnmp.entity.rfc3413 import ntforg
-
-import asyncio
-
+from pysnmp.smi.rfc1902 import *
 
 __all__ = ['sendNotification']
 
@@ -26,8 +23,9 @@ vbProcessor = NotificationOriginatorVarBinds()
 lcd = NotificationOriginatorLcdConfigurator()
 
 
-async def sendNotification(snmpEngine, authData, transportTarget, contextData,
-                     notifyType, varBinds, **options):
+async def sendNotification(
+    snmpEngine, authData, transportTarget, contextData, notifyType, varBinds, **options
+):
     r"""Send SNMP notification.
 
     Parameters
@@ -104,26 +102,22 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
 
     """
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBinds, cbCtx):
+    def __cbFun(
+        snmpEngine, sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
+    ):
         lookupMib, future = cbCtx
         if future.cancelled():
             return
         try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds,
-                                                        lookupMib)
-        except Exception:
-            ex = sys.exc_info()[1]
+            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds, lookupMib)
+        except Exception as ex:
             future.set_exception(ex)
         else:
-            future.set_result(
-                    (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+            future.set_result((errorIndication, errorStatus, errorIndex, varBindsUnmade))
 
     notifyName = lcd.configure(
-        snmpEngine, authData, transportTarget, notifyType,
-        contextData.contextName)
+        snmpEngine, authData, transportTarget, notifyType, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
@@ -134,10 +128,11 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
         contextData.contextName,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get('lookupMib', True), future)
+        (options.get('lookupMib', True), future),
     )
 
     if notifyType == 'trap':
+
         def __trapFun(future):
             if future.cancelled():
                 return

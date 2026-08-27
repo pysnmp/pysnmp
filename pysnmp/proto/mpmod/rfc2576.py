@@ -1,36 +1,47 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import sys
-from pyasn1.codec.ber import decoder, eoo
-from pyasn1.type import univ
-from pyasn1.compat.octets import null
-from pyasn1.error import PyAsn1Error
-from pysnmp.proto.mpmod.base import AbstractMessageProcessingModel
-from pysnmp.proto import rfc3411, errind, error
-from pysnmp.proto.api import v1, v2c
-from pysnmp import debug
 
+from pyasn1.codec.ber import decoder, eoo
+from pyasn1.compat.octets import null
+from pyasn1.type import univ
+
+from pysnmp import debug
+from pysnmp.proto import errind, error, rfc3411
+from pysnmp.proto.api import v1, v2c
+from pysnmp.proto.mpmod.base import AbstractMessageProcessingModel
 
 # Since I have not found a detailed reference to v1MP/v2cMP
 # inner workings, the following has been patterned from v3MP. Most
 # references here goes to RFC3412.
+
 
 class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     messageProcessingModelID = univ.Integer(0)  # SNMPv1
     snmpMsgSpec = v1.Message
 
     # rfc3412: 7.1
-    def prepareOutgoingMessage(self, snmpEngine, transportDomain,
-                               transportAddress, messageProcessingModel,
-                               securityModel, securityName, securityLevel,
-                               contextEngineId, contextName, pduVersion,
-                               pdu, expectResponse, sendPduHandle):
+    def prepareOutgoingMessage(
+        self,
+        snmpEngine,
+        transportDomain,
+        transportAddress,
+        messageProcessingModel,
+        securityModel,
+        securityName,
+        securityLevel,
+        contextEngineId,
+        contextName,
+        pduVersion,
+        pdu,
+        expectResponse,
+        sendPduHandle,
+    ):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-        snmpEngineId, = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
+        (snmpEngineId,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
         snmpEngineId = snmpEngineId.syntax
 
         # rfc3412: 7.1.1b
@@ -39,7 +50,8 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             msgID = self._cache.newMsgID()
             reqID = pdu.getComponentByPosition(0)
             debug.logger & debug.flagMP and debug.logger(
-                f'prepareOutgoingMessage: PDU request-id {reqID} replaced with unique ID {msgID}')
+                f'prepareOutgoingMessage: PDU request-id {reqID} replaced with unique ID {msgID}'
+            )
 
         # rfc3412: 7.1.4
         # Since there's no SNMP engine identification in v1/2c,
@@ -52,7 +64,8 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             contextName = null
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareOutgoingMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}')
+            f'prepareOutgoingMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}'
+        )
 
         # rfc3412: 7.1.6
         scopedPDU = (contextEngineId, contextName, pdu)
@@ -71,14 +84,13 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         if k in snmpEngine.securityModels:
             smHandler = snmpEngine.securityModels[k]
         else:
-            raise error.StatusInformation(
-                errorIndication=errind.unsupportedSecurityModel
-            )
+            raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
 
         # rfc3412: 7.1.9.a & rfc2576: 5.2.1 --> no-op
 
-        snmpEngineMaxMessageSize, = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB',
-                                                             'snmpEngineMaxMessageSize')
+        (snmpEngineMaxMessageSize,) = mibBuilder.importSymbols(
+            '__SNMP-FRAMEWORK-MIB', 'snmpEngineMaxMessageSize'
+        )
 
         # fix unique request-id right prior PDU serialization
         if pdu.tagSet in rfc3411.confirmedClassPDUs:
@@ -86,11 +98,16 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             pdu.setComponentByPosition(0, msgID)
 
         # rfc3412: 7.1.9.b
-        (securityParameters,
-         wholeMsg) = smHandler.generateRequestMsg(
-            snmpEngine, self.messageProcessingModelID, globalData,
-            snmpEngineMaxMessageSize.syntax, securityModel,
-            snmpEngineId, securityName, securityLevel, scopedPDU
+        (securityParameters, wholeMsg) = smHandler.generateRequestMsg(
+            snmpEngine,
+            self.messageProcessingModelID,
+            globalData,
+            snmpEngineMaxMessageSize.syntax,
+            securityModel,
+            snmpEngineId,
+            securityName,
+            securityLevel,
+            scopedPDU,
         )
 
         # return original request-id right after PDU serialization
@@ -101,46 +118,61 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # rfc3412: 7.1.9.c
         if pdu.tagSet in rfc3411.confirmedClassPDUs:
             # XXX rfc bug? why stateReference should be created?
-            self._cache.pushByMsgId(int(msgID), sendPduHandle=sendPduHandle,
-                                    reqID=reqID, snmpEngineId=snmpEngineId,
-                                    securityModel=securityModel,
-                                    securityName=securityName,
-                                    securityLevel=securityLevel,
-                                    contextEngineId=contextEngineId,
-                                    contextName=contextName,
-                                    transportDomain=transportDomain,
-                                    transportAddress=transportAddress)
+            self._cache.pushByMsgId(
+                int(msgID),
+                sendPduHandle=sendPduHandle,
+                reqID=reqID,
+                snmpEngineId=snmpEngineId,
+                securityModel=securityModel,
+                securityName=securityName,
+                securityLevel=securityLevel,
+                contextEngineId=contextEngineId,
+                contextName=contextName,
+                transportDomain=transportDomain,
+                transportAddress=transportAddress,
+            )
 
         communityName = msg.getComponentByPosition(1)  # for observer
 
         snmpEngine.observer.storeExecutionContext(
-            snmpEngine, 'rfc2576.prepareOutgoingMessage',
-            dict(transportDomain=transportDomain,
-                 transportAddress=transportAddress,
-                 wholeMsg=wholeMsg,
-                 securityModel=securityModel,
-                 securityName=securityName,
-                 securityLevel=securityLevel,
-                 contextEngineId=contextEngineId,
-                 contextName=contextName,
-                 communityName=communityName,
-                 pdu=pdu)
+            snmpEngine,
+            'rfc2576.prepareOutgoingMessage',
+            dict(
+                transportDomain=transportDomain,
+                transportAddress=transportAddress,
+                wholeMsg=wholeMsg,
+                securityModel=securityModel,
+                securityName=securityName,
+                securityLevel=securityLevel,
+                contextEngineId=contextEngineId,
+                contextName=contextName,
+                communityName=communityName,
+                pdu=pdu,
+            ),
         )
-        snmpEngine.observer.clearExecutionContext(
-            snmpEngine, 'rfc2576.prepareOutgoingMessage'
-        )
+        snmpEngine.observer.clearExecutionContext(snmpEngine, 'rfc2576.prepareOutgoingMessage')
 
         return transportDomain, transportAddress, wholeMsg
 
     # rfc3412: 7.1
-    def prepareResponseMessage(self, snmpEngine, messageProcessingModel,
-                               securityModel, securityName, securityLevel,
-                               contextEngineId, contextName, pduVersion,
-                               pdu, maxSizeResponseScopedPDU, stateReference,
-                               statusInformation):
+    def prepareResponseMessage(
+        self,
+        snmpEngine,
+        messageProcessingModel,
+        securityModel,
+        securityName,
+        securityLevel,
+        contextEngineId,
+        contextName,
+        pduVersion,
+        pdu,
+        maxSizeResponseScopedPDU,
+        stateReference,
+        statusInformation,
+    ):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-        snmpEngineId, = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
+        (snmpEngineId,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
         snmpEngineId = snmpEngineId.syntax
 
         # rfc3412: 7.1.2.b
@@ -162,7 +194,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         debug.logger & debug.flagMP and debug.logger(
             'prepareResponseMessage: cache read msgID {} transportDomain {} transportAddress {} by stateReference {}'.format(
-                msgID, transportDomain, transportAddress, stateReference))
+                msgID, transportDomain, transportAddress, stateReference
+            )
+        )
 
         # rfc3412: 7.1.3
         if statusInformation:
@@ -185,7 +219,8 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         scopedPDU = (contextEngineId, contextName, pdu)
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareResponseMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}')
+            f'prepareResponseMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}'
+        )
 
         msg = self._snmpMsgSpec
         msg.setComponentByPosition(0, messageProcessingModel)
@@ -203,46 +238,51 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         if k in snmpEngine.securityModels:
             smHandler = snmpEngine.securityModels[k]
         else:
-            raise error.StatusInformation(
-                errorIndication=errind.unsupportedSecurityModel
-            )
+            raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
 
         # set original request-id right prior to PDU serialization
         pdu.setComponentByPosition(0, reqID)
 
         # rfc3412: 7.1.8.a
         (securityParameters, wholeMsg) = smHandler.generateResponseMsg(
-            snmpEngine, self.messageProcessingModelID, globalData,
-            maxMessageSize, securityModel, snmpEngineId, securityName,
-            securityLevel, scopedPDU, securityStateReference
+            snmpEngine,
+            self.messageProcessingModelID,
+            globalData,
+            maxMessageSize,
+            securityModel,
+            snmpEngineId,
+            securityName,
+            securityLevel,
+            scopedPDU,
+            securityStateReference,
         )
 
         # recover unique request-id right after PDU serialization
         pdu.setComponentByPosition(0, msgID)
 
         snmpEngine.observer.storeExecutionContext(
-            snmpEngine, 'rfc2576.prepareResponseMessage',
-            dict(transportDomain=transportDomain,
-                 transportAddress=transportAddress,
-                 securityModel=securityModel,
-                 securityName=securityName,
-                 securityLevel=securityLevel,
-                 contextEngineId=contextEngineId,
-                 contextName=contextName,
-                 securityEngineId=snmpEngineId,
-                 communityName=msg.getComponentByPosition(1),
-                 pdu=pdu)
+            snmpEngine,
+            'rfc2576.prepareResponseMessage',
+            dict(
+                transportDomain=transportDomain,
+                transportAddress=transportAddress,
+                securityModel=securityModel,
+                securityName=securityName,
+                securityLevel=securityLevel,
+                contextEngineId=contextEngineId,
+                contextName=contextName,
+                securityEngineId=snmpEngineId,
+                communityName=msg.getComponentByPosition(1),
+                pdu=pdu,
+            ),
         )
-        snmpEngine.observer.clearExecutionContext(
-            snmpEngine, 'rfc2576.prepareResponseMessage'
-        )
+        snmpEngine.observer.clearExecutionContext(snmpEngine, 'rfc2576.prepareResponseMessage')
 
         return transportDomain, transportAddress, wholeMsg
 
     # rfc3412: 7.2.1
 
-    def prepareDataElements(self, snmpEngine, transportDomain,
-                            transportAddress, wholeMsg):
+    def prepareDataElements(self, snmpEngine, transportDomain, transportAddress, wholeMsg):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
         # rfc3412: 7.2.2
@@ -257,7 +297,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         msgVersion = msg.getComponentByPosition(0)
 
         # rfc2576: 5.2.1
-        snmpEngineMaxMessageSize, = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineMaxMessageSize')
+        (snmpEngineMaxMessageSize,) = mibBuilder.importSymbols(
+            '__SNMP-FRAMEWORK-MIB', 'snmpEngineMaxMessageSize'
+        )
         communityName = msg.getComponentByPosition(1)
         # transportDomain identifies local endpoint
         securityParameters = (communityName, (transportDomain, transportAddress))
@@ -273,35 +315,43 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 smHandler = snmpEngine.securityModels[securityModel]
 
             except KeyError:
-                raise error.StatusInformation(
-                    errorIndication=errind.unsupportedSecurityModel
-                )
+                raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
 
             # rfc3412: 7.2.6
-            (securityEngineId,
-             securityName,
-             scopedPDU,
-             maxSizeResponseScopedPDU,
-             securityStateReference) = smHandler.processIncomingMsg(
-                snmpEngine, messageProcessingModel,
-                snmpEngineMaxMessageSize.syntax, securityParameters,
-                securityModel, securityLevel, wholeMsg, msg
+            (
+                securityEngineId,
+                securityName,
+                scopedPDU,
+                maxSizeResponseScopedPDU,
+                securityStateReference,
+            ) = smHandler.processIncomingMsg(
+                snmpEngine,
+                messageProcessingModel,
+                snmpEngineMaxMessageSize.syntax,
+                securityParameters,
+                securityModel,
+                securityLevel,
+                wholeMsg,
+                msg,
             )
 
             debug.logger & debug.flagMP and debug.logger(
-                f'prepareDataElements: SM returned securityEngineId {securityEngineId!r} securityName {securityName!r}')
+                f'prepareDataElements: SM returned securityEngineId {securityEngineId!r} securityName {securityName!r}'
+            )
 
-        except error.StatusInformation:
-            statusInformation = sys.exc_info()[1]
+        except error.StatusInformation as statusInformation:
 
             snmpEngine.observer.storeExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:sm-failure',
-                dict(transportDomain=transportDomain,
-                     transportAddress=transportAddress,
-                     securityModel=securityModel,
-                     securityLevel=securityLevel,
-                     securityParameters=securityParameters,
-                     statusInformation=statusInformation)
+                snmpEngine,
+                'rfc2576.prepareDataElements:sm-failure',
+                dict(
+                    transportDomain=transportDomain,
+                    transportAddress=transportAddress,
+                    securityModel=securityModel,
+                    securityLevel=securityLevel,
+                    securityParameters=securityParameters,
+                    statusInformation=statusInformation,
+                ),
             )
             snmpEngine.observer.clearExecutionContext(
                 snmpEngine, 'rfc2576.prepareDataElements:sm-failure'
@@ -337,7 +387,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
             debug.logger & debug.flagMP and debug.logger(
                 'prepareDataElements: unique PDU request-id {} replaced with original ID {}'.format(
-                    msgID, cachedReqParams['reqID']))
+                    msgID, cachedReqParams['reqID']
+                )
+            )
 
             # 7.2.10b
             sendPduHandle = cachedReqParams['sendPduHandle']
@@ -354,28 +406,33 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             # rfc3412: 7.2.12a -> no-op
             # rfc3412: 7.2.12b
             # noinspection PyUnboundLocalVariable
-            if (securityModel != cachedReqParams['securityModel'] or
-                    securityName != cachedReqParams['securityName'] or
-                    securityLevel != cachedReqParams['securityLevel'] or
-                    contextEngineId != cachedReqParams['contextEngineId'] or
-                    contextName != cachedReqParams['contextName']):
+            if (
+                securityModel != cachedReqParams['securityModel']
+                or securityName != cachedReqParams['securityName']
+                or securityLevel != cachedReqParams['securityLevel']
+                or contextEngineId != cachedReqParams['contextEngineId']
+                or contextName != cachedReqParams['contextName']
+            ):
                 smHandler.releaseStateInformation(securityStateReference)
                 raise error.StatusInformation(errorIndication=errind.dataMismatch)
 
             stateReference = None
 
             snmpEngine.observer.storeExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:response',
-                dict(transportDomain=transportDomain,
-                     transportAddress=transportAddress,
-                     securityModel=securityModel,
-                     securityName=securityName,
-                     securityLevel=securityLevel,
-                     contextEngineId=contextEngineId,
-                     contextName=contextName,
-                     securityEngineId=securityEngineId,
-                     communityName=communityName,
-                     pdu=pdu)
+                snmpEngine,
+                'rfc2576.prepareDataElements:response',
+                dict(
+                    transportDomain=transportDomain,
+                    transportAddress=transportAddress,
+                    securityModel=securityModel,
+                    securityName=securityName,
+                    securityLevel=securityLevel,
+                    contextEngineId=contextEngineId,
+                    contextName=contextName,
+                    securityEngineId=securityEngineId,
+                    communityName=communityName,
+                    pdu=pdu,
+                ),
             )
             snmpEngine.observer.clearExecutionContext(
                 snmpEngine, 'rfc2576.prepareDataElements:response'
@@ -385,11 +442,21 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             smHandler.releaseStateInformation(securityStateReference)
 
             # rfc3412: 7.2.12d
-            return (messageProcessingModel, securityModel,
-                    securityName, securityLevel, contextEngineId,
-                    contextName, pduVersion, pdu, pduType, sendPduHandle,
-                    maxSizeResponseScopedPDU, statusInformation,
-                    stateReference)
+            return (
+                messageProcessingModel,
+                securityModel,
+                securityName,
+                securityLevel,
+                contextEngineId,
+                contextName,
+                pduVersion,
+                pdu,
+                pduType,
+                sendPduHandle,
+                maxSizeResponseScopedPDU,
+                statusInformation,
+                stateReference,
+            )
 
         # rfc3412: 7.2.13
         if pduType in rfc3411.confirmedClassPDUs:
@@ -398,56 +465,74 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             msgID = self._cache.newMsgID()
             pdu.setComponentByPosition(0, msgID)
             debug.logger & debug.flagMP and debug.logger(
-                f'prepareDataElements: received PDU request-id {reqID} replaced with unique ID {msgID}')
+                f'prepareDataElements: received PDU request-id {reqID} replaced with unique ID {msgID}'
+            )
 
             # rfc3412: 7.2.13a
-            snmpEngineId, = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
+            (snmpEngineId,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
             if securityEngineId != snmpEngineId.syntax:
                 smHandler.releaseStateInformation(securityStateReference)
-                raise error.StatusInformation(
-                    errorIndication=errind.engineIDMismatch
-                )
+                raise error.StatusInformation(errorIndication=errind.engineIDMismatch)
 
             # rfc3412: 7.2.13b
             stateReference = self._cache.newStateReference()
             self._cache.pushByStateRef(
-                stateReference, msgVersion=messageProcessingModel,
-                msgID=msgID, reqID=reqID, contextEngineId=contextEngineId,
-                contextName=contextName, securityModel=securityModel,
-                securityName=securityName, securityLevel=securityLevel,
+                stateReference,
+                msgVersion=messageProcessingModel,
+                msgID=msgID,
+                reqID=reqID,
+                contextEngineId=contextEngineId,
+                contextName=contextName,
+                securityModel=securityModel,
+                securityName=securityName,
+                securityLevel=securityLevel,
                 securityStateReference=securityStateReference,
                 msgMaxSize=snmpEngineMaxMessageSize.syntax,
                 maxSizeResponseScopedPDU=maxSizeResponseScopedPDU,
                 transportDomain=transportDomain,
-                transportAddress=transportAddress
+                transportAddress=transportAddress,
             )
 
             snmpEngine.observer.storeExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:confirmed',
-                dict(transportDomain=transportDomain,
-                     transportAddress=transportAddress,
-                     securityModel=securityModel,
-                     securityName=securityName,
-                     securityLevel=securityLevel,
-                     contextEngineId=contextEngineId,
-                     contextName=contextName,
-                     securityEngineId=securityEngineId,
-                     communityName=communityName,
-                     pdu=pdu)
+                snmpEngine,
+                'rfc2576.prepareDataElements:confirmed',
+                dict(
+                    transportDomain=transportDomain,
+                    transportAddress=transportAddress,
+                    securityModel=securityModel,
+                    securityName=securityName,
+                    securityLevel=securityLevel,
+                    contextEngineId=contextEngineId,
+                    contextName=contextName,
+                    securityEngineId=securityEngineId,
+                    communityName=communityName,
+                    pdu=pdu,
+                ),
             )
             snmpEngine.observer.clearExecutionContext(
                 snmpEngine, 'rfc2576.prepareDataElements:confirmed'
             )
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: cached by new stateReference %s' % stateReference)
+                'prepareDataElements: cached by new stateReference %s' % stateReference
+            )
 
             # rfc3412: 7.2.13c
-            return (messageProcessingModel, securityModel, securityName,
-                    securityLevel, contextEngineId, contextName,
-                    pduVersion, pdu, pduType, sendPduHandle,
-                    maxSizeResponseScopedPDU, statusInformation,
-                    stateReference)
+            return (
+                messageProcessingModel,
+                securityModel,
+                securityName,
+                securityLevel,
+                contextEngineId,
+                contextName,
+                pduVersion,
+                pdu,
+                pduType,
+                sendPduHandle,
+                maxSizeResponseScopedPDU,
+                statusInformation,
+                stateReference,
+            )
 
         # rfc3412: 7.2.14
         if pduType in rfc3411.unconfirmedClassPDUs:
@@ -455,17 +540,20 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             stateReference = self._cache.newStateReference()
 
             snmpEngine.observer.storeExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:unconfirmed',
-                dict(transportDomain=transportDomain,
-                     transportAddress=transportAddress,
-                     securityModel=securityModel,
-                     securityName=securityName,
-                     securityLevel=securityLevel,
-                     contextEngineId=contextEngineId,
-                     contextName=contextName,
-                     securityEngineId=securityEngineId,
-                     communityName=communityName,
-                     pdu=pdu)
+                snmpEngine,
+                'rfc2576.prepareDataElements:unconfirmed',
+                dict(
+                    transportDomain=transportDomain,
+                    transportAddress=transportAddress,
+                    securityModel=securityModel,
+                    securityName=securityName,
+                    securityLevel=securityLevel,
+                    contextEngineId=contextEngineId,
+                    contextName=contextName,
+                    securityEngineId=securityEngineId,
+                    communityName=communityName,
+                    pdu=pdu,
+                ),
             )
             snmpEngine.observer.clearExecutionContext(
                 snmpEngine, 'rfc2576.prepareDataElements:unconfirmed'
@@ -474,11 +562,21 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             # This is not specified explicitly in RFC
             smHandler.releaseStateInformation(securityStateReference)
 
-            return (messageProcessingModel, securityModel, securityName,
-                    securityLevel, contextEngineId, contextName,
-                    pduVersion, pdu, pduType, sendPduHandle,
-                    maxSizeResponseScopedPDU, statusInformation,
-                    stateReference)
+            return (
+                messageProcessingModel,
+                securityModel,
+                securityName,
+                securityLevel,
+                contextEngineId,
+                contextName,
+                pduVersion,
+                pdu,
+                pduType,
+                sendPduHandle,
+                maxSizeResponseScopedPDU,
+                statusInformation,
+                stateReference,
+            )
 
         smHandler.releaseStateInformation(securityStateReference)
         raise error.StatusInformation(errorIndication=errind.unsupportedPDUtype)
