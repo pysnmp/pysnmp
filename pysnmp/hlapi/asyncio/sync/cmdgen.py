@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 import asyncio
+from collections.abc import Iterator
+from typing import Any
 
 from pyasn1.type.univ import Null
 
@@ -10,7 +14,7 @@ from pysnmp.proto.rfc1905 import endOfMibView
 __all__ = ['getCmd', 'nextCmd', 'setCmd', 'bulkCmd']
 
 
-def _loop():
+def _loop() -> asyncio.AbstractEventLoop:
     try:
         asyncio.get_running_loop()
     except RuntimeError:
@@ -21,14 +25,22 @@ def _loop():
     )
 
 
-def _close(loop, snmpEngine):
+def _close(loop: asyncio.AbstractEventLoop, snmpEngine: Any) -> None:
     if snmpEngine.transportDispatcher is not None:
         snmpEngine.transportDispatcher.closeDispatcher()
         loop.run_until_complete(asyncio.sleep(0))
     loop.close()
 
 
-def _single(command, snmpEngine, authData, transportTarget, contextData, varBinds, options):
+def _single(
+    command: Any,
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    varBinds: Any,
+    options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
     loop = _loop()
     try:
         asyncio.set_event_loop(loop)
@@ -49,19 +61,40 @@ def _single(command, snmpEngine, authData, transportTarget, contextData, varBind
         asyncio.set_event_loop(None)
 
 
-def getCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, **options):
+def getCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
     return _single(
         cmdgen.getCmd, snmpEngine, authData, transportTarget, contextData, varBinds, options
     )
 
 
-def setCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, **options):
+def setCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
     return _single(
         cmdgen.setCmd, snmpEngine, authData, transportTarget, contextData, varBinds, options
     )
 
 
-def nextCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, **options):
+def nextCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
     loop = _loop()
     lexicographicMode = options.pop('lexicographicMode', True)
     ignoreNonIncreasingOid = options.pop('ignoreNonIncreasingOid', False)
@@ -117,15 +150,15 @@ def nextCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, **opt
 
 
 def bulkCmd(
-    snmpEngine,
-    authData,
-    transportTarget,
-    contextData,
-    nonRepeaters,
-    maxRepetitions,
-    *varBinds,
-    **options,
-):
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    nonRepeaters: Any,
+    maxRepetitions: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
     loop = _loop()
     lexicographicMode = options.pop('lexicographicMode', True)
     ignoreNonIncreasingOid = options.pop('ignoreNonIncreasingOid', False)

@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
 import socket
 
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
@@ -50,7 +52,7 @@ class UdpTransportTarget(AbstractTransportTarget):
     transportDomain = udp.domainName
     protoTransport = udp.UdpAsyncioTransport
 
-    def _resolveAddr(self, transportAddr):
+    def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int]:
         try:
             return socket.getaddrinfo(
                 transportAddr[0],
@@ -117,7 +119,7 @@ class Udp6TransportTarget(AbstractTransportTarget):
     transportDomain = udp6.domainName
     protoTransport = udp6.Udp6AsyncioTransport
 
-    def _resolveAddr(self, transportAddr):
+    def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int, int, int]:
         try:
             return socket.getaddrinfo(
                 transportAddr[0],
@@ -138,7 +140,7 @@ class UnixTransportTarget(AbstractTransportTarget):
     transportDomain = unix.domainName
     protoTransport = unix.UnixAsyncioTransport
 
-    def _resolveAddr(self, transportAddr):
+    def _resolveAddr(self, transportAddr: str) -> str:
         if not isinstance(transportAddr, str):
             raise PySnmpError(
                 'Bad Unix-domain transport address {!r}: expected a path string'.format(

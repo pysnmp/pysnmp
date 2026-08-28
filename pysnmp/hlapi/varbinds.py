@@ -3,6 +3,10 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
+from typing import Any
+
 from pysnmp.smi import view
 from pysnmp.smi.rfc1902 import *
 
@@ -11,7 +15,7 @@ __all__ = ['CommandGeneratorVarBinds', 'NotificationOriginatorVarBinds']
 
 class AbstractVarBinds:
     @staticmethod
-    def getMibViewController(snmpEngine):
+    def getMibViewController(snmpEngine: Any) -> Any:
         mibViewController = snmpEngine.getUserContext('mibViewController')
         if not mibViewController:
             mibViewController = view.MibViewController(snmpEngine.getMibBuilder())
@@ -20,7 +24,7 @@ class AbstractVarBinds:
 
 
 class CommandGeneratorVarBinds(AbstractVarBinds):
-    def makeVarBinds(self, snmpEngine, varBinds):
+    def makeVarBinds(self, snmpEngine: Any, varBinds: Any) -> list[Any]:
         mibViewController = self.getMibViewController(snmpEngine)
         __varBinds = []
         for varBind in varBinds:
@@ -39,7 +43,7 @@ class CommandGeneratorVarBinds(AbstractVarBinds):
 
         return __varBinds
 
-    def unmakeVarBinds(self, snmpEngine, varBinds, lookupMib=True):
+    def unmakeVarBinds(self, snmpEngine: Any, varBinds: Any, lookupMib: bool = True) -> list[Any]:
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [
@@ -51,7 +55,7 @@ class CommandGeneratorVarBinds(AbstractVarBinds):
 
 
 class NotificationOriginatorVarBinds(AbstractVarBinds):
-    def makeVarBinds(self, snmpEngine, varBinds):
+    def makeVarBinds(self, snmpEngine: Any, varBinds: Any) -> list[Any]:
         mibViewController = self.getMibViewController(snmpEngine)
         if isinstance(varBinds, NotificationType):
             varBinds.resolveWithMib(mibViewController, ignoreErrors=False)
@@ -66,7 +70,7 @@ class NotificationOriginatorVarBinds(AbstractVarBinds):
             __varBinds.append(varBind.resolveWithMib(mibViewController, ignoreErrors=False))
         return __varBinds
 
-    def unmakeVarBinds(self, snmpEngine, varBinds, lookupMib=False):
+    def unmakeVarBinds(self, snmpEngine: Any, varBinds: Any, lookupMib: bool = False) -> list[Any]:
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [

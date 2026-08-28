@@ -3,9 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
 import os
 import shutil
 import tempfile
+from typing import Any
 
 from pyasn1.compat.octets import str2octs
 
@@ -52,7 +55,9 @@ class SnmpEngine:
 
     """
 
-    def __init__(self, snmpEngineID=None, maxMessageSize=65507, msgAndPduDsp=None):
+    def __init__(
+        self, snmpEngineID: Any = None, maxMessageSize: int = 65507, msgAndPduDsp: Any = None
+    ) -> None:
         self.cache = {}
 
         self.observer = observer.MetaObserver()
@@ -147,24 +152,24 @@ class SnmpEngine:
                     % snmpEngineBoots.syntax.prettyPrint()
                 )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}(snmpEngineID={self.snmpEngineID!r})'
 
     # Transport dispatcher bindings
 
     def __receiveMessageCbFun(
-        self, transportDispatcher, transportDomain, transportAddress, wholeMsg
-    ):
+        self, transportDispatcher: Any, transportDomain: Any, transportAddress: Any, wholeMsg: Any
+    ) -> None:
         self.msgAndPduDsp.receiveMessage(self, transportDomain, transportAddress, wholeMsg)
 
-    def __receiveTimerTickCbFun(self, timeNow):
+    def __receiveTimerTickCbFun(self, timeNow: int) -> None:
         self.msgAndPduDsp.receiveTimerTick(self, timeNow)
         for mpHandler in self.messageProcessingSubsystems.values():
             mpHandler.receiveTimerTick(self, timeNow)
         for smHandler in self.securityModels.values():
             smHandler.receiveTimerTick(self, timeNow)
 
-    def registerTransportDispatcher(self, transportDispatcher, recvId=None):
+    def registerTransportDispatcher(self, transportDispatcher: Any, recvId: Any = None) -> None:
         if (
             self.transportDispatcher is not None
             and self.transportDispatcher is not transportDispatcher
@@ -175,24 +180,24 @@ class SnmpEngine:
             transportDispatcher.registerTimerCbFun(self.__receiveTimerTickCbFun)
             self.transportDispatcher = transportDispatcher
 
-    def unregisterTransportDispatcher(self, recvId=None):
+    def unregisterTransportDispatcher(self, recvId: Any = None) -> None:
         if self.transportDispatcher is None:
             raise error.PySnmpError('Transport dispatcher not registered')
         self.transportDispatcher.unregisterRecvCbFun(recvId)
         self.transportDispatcher.unregisterTimerCbFun()
         self.transportDispatcher = None
 
-    def getMibBuilder(self):
+    def getMibBuilder(self) -> Any:
         return self.msgAndPduDsp.mibInstrumController.mibBuilder
 
     # User app may attach opaque objects to SNMP Engine
-    def setUserContext(self, **kwargs):
+    def setUserContext(self, **kwargs: Any) -> None:
         self.cache.update({'__%s' % k: kwargs[k] for k in kwargs})
 
-    def getUserContext(self, arg):
+    def getUserContext(self, arg: str) -> Any:
         return self.cache.get('__%s' % arg)
 
-    def delUserContext(self, arg):
+    def delUserContext(self, arg: str) -> None:
         try:
             del self.cache['__%s' % arg]
         except KeyError:
