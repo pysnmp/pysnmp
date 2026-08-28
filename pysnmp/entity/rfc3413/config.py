@@ -270,4 +270,135 @@ def getTargetNames(snmpEngine, tag):
     return tagToTargetsMap[tag]
 
 
+def getNotifyFilterProfile(snmpEngine, paramsName):
+    """Look up the notification filter profile name associated with *paramsName*.
+
+    Reads the ``snmpNotifyFilterProfileName`` column from
+    ``snmpNotifyFilterProfileEntry`` (indexed by ``snmpTargetParamsName``).
+
+    Returns the profile name (a pyasn1 ``OctetString``) or ``None`` when no
+    filter profile is configured for the given target parameters.
+    """
+    mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
+
+    (snmpNotifyFilterProfileEntry,) = mibBuilder.importSymbols(
+        'SNMP-NOTIFICATION-MIB', 'snmpNotifyFilterProfileEntry'
+    )
+
+    cache = snmpEngine.getUserContext('getNotifyFilterProfile')
+    if cache is None:
+        cache = {'id': -1}
+        snmpEngine.setUserContext(getNotifyFilterProfile=cache)
+
+    if cache['id'] != snmpNotifyFilterProfileEntry.branchVersionId:
+        cache['paramsToProfileMap'] = {}
+
+    paramsToProfileMap = cache['paramsToProfileMap']
+
+    if paramsName not in paramsToProfileMap:
+        (snmpNotifyFilterProfileName,) = mibBuilder.importSymbols(
+            'SNMP-NOTIFICATION-MIB', 'snmpNotifyFilterProfileName'
+        )
+
+        tblIdx = snmpNotifyFilterProfileEntry.getInstIdFromIndices(paramsName)
+
+        try:
+            profileName = snmpNotifyFilterProfileName.getNode(
+                snmpNotifyFilterProfileName.name + tblIdx
+            ).syntax
+        except NoSuchInstanceError:
+            profileName = None
+
+        paramsToProfileMap[paramsName] = profileName
+        cache['id'] = snmpNotifyFilterProfileEntry.branchVersionId
+
+    return paramsToProfileMap[paramsName]
+
+
+def getNotifyFilter(snmpEngine, filterProfileName):
+    """Return all filter entries for *filterProfileName*.
+
+    Iterates ``snmpNotifyFilterEntry`` rows whose first index component
+    matches *filterProfileName* and returns a list of
+    ``(filterSubtree, filterMask, filterType)`` tuples.
+
+    Returns an empty list when the profile has no filter entries.
+    """
+    mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
+
+    (snmpNotifyFilterEntry,) = mibBuilder.importSymbols(
+        'SNMP-NOTIFICATION-MIB', 'snmpNotifyFilterEntry'
+    )
+
+    cache = snmpEngine.getUserContext('getNotifyFilter')
+    if cache is None:
+        cache = {'id': -1}
+        snmpEngine.setUserContext(getNotifyFilter=cache)
+
+    if cache['id'] != snmpNotifyFilterEntry.branchVersionId:
+        cache['profileToFiltersMap'] = {}
+
+    profileToFiltersMap = cache['profileToFiltersMap']
+
+    if filterProfileName not in profileToFiltersMap:
+        (
+            snmpNotifyFilterSubtree,
+            snmpNotifyFilterMask,
+            snmpNotifyFilterType,
+        ) = mibBuilder.importSymbols(
+            'SNMP-NOTIFICATION-MIB',
+            'snmpNotifyFilterSubtree',
+            'snmpNotifyFilterMask',
+            'snmpNotifyFilterType',
+        )
+
+        filters = []
+
+        # The snmpNotifyFilterTable is indexed by
+        # (snmpNotifyFilterProfileName, snmpNotifyFilterSubtree).
+        # The profile name is encoded as a length-prefixed OctetString in the
+        # OID index: the first sub-identifier is the octet length, followed by
+        # the ASCII byte values, then the subtree OID components.
+        # We iterate all rows and keep those whose profile-name prefix matches.
+        profileOctets = tuple(filterProfileName.asNumbers())
+        profileLen = len(profileOctets)
+
+        mibNode = snmpNotifyFilterSubtree
+        while True:
+            try:
+                mibNode = snmpNotifyFilterSubtree.getNextNode(mibNode.name)
+            except NoSuchInstanceError:
+                break
+
+            instId = mibNode.name[len(snmpNotifyFilterSubtree.name) :]
+
+            # The first sub-identifier is the length of the profile name,
+            # followed by the profile name octets, then the subtree OID.
+            if len(instId) < profileLen + 1:
+                continue
+
+            if instId[0] != profileLen:
+                continue
+
+            if tuple(instId[1 : profileLen + 1]) != profileOctets:
+                continue
+
+            subtree = snmpNotifyFilterSubtree.getNode(
+                snmpNotifyFilterSubtree.name + instId
+            ).syntax
+            mask = snmpNotifyFilterMask.getNode(
+                snmpNotifyFilterMask.name + instId
+            ).syntax
+            filterType = snmpNotifyFilterType.getNode(
+                snmpNotifyFilterType.name + instId
+            ).syntax
+
+            filters.append((subtree, mask, filterType))
+
+        profileToFiltersMap[filterProfileName] = filters
+        cache['id'] = snmpNotifyFilterEntry.branchVersionId
+
+    return profileToFiltersMap[filterProfileName]
+
+
 # convert cmdrsp/cmdgen into this api
