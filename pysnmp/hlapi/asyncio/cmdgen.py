@@ -36,6 +36,7 @@ import asyncio
 from typing import Any
 
 from pysnmp.entity.rfc3413 import cmdgen
+from pysnmp.hlapi.asyncio._callback import make_callback
 from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.hlapi.auth import *
 from pysnmp.hlapi.context import *
@@ -130,24 +131,7 @@ async def getCmd(
 
     """
 
-    def __cbFun(
-        snmpEngine: Any,
-        sendRequestHandle: Any,
-        errorIndication: Any,
-        errorStatus: Any,
-        errorIndex: Any,
-        varBinds: Any,
-        cbCtx: Any,
-    ) -> None:
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds, lookupMib)
-        except Exception as ex:
-            future.set_exception(ex)
-        else:
-            future.set_result((errorIndication, errorStatus, errorIndex, varBindsUnmade))
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName
@@ -244,24 +228,7 @@ async def setCmd(
 
     """
 
-    def __cbFun(
-        snmpEngine: Any,
-        sendRequestHandle: Any,
-        errorIndication: Any,
-        errorStatus: Any,
-        errorIndex: Any,
-        varBinds: Any,
-        cbCtx: Any,
-    ) -> None:
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds, lookupMib)
-        except Exception as ex:
-            future.set_exception(ex)
-        else:
-            future.set_result((errorIndication, errorStatus, errorIndex, varBindsUnmade))
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName
@@ -362,27 +329,7 @@ async def nextCmd(
 
     """
 
-    def __cbFun(
-        snmpEngine: Any,
-        sendRequestHandle: Any,
-        errorIndication: Any,
-        errorStatus: Any,
-        errorIndex: Any,
-        varBindTable: Any,
-        cbCtx: Any,
-    ) -> None:
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = [
-                vbProcessor.unmakeVarBinds(snmpEngine, varBindTableRow, lookupMib)
-                for varBindTableRow in varBindTable
-            ]
-        except Exception as ex:
-            future.set_exception(ex)
-        else:
-            future.set_result((errorIndication, errorStatus, errorIndex, varBindsUnmade))
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName
@@ -515,27 +462,7 @@ async def bulkCmd(
 
     """
 
-    def __cbFun(
-        snmpEngine: Any,
-        sendRequestHandle: Any,
-        errorIndication: Any,
-        errorStatus: Any,
-        errorIndex: Any,
-        varBindTable: Any,
-        cbCtx: Any,
-    ) -> None:
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = [
-                vbProcessor.unmakeVarBinds(snmpEngine, varBindTableRow, lookupMib)
-                for varBindTableRow in varBindTable
-            ]
-        except Exception as ex:
-            future.set_exception(ex)
-        else:
-            future.set_result((errorIndication, errorStatus, errorIndex, varBindsUnmade))
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName

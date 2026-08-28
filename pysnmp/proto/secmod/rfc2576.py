@@ -9,6 +9,7 @@ from pyasn1.error import PyAsn1Error
 
 from pysnmp import debug
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
+from pysnmp.entity.observer import execution_context
 from pysnmp.proto import errind, error
 from pysnmp.proto.secmod import base
 from pysnmp.smi.error import NoSuchInstanceError
@@ -512,12 +513,12 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
         scope = dict(communityName=communityName, transportInformation=transportInformation)
 
-        snmpEngine.observer.storeExecutionContext(
-            snmpEngine, 'rfc2576.processIncomingMsg:writable', scope
-        )
-        snmpEngine.observer.clearExecutionContext(
-            snmpEngine, 'rfc2576.processIncomingMsg:writable'
-        )
+        with execution_context(
+            snmpEngine,
+            'rfc2576.processIncomingMsg:writable',
+            scope,
+        ):
+            pass
 
         try:
             securityName, contextEngineId, contextName = self._com2sec(
@@ -543,19 +544,17 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
         securityEngineID = snmpEngineID.syntax
 
-        snmpEngine.observer.storeExecutionContext(
+        with execution_context(
             snmpEngine,
             'rfc2576.processIncomingMsg',
-            dict(
-                transportInformation=transportInformation,
-                securityEngineId=securityEngineID,
-                securityName=securityName,
-                communityName=communityName,
-                contextEngineId=contextEngineId,
-                contextName=contextName,
-            ),
-        )
-        snmpEngine.observer.clearExecutionContext(snmpEngine, 'rfc2576.processIncomingMsg')
+            transportInformation=transportInformation,
+            securityEngineId=securityEngineID,
+            securityName=securityName,
+            communityName=communityName,
+            contextEngineId=contextEngineId,
+            contextName=contextName,
+        ):
+            pass
 
         debug.logger & debug.flagSM and debug.logger(
             'processIncomingMsg: looked up securityName {!r} securityModel {!r} contextEngineId {!r} contextName {!r} by communityName {!r} AND transportInformation {!r}'.format(

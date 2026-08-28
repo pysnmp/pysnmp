@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import time
+from collections.abc import Callable
+from typing import Any, NoReturn, TypeVar, cast
 
 from pyasn1.codec.ber import decoder, encoder, eoo
 from pyasn1.compat.octets import null
@@ -11,6 +13,7 @@ from pyasn1.error import PyAsn1Error
 from pyasn1.type import constraint, namedtype, univ
 
 from pysnmp import debug
+from pysnmp.entity.observer import execution_context
 from pysnmp.proto import api, errind, error, rfc1155, rfc3411
 from pysnmp.proto.secmod.base import AbstractSecurityModel
 from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
@@ -22,6 +25,33 @@ from pysnmp.smi.error import NoSuchInstanceError
 
 # API to rfc1905 protocol objects
 pMod = api.protoModules[api.protoVersion2c]
+
+_T = TypeVar('_T')
+
+
+def _raise_usm_error(errorIndication: Any, **details: Any) -> NoReturn:
+    """Raise ``StatusInformation`` with the exact supplied USM payload.
+
+    This helper deduplicates the repeated ``raise error.StatusInformation(...)``
+    calls without adding keys that were absent at the original call site.
+    """
+    raise error.StatusInformation(errorIndication=errorIndication, **details)
+
+
+def _run_or_raise_serialization_error(operation: Callable[[], _T], logLabel: str) -> _T:
+    """Map an ASN.1 operation failure to the legacy serialization error.
+
+    Passing the operation as a callable keeps encoding and component assignment
+    within the same exception boundary used before the extraction.
+    """
+    try:
+        return operation()
+    except PyAsn1Error as e:
+        if logLabel and debug.logger & debug.flagSM:
+            cast(Callable[[str], None], debug.logger)(
+                f'__generateRequestOrResponseMsg: {logLabel} serialization error: {e}'
+            )
+        raise error.StatusInformation(errorIndication=errind.serializationError)
 
 
 # USM security params
@@ -575,14 +605,9 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 '__generateRequestOrResponseMsg: scopedPDU %s' % scopedPDU.prettyPrint()
             )
 
-            try:
-                dataToEncrypt = encoder.encode(scopedPDU)
-
-            except PyAsn1Error as e:
-                debug.logger & debug.flagSM and debug.logger(
-                    '__generateRequestOrResponseMsg: scopedPDU serialization error: %s' % e
-                )
-                raise error.StatusInformation(errorIndication=errind.serializationError)
+            dataToEncrypt = _run_or_raise_serialization_error(
+                lambda: encoder.encode(scopedPDU), 'scopedPDU'
+            )
 
             debug.logger & debug.flagSM and debug.logger(
                 '__generateRequestOrResponseMsg: scopedPDU encoded into %s'
@@ -644,30 +669,18 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 f'__generateRequestOrResponseMsg: {securityParameters.prettyPrint()}'
             )
 
-            try:
-                msg.setComponentByPosition(
+            _run_or_raise_serialization_error(
+                lambda: msg.setComponentByPosition(
                     2, encoder.encode(securityParameters), verifyConstraints=False
-                )
-
-            except PyAsn1Error as e:
-                debug.logger & debug.flagSM and debug.logger(
-                    '__generateRequestOrResponseMsg: securityParameters serialization error: %s'
-                    % e
-                )
-                raise error.StatusInformation(errorIndication=errind.serializationError)
+                ),
+                'securityParameters',
+            )
 
             debug.logger & debug.flagSM and debug.logger(
                 '__generateRequestOrResponseMsg: auth outgoing msg: %s' % msg.prettyPrint()
             )
 
-            try:
-                wholeMsg = encoder.encode(msg)
-
-            except PyAsn1Error as e:
-                debug.logger & debug.flagSM and debug.logger(
-                    '__generateRequestOrResponseMsg: msg serialization error: %s' % e
-                )
-                raise error.StatusInformation(errorIndication=errind.serializationError)
+            wholeMsg = _run_or_raise_serialization_error(lambda: encoder.encode(msg), 'msg')
 
             # noinspection PyUnboundLocalVariable
             authenticatedWholeMsg = authHandler.authenticateOutgoingMsg(
@@ -684,33 +697,24 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 f'__generateRequestOrResponseMsg: {securityParameters.prettyPrint()}'
             )
 
-            try:
-                msg.setComponentByPosition(
+            _run_or_raise_serialization_error(
+                lambda: msg.setComponentByPosition(
                     2,
                     encoder.encode(securityParameters),
                     verifyConstraints=False,
                     matchTags=False,
                     matchConstraints=False,
-                )
+                ),
+                'secutiryParameters',
+            )
 
-            except PyAsn1Error as e:
-                debug.logger & debug.flagSM and debug.logger(
-                    '__generateRequestOrResponseMsg: secutiryParameters serialization error: %s'
-                    % e
-                )
-                raise error.StatusInformation(errorIndication=errind.serializationError)
-
-            try:
+            def encode_plain_message():
                 debug.logger & debug.flagSM and debug.logger(
                     '__generateRequestOrResponseMsg: plain outgoing msg: %s' % msg.prettyPrint()
                 )
-                authenticatedWholeMsg = encoder.encode(msg)
+                return encoder.encode(msg)
 
-            except PyAsn1Error as e:
-                debug.logger & debug.flagSM and debug.logger(
-                    '__generateRequestOrResponseMsg: msg serialization error: %s' % e
-                )
-                raise error.StatusInformation(errorIndication=errind.serializationError)
+            authenticatedWholeMsg = _run_or_raise_serialization_error(encode_plain_message, 'msg')
 
         debug.logger & debug.flagSM and debug.logger(
             '__generateRequestOrResponseMsg: {} outgoing msg: {}'.format(
@@ -873,16 +877,16 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     contextEngineId = scopedPdu.getComponentByPosition(0)
                     contextName = scopedPdu.getComponentByPosition(1)
 
-                    raise error.StatusInformation(
-                        errorIndication=errind.unknownEngineID,
+                    _raise_usm_error(
+                        errind.unknownEngineID,
                         oid=usmStatsUnknownEngineIDs.name,
                         val=usmStatsUnknownEngineIDs.syntax,
                         securityStateReference=securityStateReference,
                         securityLevel=securityLevel,
                         contextEngineId=contextEngineId,
                         contextName=contextName,
-                        scopedPDU=scopedPdu,
                         maxSizeResponseScopedPDU=maxSizeResponseScopedPDU,
+                        scopedPDU=scopedPdu,
                     )
                 else:
                     debug.logger & debug.flagSM and debug.logger(
@@ -949,8 +953,8 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     )
                     usmStatsUnknownUserNames.syntax += 1
 
-                    raise error.StatusInformation(
-                        errorIndication=errind.unknownSecurityName,
+                    _raise_usm_error(
+                        errind.unknownSecurityName,
                         oid=usmStatsUnknownUserNames.name,
                         val=usmStatsUnknownUserNames.syntax,
                         securityStateReference=securityStateReference,
@@ -997,22 +1001,20 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         msgAuthoritativeEngineBoots = securityParameters.getComponentByPosition(1)
         msgAuthoritativeEngineTime = securityParameters.getComponentByPosition(2)
 
-        snmpEngine.observer.storeExecutionContext(
+        with execution_context(
             snmpEngine,
             'rfc3414.processIncomingMsg',
-            dict(
-                securityEngineId=msgAuthoritativeEngineId,
-                snmpEngineBoots=msgAuthoritativeEngineBoots,
-                snmpEngineTime=msgAuthoritativeEngineTime,
-                userName=usmUserName,
-                securityName=usmUserSecurityName,
-                authProtocol=usmUserAuthProtocol,
-                authKey=usmUserAuthKeyLocalized,
-                privProtocol=usmUserPrivProtocol,
-                privKey=usmUserPrivKeyLocalized,
-            ),
-        )
-        snmpEngine.observer.clearExecutionContext(snmpEngine, 'rfc3414.processIncomingMsg')
+            securityEngineId=msgAuthoritativeEngineId,
+            snmpEngineBoots=msgAuthoritativeEngineBoots,
+            snmpEngineTime=msgAuthoritativeEngineTime,
+            userName=usmUserName,
+            securityName=usmUserSecurityName,
+            authProtocol=usmUserAuthProtocol,
+            authKey=usmUserAuthKeyLocalized,
+            privProtocol=usmUserPrivProtocol,
+            privKey=usmUserPrivKeyLocalized,
+        ):
+            pass
 
         # 3.2.5
         if msgAuthoritativeEngineId == snmpEngineID:
@@ -1046,8 +1048,8 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                         msgUserName, badSecIndication
                     )
                 )
-                raise error.StatusInformation(
-                    errorIndication=errind.unsupportedSecurityLevel,
+                _raise_usm_error(
+                    errind.unsupportedSecurityLevel,
                     oid=usmStatsUnsupportedSecLevels.name,
                     val=usmStatsUnsupportedSecLevels.syntax,
                     securityStateReference=securityStateReference,
@@ -1075,8 +1077,8 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     '__SNMP-USER-BASED-SM-MIB', 'usmStatsWrongDigests'
                 )
                 usmStatsWrongDigests.syntax += 1
-                raise error.StatusInformation(
-                    errorIndication=errind.authenticationFailure,
+                _raise_usm_error(
+                    errind.authenticationFailure,
                     oid=usmStatsWrongDigests.name,
                     val=usmStatsWrongDigests.syntax,
                     securityStateReference=securityStateReference,
@@ -1158,8 +1160,8 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                         '__SNMP-USER-BASED-SM-MIB', 'usmStatsNotInTimeWindows'
                     )
                     usmStatsNotInTimeWindows.syntax += 1
-                    raise error.StatusInformation(
-                        errorIndication=errind.notInTimeWindow,
+                    _raise_usm_error(
+                        errind.notInTimeWindow,
                         oid=usmStatsNotInTimeWindows.name,
                         val=usmStatsNotInTimeWindows.syntax,
                         securityStateReference=securityStateReference,
@@ -1247,8 +1249,8 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     '__SNMP-USER-BASED-SM-MIB', 'usmStatsDecryptionErrors'
                 )
                 usmStatsDecryptionErrors.syntax += 1
-                raise error.StatusInformation(
-                    errorIndication=errind.decryptionError,
+                _raise_usm_error(
+                    errind.decryptionError,
                     oid=usmStatsDecryptionErrors.name,
                     val=usmStatsDecryptionErrors.syntax,
                     securityStateReference=securityStateReference,
@@ -1301,8 +1303,8 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 '__SNMP-USER-BASED-SM-MIB', 'usmStatsUnknownUserNames'
             )
             usmStatsUnknownUserNames.syntax += 1
-            raise error.StatusInformation(
-                errorIndication=errind.unknownSecurityName,
+            _raise_usm_error(
+                errind.unknownSecurityName,
                 oid=usmStatsUnknownUserNames.name,
                 val=usmStatsUnknownUserNames.syntax,
                 securityStateReference=securityStateReference,
