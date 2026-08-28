@@ -896,6 +896,7 @@ def __cookNotificationTargetInfo(
     notificationName: str,
     paramsName: str,
     filterSubtree: Any | None = None,
+    filterProfileName: Any | None = None,
 ) -> tuple[Any, ...]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
@@ -907,7 +908,11 @@ def __cookNotificationTargetInfo(
     )
     tblIdx2 = snmpNotifyFilterProfileEntry.getInstIdFromIndices(paramsName)
 
-    profileName = '%s-filter' % hash(notificationName)
+    profileName = (
+        filterProfileName
+        if filterProfileName is not None
+        else '%s-filter' % hash(notificationName)
+    )
 
     if filterSubtree:
         (snmpNotifyFilterEntry,) = mibBuilder.importSymbols(
@@ -937,6 +942,7 @@ def addNotificationTarget(
     filterSubtree: Any | None = None,
     filterMask: Any | None = None,
     filterType: Any | None = None,
+    filterProfileName: Any | None = None,
 ) -> None:
     (
         snmpNotifyEntry,
@@ -946,7 +952,13 @@ def addNotificationTarget(
         profileName,
         snmpNotifyFilterEntry,
         tblIdx3,
-    ) = __cookNotificationTargetInfo(snmpEngine, notificationName, paramsName, filterSubtree)
+    ) = __cookNotificationTargetInfo(
+        snmpEngine,
+        notificationName,
+        paramsName,
+        filterSubtree,
+        filterProfileName,
+    )
 
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((snmpNotifyEntry.name + (5,) + tblIdx1, 'destroy'),)
@@ -986,7 +998,11 @@ def addNotificationTarget(
 
 
 def delNotificationTarget(
-    snmpEngine: Any, notificationName: str, paramsName: str, filterSubtree: Any | None = None
+    snmpEngine: Any,
+    notificationName: str,
+    paramsName: str,
+    filterSubtree: Any | None = None,
+    filterProfileName: Any | None = None,
 ) -> None:
     (
         snmpNotifyEntry,
@@ -996,7 +1012,13 @@ def delNotificationTarget(
         profileName,
         snmpNotifyFilterEntry,
         tblIdx3,
-    ) = __cookNotificationTargetInfo(snmpEngine, notificationName, paramsName, filterSubtree)
+    ) = __cookNotificationTargetInfo(
+        snmpEngine,
+        notificationName,
+        paramsName,
+        filterSubtree,
+        filterProfileName,
+    )
 
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((snmpNotifyEntry.name + (5,) + tblIdx1, 'destroy'),)

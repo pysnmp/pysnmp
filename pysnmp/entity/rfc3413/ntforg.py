@@ -15,6 +15,87 @@ from pysnmp.smi import rfc1902, view
 
 getNextHandle = nextid.Integer(0x7FFFFFFF)
 
+# Bit weights for mask processing (MSB first within each octet)
+_POWER_OF_TWO = [2**exp for exp in range(7, -1, -1)]
+
+
+def _prepareFilterEntries(filterEntries):
+    """Normalize notification filter masks without losing row precedence."""
+    prepared = []
+
+    for subtree, mask, filterType in filterEntries:
+        maskOctets = mask.asNumbers()
+        maskLength = min(len(maskOctets) * 8, len(subtree))
+
+        ignoredSubOids = [
+            i * 8 + j
+            for i, octet in enumerate(maskOctets)
+            for j, bit in enumerate(_POWER_OF_TWO)
+            if not (bit & octet) and i * 8 + j < maskLength
+        ]
+
+        if ignoredSubOids:
+            pattern = list(subtree)
+            for idx in ignoredSubOids:
+                pattern[idx] = 0
+            normalizedSubtree = subtree.clone(pattern)
+        else:
+            normalizedSubtree = subtree
+
+        prepared.append(
+            (subtree, normalizedSubtree, ignoredSubOids, int(filterType) == 1)
+        )
+
+    # RFC 3413 section 6 gives precedence to the longest original subtree,
+    # then to the lexicographically largest original subtree at equal length.
+    prepared.sort(key=lambda entry: (len(entry[0]), entry[0]))
+
+    return prepared
+
+
+def _matchPreparedFilter(preparedEntries, oid):
+    """Return True, False, or None when no filter entry matches *oid*."""
+    result = None
+
+    for originalSubtree, subtree, ignoredSubOids, included in preparedEntries:
+        if len(oid) < len(originalSubtree):
+            continue
+
+        if ignoredSubOids:
+            subOids = list(oid)
+            for idx in ignoredSubOids:
+                subOids[idx] = 0
+            normalizedOid = subtree.clone(subOids)
+        else:
+            normalizedOid = oid
+
+        if subtree.isPrefixOf(normalizedOid):
+            result = included
+
+    return result
+
+
+def _matchFilter(filterEntries, oid):
+    """Apply RFC 3413 section 6 notification filter matching to *oid*.
+
+    *filterEntries* is a list of ``(subtree, mask, filterType)`` tuples
+    as returned by :func:`getNotifyFilter`.
+
+    Returns ``True`` for an included match, ``False`` for an excluded match,
+    or ``None`` when no entry matches. The caller applies the RFC's different
+    defaults for notification names and object instances.
+
+    The algorithm mirrors the VACM view-tree family matching in
+    RFC 3415 §3.2.5:
+
+    * Each filter entry's *mask* is expanded with 1-bits when shorter than
+      the subtree (zero-length mask ⇒ all-1's ⇒ exact match).
+    * Sub-identifiers where the mask bit is 0 are wildcards (ignored).
+    * Entries are sorted by their original ``(len(subtree), subtree)`` so the
+      **longest match wins**; ties are broken lexicographically (largest wins).
+    """
+    return _matchPreparedFilter(_prepareFilterEntries(filterEntries), oid)
+
 
 class NotificationOriginator:
     acmID = 3  # default MIB access control method to use
@@ -357,6 +438,7 @@ class NotificationOriginator:
             )
 
         sendRequestHandle = -1
+        notificationsSent = 0
 
         debug.logger & debug.flagApp and debug.logger(f'sendVarBinds: final varBinds {varBinds}')
 
@@ -368,12 +450,61 @@ class NotificationOriginator:
                 config.getTargetParams(snmpEngine, params)
             )
 
-            # 3.3.1 XXX
-            # XXX filtering's yet to be implemented
-            #             filterProfileName = config.getNotifyFilterProfile(params)
+            # 3.3.1 — RFC 3413 §6 notification filtering
+            filterProfileName = config.getNotifyFilterProfile(snmpEngine, params)
 
-            #             (filterSubtree, filterMask,
-            #              filterType) = config.getNotifyFilter(filterProfileName)
+            if filterProfileName is not None:
+                filterEntries = config.getNotifyFilter(snmpEngine, filterProfileName)
+
+                debug.logger & debug.flagApp and debug.logger(
+                    'sendVarBinds: filterProfileName {!r}, filterEntries {}'.format(
+                        filterProfileName, filterEntries
+                    )
+                )
+
+                if filterEntries:
+                    # Per RFC 3413 §6: the notification may be sent only if
+                    # the snmpTrapOID value (the notification name) is
+                    # specifically *included* by the filter entries, AND none
+                    # of the object-instance varBinds are specifically
+                    # *excluded*.
+                    #
+                    # sysUpTime and snmpTrapOID are protocol-mandated
+                    # varBinds and are never subject to filtering.
+
+                    preparedFilter = _prepareFilterEntries(filterEntries)
+
+                    # A notification name must be specifically included. A
+                    # missing match therefore rejects this target.
+                    trapOidVal = varBinds[1][1]  # value of snmpTrapOID varbind
+                    if _matchPreparedFilter(preparedFilter, trapOidVal) is not True:
+                        debug.logger & debug.flagApp and debug.logger(
+                            'sendVarBinds: notification name {} excluded by filter '
+                            'for target {}, skipping'.format(
+                                trapOidVal, targetAddrName
+                            )
+                        )
+                        continue
+
+                    # An object instance with no match is included by default,
+                    # but any explicit exclusion rejects the whole notification
+                    # for this target. RFC 3413 filtering never rewrites a PDU.
+                    objectExcluded = False
+                    for varName, _ in varBinds:
+                        if varName in (sysUpTime.name, snmpTrapOID.name):
+                            continue
+                        if _matchPreparedFilter(preparedFilter, varName) is False:
+                            debug.logger & debug.flagApp and debug.logger(
+                                'sendVarBinds: varBind {} excluded by filter for '
+                                'target {}, skipping notification'.format(
+                                    varName, targetAddrName
+                                )
+                            )
+                            objectExcluded = True
+                            break
+
+                    if objectExcluded:
+                        continue
 
             debug.logger & debug.flagApp and debug.logger(
                 'sendVarBinds: notificationHandle {}, notifyTag {} yields: transportDomain {}, transportAddress {!r}, securityModel {}, securityName {}, securityLevel {}'.format(
@@ -387,9 +518,15 @@ class NotificationOriginator:
                 )
             )
 
-            for varName, varVal in varBinds:
-                if varName in (sysUpTime.name, snmpTrapOID.name):
-                    continue
+            trapOidVal = varBinds[1][1]
+            objectNames = [
+                varName
+                for varName, _ in varBinds
+                if varName not in (sysUpTime.name, snmpTrapOID.name)
+            ]
+
+            vacmDenied = False
+            for varName in objectNames + [trapOidVal]:
                 try:
                     snmpEngine.accessControlModel[self.acmID].isAccessAllowed(
                         snmpEngine,
@@ -407,11 +544,16 @@ class NotificationOriginator:
 
                 except error.StatusInformation:
                     debug.logger & debug.flagApp and debug.logger(
-                        'sendVarBinds: ACL denied access for OID {} securityName {}, droppping notification'.format(
-                            varName, securityName
+                        'sendVarBinds: ACL denied access for OID {} securityName {}, '
+                        'skipping notification for target {}'.format(
+                            varName, securityName, targetAddrName
                         )
                     )
-                    return
+                    vacmDenied = True
+                    break
+
+            if vacmDenied:
+                continue
 
             # 3.3.4
             if notifyType == 1:
@@ -469,6 +611,14 @@ class NotificationOriginator:
                 if notificationHandle not in self.__pendingNotifications:
                     self.__pendingNotifications[notificationHandle] = set()
                 self.__pendingNotifications[notificationHandle].add(sendRequestHandle)
+
+            notificationsSent += 1
+
+        # An INFORM expects completion through its callback. If filtering or
+        # access control suppresses every target, complete it as a successful
+        # local no-op rather than leaving higher-level futures pending forever.
+        if notifyType == 2 and not notificationsSent and cbFun:
+            cbFun(snmpEngine, notificationHandle, None, 0, 0, (), cbCtx)
 
         debug.logger & debug.flagApp and debug.logger(
             'sendVarBinds: notificationHandle {}, sendRequestHandle {}, notification(s) sent'.format(
