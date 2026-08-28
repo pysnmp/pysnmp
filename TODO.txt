@@ -9,7 +9,8 @@ Sparse notes on major existing problems/plans
      Dedicated, simple API for table cells mangling should be 
      provided.
 
-* Notification filtering (RFC3413) not implemented.
+* Notification filtering (RFC3413) implemented (§6 filter matching with
+  subtree/mask/type, per-target per-varBind filtering, VACM per-target fix).
 
 * MsgAndPduDispatcher should use TransportDispatcher jobs interface
   to handle SNMPv3 handshake
