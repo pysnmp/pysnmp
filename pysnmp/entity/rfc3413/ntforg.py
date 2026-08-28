@@ -19,29 +19,10 @@ getNextHandle = nextid.Integer(0x7FFFFFFF)
 _POWER_OF_TWO = [2**exp for exp in range(7, -1, -1)]
 
 
-def _matchFilter(filterEntries, oid):
-    """Apply RFC 3413 §6 notification filter matching to *oid*.
-
-    *filterEntries* is a list of ``(subtree, mask, filterType)`` tuples
-    as returned by :func:`getNotifyFilter`.
-
-    Returns ``True`` when *oid* is **included** (the notification should
-    be sent) or ``False`` when *oid* is **excluded**.
-
-    The algorithm mirrors the VACM view-tree family matching in
-    RFC 3415 §3.2.5:
-
-    * Each filter entry's *mask* is expanded with 1-bits when shorter than
-      the subtree (zero-length mask ⇒ all-1's ⇒ exact match).
-    * Sub-identifiers where the mask bit is 0 are wildcards (ignored).
-    * Entries are sorted by ``(len(subtree), subtree)`` so the **longest
-      match wins**; ties are broken lexicographically (largest wins).
-    * If no entry matches, the default is **included**.
-    """
-    if not filterEntries:
-        return True
-
+def _prepareFilterEntries(filterEntries):
+    """Normalize notification filter masks without losing row precedence."""
     prepared = []
+
     for subtree, mask, filterType in filterEntries:
         maskOctets = mask.asNumbers()
         maskLength = min(len(maskOctets) * 8, len(subtree))
@@ -56,27 +37,34 @@ def _matchFilter(filterEntries, oid):
         if ignoredSubOids:
             pattern = list(subtree)
             for idx in ignoredSubOids:
-                if idx < len(pattern):
-                    pattern[idx] = 0
+                pattern[idx] = 0
             normalizedSubtree = subtree.clone(pattern)
         else:
             normalizedSubtree = subtree
 
-        # filterType: included(1) → True, excluded(2) → False
-        included = int(filterType) == 1
-        prepared.append((normalizedSubtree, ignoredSubOids, included))
+        prepared.append(
+            (subtree, normalizedSubtree, ignoredSubOids, int(filterType) == 1)
+        )
 
-    # Sort by (len(subtree), subtree) — longest match wins, ties broken
-    # lexicographically (largest subtree wins, per RFC 3413 §6).
-    prepared.sort(key=lambda e: (len(e[0]), e[0]))
+    # RFC 3413 section 6 gives precedence to the longest original subtree,
+    # then to the lexicographically largest original subtree at equal length.
+    prepared.sort(key=lambda entry: (len(entry[0]), entry[0]))
 
-    result = True  # default: included
-    for subtree, ignoredSubOids, included in prepared:
+    return prepared
+
+
+def _matchPreparedFilter(preparedEntries, oid):
+    """Return True, False, or None when no filter entry matches *oid*."""
+    result = None
+
+    for originalSubtree, subtree, ignoredSubOids, included in preparedEntries:
+        if len(oid) < len(originalSubtree):
+            continue
+
         if ignoredSubOids:
             subOids = list(oid)
             for idx in ignoredSubOids:
-                if idx < len(subOids):
-                    subOids[idx] = 0
+                subOids[idx] = 0
             normalizedOid = subtree.clone(subOids)
         else:
             normalizedOid = oid
@@ -85,6 +73,28 @@ def _matchFilter(filterEntries, oid):
             result = included
 
     return result
+
+
+def _matchFilter(filterEntries, oid):
+    """Apply RFC 3413 section 6 notification filter matching to *oid*.
+
+    *filterEntries* is a list of ``(subtree, mask, filterType)`` tuples
+    as returned by :func:`getNotifyFilter`.
+
+    Returns ``True`` for an included match, ``False`` for an excluded match,
+    or ``None`` when no entry matches. The caller applies the RFC's different
+    defaults for notification names and object instances.
+
+    The algorithm mirrors the VACM view-tree family matching in
+    RFC 3415 §3.2.5:
+
+    * Each filter entry's *mask* is expanded with 1-bits when shorter than
+      the subtree (zero-length mask ⇒ all-1's ⇒ exact match).
+    * Sub-identifiers where the mask bit is 0 are wildcards (ignored).
+    * Entries are sorted by their original ``(len(subtree), subtree)`` so the
+      **longest match wins**; ties are broken lexicographically (largest wins).
+    """
+    return _matchPreparedFilter(_prepareFilterEntries(filterEntries), oid)
 
 
 class NotificationOriginator:
@@ -428,6 +438,7 @@ class NotificationOriginator:
             )
 
         sendRequestHandle = -1
+        notificationsSent = 0
 
         debug.logger & debug.flagApp and debug.logger(f'sendVarBinds: final varBinds {varBinds}')
 
@@ -442,7 +453,6 @@ class NotificationOriginator:
             # 3.3.1 — RFC 3413 §6 notification filtering
             filterProfileName = config.getNotifyFilterProfile(snmpEngine, params)
 
-            targetVarBinds = varBinds
             if filterProfileName is not None:
                 filterEntries = config.getNotifyFilter(snmpEngine, filterProfileName)
 
@@ -462,41 +472,39 @@ class NotificationOriginator:
                     # sysUpTime and snmpTrapOID are protocol-mandated
                     # varBinds and are never subject to filtering.
 
-                    # Check the notification name (snmpTrapOID value)
+                    preparedFilter = _prepareFilterEntries(filterEntries)
+
+                    # A notification name must be specifically included. A
+                    # missing match therefore rejects this target.
                     trapOidVal = varBinds[1][1]  # value of snmpTrapOID varbind
-                    if not _matchFilter(filterEntries, trapOidVal):
+                    if _matchPreparedFilter(preparedFilter, trapOidVal) is not True:
                         debug.logger & debug.flagApp and debug.logger(
-                            'sendVarBinds: notification name {} excluded by filter for target {}, skipping'.format(
+                            'sendVarBinds: notification name {} excluded by filter '
+                            'for target {}, skipping'.format(
                                 trapOidVal, targetAddrName
                             )
                         )
                         continue
 
-                    # Check each object-instance varBind
-                    filteredVarBinds = []
-                    for varName, varVal in varBinds:
+                    # An object instance with no match is included by default,
+                    # but any explicit exclusion rejects the whole notification
+                    # for this target. RFC 3413 filtering never rewrites a PDU.
+                    objectExcluded = False
+                    for varName, _ in varBinds:
                         if varName in (sysUpTime.name, snmpTrapOID.name):
-                            filteredVarBinds.append((varName, varVal))
                             continue
-                        if _matchFilter(filterEntries, varName):
-                            filteredVarBinds.append((varName, varVal))
-                        else:
+                        if _matchPreparedFilter(preparedFilter, varName) is False:
                             debug.logger & debug.flagApp and debug.logger(
-                                'sendVarBinds: varBind {} excluded by filter for target {}'.format(
+                                'sendVarBinds: varBind {} excluded by filter for '
+                                'target {}, skipping notification'.format(
                                     varName, targetAddrName
                                 )
                             )
+                            objectExcluded = True
+                            break
 
-                    # If only the protocol varBinds remain, nothing to send
-                    if len(filteredVarBinds) <= 2:
-                        debug.logger & debug.flagApp and debug.logger(
-                            'sendVarBinds: all object varBinds excluded by filter for target {}, skipping'.format(
-                                targetAddrName
-                            )
-                        )
+                    if objectExcluded:
                         continue
-
-                    targetVarBinds = filteredVarBinds
 
             debug.logger & debug.flagApp and debug.logger(
                 'sendVarBinds: notificationHandle {}, notifyTag {} yields: transportDomain {}, transportAddress {!r}, securityModel {}, securityName {}, securityLevel {}'.format(
@@ -510,10 +518,15 @@ class NotificationOriginator:
                 )
             )
 
+            trapOidVal = varBinds[1][1]
+            objectNames = [
+                varName
+                for varName, _ in varBinds
+                if varName not in (sysUpTime.name, snmpTrapOID.name)
+            ]
+
             vacmDenied = False
-            for varName, varVal in targetVarBinds:
-                if varName in (sysUpTime.name, snmpTrapOID.name):
-                    continue
+            for varName in objectNames + [trapOidVal]:
                 try:
                     snmpEngine.accessControlModel[self.acmID].isAccessAllowed(
                         snmpEngine,
@@ -551,7 +564,7 @@ class NotificationOriginator:
                 raise error.ProtocolError('Unknown notify-type %r', notifyType)
 
             v2c.apiPDU.setDefaults(pdu)
-            v2c.apiPDU.setVarBinds(pdu, targetVarBinds)
+            v2c.apiPDU.setVarBinds(pdu, varBinds)
 
             # 3.3.5
             try:
@@ -598,6 +611,14 @@ class NotificationOriginator:
                 if notificationHandle not in self.__pendingNotifications:
                     self.__pendingNotifications[notificationHandle] = set()
                 self.__pendingNotifications[notificationHandle].add(sendRequestHandle)
+
+            notificationsSent += 1
+
+        # An INFORM expects completion through its callback. If filtering or
+        # access control suppresses every target, complete it as a successful
+        # local no-op rather than leaving higher-level futures pending forever.
+        if notifyType == 2 and not notificationsSent and cbFun:
+            cbFun(snmpEngine, notificationHandle, None, 0, 0, (), cbCtx)
 
         debug.logger & debug.flagApp and debug.logger(
             'sendVarBinds: notificationHandle {}, sendRequestHandle {}, notification(s) sent'.format(
