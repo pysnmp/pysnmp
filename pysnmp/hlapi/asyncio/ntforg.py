@@ -13,6 +13,7 @@ import asyncio
 from typing import Any
 
 from pysnmp.entity.rfc3413 import ntforg
+from pysnmp.hlapi.asyncio._callback import make_callback
 from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.hlapi.auth import *
 from pysnmp.hlapi.context import *
@@ -112,24 +113,7 @@ async def sendNotification(
 
     """
 
-    def __cbFun(
-        snmpEngine: Any,
-        sendRequestHandle: Any,
-        errorIndication: Any,
-        errorStatus: Any,
-        errorIndex: Any,
-        varBinds: Any,
-        cbCtx: Any,
-    ) -> None:
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds, lookupMib)
-        except Exception as ex:
-            future.set_exception(ex)
-        else:
-            future.set_result((errorIndication, errorStatus, errorIndex, varBindsUnmade))
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     notifyName = lcd.configure(
         snmpEngine, authData, transportTarget, notifyType, contextData.contextName
