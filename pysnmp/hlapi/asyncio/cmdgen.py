@@ -30,13 +30,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import annotations
+
 import asyncio
+from typing import Any
 
 from pysnmp.entity.rfc3413 import cmdgen
 from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.hlapi.auth import *
 from pysnmp.hlapi.context import *
 from pysnmp.hlapi.lcd import *
+from pysnmp.hlapi.types import SnmpResponse
 from pysnmp.hlapi.varbinds import *
 from pysnmp.smi.rfc1902 import *
 
@@ -48,7 +52,14 @@ lcd = CommandGeneratorLcdConfigurator()
 isEndOfMib = lambda x: not cmdgen.getNextVarBinds(x)[1]
 
 
-async def getCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, **options):
+async def getCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GET.
 
     (:RFC:`1905#section-4.2.1`)
@@ -120,8 +131,14 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, 
     """
 
     def __cbFun(
-        snmpEngine, sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
-    ):
+        snmpEngine: Any,
+        sendRequestHandle: Any,
+        errorIndication: Any,
+        errorStatus: Any,
+        errorIndex: Any,
+        varBinds: Any,
+        cbCtx: Any,
+    ) -> None:
         lookupMib, future = cbCtx
         if future.cancelled():
             return
@@ -150,7 +167,14 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, 
     return await future
 
 
-async def setCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, **options):
+async def setCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP SET.
 
     (:RFC:`1905#section-4.2.5`)
@@ -221,8 +245,14 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, 
     """
 
     def __cbFun(
-        snmpEngine, sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
-    ):
+        snmpEngine: Any,
+        sendRequestHandle: Any,
+        errorIndication: Any,
+        errorStatus: Any,
+        errorIndex: Any,
+        varBinds: Any,
+        cbCtx: Any,
+    ) -> None:
         lookupMib, future = cbCtx
         if future.cancelled():
             return
@@ -251,7 +281,14 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, 
     return await future
 
 
-async def nextCmd(snmpEngine, authData, transportTarget, contextData, *varBinds, **options):
+async def nextCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GETNEXT.
 
     (:RFC:`1905#section-4.2.2`)
@@ -326,14 +363,14 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData, *varBinds,
     """
 
     def __cbFun(
-        snmpEngine,
-        sendRequestHandle,
-        errorIndication,
-        errorStatus,
-        errorIndex,
-        varBindTable,
-        cbCtx,
-    ):
+        snmpEngine: Any,
+        sendRequestHandle: Any,
+        errorIndication: Any,
+        errorStatus: Any,
+        errorIndex: Any,
+        varBindTable: Any,
+        cbCtx: Any,
+    ) -> None:
         lookupMib, future = cbCtx
         if future.cancelled():
             return
@@ -366,15 +403,15 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData, *varBinds,
 
 
 async def bulkCmd(
-    snmpEngine,
-    authData,
-    transportTarget,
-    contextData,
-    nonRepeaters,
-    maxRepetitions,
-    *varBinds,
-    **options,
-):
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    nonRepeaters: Any,
+    maxRepetitions: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GETBULK.
 
     (:RFC:`1905#section-4.2.3`)
@@ -479,14 +516,14 @@ async def bulkCmd(
     """
 
     def __cbFun(
-        snmpEngine,
-        sendRequestHandle,
-        errorIndication,
-        errorStatus,
-        errorIndex,
-        varBindTable,
-        cbCtx,
-    ):
+        snmpEngine: Any,
+        sendRequestHandle: Any,
+        errorIndication: Any,
+        errorStatus: Any,
+        errorIndex: Any,
+        varBindTable: Any,
+        cbCtx: Any,
+    ) -> None:
         lookupMib, future = cbCtx
         if future.cancelled():
             return

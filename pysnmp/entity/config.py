@@ -3,6 +3,10 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
+from typing import Any
+
 from pyasn1.compat.octets import null
 
 from pysnmp import debug, error
@@ -52,7 +56,7 @@ usmKeyTypeMaster = 1
 usmKeyTypeLocalized = 2
 
 # Auth services
-authServices = {
+authServices: dict[Any, Any] = {
     hmacmd5.HmacMd5.serviceID: hmacmd5.HmacMd5(),
     hmacsha.HmacSha.serviceID: hmacsha.HmacSha(),
     hmacsha2.HmacSha2.sha224ServiceID: hmacsha2.HmacSha2(hmacsha2.HmacSha2.sha224ServiceID),
@@ -63,7 +67,7 @@ authServices = {
 }
 
 # Privacy services
-privServices = {
+privServices: dict[Any, Any] = {
     des.Des.serviceID: des.Des(),
     des3.Des3.serviceID: des3.Des3(),
     aes.Aes.serviceID: aes.Aes(),
@@ -75,7 +79,7 @@ privServices = {
 }
 
 
-def __cookV1SystemInfo(snmpEngine, communityIndex):
+def __cookV1SystemInfo(snmpEngine: Any, communityIndex: str) -> tuple[Any, Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpEngineID,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
@@ -85,14 +89,14 @@ def __cookV1SystemInfo(snmpEngine, communityIndex):
 
 
 def addV1System(
-    snmpEngine,
-    communityIndex,
-    communityName,
-    contextEngineId=None,
-    contextName=None,
-    transportTag=None,
-    securityName=None,
-):
+    snmpEngine: Any,
+    communityIndex: str,
+    communityName: Any,
+    contextEngineId: Any | None = None,
+    contextName: Any | None = None,
+    transportTag: Any | None = None,
+    securityName: Any | None = None,
+) -> None:
     (snmpCommunityEntry, tblIdx, snmpEngineID) = __cookV1SystemInfo(snmpEngine, communityIndex)
 
     if contextEngineId is None:
@@ -130,7 +134,7 @@ def addV1System(
     )
 
 
-def delV1System(snmpEngine, communityIndex):
+def delV1System(snmpEngine: Any, communityIndex: str) -> None:
     (snmpCommunityEntry, tblIdx, snmpEngineID) = __cookV1SystemInfo(snmpEngine, communityIndex)
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((snmpCommunityEntry.name + (8,) + tblIdx, 'destroy'),)
@@ -141,7 +145,9 @@ def delV1System(snmpEngine, communityIndex):
     )
 
 
-def __cookV3UserInfo(snmpEngine, securityName, securityEngineId):
+def __cookV3UserInfo(
+    snmpEngine: Any, securityName: Any, securityEngineId: Any | None
+) -> tuple[Any, Any, Any, Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpEngineID,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
@@ -161,19 +167,19 @@ def __cookV3UserInfo(snmpEngine, securityName, securityEngineId):
 
 
 def addV3User(
-    snmpEngine,
-    userName,
-    authProtocol=usmNoAuthProtocol,
-    authKey=None,
-    privProtocol=usmNoPrivProtocol,
-    privKey=None,
-    securityEngineId=None,
-    securityName=None,
-    authKeyType=usmKeyTypePassphrase,
-    privKeyType=usmKeyTypePassphrase,
+    snmpEngine: Any,
+    userName: Any,
+    authProtocol: Any = usmNoAuthProtocol,
+    authKey: Any | None = None,
+    privProtocol: Any = usmNoPrivProtocol,
+    privKey: Any | None = None,
+    securityEngineId: Any | None = None,
+    securityName: Any | None = None,
+    authKeyType: int = usmKeyTypePassphrase,
+    privKeyType: int = usmKeyTypePassphrase,
     # deprecated parameter
-    contextEngineId=None,
-):
+    contextEngineId: Any | None = None,
+) -> None:
 
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
@@ -316,12 +322,12 @@ def addV3User(
 
 
 def delV3User(
-    snmpEngine,
-    userName,
-    securityEngineId=None,
+    snmpEngine: Any,
+    userName: Any,
+    securityEngineId: Any | None = None,
     # deprecated parameters follow
-    contextEngineId=None,
-):
+    contextEngineId: Any | None = None,
+) -> None:
     if securityEngineId is None:  # backward compatibility
         securityEngineId = contextEngineId
     (securityEngineId, usmUserEntry, tblIdx1, pysnmpUsmSecretEntry, tblIdx2) = __cookV3UserInfo(
@@ -360,7 +366,7 @@ def delV3User(
             varBinds = initialVarBinds
 
 
-def __cookTargetParamsInfo(snmpEngine, name):
+def __cookTargetParamsInfo(snmpEngine: Any, name: str) -> tuple[Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpTargetParamsEntry,) = mibBuilder.importSymbols('SNMP-TARGET-MIB', 'snmpTargetParamsEntry')
@@ -369,7 +375,13 @@ def __cookTargetParamsInfo(snmpEngine, name):
 
 
 # mpModel: 0 == SNMPv1, 1 == SNMPv2c, 3 == SNMPv3
-def addTargetParams(snmpEngine, name, securityName, securityLevel, mpModel=3):
+def addTargetParams(
+    snmpEngine: Any,
+    name: str,
+    securityName: Any,
+    securityLevel: int,
+    mpModel: int = 3,
+) -> None:
     if mpModel == 0:
         securityModel = 1
     elif mpModel in (1, 2):
@@ -396,14 +408,14 @@ def addTargetParams(snmpEngine, name, securityName, securityLevel, mpModel=3):
     )
 
 
-def delTargetParams(snmpEngine, name):
+def delTargetParams(snmpEngine: Any, name: str) -> None:
     snmpTargetParamsEntry, tblIdx = __cookTargetParamsInfo(snmpEngine, name)
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((snmpTargetParamsEntry.name + (7,) + tblIdx, 'destroy'),)
     )
 
 
-def __cookTargetAddrInfo(snmpEngine, addrName):
+def __cookTargetAddrInfo(snmpEngine: Any, addrName: str) -> tuple[Any, Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpTargetAddrEntry,) = mibBuilder.importSymbols('SNMP-TARGET-MIB', 'snmpTargetAddrEntry')
@@ -413,16 +425,16 @@ def __cookTargetAddrInfo(snmpEngine, addrName):
 
 
 def addTargetAddr(
-    snmpEngine,
-    addrName,
-    transportDomain,
-    transportAddress,
-    params,
-    timeout=None,
-    retryCount=None,
-    tagList=null,
-    sourceAddress=None,
-):
+    snmpEngine: Any,
+    addrName: str,
+    transportDomain: Any,
+    transportAddress: Any,
+    params: str,
+    timeout: Any | None = None,
+    retryCount: Any | None = None,
+    tagList: Any = null,
+    sourceAddress: Any | None = None,
+) -> None:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpTargetAddrEntry, snmpSourceAddrEntry, tblIdx) = __cookTargetAddrInfo(snmpEngine, addrName)
@@ -460,14 +472,14 @@ def addTargetAddr(
     )
 
 
-def delTargetAddr(snmpEngine, addrName):
+def delTargetAddr(snmpEngine: Any, addrName: str) -> None:
     (snmpTargetAddrEntry, snmpSourceAddrEntry, tblIdx) = __cookTargetAddrInfo(snmpEngine, addrName)
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((snmpTargetAddrEntry.name + (9,) + tblIdx, 'destroy'),)
     )
 
 
-def addTransport(snmpEngine, transportDomain, transport):
+def addTransport(snmpEngine: Any, transportDomain: Any, transport: Any) -> None:
     if snmpEngine.transportDispatcher:
         if not transport.isCompatibleWithDispatcher(snmpEngine.transportDispatcher):
             raise error.PySnmpError(
@@ -489,7 +501,7 @@ def addTransport(snmpEngine, transportDomain, transport):
         snmpEngine.setUserContext(automaticTransportDispatcher=automaticTransportDispatcher + 1)
 
 
-def getTransport(snmpEngine, transportDomain):
+def getTransport(snmpEngine: Any, transportDomain: Any) -> Any:
     if not snmpEngine.transportDispatcher:
         return
     try:
@@ -498,7 +510,7 @@ def getTransport(snmpEngine, transportDomain):
         return
 
 
-def delTransport(snmpEngine, transportDomain):
+def delTransport(snmpEngine: Any, transportDomain: Any) -> Any:
     if not snmpEngine.transportDispatcher:
         return
     transport = getTransport(snmpEngine, transportDomain)
@@ -522,14 +534,14 @@ delSocketTransport = delTransport
 # VACM shortcuts
 
 
-def __cookVacmContextInfo(snmpEngine, contextName):
+def __cookVacmContextInfo(snmpEngine: Any, contextName: Any) -> tuple[Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
     (vacmContextEntry,) = mibBuilder.importSymbols('SNMP-VIEW-BASED-ACM-MIB', 'vacmContextEntry')
     tblIdx = vacmContextEntry.getInstIdFromIndices(contextName)
     return vacmContextEntry, tblIdx
 
 
-def addContext(snmpEngine, contextName):
+def addContext(snmpEngine: Any, contextName: Any) -> None:
     vacmContextEntry, tblIdx = __cookVacmContextInfo(snmpEngine, contextName)
 
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
@@ -543,7 +555,7 @@ def addContext(snmpEngine, contextName):
     )
 
 
-def delContext(snmpEngine, contextName):
+def delContext(snmpEngine: Any, contextName: Any) -> None:
     vacmContextEntry, tblIdx = __cookVacmContextInfo(snmpEngine, contextName)
 
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
@@ -551,7 +563,7 @@ def delContext(snmpEngine, contextName):
     )
 
 
-def __cookVacmGroupInfo(snmpEngine, securityModel, securityName):
+def __cookVacmGroupInfo(snmpEngine: Any, securityModel: int, securityName: Any) -> tuple[Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (vacmSecurityToGroupEntry,) = mibBuilder.importSymbols(
@@ -561,7 +573,7 @@ def __cookVacmGroupInfo(snmpEngine, securityModel, securityName):
     return vacmSecurityToGroupEntry, tblIdx
 
 
-def addVacmGroup(snmpEngine, groupName, securityModel, securityName):
+def addVacmGroup(snmpEngine: Any, groupName: str, securityModel: int, securityName: Any) -> None:
     (vacmSecurityToGroupEntry, tblIdx) = __cookVacmGroupInfo(
         snmpEngine, securityModel, securityName
     )
@@ -578,14 +590,20 @@ def addVacmGroup(snmpEngine, groupName, securityModel, securityName):
     )
 
 
-def delVacmGroup(snmpEngine, securityModel, securityName):
+def delVacmGroup(snmpEngine: Any, securityModel: int, securityName: Any) -> None:
     vacmSecurityToGroupEntry, tblIdx = __cookVacmGroupInfo(snmpEngine, securityModel, securityName)
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((vacmSecurityToGroupEntry.name + (5,) + tblIdx, 'destroy'),)
     )
 
 
-def __cookVacmAccessInfo(snmpEngine, groupName, contextName, securityModel, securityLevel):
+def __cookVacmAccessInfo(
+    snmpEngine: Any,
+    groupName: str,
+    contextName: Any,
+    securityModel: int,
+    securityLevel: int,
+) -> tuple[Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (vacmAccessEntry,) = mibBuilder.importSymbols('SNMP-VIEW-BASED-ACM-MIB', 'vacmAccessEntry')
@@ -596,16 +614,16 @@ def __cookVacmAccessInfo(snmpEngine, groupName, contextName, securityModel, secu
 
 
 def addVacmAccess(
-    snmpEngine,
-    groupName,
-    contextPrefix,
-    securityModel,
-    securityLevel,
-    contextMatch,
-    readView,
-    writeView,
-    notifyView,
-):
+    snmpEngine: Any,
+    groupName: str,
+    contextPrefix: str,
+    securityModel: int,
+    securityLevel: int,
+    contextMatch: Any,
+    readView: Any,
+    writeView: Any,
+    notifyView: Any,
+) -> None:
     vacmAccessEntry, tblIdx = __cookVacmAccessInfo(
         snmpEngine, groupName, contextPrefix, securityModel, securityLevel
     )
@@ -627,7 +645,13 @@ def addVacmAccess(
     )
 
 
-def delVacmAccess(snmpEngine, groupName, contextPrefix, securityModel, securityLevel):
+def delVacmAccess(
+    snmpEngine: Any,
+    groupName: str,
+    contextPrefix: str,
+    securityModel: int,
+    securityLevel: int,
+) -> None:
     vacmAccessEntry, tblIdx = __cookVacmAccessInfo(
         snmpEngine, groupName, contextPrefix, securityModel, securityLevel
     )
@@ -637,7 +661,7 @@ def delVacmAccess(snmpEngine, groupName, contextPrefix, securityModel, securityL
     )
 
 
-def __cookVacmViewInfo(snmpEngine, viewName, subTree):
+def __cookVacmViewInfo(snmpEngine: Any, viewName: str, subTree: Any) -> tuple[Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (vacmViewTreeFamilyEntry,) = mibBuilder.importSymbols(
@@ -647,7 +671,9 @@ def __cookVacmViewInfo(snmpEngine, viewName, subTree):
     return vacmViewTreeFamilyEntry, tblIdx
 
 
-def addVacmView(snmpEngine, viewName, viewType, subTree, subTreeMask):
+def addVacmView(
+    snmpEngine: Any, viewName: str, viewType: str, subTree: Any, subTreeMask: Any
+) -> None:
     vacmViewTreeFamilyEntry, tblIdx = __cookVacmViewInfo(snmpEngine, viewName, subTree)
 
     # Allow bitmask specification in form of an OID
@@ -676,7 +702,7 @@ def addVacmView(snmpEngine, viewName, viewType, subTree, subTreeMask):
     )
 
 
-def delVacmView(snmpEngine, viewName, subTree):
+def delVacmView(snmpEngine: Any, viewName: str, subTree: Any) -> None:
     vacmViewTreeFamilyEntry, tblIdx = __cookVacmViewInfo(snmpEngine, viewName, subTree)
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((vacmViewTreeFamilyEntry.name + (6,) + tblIdx, 'destroy'),)
@@ -686,7 +712,9 @@ def delVacmView(snmpEngine, viewName, subTree):
 # VACM simplicity wrappers
 
 
-def __cookVacmUserInfo(snmpEngine, securityModel, securityName, securityLevel):
+def __cookVacmUserInfo(
+    snmpEngine: Any, securityModel: int, securityName: Any, securityLevel: int
+) -> tuple[Any, Any, Any, Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     groupName = 'v-%s-%d' % (hash(securityName), securityModel)
@@ -696,15 +724,15 @@ def __cookVacmUserInfo(snmpEngine, securityModel, securityName, securityLevel):
 
 
 def addVacmUser(
-    snmpEngine,
-    securityModel,
-    securityName,
-    securityLevel,
-    readSubTree=(),
-    writeSubTree=(),
-    notifySubTree=(),
-    contextName=null,
-):
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    readSubTree: Any = (),
+    writeSubTree: Any = (),
+    notifySubTree: Any = (),
+    contextName: Any = null,
+) -> None:
     (groupName, securityLevel, readView, writeView, notifyView) = __cookVacmUserInfo(
         snmpEngine, securityModel, securityName, securityLevel
     )
@@ -730,15 +758,15 @@ def addVacmUser(
 
 
 def delVacmUser(
-    snmpEngine,
-    securityModel,
-    securityName,
-    securityLevel,
-    readSubTree=(),
-    writeSubTree=(),
-    notifySubTree=(),
-    contextName=null,
-):
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    readSubTree: Any = (),
+    writeSubTree: Any = (),
+    notifySubTree: Any = (),
+    contextName: Any = null,
+) -> None:
     (groupName, securityLevel, readView, writeView, notifyView) = __cookVacmUserInfo(
         snmpEngine, securityModel, securityName, securityLevel
     )
@@ -756,19 +784,40 @@ def delVacmUser(
 # Obsolete shortcuts for add/delVacmUser() wrappers
 
 
-def addRoUser(snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=null):
+def addRoUser(
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    subTree: Any,
+    contextName: Any = null,
+) -> None:
     addVacmUser(
         snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=contextName
     )
 
 
-def delRoUser(snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=null):
+def delRoUser(
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    subTree: Any,
+    contextName: Any = null,
+) -> None:
     delVacmUser(
         snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=contextName
     )
 
 
-def addRwUser(snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=null):
+def addRwUser(
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    subTree: Any,
+    contextName: Any = null,
+) -> None:
     addVacmUser(
         snmpEngine,
         securityModel,
@@ -780,7 +829,14 @@ def addRwUser(snmpEngine, securityModel, securityName, securityLevel, subTree, c
     )
 
 
-def delRwUser(snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=null):
+def delRwUser(
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    subTree: Any,
+    contextName: Any = null,
+) -> None:
     delVacmUser(
         snmpEngine,
         securityModel,
@@ -792,7 +848,14 @@ def delRwUser(snmpEngine, securityModel, securityName, securityLevel, subTree, c
     )
 
 
-def addTrapUser(snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=null):
+def addTrapUser(
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    subTree: Any,
+    contextName: Any = null,
+) -> None:
     addVacmUser(
         snmpEngine,
         securityModel,
@@ -805,7 +868,14 @@ def addTrapUser(snmpEngine, securityModel, securityName, securityLevel, subTree,
     )
 
 
-def delTrapUser(snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=null):
+def delTrapUser(
+    snmpEngine: Any,
+    securityModel: int,
+    securityName: Any,
+    securityLevel: int,
+    subTree: Any,
+    contextName: Any = null,
+) -> None:
     delVacmUser(
         snmpEngine,
         securityModel,
@@ -821,7 +891,12 @@ def delTrapUser(snmpEngine, securityModel, securityName, securityLevel, subTree,
 # Notification target setup
 
 
-def __cookNotificationTargetInfo(snmpEngine, notificationName, paramsName, filterSubtree=None):
+def __cookNotificationTargetInfo(
+    snmpEngine: Any,
+    notificationName: str,
+    paramsName: str,
+    filterSubtree: Any | None = None,
+) -> tuple[Any, ...]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpNotifyEntry,) = mibBuilder.importSymbols('SNMP-NOTIFICATION-MIB', 'snmpNotifyEntry')
@@ -854,15 +929,15 @@ def __cookNotificationTargetInfo(snmpEngine, notificationName, paramsName, filte
 
 
 def addNotificationTarget(
-    snmpEngine,
-    notificationName,
-    paramsName,
-    transportTag,
-    notifyType=None,
-    filterSubtree=None,
-    filterMask=None,
-    filterType=None,
-):
+    snmpEngine: Any,
+    notificationName: str,
+    paramsName: str,
+    transportTag: Any,
+    notifyType: Any | None = None,
+    filterSubtree: Any | None = None,
+    filterMask: Any | None = None,
+    filterType: Any | None = None,
+) -> None:
     (
         snmpNotifyEntry,
         tblIdx1,
@@ -910,7 +985,9 @@ def addNotificationTarget(
     )
 
 
-def delNotificationTarget(snmpEngine, notificationName, paramsName, filterSubtree=None):
+def delNotificationTarget(
+    snmpEngine: Any, notificationName: str, paramsName: str, filterSubtree: Any | None = None
+) -> None:
     (
         snmpNotifyEntry,
         tblIdx1,
@@ -938,7 +1015,7 @@ def delNotificationTarget(snmpEngine, notificationName, paramsName, filterSubtre
 
 
 # rfc3415: A.1
-def setInitialVacmParameters(snmpEngine):
+def setInitialVacmParameters(snmpEngine: Any) -> None:
     # rfc3415: A.1.1 --> initial-semi-security-configuration
 
     # rfc3415: A.1.2

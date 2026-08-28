@@ -3,7 +3,10 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
 import traceback
+from typing import Any
 
 from pysnmp import debug
 from pysnmp.smi import error
@@ -12,32 +15,32 @@ __all__ = ['AbstractMibInstrumController', 'MibInstrumController']
 
 
 class AbstractMibInstrumController:
-    def readVars(self, varBinds, acInfo=(None, None)):
+    def readVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         raise error.NoSuchInstanceError(idx=0)
 
-    def readNextVars(self, varBinds, acInfo=(None, None)):
+    def readNextVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         raise error.EndOfMibViewError(idx=0)
 
-    def writeVars(self, varBinds, acInfo=(None, None)):
+    def writeVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         raise error.NoSuchObjectError(idx=0)
 
 
 class MibInstrumController(AbstractMibInstrumController):
-    fsmReadVar = {
+    fsmReadVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
         ('start', 'ok'): 'readTest',
         ('readTest', 'ok'): 'readGet',
         ('readGet', 'ok'): 'stop',
         ('*', 'err'): 'stop',
     }
-    fsmReadNextVar = {
+    fsmReadNextVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
         ('start', 'ok'): 'readTestNext',
         ('readTestNext', 'ok'): 'readGetNext',
         ('readGetNext', 'ok'): 'stop',
         ('*', 'err'): 'stop',
     }
-    fsmWriteVar = {
+    fsmWriteVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
         ('start', 'ok'): 'writeTest',
         ('writeTest', 'ok'): 'writeCommit',
@@ -56,17 +59,17 @@ class MibInstrumController(AbstractMibInstrumController):
         ('*', 'err'): 'stop',
     }
 
-    def __init__(self, mibBuilder):
+    def __init__(self, mibBuilder: Any) -> None:
         self.mibBuilder = mibBuilder
         self.lastBuildId = -1
         self.lastBuildSyms = {}
 
-    def getMibBuilder(self):
+    def getMibBuilder(self) -> Any:
         return self.mibBuilder
 
     # MIB indexing
 
-    def __indexMib(self):
+    def __indexMib(self) -> None:
         # Build a tree from MIB objects found at currently loaded modules
         if self.lastBuildId == self.mibBuilder.lastBuildId:
             return
@@ -183,7 +186,9 @@ class MibInstrumController(AbstractMibInstrumController):
 
     # MIB instrumentation
 
-    def flipFlopFsm(self, fsmTable, inputVarBinds, acInfo):
+    def flipFlopFsm(
+        self, fsmTable: dict[tuple[str, str], str], inputVarBinds: Any, acInfo: Any
+    ) -> list[Any]:
         self.__indexMib()
         debug.logger & debug.flagIns and debug.logger(
             f'flipFlopFsm: input var-binds {inputVarBinds!r}'
@@ -246,11 +251,11 @@ class MibInstrumController(AbstractMibInstrumController):
                 del origTraceback
         return outputVarBinds
 
-    def readVars(self, varBinds, acInfo=(None, None)):
+    def readVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         return self.flipFlopFsm(self.fsmReadVar, varBinds, acInfo)
 
-    def readNextVars(self, varBinds, acInfo=(None, None)):
+    def readNextVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         return self.flipFlopFsm(self.fsmReadNextVar, varBinds, acInfo)
 
-    def writeVars(self, varBinds, acInfo=(None, None)):
+    def writeVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         return self.flipFlopFsm(self.fsmWriteVar, varBinds, acInfo)

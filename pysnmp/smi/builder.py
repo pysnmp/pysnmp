@@ -3,12 +3,15 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
 import importlib
 import marshal
 import os
 import struct
 import time
 import traceback
+from typing import Any
 
 PY_MAGIC_NUMBER = importlib.util.MAGIC_NUMBER
 SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
@@ -26,18 +29,18 @@ classTypes = (type,)
 
 
 class __AbstractMibSource:
-    def __init__(self, srcName):
+    def __init__(self, srcName: str) -> None:
         self._srcName = srcName
         self.__inited = None
         debug.logger & debug.flagBld and debug.logger('trying %s' % self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._srcName!r})'
 
-    def _uniqNames(self, files):
+    def _uniqNames(self, names: list[str]) -> tuple[str, ...]:
         u = set()
 
-        for f in files:
+        for f in names:
             if f.startswith('__init__.'):
                 continue
 
@@ -47,10 +50,12 @@ class __AbstractMibSource:
 
     # MibSource API follows
 
-    def fullPath(self, f='', sfx=''):
+    def fullPath(self, *args: Any) -> str:
+        f = args[0] if args else ''
+        sfx = args[1] if len(args) > 1 else ''
         return self._srcName + (f and (os.sep + f + sfx) or '')
 
-    def init(self):
+    def init(self) -> Any:
         if self.__inited is None:
             self.__inited = self._init()
             if self.__inited is self:
@@ -61,10 +66,10 @@ class __AbstractMibSource:
         else:
             return self.__inited
 
-    def listdir(self):
+    def listdir(self) -> tuple[str, ...]:
         return self._listdir()
 
-    def read(self, f):
+    def read(self, f: str) -> Any:
         pycTime = pyTime = -1
 
         for pycSfx in BYTECODE_SUFFIXES:
@@ -133,21 +138,21 @@ class __AbstractMibSource:
         raise OSError(ENOENT, 'No suitable module found', f)
 
     # Interfaces for subclasses
-    def _init(self):
+    def _init(self) -> Any:
         raise NotImplementedError()
 
-    def _listdir(self):
+    def _listdir(self) -> tuple[str, ...]:
         raise NotImplementedError()
 
-    def _getTimestamp(self, f):
+    def _getTimestamp(self, f: str) -> float:
         raise NotImplementedError()
 
-    def _getData(self, f, mode):
+    def _getData(self, f: str, mode: str) -> tuple[Any, str]:
         NotImplementedError()
 
 
 class ZipMibSource(__AbstractMibSource):
-    def _init(self):
+    def _init(self) -> Any:
         try:
             p = __import__(self._srcName, globals(), locals(), ['__init__'])
             if hasattr(p, '__loader__') and hasattr(p.__loader__, '_files'):
@@ -165,7 +170,7 @@ class ZipMibSource(__AbstractMibSource):
             return DirMibSource(self._srcName).init()
 
     @staticmethod
-    def _parseDosTime(dosdate, dostime):
+    def _parseDosTime(dosdate: int, dostime: int) -> float:
         t = (
             ((dosdate >> 9) & 0x7F) + 1980,  # year
             ((dosdate >> 5) & 0x0F),  # month
@@ -179,7 +184,7 @@ class ZipMibSource(__AbstractMibSource):
         )  # dst
         return time.mktime(t)
 
-    def _listdir(self):
+    def _listdir(self) -> tuple[str, ...]:
         l = []
         # noinspection PyProtectedMember
         for f in self.__loader._files.keys():
@@ -188,7 +193,7 @@ class ZipMibSource(__AbstractMibSource):
                 l.append(f)
         return tuple(self._uniqNames(l))
 
-    def _getTimestamp(self, f):
+    def _getTimestamp(self, f: str) -> float:
         p = os.path.join(self._srcName, f)
         # noinspection PyProtectedMember
         if p in self.__loader._files:
@@ -197,7 +202,7 @@ class ZipMibSource(__AbstractMibSource):
         else:
             raise OSError(ENOENT, 'No such file in ZIP archive', p)
 
-    def _getData(self, f, mode=None):
+    def _getData(self, f: str, mode: str | None = None) -> tuple[Any, str]:
         p = os.path.join(self._srcName, f)
         try:
             return self.__loader.get_data(p), p
@@ -207,11 +212,11 @@ class ZipMibSource(__AbstractMibSource):
 
 
 class DirMibSource(__AbstractMibSource):
-    def _init(self):
+    def _init(self) -> Any:
         self._srcName = os.path.normpath(self._srcName)
         return self
 
-    def _listdir(self):
+    def _listdir(self) -> tuple[str, ...]:
         try:
             return self._uniqNames(os.listdir(self._srcName))
         except OSError as why:
@@ -220,14 +225,14 @@ class DirMibSource(__AbstractMibSource):
             )
             return ()
 
-    def _getTimestamp(self, f):
+    def _getTimestamp(self, f: str) -> float:
         p = os.path.join(self._srcName, f)
         try:
             return os.stat(p)[8]
         except OSError as e:
             raise OSError(ENOENT, f'No such file: {e}', p)
 
-    def _getData(self, f, mode):
+    def _getData(self, f: str, mode: str) -> tuple[Any, str]:
         p = os.path.join(self._srcName, '*')
         try:
             if f in os.listdir(self._srcName):  # make FS case-sensitive
@@ -257,7 +262,7 @@ class MibBuilder:
     # MIB modules can use this to select the features they can use
     version = pysnmp_version
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.lastBuildId = self._autoName = 0
         sources = []
         for ev in 'PYSNMP_MIB_PKGS', 'PYSNMP_MIB_DIRS', 'PYSNMP_MIB_DIR':
@@ -278,36 +283,36 @@ class MibBuilder:
 
     # MIB compiler management
 
-    def getMibCompiler(self):
+    def getMibCompiler(self) -> Any:
         return self.__mibCompiler
 
-    def setMibCompiler(self, mibCompiler, destDir):
+    def setMibCompiler(self, mibCompiler: Any, destDir: str) -> Any:
         self.addMibSources(DirMibSource(destDir))
         self.__mibCompiler = mibCompiler
         return self
 
     # MIB modules management
 
-    def addMibSources(self, *mibSources):
+    def addMibSources(self, *mibSources: Any) -> None:
         self.__mibSources.extend([s.init() for s in mibSources])
         debug.logger & debug.flagBld and debug.logger(
             f'addMibSources: new MIB sources {self.__mibSources}'
         )
 
-    def setMibSources(self, *mibSources):
+    def setMibSources(self, *mibSources: Any) -> None:
         self.__mibSources = [s.init() for s in mibSources]
         debug.logger & debug.flagBld and debug.logger(
             f'setMibSources: new MIB sources {self.__mibSources}'
         )
 
-    def getMibSources(self):
+    def getMibSources(self) -> tuple[Any, ...]:
         return tuple(self.__mibSources)
 
     # Legacy/compatibility methods (won't work for .eggs)
-    def setMibPath(self, *mibPaths):
+    def setMibPath(self, *mibPaths: str) -> None:
         self.setMibSources(*[DirMibSource(x) for x in mibPaths])
 
-    def getMibPath(self):
+    def getMibPath(self) -> tuple[str, ...]:
         paths = ()
         for mibSource in self.getMibSources():
             if isinstance(mibSource, DirMibSource):
@@ -316,7 +321,7 @@ class MibBuilder:
                 raise error.MibLoadError(f'MIB source is not a plain directory: {mibSource}')
         return paths
 
-    def loadModule(self, modName, **userCtx):
+    def loadModule(self, modName: str, **userCtx: Any) -> Any:
         """Load and execute MIB modules as Python code"""
         for mibSource in self.__mibSources:
             debug.logger & debug.flagBld and debug.logger(
@@ -368,7 +373,7 @@ class MibBuilder:
 
         return self
 
-    def loadModules(self, *modNames, **userCtx):
+    def loadModules(self, *modNames: str, **userCtx: Any) -> Any:
         """Load (optionally, compiling) pysnmp MIB modules"""
         # Build a list of available modules
         if not modNames:
@@ -406,7 +411,7 @@ class MibBuilder:
 
         return self
 
-    def unloadModules(self, *modNames):
+    def unloadModules(self, *modNames: str) -> Any:
         if not modNames:
             modNames = list(self.mibSymbols.keys())
         for modName in modNames:
@@ -420,7 +425,7 @@ class MibBuilder:
 
         return self
 
-    def importSymbols(self, modName, *symNames, **userCtx):
+    def importSymbols(self, modName: str, *symNames: str, **userCtx: Any) -> tuple[Any, ...]:
         if not modName:
             raise error.SmiError('importSymbols: empty MIB module name')
         r = ()
@@ -434,7 +439,7 @@ class MibBuilder:
             r = r + (self.mibSymbols[modName][symName],)
         return r
 
-    def exportSymbols(self, modName, *anonymousSyms, **namedSyms):
+    def exportSymbols(self, modName: str, *anonymousSyms: Any, **namedSyms: Any) -> None:
         if modName not in self.mibSymbols:
             self.mibSymbols[modName] = {}
         mibSymbols = self.mibSymbols[modName]
@@ -464,7 +469,7 @@ class MibBuilder:
 
         self.lastBuildId += 1
 
-    def unexportSymbols(self, modName, *symNames):
+    def unexportSymbols(self, modName: str, *symNames: str) -> None:
         if modName not in self.mibSymbols:
             raise error.SmiError(f'No module {modName} at {self}')
         mibSymbols = self.mibSymbols[modName]

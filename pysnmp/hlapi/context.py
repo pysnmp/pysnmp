@@ -3,6 +3,10 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
+from typing import Any
+
 from pyasn1.compat.octets import null
 
 __all__ = ['ContextData']
@@ -45,11 +49,11 @@ class ContextData:
 
     """
 
-    def __init__(self, contextEngineId=None, contextName=null):
+    def __init__(self, contextEngineId: Any = None, contextName: Any = null) -> None:
         self.contextEngineId = contextEngineId
         self.contextName = contextName
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(contextEngineId={!r}, contextName={!r})'.format(
             self.__class__.__name__, self.contextEngineId, self.contextName
         )

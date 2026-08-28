@@ -7,13 +7,17 @@
 # Authors: Matt Hooks <me@matthooks.com>
 #          Zachary Lorusso <zlorusso@gmail.com>
 #
+from __future__ import annotations
+
 import asyncio
+from typing import Any
 
 from pysnmp.entity.rfc3413 import ntforg
 from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.hlapi.auth import *
 from pysnmp.hlapi.context import *
 from pysnmp.hlapi.lcd import *
+from pysnmp.hlapi.types import SnmpResponse
 from pysnmp.hlapi.varbinds import *
 from pysnmp.smi.rfc1902 import *
 
@@ -24,8 +28,14 @@ lcd = NotificationOriginatorLcdConfigurator()
 
 
 async def sendNotification(
-    snmpEngine, authData, transportTarget, contextData, notifyType, varBinds, **options
-):
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    notifyType: str,
+    varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Send SNMP notification.
 
     Parameters
@@ -103,8 +113,14 @@ async def sendNotification(
     """
 
     def __cbFun(
-        snmpEngine, sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
-    ):
+        snmpEngine: Any,
+        sendRequestHandle: Any,
+        errorIndication: Any,
+        errorStatus: Any,
+        errorIndex: Any,
+        varBinds: Any,
+        cbCtx: Any,
+    ) -> None:
         lookupMib, future = cbCtx
         if future.cancelled():
             return
