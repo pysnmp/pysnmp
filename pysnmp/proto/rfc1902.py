@@ -1,14 +1,27 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.type import univ, tag, constraint, namedtype, namedval
-from pysnmp.proto import rfc1155, error
+from pyasn1.type import constraint, namedtype, namedval, tag, univ
 
-__all__ = ['Opaque', 'TimeTicks', 'Bits', 'Integer', 'OctetString',
-           'IpAddress', 'Counter64', 'Unsigned32', 'Gauge32', 'Integer32',
-           'ObjectIdentifier', 'Counter32', 'Null']
+from pysnmp.proto import error, rfc1155
+
+__all__ = [
+    'Opaque',
+    'TimeTicks',
+    'Bits',
+    'Integer',
+    'OctetString',
+    'IpAddress',
+    'Counter64',
+    'Unsigned32',
+    'Gauge32',
+    'Integer32',
+    'ObjectIdentifier',
+    'Counter32',
+    'Null',
+]
 
 
 class Null(univ.Null):
@@ -78,14 +91,14 @@ class Integer32(univ.Integer):
         >>>
 
     """
+
     subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
         -2147483648, 2147483647
     )
 
     @classmethod
     def withValues(cls, *values):
-        """Creates a subclass with discreet values constraint.
-        """
+        """Creates a subclass with discreet values constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(*values)
@@ -95,8 +108,7 @@ class Integer32(univ.Integer):
 
     @classmethod
     def withRange(cls, minimum, maximum):
-        """Creates a subclass with value range constraint.
-        """
+        """Creates a subclass with value range constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.ValueRangeConstraint(minimum, maximum)
@@ -160,8 +172,7 @@ class Integer(Integer32):
 
         class X(cls):
             namedValues = namedval.NamedValues(*enums)
-            subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(
-                *values.values())
+            subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(*values.values())
 
         X.__name__ = cls.__name__
         return X
@@ -206,9 +217,8 @@ class OctetString(univ.OctetString):
         >>>
 
     """
-    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(
-        0, 65535
-    )
+
+    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(0, 65535)
 
     # rfc1902 uses a notion of "fixed length string" what might mean
     # having zero-range size constraint applied. The following is
@@ -230,12 +240,13 @@ class OctetString(univ.OctetString):
         return univ.OctetString.clone(self, *args, **kwargs).setFixedLength(self.getFixedLength())
 
     def subtype(self, *args, **kwargs):
-        return univ.OctetString.subtype(self, *args, **kwargs).setFixedLength(self.getFixedLength())
+        return univ.OctetString.subtype(self, *args, **kwargs).setFixedLength(
+            self.getFixedLength()
+        )
 
     @classmethod
     def withSize(cls, minimum, maximum):
-        """Creates a subclass with value size constraint.
-        """
+        """Creates a subclass with value size constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.ValueSizeConstraint(minimum, maximum)
@@ -309,12 +320,11 @@ class IpAddress(OctetString):
         >>>
 
     """
+
     tagSet = OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x00)
     )
-    subtypeSpec = OctetString.subtypeSpec + constraint.ValueSizeConstraint(
-        4, 4
-    )
+    subtypeSpec = OctetString.subtypeSpec + constraint.ValueSizeConstraint(4, 4)
     fixedLength = 4
 
     def prettyIn(self, value):
@@ -330,9 +340,7 @@ class IpAddress(OctetString):
 
     def prettyOut(self, value):
         if value:
-            return '.'.join(
-                ['%d' % x for x in self.__class__(value).asNumbers()]
-            )
+            return '.'.join(['%d' % x for x in self.__class__(value).asNumbers()])
         else:
             return ''
 
@@ -368,12 +376,11 @@ class Counter32(univ.Integer):
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x01)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class Gauge32(univ.Integer):
@@ -407,12 +414,11 @@ class Gauge32(univ.Integer):
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class Unsigned32(univ.Integer):
@@ -445,12 +451,11 @@ class Unsigned32(univ.Integer):
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class TimeTicks(univ.Integer):
@@ -483,12 +488,11 @@ class TimeTicks(univ.Integer):
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x03)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class Opaque(univ.OctetString):
@@ -531,6 +535,7 @@ class Opaque(univ.OctetString):
         >>>
 
     """
+
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x04)
     )
@@ -567,6 +572,7 @@ class Counter64(univ.Integer):
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x06)
     )
@@ -624,6 +630,7 @@ class Bits(OctetString):
         >>>
 
     """
+
     namedValues = namedval.NamedValues()
 
     def __new__(cls, *args, **kwargs):
@@ -686,7 +693,7 @@ class SimpleSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('integer-value', Integer()),
         namedtype.NamedType('string-value', OctetString()),
-        namedtype.NamedType('objectID-value', univ.ObjectIdentifier())
+        namedtype.NamedType('objectID-value', univ.ObjectIdentifier()),
     )
 
 
@@ -699,12 +706,12 @@ class ApplicationSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
         namedtype.NamedType('big-counter-value', Counter64()),
         # This conflicts with Counter32
         # namedtype.NamedType('unsigned-integer-value', Unsigned32()),
-        namedtype.NamedType('gauge32-value', Gauge32())
+        namedtype.NamedType('gauge32-value', Gauge32()),
     )  # BITS misplaced?
 
 
 class ObjectSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('simple', SimpleSyntax()),
-        namedtype.NamedType('application-wide', ApplicationSyntax())
+        namedtype.NamedType('application-wide', ApplicationSyntax()),
     )

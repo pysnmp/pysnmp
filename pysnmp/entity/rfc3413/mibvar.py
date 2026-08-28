@@ -1,16 +1,17 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # THESE FUNCTIONS ARE OBSOLETE AND MUST NOT BE USED!
 # USE pysnmp.entity.rfc3413.oneliner.mibvar INSTEAD
 #
 from pyasn1.type import univ
+
 from pysnmp.smi.error import NoSuchObjectError
 
-
 # Name
+
 
 def mibNameToOid(mibView, name):
     if isinstance(name[0], tuple):
@@ -26,12 +27,10 @@ def mibNameToOid(mibView, name):
             oid, label, suffix = mibView.getFirstNodeName(modName)
         suffix = name[1:]
         modName, symName, _s = mibView.getNodeLocation(oid)
-        mibNode, = mibView.mibBuilder.importSymbols(
-            modName, symName
-        )
+        (mibNode,) = mibView.mibBuilder.importSymbols(modName, symName)
         if hasattr(mibNode, 'createTest'):  # table column XXX
             modName, symName, _s = mibView.getNodeLocation(oid[:-1])
-            rowNode, = mibView.mibBuilder.importSymbols(modName, symName)
+            (rowNode,) = mibView.mibBuilder.importSymbols(modName, symName)
             return oid, rowNode.getInstIdFromIndices(*suffix)
         else:  # scalar or incomplete spec
             return oid, suffix
@@ -51,12 +50,10 @@ def oidToMibName(mibView, oid):
         oid = tuple(univ.ObjectIdentifier(oid))
     _oid, label, suffix = mibView.getNodeNameByOid(oid)
     modName, symName, __suffix = mibView.getNodeLocation(_oid)
-    mibNode, = mibView.mibBuilder.importSymbols(
-        modName, symName
-    )
+    (mibNode,) = mibView.mibBuilder.importSymbols(modName, symName)
     if hasattr(mibNode, 'createTest'):  # table column
         __modName, __symName, __s = mibView.getNodeLocation(_oid[:-1])
-        rowNode, = mibView.mibBuilder.importSymbols(__modName, __symName)
+        (rowNode,) = mibView.mibBuilder.importSymbols(__modName, __symName)
         return (symName, modName), rowNode.getIndicesFromInstId(suffix)
     elif not suffix:  # scalar
         return (symName, modName), suffix
@@ -65,16 +62,16 @@ def oidToMibName(mibView, oid):
     else:
         raise NoSuchObjectError(
             str='No MIB registered that defines {} object, closest known parent is {} ({}::{})'.format(
-                univ.ObjectIdentifier(oid), univ.ObjectIdentifier(mibNode.name), modName, symName)
+                univ.ObjectIdentifier(oid), univ.ObjectIdentifier(mibNode.name), modName, symName
+            )
         )
 
 
 # Value
 
+
 def cloneFromMibValue(mibView, modName, symName, value):
-    mibNode, = mibView.mibBuilder.importSymbols(
-        modName, symName
-    )
+    (mibNode,) = mibView.mibBuilder.importSymbols(modName, symName)
     if hasattr(mibNode, 'syntax'):  # scalar
         return mibNode.syntax.clone(value)
     else:

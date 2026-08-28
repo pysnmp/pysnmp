@@ -1,20 +1,19 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pysnmp.entity import config
-from pysnmp import nextid, error
-from pysnmp.hlapi.auth import *
-
 from pyasn1.compat.octets import null
 
-__all__ = ['CommandGeneratorLcdConfigurator',
-           'NotificationOriginatorLcdConfigurator']
+from pysnmp import error, nextid
+from pysnmp.entity import config
+from pysnmp.hlapi.auth import *
+
+__all__ = ['CommandGeneratorLcdConfigurator', 'NotificationOriginatorLcdConfigurator']
 
 
 class AbstractLcdConfigurator:
-    nextID = nextid.Integer(0xffffffff)
+    nextID = nextid.Integer(0xFFFFFFFF)
     cacheKeys = []
 
     def _getCache(self, snmpEngine):
@@ -35,8 +34,7 @@ class AbstractLcdConfigurator:
 class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
     cacheKeys = ['auth', 'parm', 'tran', 'addr']
 
-    def configure(self, snmpEngine, authData, transportTarget, contextName=null,
-                  **options):
+    def configure(self, snmpEngine, authData, transportTarget, contextName=null, **options):
         cache = self._getCache(snmpEngine)
         if isinstance(authData, CommunityData):
             if authData.communityIndex not in cache['auth']:
@@ -47,7 +45,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
                     authData.contextEngineId,
                     authData.contextName,
                     authData.tag,
-                    authData.securityName
+                    authData.securityName,
                 )
                 cache['auth'][authData.communityIndex] = authData
         elif isinstance(authData, UsmUserData):
@@ -56,28 +54,31 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
                 config.addV3User(
                     snmpEngine,
                     authData.userName,
-                    authData.authProtocol, authData.authKey,
-                    authData.privProtocol, authData.privKey,
+                    authData.authProtocol,
+                    authData.authKey,
+                    authData.privProtocol,
+                    authData.privKey,
                     securityEngineId=authData.securityEngineId,
                     securityName=authData.securityName,
                     authKeyType=authData.authKeyType,
-                    privKeyType=authData.privKeyType
+                    privKeyType=authData.privKeyType,
                 )
                 cache['auth'][authDataKey] = authData
         else:
             raise error.PySnmpError('Unsupported authentication object')
 
-        paramsKey = (authData.securityName,
-                     authData.securityLevel,
-                     authData.mpModel)
+        paramsKey = (authData.securityName, authData.securityLevel, authData.mpModel)
         if paramsKey in cache['parm']:
             paramsName, useCount = cache['parm'][paramsKey]
             cache['parm'][paramsKey] = paramsName, useCount + 1
         else:
             paramsName = 'p%s' % self.nextID()
             config.addTargetParams(
-                snmpEngine, paramsName,
-                authData.securityName, authData.securityLevel, authData.mpModel
+                snmpEngine,
+                paramsName,
+                authData.securityName,
+                authData.securityLevel,
+                authData.mpModel,
             )
             cache['parm'][paramsKey] = paramsName, 1
 
@@ -89,19 +90,18 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             transportTarget.verifyDispatcherCompatibility(snmpEngine)
         else:
             transport = transportTarget.openClientMode()
-            config.addTransport(
-                snmpEngine,
-                transportTarget.transportDomain,
-                transport
-            )
+            config.addTransport(snmpEngine, transportTarget.transportDomain, transport)
             cache['tran'][transportTarget.transportDomain] = transport, 1
 
-        transportKey = (paramsName, transportTarget.transportDomain,
-                        transportTarget.transportAddr,
-                        transportTarget.timeout,
-                        transportTarget.retries,
-                        transportTarget.tagList,
-                        transportTarget.iface)
+        transportKey = (
+            paramsName,
+            transportTarget.transportDomain,
+            transportTarget.transportAddr,
+            transportTarget.timeout,
+            transportTarget.retries,
+            transportTarget.tagList,
+            transportTarget.iface,
+        )
 
         if transportKey in cache['addr']:
             addrName, useCount = cache['addr'][transportKey]
@@ -109,13 +109,14 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
         else:
             addrName = 'a%s' % self.nextID()
             config.addTargetAddr(
-                snmpEngine, addrName,
+                snmpEngine,
+                addrName,
                 transportTarget.transportDomain,
                 transportTarget.transportAddr,
                 paramsName,
                 transportTarget.timeout * 100,
                 transportTarget.retries,
-                transportTarget.tagList
+                transportTarget.tagList,
             )
             cache['addr'][transportKey] = addrName, 1
 
@@ -143,22 +144,13 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             authDataX = cache['auth'][authDataKey]
             del cache['auth'][authDataKey]
             if isinstance(authDataX, CommunityData):
-                config.delV1System(
-                    snmpEngine,
-                    authDataX.communityIndex
-                )
+                config.delV1System(snmpEngine, authDataX.communityIndex)
             elif isinstance(authDataX, UsmUserData):
-                config.delV3User(
-                    snmpEngine,
-                    authDataX.userName,
-                    authDataX.securityEngineId
-                )
+                config.delV3User(snmpEngine, authDataX.userName, authDataX.securityEngineId)
             else:
                 raise error.PySnmpError('Unsupported authentication object')
 
-            paramsKey = (authDataX.securityName,
-                         authDataX.securityLevel,
-                         authDataX.mpModel)
+            paramsKey = (authDataX.securityName, authDataX.securityLevel, authDataX.mpModel)
             if paramsKey in cache['parm']:
                 paramsName, useCount = cache['parm'][paramsKey]
                 useCount -= 1
@@ -166,9 +158,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
                     cache['parm'][paramsKey] = paramsName, useCount
                 else:
                     del cache['parm'][paramsKey]
-                    config.delTargetParams(
-                        snmpEngine, paramsName
-                    )
+                    config.delTargetParams(snmpEngine, paramsName)
                     paramsNames.add(paramsName)
             else:
                 raise error.PySnmpError(f'Unknown target {paramsKey}')
@@ -202,8 +192,7 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
     cacheKeys = ['auth', 'name']
     _cmdGenLcdCfg = CommandGeneratorLcdConfigurator()
 
-    def configure(self, snmpEngine, authData, transportTarget, notifyType,
-                  contextName, **options):
+    def configure(self, snmpEngine, authData, transportTarget, notifyType, contextName, **options):
         cache = self._getCache(snmpEngine)
         notifyName = None
 
@@ -216,7 +205,8 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
             authData.tag = transportTarget.tagList.split()[0]
 
         addrName, paramsName = self._cmdGenLcdCfg.configure(
-            snmpEngine, authData, transportTarget, contextName, **options)
+            snmpEngine, authData, transportTarget, contextName, **options
+        )
         tagList = transportTarget.tagList.split()
         if not tagList:
             tagList = ['']
@@ -227,23 +217,27 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
                 cache['name'][notifyNameKey] = notifyName, paramsName, useCount + 1
             else:
                 notifyName = 'n%s' % self.nextID()
-                config.addNotificationTarget(
-                    snmpEngine,
-                    notifyName,
-                    paramsName,
-                    tag,
-                    notifyType
-                )
+                config.addNotificationTarget(snmpEngine, notifyName, paramsName, tag, notifyType)
                 cache['name'][notifyNameKey] = notifyName, paramsName, 1
-        authDataKey = authData.securityName, authData.securityModel, authData.securityLevel, contextName
+        authDataKey = (
+            authData.securityName,
+            authData.securityModel,
+            authData.securityLevel,
+            contextName,
+        )
         if authDataKey in cache['auth']:
             authDataX, subTree, useCount = cache['auth'][authDataKey]
             cache['auth'][authDataKey] = authDataX, subTree, useCount + 1
         else:
             subTree = (1, 3, 6)
-            config.addTrapUser(snmpEngine, authData.securityModel,
-                               authData.securityName, authData.securityLevel,
-                               subTree, contextName=contextName)
+            config.addTrapUser(
+                snmpEngine,
+                authData.securityModel,
+                authData.securityName,
+                authData.securityLevel,
+                subTree,
+                contextName=contextName,
+            )
             cache['auth'][authDataKey] = authData, subTree, 1
 
         return notifyName
@@ -251,7 +245,12 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
     def unconfigure(self, snmpEngine, authData=None, contextName=null, **options):
         cache = self._getCache(snmpEngine)
         if authData:
-            authDataKey = authData.securityName, authData.securityModel, authData.securityLevel, contextName
+            authDataKey = (
+                authData.securityName,
+                authData.securityModel,
+                authData.securityLevel,
+                contextName,
+            )
             if authDataKey in cache['auth']:
                 authDataKeys = (authDataKey,)
             else:
@@ -260,18 +259,19 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
             authDataKeys = tuple(cache['auth'])
 
         addrNames, paramsNames = self._cmdGenLcdCfg.unconfigure(
-            snmpEngine, authData, contextName, **options)
+            snmpEngine, authData, contextName, **options
+        )
 
-        notifyAndParamsNames = [(cache['name'][x], x) for x in cache['name'].keys() if x[0] in paramsNames]
+        notifyAndParamsNames = [
+            (cache['name'][x], x) for x in cache['name'].keys() if x[0] in paramsNames
+        ]
 
         for (notifyName, paramsName, useCount), notifyNameKey in notifyAndParamsNames:
             useCount -= 1
             if useCount:
                 cache['name'][notifyNameKey] = notifyName, paramsName, useCount
             else:
-                config.delNotificationTarget(
-                    snmpEngine, notifyName, paramsName
-                )
+                config.delNotificationTarget(snmpEngine, notifyName, paramsName)
                 del cache['name'][notifyNameKey]
 
         for authDataKey in authDataKeys:
@@ -281,8 +281,10 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
                 cache['auth'][authDataKey] = authDataX, subTree, useCount
             else:
                 config.delTrapUser(
-                    snmpEngine, authDataX.securityModel,
-                    authDataX.securityName, authDataX.securityLevel,
-                    subTree
+                    snmpEngine,
+                    authDataX.securityModel,
+                    authDataX.securityName,
+                    authDataX.securityLevel,
+                    subTree,
                 )
                 del cache['auth'][authDataKey]

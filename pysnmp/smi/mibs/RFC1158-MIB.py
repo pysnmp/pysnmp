@@ -1,7 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # PySNMP MIB module RFC1158-MIB
 # ASN.1 source: bundled
@@ -12,9 +12,38 @@
 # It is a stripped version of MIB that contains only symbols that is
 # unique to SMIv1 and have no analogues in SMIv2
 #
-Integer32, MibScalar, MibTable, MibTableRow, MibTableColumn, TimeTicks, iso, Gauge32, MibIdentifier, Bits, Counter32 = mibBuilder.importSymbols("SNMPv2-SMI", "Integer32", "MibScalar", "MibTable", "MibTableRow", "MibTableColumn", "TimeTicks", "iso", "Gauge32", "MibIdentifier", "Bits","Counter32")
+(
+    Integer32,
+    MibScalar,
+    MibTable,
+    MibTableRow,
+    MibTableColumn,
+    TimeTicks,
+    iso,
+    Gauge32,
+    MibIdentifier,
+    Bits,
+    Counter32,
+) = mibBuilder.importSymbols(
+    "SNMPv2-SMI",
+    "Integer32",
+    "MibScalar",
+    "MibTable",
+    "MibTableRow",
+    "MibTableColumn",
+    "TimeTicks",
+    "iso",
+    "Gauge32",
+    "MibIdentifier",
+    "Bits",
+    "Counter32",
+)
 snmpInBadTypes = MibScalar((1, 3, 6, 1, 2, 1, 11, 7), Counter32()).setMaxAccess("readonly")
-if mibBuilder.loadTexts: snmpInBadTypes.setStatus('mandatory')
+if mibBuilder.loadTexts:
+    snmpInBadTypes.setStatus('mandatory')
 snmpOutReadOnlys = MibScalar((1, 3, 6, 1, 2, 1, 11, 23), Counter32()).setMaxAccess("readonly")
-if mibBuilder.loadTexts: snmpOutReadOnlys.setStatus('mandatory')
-mibBuilder.exportSymbols("RFC1158-MIB", snmpOutReadOnlys=snmpOutReadOnlys, snmpInBadTypes=snmpInBadTypes)
+if mibBuilder.loadTexts:
+    snmpOutReadOnlys.setStatus('mandatory')
+mibBuilder.exportSymbols(
+    "RFC1158-MIB", snmpOutReadOnlys=snmpOutReadOnlys, snmpInBadTypes=snmpInBadTypes
+)

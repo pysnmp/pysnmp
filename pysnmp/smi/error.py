@@ -1,9 +1,10 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 from pyasn1.error import PyAsn1Error
+
 from pysnmp.error import PySnmpError
 
 
@@ -43,6 +44,7 @@ class MibOperationError(SmiError):
 
 
 # Aligned with SNMPv2 PDU error-status values
+
 
 class TooBigError(MibOperationError):
     pass
@@ -118,6 +120,7 @@ class InconsistentNameError(MibOperationError):
 
 # Aligned with SNMPv2 PDU exceptions or error-status values
 
+
 class NoSuchObjectError(NoSuchNameError):
     pass
 
@@ -131,6 +134,7 @@ class EndOfMibViewError(NoSuchNameError):
 
 
 # SNMP table management exceptions
+
 
 class TableRowManagement(MibOperationError):
     pass

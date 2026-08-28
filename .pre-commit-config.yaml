@@ -3,15 +3,27 @@ repos:
     rev: v2.29.0
     hooks:
     -   id: pyupgrade
-        args: [--py37-plus]
-# -   repo: https://github.com/psf/black
-#     rev: 21.9b0
-#     hooks:
-#     -   id: black
-# -   repo: https://github.com/PyCQA/isort
-#     rev: 5.10.1
-#     hooks:
-#     -   id: isort
+        args: [--py310-plus]
+-   repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+    -   id: black
+        args: [--line-length=99, --skip-string-normalization]
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        args: [--profile=black, --line-length=99]
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.3
+    hooks:
+    -   id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+-   repo: https://github.com/PyCQA/pylint
+    rev: v3.3.1
+    hooks:
+    -   id: pylint
+        args: [--exit-zero]
 # -   repo: local
 #     hooks:
 #       - id: actionlint

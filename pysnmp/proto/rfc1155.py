@@ -1,24 +1,22 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.type import univ, tag, constraint, namedtype
 from pyasn1.error import PyAsn1Error
-from pysnmp.smi.error import SmiError
-from pysnmp.proto import error
+from pyasn1.type import constraint, namedtype, tag, univ
 
-__all__ = ['Opaque', 'NetworkAddress', 'ObjectName', 'TimeTicks',
-           'Counter', 'Gauge', 'IpAddress']
+from pysnmp.proto import error
+from pysnmp.smi.error import SmiError
+
+__all__ = ['Opaque', 'NetworkAddress', 'ObjectName', 'TimeTicks', 'Counter', 'Gauge', 'IpAddress']
 
 
 class IpAddress(univ.OctetString):
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x00)
     )
-    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(
-        4, 4
-    )
+    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(4, 4)
 
     def prettyIn(self, value):
         if isinstance(value, str) and len(value) != 4:
@@ -41,15 +39,11 @@ class Counter(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x01)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class NetworkAddress(univ.Choice):
-    componentType = namedtype.NamedTypes(
-        namedtype.NamedType('internet', IpAddress())
-    )
+    componentType = namedtype.NamedTypes(namedtype.NamedType('internet', IpAddress()))
 
     def clone(self, value=univ.noValue, **kwargs):
         """Clone this instance.
@@ -104,23 +98,18 @@ class NetworkAddress(univ.Choice):
             raise SmiError(f'unknown NetworkAddress type {kind!r}')
 
 
-
 class Gauge(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class TimeTicks(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x03)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class Opaque(univ.OctetString):
@@ -151,7 +140,7 @@ class SimpleSyntax(TypeCoercionHackMixIn, univ.Choice):
         namedtype.NamedType('number', univ.Integer()),
         namedtype.NamedType('string', univ.OctetString()),
         namedtype.NamedType('object', univ.ObjectIdentifier()),
-        namedtype.NamedType('empty', univ.Null())
+        namedtype.NamedType('empty', univ.Null()),
     )
 
 
@@ -161,12 +150,12 @@ class ApplicationSyntax(TypeCoercionHackMixIn, univ.Choice):
         namedtype.NamedType('counter', Counter()),
         namedtype.NamedType('gauge', Gauge()),
         namedtype.NamedType('ticks', TimeTicks()),
-        namedtype.NamedType('arbitrary', Opaque())
+        namedtype.NamedType('arbitrary', Opaque()),
     )
 
 
 class ObjectSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('simple', SimpleSyntax()),
-        namedtype.NamedType('application-wide', ApplicationSyntax())
+        namedtype.NamedType('application-wide', ApplicationSyntax()),
     )

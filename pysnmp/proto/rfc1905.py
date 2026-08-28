@@ -1,16 +1,31 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.type import univ, tag, constraint, namedtype, namedval
+from pyasn1.type import constraint, namedtype, namedval, tag, univ
+
 from pysnmp.proto import rfc1902
 
-__all__ = ['unSpecified', 'EndOfMibView', 'ReportPDU', 'UnSpecified',
-           'BulkPDU', 'SNMPv2TrapPDU', 'GetRequestPDU', 'NoSuchObject',
-           'GetNextRequestPDU', 'GetBulkRequestPDU', 'NoSuchInstance',
-           'ResponsePDU', 'noSuchObject', 'InformRequestPDU', 'endOfMibView',
-           'SetRequestPDU', 'noSuchInstance']
+__all__ = [
+    'unSpecified',
+    'EndOfMibView',
+    'ReportPDU',
+    'UnSpecified',
+    'BulkPDU',
+    'SNMPv2TrapPDU',
+    'GetRequestPDU',
+    'NoSuchObject',
+    'GetNextRequestPDU',
+    'GetBulkRequestPDU',
+    'NoSuchInstance',
+    'ResponsePDU',
+    'noSuchObject',
+    'InformRequestPDU',
+    'endOfMibView',
+    'SetRequestPDU',
+    'noSuchInstance',
+]
 
 # Value reference -- max bindings in VarBindList
 max_bindings = rfc1902.Integer(2147483647)
@@ -64,33 +79,44 @@ class _BindValue(univ.Choice):
         namedtype.NamedType('unSpecified', unSpecified),
         namedtype.NamedType('noSuchObject', noSuchObject),
         namedtype.NamedType('noSuchInstance', noSuchInstance),
-        namedtype.NamedType('endOfMibView', endOfMibView)
+        namedtype.NamedType('endOfMibView', endOfMibView),
     )
 
 
 class VarBind(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('name', rfc1902.ObjectName()),
-        namedtype.NamedType('', _BindValue())
+        namedtype.NamedType('name', rfc1902.ObjectName()), namedtype.NamedType('', _BindValue())
     )
 
 
 class VarBindList(univ.SequenceOf):
     componentType = VarBind()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(
-        0, max_bindings
-    )
+    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(0, max_bindings)
 
 
 errorStatus = univ.Integer(
     namedValues=namedval.NamedValues(
-        ('noError', 0), ('tooBig', 1), ('noSuchName', 2), ('badValue', 3), ('readOnly', 4),
-        ('genErr', 5), ('noAccess', 6), ('wrongType', 7), ('wrongLength', 8),
-        ('wrongEncoding', 9), ('wrongValue', 10), ('noCreation', 11),
-        ('inconsistentValue', 12), ('resourceUnavailable', 13), ('commitFailed', 14),
-        ('undoFailed', 15), ('authorizationError', 16), ('notWritable', 17),
-        ('inconsistentName', 18))
+        ('noError', 0),
+        ('tooBig', 1),
+        ('noSuchName', 2),
+        ('badValue', 3),
+        ('readOnly', 4),
+        ('genErr', 5),
+        ('noAccess', 6),
+        ('wrongType', 7),
+        ('wrongLength', 8),
+        ('wrongEncoding', 9),
+        ('wrongValue', 10),
+        ('noCreation', 11),
+        ('inconsistentValue', 12),
+        ('resourceUnavailable', 13),
+        ('commitFailed', 14),
+        ('undoFailed', 15),
+        ('authorizationError', 16),
+        ('notWritable', 17),
+        ('inconsistentName', 18),
     )
+)
 
 
 # Base class for a non-bulk PDU
@@ -98,14 +124,18 @@ class PDU(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('request-id', rfc1902.Integer32()),
         namedtype.NamedType('error-status', errorStatus),
-        namedtype.NamedType('error-index',
-                            univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings))),
-        namedtype.NamedType('variable-bindings', VarBindList())
+        namedtype.NamedType(
+            'error-index',
+            univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings)),
+        ),
+        namedtype.NamedType('variable-bindings', VarBindList()),
     )
 
 
 nonRepeaters = univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings))
-maxRepetitions = univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings))
+maxRepetitions = univ.Integer().subtype(
+    subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings)
+)
 
 
 # Base class for bulk PDU
@@ -114,56 +144,40 @@ class BulkPDU(univ.Sequence):
         namedtype.NamedType('request-id', rfc1902.Integer32()),
         namedtype.NamedType('non-repeaters', nonRepeaters),
         namedtype.NamedType('max-repetitions', maxRepetitions),
-        namedtype.NamedType('variable-bindings', VarBindList())
+        namedtype.NamedType('variable-bindings', VarBindList()),
     )
 
 
 class GetRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))
 
 
 class GetNextRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))
 
 
 class ResponsePDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2))
 
 
 class SetRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3))
 
 
 class GetBulkRequestPDU(BulkPDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5))
 
 
 class InformRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 6)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 6))
 
 
 class SNMPv2TrapPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 7)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 7))
 
 
 class ReportPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(
-        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 8)
-    )
+    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 8))
 
 
 class PDUs(univ.Choice):
@@ -175,5 +189,5 @@ class PDUs(univ.Choice):
         namedtype.NamedType('set-request', SetRequestPDU()),
         namedtype.NamedType('inform-request', InformRequestPDU()),
         namedtype.NamedType('snmpV2-trap', SNMPv2TrapPDU()),
-        namedtype.NamedType('report', ReportPDU())
+        namedtype.NamedType('report', ReportPDU()),
     )

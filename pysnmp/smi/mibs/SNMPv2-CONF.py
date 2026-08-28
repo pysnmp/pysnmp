@@ -1,7 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased 
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # PySNMP MIB module SNMPv2-CONF
 # ASN.1 source: bundled
@@ -9,7 +9,7 @@
 # On host grommit.local platform Darwin version 16.4.0 by user ilya
 # Using Python version 3.4.2 (v3.4.2:ab2c023a9432, Oct  5 2014, 20:42:22)
 #
-MibNode, = mibBuilder.importSymbols('SNMPv2-SMI', 'MibNode')
+(MibNode,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibNode')
 
 
 class ObjectGroup(MibNode):
@@ -46,7 +46,9 @@ class ObjectGroup(MibNode):
 OBJECT-GROUP
   OBJECTS {{ {} }}
   DESCRIPTION "{}"
-""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
+""".format(
+            ', '.join([x for x in self.getObjects()]), self.getDescription()
+        )
 
 
 class NotificationGroup(MibNode):
@@ -83,7 +85,9 @@ class NotificationGroup(MibNode):
 NOTIFICATION-GROUP
   NOTIFICATIONS {{ {} }}
   DESCRIPTION "{}"
-""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
+""".format(
+            ', '.join([x for x in self.getObjects()]), self.getDescription()
+        )
 
 
 class ModuleCompliance(MibNode):
@@ -120,7 +124,9 @@ class ModuleCompliance(MibNode):
 MODULE-COMPLIANCE
   OBJECT {{ {} }}
   DESCRIPTION "{}"
-""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
+""".format(
+            ', '.join([x for x in self.getObjects()]), self.getDescription()
+        )
 
 
 class AgentCapabilities(MibNode):
@@ -165,7 +171,15 @@ AGENT-CAPABILITIES
   STATUS "{}"
   PRODUCT-RELEASE "{}"
   DESCRIPTION "{}"
-""".format(self.getStatus(), self.getProductRelease(), self.getDescription())
+""".format(
+            self.getStatus(), self.getProductRelease(), self.getDescription()
+        )
 
 
-mibBuilder.exportSymbols('SNMPv2-CONF', ObjectGroup=ObjectGroup, NotificationGroup=NotificationGroup, ModuleCompliance=ModuleCompliance, AgentCapabilities=AgentCapabilities)
+mibBuilder.exportSymbols(
+    'SNMPv2-CONF',
+    ObjectGroup=ObjectGroup,
+    NotificationGroup=NotificationGroup,
+    ModuleCompliance=ModuleCompliance,
+    AgentCapabilities=AgentCapabilities,
+)
