@@ -23,7 +23,7 @@ Here's a quick example on a simple SNMP GET by high-level API:
    :end-before: Functionally
 
 .. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/v1-get.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 To make use of SNMPv3 and USM, the following code performs a series of
@@ -35,7 +35,7 @@ from SNMP Agent:
    :end-before: Functionally
 
 .. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/getbulk-to-eom.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 More examples on Command Generator API usage follow.
@@ -55,7 +55,7 @@ The following code sends SNMP TRAP:
    :end-before: Functionally
 
 .. literalinclude:: /../../examples/hlapi/asyncio/agent/ntforg/default-v1-trap.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 More examples on Notification Originator API usage follow.

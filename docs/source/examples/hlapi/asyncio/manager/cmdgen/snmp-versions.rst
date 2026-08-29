@@ -6,10 +6,10 @@ Various SNMP versions
 
 .. include:: /../../examples/hlapi/asyncio/manager/cmdgen/v1-get.py
    :start-after: """
-   :end-before: """#
+   :end-before: """  #
 
 .. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/v1-get.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 :download:`Download</../../examples/hlapi/asyncio/manager/cmdgen/v1-get.py>` script.
@@ -17,10 +17,10 @@ Various SNMP versions
 
 .. include:: /../../examples/hlapi/asyncio/manager/cmdgen/getbulk-to-eom.py
    :start-after: """
-   :end-before: """#
+   :end-before: """  #
 
 .. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/getbulk-to-eom.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 :download:`Download</../../examples/hlapi/asyncio/manager/cmdgen/getbulk-to-eom.py>` script.
