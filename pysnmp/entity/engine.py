@@ -10,8 +10,6 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-# str2octs replaced with .encode('iso-8859-1') (was pyasn1.compat.octets.str2octs)
-
 from pysnmp import debug, error
 from pysnmp.entity import observer
 from pysnmp.proto.acmod import rfc3415, void

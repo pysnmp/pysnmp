@@ -1,10 +1,8 @@
 """Characterization tests for empty-context behavior.
 
-Verifies that ContextData and CommunityData handle default contextName
-(null/b'') correctly, and that == b'' works for empty-context semantics.
+Verifies that ContextData and CommunityData handle a default empty context
+name (b'') correctly, and that equality works for empty-context semantics.
 """
-
-from pyasn1.compat.octets import null
 
 from pysnmp.hlapi.auth import CommunityData
 from pysnmp.hlapi.context import ContextData
@@ -16,7 +14,7 @@ class TestContextDataEmptyContext:
     def test_default_context_name_is_empty_bytes(self):
         ctx = ContextData()
         assert ctx.contextName == b""
-        assert ctx.contextName == null
+        assert ctx.contextName == b""
 
     def test_explicit_empty_context_name(self):
         ctx = ContextData(contextName=b"")
@@ -53,7 +51,7 @@ class TestCommunityDataEmptyContext:
     def test_default_context_name_is_empty_bytes(self):
         cd = CommunityData("public")
         assert cd.contextName == b""
-        assert cd.contextName == null
+        assert cd.contextName == b""
 
     def test_explicit_empty_context_name(self):
         cd = CommunityData("public", contextName=b"")
@@ -72,7 +70,7 @@ class TestCommunityDataEmptyContext:
     def test_default_tag_is_empty_bytes(self):
         cd = CommunityData("public")
         assert cd.tag == b""
-        assert cd.tag == null
+        assert cd.tag == b""
 
     def test_repr_default(self):
         cd = CommunityData("public")

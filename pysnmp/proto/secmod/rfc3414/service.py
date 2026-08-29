@@ -8,7 +8,6 @@ from collections.abc import Callable
 from typing import Any, NoReturn, TypeVar, cast
 
 from pyasn1.codec.ber import decoder, encoder, eoo
-# null replaced with b'' (was pyasn1.compat.octets.null)
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import constraint, namedtype, univ
 

@@ -35,7 +35,6 @@ from pysnmp.proto.api import v2c
 from pysnmp.proto.rfc1902 import OctetString, Integer, ObjectIdentifier
 from pysnmp.smi.rfc1902 import ObjectType, ObjectIdentity, NotificationType
 from pysnmp import debug
-# null import removed (was unused, from pyasn1.compat.octets)
 
 
 class TestSnmpEngine:

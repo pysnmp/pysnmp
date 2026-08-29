@@ -6,8 +6,6 @@
 
 from typing import Any
 
-# null replaced with b'' (empty bytes, was pyasn1.compat.octets.null)
-
 from pysnmp import debug, error
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
 from pysnmp.proto import rfc1902, rfc1905

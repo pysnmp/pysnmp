@@ -4,8 +4,6 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-# null replaced with b'' (was pyasn1.compat.octets.null)
-
 from pysnmp import debug, nextid
 from pysnmp.entity.rfc3413 import config
 from pysnmp.proto import errind, error, rfc3411

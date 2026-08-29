@@ -6,8 +6,6 @@
 
 from typing import Any, NoReturn
 
-# null replaced with b'' (was pyasn1.compat.octets.null)
-
 from pysnmp import error
 from pysnmp.entity import config
 

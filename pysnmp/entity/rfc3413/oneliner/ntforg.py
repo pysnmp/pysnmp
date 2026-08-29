@@ -6,8 +6,6 @@
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
-# null replaced with b'' (was pyasn1.compat.octets.null)
-
 from pysnmp.entity import config
 from pysnmp.entity.rfc3413 import context
 from pysnmp.hlapi.asyncio import *
@@ -26,9 +24,6 @@ class ErrorIndicationReturn:
 
     def __getitem__(self, i):
         return self.__vars[i]
-
-    def __nonzero__(self):
-        return bool(self)
 
     def __bool__(self):
         return bool(self.__vars[0])

@@ -4,7 +4,6 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-# null replaced with b'' (was pyasn1.compat.octets.null)
 from pyasn1.error import PyAsn1Error
 
 from pysnmp import debug, nextid

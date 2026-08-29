@@ -3,8 +3,6 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-# null replaced with b'' (was pyasn1.compat.octets.null)
-
 from pysnmp import error, nextid
 from pysnmp.entity import config
 from pysnmp.hlapi.auth import *

@@ -12,9 +12,6 @@
 
 import socket
 
-# int2oct/oct2int replaced with native Python 3 (bytes((x,)) / x)
-# was: from pyasn1.compat.octets import int2oct, oct2int
-
 from pysnmp import error
 
 has_ipv6 = socket.has_ipv6

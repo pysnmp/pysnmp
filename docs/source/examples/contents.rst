@@ -79,10 +79,9 @@ Using these examples
 --------------------
 
 Before doing cut&paste of the code below into your Python interpreter, 
-make sure to install pysnmp and its dependencies by running pip or 
-easy_install: ::
+make sure to install pysnmp and its dependencies with pip: ::
 
-    # pip pysnmp
+    $ python -m pip install pysnmp
 
 There's a public, multilingual SNMP Command Responder and Notification
 Receiver configured at

@@ -6,7 +6,6 @@
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
-# null replaced with b'' (was pyasn1.compat.octets.null)
 from pyasn1.type import univ
 
 from pysnmp.hlapi.asyncio import *

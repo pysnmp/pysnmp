@@ -4,8 +4,6 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-# null replaced with b'' (was pyasn1.compat.octets.null)
-
 from pysnmp import debug
 from pysnmp.proto import error, rfc3411
 from pysnmp.proto.api import v1, v2c  # backend is always SMIv2 compliant

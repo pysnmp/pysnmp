@@ -5632,45 +5632,6 @@
     "type": "convention",
     "module": "pysnmp.proto.secmod.eso.priv.des3",
     "obj": "",
-    "line": 13,
-    "column": 0,
-    "endLine": 13,
-    "endColumn": 37,
-    "path": "pysnmp/proto/secmod/eso/priv/des3.py",
-    "symbol": "wrong-import-order",
-    "message": "third party import \"pyasn1.compat.octets.null\" should be placed before first party imports \"pysnmp.proto.secmod.rfc3414.priv.base\", \"pysnmp.proto.secmod.rfc3414.auth.hmacmd5\", \"pysnmp.proto.secmod.rfc3414.localkey\", \"pysnmp.proto.secmod.rfc7860.auth.hmacsha2\", \"pysnmp.proto.errind\" ",
-    "message-id": "C0411"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.proto.secmod.eso.priv.des3",
-    "obj": "",
-    "line": 14,
-    "column": 0,
-    "endLine": 14,
-    "endColumn": 21,
-    "path": "pysnmp/proto/secmod/eso/priv/des3.py",
-    "symbol": "wrong-import-order",
-    "message": "standard import \"math.ceil\" should be placed before third party imports \"pyasn1.type.univ\", \"pyasn1.compat.octets.null\" and first party imports \"pysnmp.proto.secmod.rfc3414.priv.base\", \"pysnmp.proto.secmod.rfc3414.auth.hmacmd5\", \"pysnmp.proto.secmod.rfc3414.localkey\", \"pysnmp.proto.secmod.rfc7860.auth.hmacsha2\", \"pysnmp.proto.errind\" ",
-    "message-id": "C0411"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.proto.secmod.eso.priv.des3",
-    "obj": "",
-    "line": 16,
-    "column": 0,
-    "endLine": 16,
-    "endColumn": 29,
-    "path": "pysnmp/proto/secmod/eso/priv/des3.py",
-    "symbol": "wrong-import-order",
-    "message": "standard import \"hashlib.md5\" should be placed before third party imports \"pyasn1.type.univ\", \"pyasn1.compat.octets.null\" and first party imports \"pysnmp.proto.secmod.rfc3414.priv.base\", \"pysnmp.proto.secmod.rfc3414.auth.hmacmd5\", \"pysnmp.proto.secmod.rfc3414.localkey\", \"pysnmp.proto.secmod.rfc7860.auth.hmacsha2\", \"pysnmp.proto.errind\" ",
-    "message-id": "C0411"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.proto.secmod.eso.priv.des3",
-    "obj": "",
     "line": 18,
     "column": 0,
     "endLine": 18,
@@ -5679,19 +5640,6 @@
     "symbol": "wrong-import-order",
     "message": "third party import \"Cryptodome.Cipher.DES3\" should be placed before first party imports \"pysnmp.proto.secmod.rfc3414.priv.base\", \"pysnmp.proto.secmod.rfc3414.auth.hmacmd5\", \"pysnmp.proto.secmod.rfc3414.localkey\", \"pysnmp.proto.secmod.rfc7860.auth.hmacsha2\", \"pysnmp.proto.errind\" ",
     "message-id": "C0411"
-  },
-  {
-    "type": "warning",
-    "module": "pysnmp.proto.secmod.eso.priv.des3",
-    "obj": "",
-    "line": 13,
-    "column": 0,
-    "endLine": 13,
-    "endColumn": 37,
-    "path": "pysnmp/proto/secmod/eso/priv/des3.py",
-    "symbol": "unused-import",
-    "message": "Unused null imported from pyasn1.compat.octets",
-    "message-id": "W0611"
   },
   {
     "type": "warning",
@@ -8217,19 +8165,6 @@
   },
   {
     "type": "convention",
-    "module": "pysnmp.proto.secmod.rfc3414.service",
-    "obj": "",
-    "line": 20,
-    "column": 0,
-    "endLine": 20,
-    "endColumn": 37,
-    "path": "pysnmp/proto/secmod/rfc3414/service.py",
-    "symbol": "wrong-import-order",
-    "message": "third party import \"pyasn1.compat.octets.null\" should be placed before first party imports \"pysnmp.proto.secmod.base.AbstractSecurityModel\", \"pysnmp.proto.secmod.rfc3414.auth.hmacmd5\", \"pysnmp.proto.secmod.rfc3414.priv.des\" (...) \"pysnmp.smi.error.NoSuchInstanceError\", \"pysnmp.proto.api\", \"pysnmp.debug\" ",
-    "message-id": "C0411"
-  },
-  {
-    "type": "convention",
     "module": "pysnmp.proto.secmod.rfc3414.localkey",
     "obj": "",
     "line": 4,
@@ -10614,32 +10549,6 @@
     "line": 578,
     "column": 27,
     "endLine": 578,
-    "endColumn": 63,
-    "path": "pysnmp/smi/rfc1902.py",
-    "symbol": "consider-using-f-string",
-    "message": "Formatting a regular string which could be an f-string",
-    "message-id": "C0209"
-  },
-  {
-    "type": "refactor",
-    "module": "pysnmp.smi.rfc1902",
-    "obj": "ObjectIdentity.__nonzero__",
-    "line": 581,
-    "column": 8,
-    "endLine": 584,
-    "endColumn": 90,
-    "path": "pysnmp/smi/rfc1902.py",
-    "symbol": "no-else-return",
-    "message": "Unnecessary \"else\" after \"return\", remove the \"else\" and de-indent the code inside it",
-    "message-id": "R1705"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.smi.rfc1902",
-    "obj": "ObjectIdentity.__nonzero__",
-    "line": 584,
-    "column": 27,
-    "endLine": 584,
     "endColumn": 63,
     "path": "pysnmp/smi/rfc1902.py",
     "symbol": "consider-using-f-string",
@@ -35789,19 +35698,6 @@
     "message-id": "E0602"
   },
   {
-    "type": "convention",
-    "module": "pysnmp.smi.mibs.TRANSPORT-ADDRESS-MIB",
-    "obj": "",
-    "line": 16,
-    "column": 0,
-    "endLine": 16,
-    "endColumn": 13,
-    "path": "pysnmp/smi/mibs/TRANSPORT-ADDRESS-MIB.py",
-    "symbol": "wrong-import-order",
-    "message": "standard import \"socket\" should be placed before third party import \"pyasn1.compat.octets.int2oct\" and first party imports \"pysnmp.error\", \"pysnmp.carrier.sockfix\" ",
-    "message-id": "C0411"
-  },
-  {
     "type": "warning",
     "module": "pysnmp.smi.mibs.TRANSPORT-ADDRESS-MIB",
     "obj": "",
@@ -42481,19 +42377,6 @@
     "path": "pysnmp/smi/mibs/SNMPv2-TC.py",
     "symbol": "wrong-import-order",
     "message": "third party import \"pyasn1.type.univ\" should be placed before first party imports \"pysnmp.smi.error.*\", \"pysnmp.debug\" ",
-    "message-id": "C0411"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.smi.mibs.SNMPv2-TC",
-    "obj": "",
-    "line": 12,
-    "column": 0,
-    "endLine": 12,
-    "endColumn": 32,
-    "path": "pysnmp/smi/mibs/SNMPv2-TC.py",
-    "symbol": "wrong-import-order",
-    "message": "third party import \"pyasn1.compat.octets\" should be placed before first party imports \"pysnmp.smi.error.*\", \"pysnmp.debug\" ",
     "message-id": "C0411"
   },
   {
@@ -50973,19 +50856,6 @@
     "message-id": "W0612"
   },
   {
-    "type": "convention",
-    "module": "pysnmp.hlapi.lcd",
-    "obj": "",
-    "line": 10,
-    "column": 0,
-    "endLine": 10,
-    "endColumn": 37,
-    "path": "pysnmp/hlapi/lcd.py",
-    "symbol": "wrong-import-order",
-    "message": "third party import \"pyasn1.compat.octets.null\" should be placed before first party imports \"pysnmp.entity.config\", \"pysnmp.nextid\", \"pysnmp.hlapi.auth.*\" ",
-    "message-id": "C0411"
-  },
-  {
     "type": "warning",
     "module": "pysnmp.hlapi.lcd",
     "obj": "",
@@ -51283,19 +51153,6 @@
     "symbol": "too-many-positional-arguments",
     "message": "Too many positional arguments (10/5)",
     "message-id": "R0917"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.hlapi.auth",
-    "obj": "",
-    "line": 8,
-    "column": 0,
-    "endLine": 8,
-    "endColumn": 37,
-    "path": "pysnmp/hlapi/auth.py",
-    "symbol": "wrong-import-order",
-    "message": "third party import \"pyasn1.compat.octets.null\" should be placed before first party imports \"pysnmp.entity.config\", \"pysnmp.error\" ",
-    "message-id": "C0411"
   },
   {
     "type": "convention",
@@ -56462,19 +56319,6 @@
     "type": "convention",
     "module": "pysnmp.entity.rfc3413.oneliner.cmdgen",
     "obj": "",
-    "line": 13,
-    "column": 0,
-    "endLine": 13,
-    "endColumn": 37,
-    "path": "pysnmp/entity/rfc3413/oneliner/cmdgen.py",
-    "symbol": "wrong-import-order",
-    "message": "third party import \"pyasn1.compat.octets.null\" should be placed before first party imports \"pysnmp.hlapi.asyncio.*\", \"pysnmp.hlapi.asyncio.sync\", \"pysnmp.hlapi.varbinds.*\", \"pysnmp.hlapi.lcd.*\" ",
-    "message-id": "C0411"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.entity.rfc3413.oneliner.cmdgen",
-    "obj": "",
     "line": 14,
     "column": 0,
     "endLine": 14,
@@ -56704,19 +56548,6 @@
     "symbol": "inconsistent-return-statements",
     "message": "Either all return statements in a function should return an expression, or none of them should.",
     "message-id": "R1710"
-  },
-  {
-    "type": "convention",
-    "module": "pysnmp.entity.rfc3413.oneliner.ntforg",
-    "obj": "",
-    "line": 13,
-    "column": 0,
-    "endLine": 13,
-    "endColumn": 37,
-    "path": "pysnmp/entity/rfc3413/oneliner/ntforg.py",
-    "symbol": "wrong-import-order",
-    "message": "third party import \"pyasn1.compat.octets.null\" should be placed before first party imports \"pysnmp.hlapi.asyncio.*\", \"pysnmp.hlapi.asyncio.sync\", \"pysnmp.hlapi.varbinds.*\", \"pysnmp.hlapi.lcd.*\" ",
-    "message-id": "C0411"
   },
   {
     "type": "convention",

@@ -11,9 +11,6 @@
 #
 from socket import AF_INET, inet_ntop, inet_pton
 
-# int2oct/oct2int replaced with native Python 3 (bytes((x,)) / x)
-# was: from pyasn1.compat.octets import int2oct, oct2int
-
 (OctetString,) = mibBuilder.importSymbols('ASN1', 'OctetString')
 (
     ConstraintsIntersection,
