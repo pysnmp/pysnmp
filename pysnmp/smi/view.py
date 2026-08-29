@@ -11,7 +11,6 @@ from pysnmp.smi.indices import OidOrderedDict, OrderedDict
 __all__ = ['MibViewController']
 
 classTypes = (type,)
-instanceTypes = (object,)
 
 
 class MibViewController:
@@ -81,7 +80,7 @@ class MibViewController:
                         )
                     globMibMod['typeToModIdx'][n] = modName
                     mibMod['typeToModIdx'][n] = modName
-                elif isinstance(v, instanceTypes):
+                else:
                     if isinstance(v, MibScalarInstance):
                         continue
                     if n in mibMod['varToNameIdx']:
@@ -97,8 +96,6 @@ class MibViewController:
                     mibMod['oidToModIdx'][v.name] = modName
                     globMibMod['oidToLabelIdx'][v.name] = (n,)
                     mibMod['oidToLabelIdx'][v.name] = (n,)
-                else:
-                    raise error.SmiError(f'Unexpected object {modName}::{n}')
 
         # Build oid->long-label index
         oidToLabelIdx = self.__mibSymbolsIdx['']['oidToLabelIdx']

@@ -200,7 +200,7 @@ class TextualConvention:
         for failures on complicated DISPLAY-HINTs.
 
         Keep in mind that this parser only works with "text"
-        input meaning `unicode` (Py2) or `str` (Py3).
+        input meaning `str`.
         """
         for base in inspect.getmro(self.__class__):
             if not issubclass(base, TextualConvention) and issubclass(base, Asn1Item):
@@ -263,7 +263,7 @@ class TextualConvention:
 
             # how do we know if object is initialized with display-hint
             # formatted text? based on "text" input maybe?
-            # That boils down to `str` object on Py3 or `unicode` on Py2.
+            # That boils down to `str` object.
             if isinstance(value, str) and not isinstance(value, bytes):
                 value = base.prettyIn(self, value)
             else:

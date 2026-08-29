@@ -154,7 +154,7 @@ class CommunityData:
             )
         else:
             self.communityIndex = communityIndex
-            self.securityName = securityName is not None and securityName or communityIndex
+            self.securityName = securityName if securityName is not None else communityIndex
 
     def __hash__(self) -> NoReturn:
         raise TypeError('%s is not hashable' % self.__class__.__name__)
@@ -185,12 +185,12 @@ class CommunityData:
             communityName, communityIndex = communityIndex, None
         return self.__class__(
             communityIndex,
-            communityName is None and self.communityName or communityName,
-            mpModel is None and self.mpModel or mpModel,
-            contextEngineId is None and self.contextEngineId or contextEngineId,
-            contextName is None and self.contextName or contextName,
-            tag is None and self.tag or tag,
-            securityName is None and self.securityName or securityName,
+            communityName if communityName is not None else self.communityName,
+            mpModel if mpModel is not None else self.mpModel,
+            contextEngineId if contextEngineId is not None else self.contextEngineId,
+            contextName if contextName is not None else self.contextName,
+            tag if tag is not None else self.tag,
+            securityName if securityName is not None else self.securityName,
         )
 
 
@@ -435,7 +435,7 @@ class UsmUserData:
             self.userName,
             self.authProtocol,
             self.privProtocol,
-            self.securityEngineId is None and '<DEFAULT>' or self.securityEngineId,
+            self.securityEngineId if self.securityEngineId is not None else '<DEFAULT>',
             self.securityName,
             self.authKeyType,
             self.privKeyType,
@@ -454,13 +454,13 @@ class UsmUserData:
         privKeyType: int | None = None,
     ) -> "UsmUserData":
         return self.__class__(
-            userName is None and self.userName or userName,
-            authKey is None and self.authKey or authKey,
-            privKey is None and self.privKey or privKey,
-            authProtocol is None and self.authProtocol or authProtocol,
-            privProtocol is None and self.privProtocol or privProtocol,
-            securityEngineId is None and self.securityEngineId or securityEngineId,
-            securityName is None and self.securityName or securityName,
-            authKeyType is None and self.authKeyType or usmKeyTypePassphrase,
-            privKeyType is None and self.privKeyType or usmKeyTypePassphrase,
+            userName if userName is not None else self.userName,
+            authKey if authKey is not None else self.authKey,
+            privKey if privKey is not None else self.privKey,
+            authProtocol if authProtocol is not None else self.authProtocol,
+            privProtocol if privProtocol is not None else self.privProtocol,
+            securityEngineId if securityEngineId is not None else self.securityEngineId,
+            securityName if securityName is not None else self.securityName,
+            authKeyType if authKeyType is not None else usmKeyTypePassphrase,
+            privKeyType if privKeyType is not None else usmKeyTypePassphrase,
         )

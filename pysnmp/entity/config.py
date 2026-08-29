@@ -106,7 +106,7 @@ def addV1System(
     if contextName is None:
         contextName = b''
 
-    securityName = securityName is not None and securityName or communityIndex
+    securityName = securityName if securityName is not None else communityIndex
 
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((snmpCommunityEntry.name + (8,) + tblIdx, 'destroy'),)
