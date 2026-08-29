@@ -44,6 +44,7 @@ More examples on Command Generator API usage follow.
 
    /examples/hlapi/asyncio/manager/cmdgen/snmp-versions
    /examples/hlapi/asyncio/manager/cmdgen/walking-operations
+   /examples/hlapi/asyncio/manager/cmdgen/device-report
    /examples/hlapi/asyncio/manager/cmdgen/advanced-topics
 
 Sending SNMP TRAP's and INFORM's is as easy with PySNMP library.

@@ -5,6 +5,7 @@
 #
 from pysnmp.entity.engine import *
 from pysnmp.hlapi.asyncio.cmdgen import *
+from pysnmp.hlapi.asyncio.device import *
 from pysnmp.hlapi.asyncio.ntforg import *
 from pysnmp.hlapi.asyncio.transport import *
 from pysnmp.hlapi.auth import *

@@ -6,12 +6,19 @@
 import sys
 from pathlib import Path
 
-defaultSources = ['file:///usr/share/snmp/mibs', 'file:///usr/share/mibs']
+defaultSources = ["file:///usr/share/snmp/mibs", "file:///usr/share/mibs"]
 
+<<<<<<< HEAD
 if sys.platform[:3] == 'win':
     defaultDest = str(Path.home() / 'PySNMP Configuration' / 'mibs')
 else:
     defaultDest = str(Path.home() / '.pysnmp' / 'mibs')
+=======
+if sys.platform[:3] == "win":
+    defaultDest = os.path.join(os.path.expanduser("~"), "PySNMP Configuration", "mibs")
+else:
+    defaultDest = os.path.join(os.path.expanduser("~"), ".pysnmp", "mibs")
+>>>>>>> 8c3938ee (feat: add device reporting and MIB instance tools)
 
 defaultBorrowers = []
 
@@ -19,9 +26,19 @@ try:
     from pysmi.borrower.pyfile import PyFileBorrower
     from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
     from pysmi.compiler import MibCompiler
-    from pysmi.parser.dialect import smi_v1_relaxed
-    from pysmi.parser.smi import parserFactory
-    from pysmi.reader.url import get_readers_from_urls
+
+    try:
+        from pysmi.parser.dialect import smi_v1_relaxed
+    except ImportError:  # pysmi < 2.0
+        from pysmi.parser.dialect import smiV1Relaxed as smi_v1_relaxed
+    try:
+        from pysmi.parser.smi import parser_factory
+    except ImportError:  # pysmi < 2.0
+        from pysmi.parser.smi import parserFactory as parser_factory
+    try:
+        from pysmi.reader.url import get_readers_from_urls
+    except ImportError:  # pysmi < 2.0
+        from pysmi.reader.url import getReadersFromUrls as get_readers_from_urls
     from pysmi.searcher.pypackage import PyPackageSearcher
     from pysmi.searcher.stub import StubSearcher
     from pysmi.writer.pyfile import PyFileWriter
@@ -31,8 +48,8 @@ except ImportError as e:
 
     def addMibCompilerDecorator(errorMsg):
         def addMibCompiler(mibBuilder, **kwargs):
-            if not kwargs.get('ifAvailable'):
-                raise error.SmiError('MIB compiler not available: %s' % errorMsg)
+            if not kwargs.get("ifAvailable"):
+                raise error.SmiError("MIB compiler not available: %s" % errorMsg)
 
         return addMibCompiler
 
@@ -41,28 +58,30 @@ except ImportError as e:
 else:
 
     def addMibCompiler(mibBuilder, **kwargs):
-        if kwargs.get('ifNotAdded') and mibBuilder.getMibCompiler():
+        if kwargs.get("ifNotAdded") and mibBuilder.getMibCompiler():
             return
 
         compiler = MibCompiler(
-            parserFactory(**smi_v1_relaxed)(),
+            parser_factory(**smi_v1_relaxed)(),
             PySnmpCodeGen(),
-            PyFileWriter(kwargs.get('destination') or defaultDest),
+            PyFileWriter(kwargs.get("destination") or defaultDest),
         )
 
-        compiler.add_sources(*get_readers_from_urls(*kwargs.get('sources') or defaultSources))
+        add_sources = getattr(compiler, "add_sources", None) or compiler.addSources
+        add_searchers = getattr(compiler, "add_searchers", None) or compiler.addSearchers
+        add_borrowers = getattr(compiler, "add_borrowers", None) or compiler.addBorrowers
 
-        compiler.add_searchers(StubSearcher(*baseMibs))
-        compiler.add_searchers(
-            *[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()]
-        )
-        compiler.add_borrowers(
+        add_sources(*get_readers_from_urls(*kwargs.get("sources") or defaultSources))
+
+        add_searchers(StubSearcher(*baseMibs))
+        add_searchers(*[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()])
+        add_borrowers(
             *[
                 PyFileBorrower(x, genTexts=mibBuilder.loadTexts)
                 for x in get_readers_from_urls(
-                    *kwargs.get('borrowers') or defaultBorrowers, **dict(lowcaseMatching=False)
+                    *kwargs.get("borrowers") or defaultBorrowers, **dict(lowcaseMatching=False)
                 )
             ]
         )
 
-        mibBuilder.setMibCompiler(compiler, kwargs.get('destination') or defaultDest)
+        mibBuilder.setMibCompiler(compiler, kwargs.get("destination") or defaultDest)

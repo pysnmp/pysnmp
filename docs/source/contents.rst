@@ -56,7 +56,12 @@ Documentation
 
    /docs/tutorial
    /docs/api-reference
+<<<<<<< HEAD
    /docs/smi-table-api
+=======
+   /docs/device-report
+   /docs/mib-tools
+>>>>>>> 8c3938ee (feat: add device reporting and MIB instance tools)
 
 Examples
 --------
