@@ -100,6 +100,7 @@ Low-level MIB access
 .. toctree::
 
    /examples/smi/manager/browsing-mib-tree
+   /examples/smi/manager/generated-mib-modules
    /examples/smi/agent/implementing-mib-objects
 
 

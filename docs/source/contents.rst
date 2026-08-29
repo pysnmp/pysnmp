@@ -56,6 +56,8 @@ Documentation
 
    /docs/tutorial
    /docs/api-reference
+   /docs/device-report
+   /docs/mib-tools
 
 Examples
 --------

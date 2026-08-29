@@ -5,6 +5,8 @@
 #
 from pysnmp.entity.engine import *
 from pysnmp.hlapi import auth
+from pysnmp.hlapi.asyncio.device import DeviceReport as DeviceReport
+from pysnmp.hlapi.asyncio.device import SysOREntry as SysOREntry
 
 # default is a synchronous facade over the asyncio API
 from pysnmp.hlapi.asyncio.sync import *
