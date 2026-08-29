@@ -6,7 +6,7 @@ Download PySNMP
 
 The PySNMP software is provided under terms and conditions of BSD-style 
 license, and can be freely downloaded from 
-`PyPI <http://pypi.python.org/pypi/pysnmp/>`_ or
+`PyPI <https://pypi.org/project/pysnmplib/>`_ or
 GitHub (`master branch <https://github.com/etingof/pysnmp/archive/master.zip>`_).
 
 
@@ -20,13 +20,7 @@ The best way to obtain PySNMP and dependencies is to run:
 
 .. code-block:: bash
 
-   $ pip install pysnmp
-
-or
-
-.. code-block:: bash
-
-   $ easy_install pysnmp
+   $ pip install pysnmplib
 
 In case you do not have the easy_install command on your system but still 
 would like to use the on-line package installation method, please install 

@@ -27,8 +27,8 @@ Before generating code, scan the codebase to identify:
    - Never suggest features not available in the detected framework versions
 
 3. **Library Versions**: Note the exact versions of key libraries and dependencies
-   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=1.0.4,<2.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.1.3,<2.0.0`
-   - Dev dependencies (from `pyproject.toml` `[project.optional-dependencies]`): `sphinx >=4.3.0,<5.0.0`, `pytest >=6.2.5,<7.0.0`, `codecov >=2.1.12,<3.0.0`, `pytest-codecov >=0.4.0,<1.0.0`
+   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=1.0.4,<3.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.1.3,<2.0.0`
+   - Dev dependencies (from `pyproject.toml` `[project.optional-dependencies]`): `sphinx >=4.3.0,<5.0.0`, `pytest >=6.2.5,<9.0.0`, `codecov >=2.1.12,<3.0.0`, `pytest-codecov >=0.4.0,<1.0.0`
    - Generate code compatible with these specific versions
    - The project depends on the **pysnmp-pyasn1** fork, not upstream pyasn1. Import from `pyasn1.type`, `pyasn1.codec.ber`, `pyasn1.error`, and `pyasn1.compat.octets` as seen throughout `pysnmp/proto/` and `pysnmp/smi/`
    - Cryptography uses **pycryptodomex** (the `Cryptodome` namespace), imported under `pysnmp/proto/secmod/` for USM auth/priv protocols
