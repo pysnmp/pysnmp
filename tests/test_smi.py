@@ -1,11 +1,15 @@
 """Unit tests for SMI builder, view, indices, instrumentation, and bundled MIBs."""
 
-import pytest
+import time
 
-from pysnmp.smi import builder, view, error, exval, indices
-from pysnmp.smi.rfc1902 import ObjectType, ObjectIdentity
-from pysnmp.proto.rfc1902 import OctetString, Integer, ObjectIdentifier
+import pytest
+from pyasn1.type.constraint import SingleValueConstraint, ValueRangeConstraint
+from pyasn1.type.namedval import NamedValues
+
 from pysnmp.entity.engine import SnmpEngine
+from pysnmp.proto.rfc1902 import Integer, Integer32, OctetString
+from pysnmp.smi import builder, error, exval, indices, view
+from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 
 
 @pytest.fixture(scope="module")
@@ -556,7 +560,7 @@ class TestMibWalk:
     def test_walk_shadowed_oids_performance(self, fresh_builder):
         """Performance test: walk over many OIDs should complete quickly."""
         from pysnmp.smi.instrum import MibInstrumController
-        import time
+
         ctrl = MibInstrumController(fresh_builder)
         var_binds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))]
         start = time.monotonic()
@@ -575,3 +579,194 @@ class TestMibWalk:
         ctrl = MibInstrumController(fresh_builder)
         result = ctrl.readNextVars([((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))])
         assert isinstance(result, list)
+
+
+def _build_optional_row(optional):
+    """Build an active-row consistency check with one unset column."""
+    mibBuilder = builder.MibBuilder()
+    MibScalarInstance, MibTableColumn, MibTableRow = mibBuilder.importSymbols(
+        'SNMPv2-SMI', 'MibScalarInstance', 'MibTableColumn', 'MibTableRow'
+    )
+
+    baseOid = (1, 3, 6, 1, 4, 1, 20408, 999, 1)
+    row = MibTableRow(baseOid).setIndexNames((0, 'TEST-OPTIONAL-MIB', 'testIndex'))
+    testIndex = MibTableColumn(baseOid + (1,), Integer32()).setMaxAccess('not-accessible')
+    optionalValue = MibTableColumn(baseOid + (2,), Integer32()).setMaxAccess('read-create')
+    rowStatus = MibTableColumn(baseOid + (3,), Integer32(1)).setMaxAccess('read-create')
+
+    if optional:
+        optionalValue.setOptional()
+
+    suffix = (1,)
+    testIndex.registerSubtrees(MibScalarInstance(testIndex.name, suffix, Integer32(1)))
+    optionalValue.registerSubtrees(
+        MibScalarInstance(optionalValue.name, suffix, Integer32())
+    )
+    rowStatus.registerSubtrees(MibScalarInstance(rowStatus.name, suffix, Integer32(1)))
+    row.registerSubtrees(testIndex, optionalValue, rowStatus)
+
+    mibBuilder.exportSymbols(
+        'TEST-OPTIONAL-MIB',
+        testEntry=row,
+        testIndex=testIndex,
+        optionalValue=optionalValue,
+        rowStatus=rowStatus,
+    )
+
+    def activate_row(*args):
+        raise error.RowCreationWanted(syntax=Integer32(1))
+
+    rowStatus.writeCommit = activate_row
+    return row, optionalValue, rowStatus, suffix
+
+
+class TestOptionalTableColumns:
+    """Test optional columns through actual row activation."""
+
+    def test_optional_flag_defaults_to_false_and_has_aliases(self):
+        mibBuilder = builder.MibBuilder()
+        (MibTableColumn,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibTableColumn')
+        column = MibTableColumn((1, 3, 6, 1, 4, 1, 20408, 1), Integer32())
+
+        assert not column.isOptional()
+        assert not column.is_optional()
+        assert column.set_optional() is column
+        assert column.isOptional()
+        assert column.setOptional(False) is column
+        assert not column.is_optional()
+
+    def test_optional_unset_column_allows_row_activation(self):
+        row, optionalValue, rowStatus, suffix = _build_optional_row(True)
+
+        row.writeCommit(rowStatus.name + suffix, 1, 0, (None, None))
+
+        optionalInstance = optionalValue.getNode(optionalValue.name + suffix)
+        assert not optionalInstance.syntax.hasValue()
+
+    def test_mandatory_unset_column_rejects_row_activation(self):
+        row, _, rowStatus, suffix = _build_optional_row(False)
+
+        with pytest.raises(error.InconsistentValueError):
+            row.writeCommit(rowStatus.name + suffix, 1, 0, (None, None))
+
+
+@pytest.fixture
+def table_view():
+    """Build a MIB view without an instrumentation controller."""
+    mibBuilder = builder.MibBuilder()
+    mibBuilder.loadModules('SNMPv2-MIB')
+    return mibBuilder, view.MibViewController(mibBuilder)
+
+
+class TestTableCellApi:
+    """Test table cell name construction and decomposition."""
+
+    def test_columns_do_not_require_instrumentation(self, table_view):
+        mibBuilder, mibView = table_view
+        (row,) = mibBuilder.importSymbols('SNMPv2-MIB', 'sysOREntry')
+
+        assert [columnId for columnId, _, _ in row.getColumns()] == [1, 2, 3, 4]
+        assert row.get_columns() == row.getColumns()
+        assert len(mibView.getTableColumns('SNMPv2-MIB', 'sysOREntry')) == 4
+        assert mibView.get_table_columns('SNMPv2-MIB', 'sysOREntry') == row.getColumns()
+
+    def test_resolves_numeric_and_symbolic_columns(self, table_view):
+        _, mibView = table_view
+        expected = (1, 3, 6, 1, 2, 1, 1, 9, 1, 2, 1)
+
+        assert mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 2, 1) == expected
+        assert mibView.resolve_cell_oid('SNMPv2-MIB', 'sysOREntry', 'sysORID', 1) == expected
+
+    def test_rejects_unknown_column(self, table_view):
+        _, mibView = table_view
+
+        with pytest.raises(error.SmiError, match='Unknown column ID'):
+            mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 99, 1)
+
+        with pytest.raises(error.SmiError, match='not a column'):
+            mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 'sysDescr', 1)
+
+    @pytest.mark.parametrize('indices', [(), (1, 2)])
+    def test_rejects_wrong_index_count(self, table_view, indices):
+        _, mibView = table_view
+
+        with pytest.raises(error.SmiError, match='expects 1 indices'):
+            mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 'sysORID', *indices)
+
+    def test_builds_all_row_oids_without_instrumentation(self, table_view):
+        mibBuilder, _ = table_view
+        (row,) = mibBuilder.importSymbols('SNMPv2-MIB', 'sysOREntry')
+
+        assert row.getRowOids(1) == tuple(
+            row.name + (columnId, 1) for columnId in (1, 2, 3, 4)
+        )
+        assert row.get_row_oids(1) == row.getRowOids(1)
+
+    def test_decodes_cell_indices(self, table_view):
+        mibBuilder, _ = table_view
+        (row,) = mibBuilder.importSymbols('SNMPv2-MIB', 'sysOREntry')
+
+        assert tuple(int(value) for value in row.get_cell_indices((7,))) == (7,)
+
+    def test_decomposes_complete_cell_oid(self, table_view):
+        _, mibView = table_view
+        cellOid = mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 'sysORID', 7)
+
+        moduleName, rowName, columnName, cellIndices = mibView.getTableCellInfo(cellOid)
+
+        assert (moduleName, rowName, columnName) == (
+            'SNMPv2-MIB',
+            'sysOREntry',
+            'sysORID',
+        )
+        assert tuple(int(value) for value in cellIndices) == (7,)
+        assert mibView.get_table_cell_info(cellOid) == mibView.getTableCellInfo(cellOid)
+
+    def test_rejects_non_table_objects(self, table_view):
+        _, mibView = table_view
+
+        with pytest.raises(error.SmiError, match='not a MibTableRow'):
+            mibView.getTableColumns('SNMPv2-MIB', 'sysDescr')
+        with pytest.raises(error.SmiError, match='not a MibTableRow'):
+            mibView.resolveCellOid('SNMPv2-MIB', 'sysDescr', 0, 0)
+        with pytest.raises(error.SmiError, match='not a table cell'):
+            mibView.getTableCellInfo((1, 3, 6, 1, 2, 1, 1, 1, 0))
+
+
+class TestCloneSubtypeSemantics:
+    """Verify the documented pyasn1 clone and subtype distinction."""
+
+    def test_clone_replaces_named_values(self):
+        original = Integer32().clone(namedValues=NamedValues(('a', 1), ('b', 2)))
+        replaced = original.clone(namedValues=NamedValues(('c', 3)))
+
+        assert replaced.namedValues[3] == 'c'
+        assert 1 not in replaced.namedValues
+        assert 2 not in replaced.namedValues
+
+    def test_clone_sets_value(self):
+        assert int(Integer32().clone(42)) == 42
+
+    def test_clone_without_changes_returns_same_immutable_value(self):
+        value = Integer32(42)
+
+        assert value.clone() is value
+
+    def test_subtype_intersects_constraints(self):
+        constrained = Integer32().subtype(subtypeSpec=ValueRangeConstraint(0, 100))
+
+        assert int(constrained.clone(50)) == 50
+        with pytest.raises(Exception):
+            constrained.clone(200)
+
+    def test_chained_subtype_and_clone_idiom(self):
+        value = (
+            Integer32()
+            .subtype(subtypeSpec=SingleValueConstraint(1, 2))
+            .clone(namedValues=NamedValues(('up', 1), ('down', 2)))
+            .clone(1)
+        )
+
+        assert int(value) == 1
+        assert value.namedValues[1] == 'up'
+        assert value.namedValues[2] == 'down'

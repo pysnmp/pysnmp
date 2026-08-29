@@ -368,19 +368,20 @@ class MibViewController:
         >>> for colId, colName, colNode in cols:
         ...     print(colId, colNode.getMaxAccess())
         """
+        (MibTableRow,) = self.mibBuilder.importSymbols('SNMPv2-SMI', 'MibTableRow')
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
-        if not hasattr(rowNode, 'getColumns'):
+        if not isinstance(rowNode, MibTableRow):
             raise error.SmiError(
                 f'Symbol {modName}::{rowSymName} is not a MibTableRow at {self}'
             )
         return rowNode.getColumns()
 
-    def resolveCellOid(self, modName, rowSymName, colId, *indices):
+    def resolveCellOid(self, modName, rowSymName, column, *indices):
         """Resolve a table cell address into a full OID.
 
         :param modName: MIB module name.
         :param rowSymName: MIB symbol name of the table row/entry.
-        :param colId: Column number (last sub-OID of the column).
+        :param column: Column symbol name or number (last sub-OID).
         :param indices: Typed index values (e.g. ``'my-router'`` or ``1``).
         :return: tuple of ints — the full OID identifying the cell.
 
@@ -389,9 +390,47 @@ class MibViewController:
         >>> oid = mibView.resolveCellOid('SNMP-COMMUNITY-MIB',
         ...                              'snmpCommunityEntry', 2, 'my-router')
         """
+        MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
+            'SNMPv2-SMI', 'MibTableColumn', 'MibTableRow'
+        )
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
-        if not hasattr(rowNode, 'getCellOid'):
+        if not isinstance(rowNode, MibTableRow):
             raise error.SmiError(
                 f'Symbol {modName}::{rowSymName} is not a MibTableRow at {self}'
             )
-        return rowNode.getCellOid(colId, *indices)
+
+        if isinstance(column, str):
+            (columnNode,) = self.mibBuilder.importSymbols(modName, column)
+            if not isinstance(columnNode, MibTableColumn) or columnNode.name[:-1] != rowNode.name:
+                raise error.SmiError(
+                    f'Symbol {modName}::{column} is not a column of {rowSymName} at {self}'
+                )
+            column = columnNode.name[-1]
+
+        return rowNode.getCellOid(column, *indices)
+
+    def getTableCellInfo(self, cellOid):
+        """Split a table cell OID into its MIB names and typed indices.
+
+        :param cellOid: Complete table cell OID.
+        :return: ``(moduleName, rowName, columnName, indices)``.
+        :raises SmiError: if *cellOid* does not identify a table cell.
+        """
+        MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
+            'SNMPv2-SMI', 'MibTableColumn', 'MibTableRow'
+        )
+        modName, columnName, suffix = self.getNodeLocation(tuple(cellOid))
+        (columnNode,) = self.mibBuilder.importSymbols(modName, columnName)
+        if not isinstance(columnNode, MibTableColumn):
+            raise error.SmiError(f'OID {tuple(cellOid)!r} is not a table cell at {self}')
+
+        rowModName, rowName, rowSuffix = self.getNodeLocation(columnNode.name[:-1])
+        (rowNode,) = self.mibBuilder.importSymbols(rowModName, rowName)
+        if rowSuffix or not isinstance(rowNode, MibTableRow):
+            raise error.SmiError(f'Column {modName}::{columnName} has no table row at {self}')
+
+        return modName, rowName, columnName, rowNode.getCellIndices(suffix)
+
+    get_table_columns = getTableColumns
+    resolve_cell_oid = resolveCellOid
+    get_table_cell_info = getTableCellInfo

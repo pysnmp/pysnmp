@@ -56,6 +56,7 @@ Documentation
 
    /docs/tutorial
    /docs/api-reference
+   /docs/smi-table-api
 
 Examples
 --------
