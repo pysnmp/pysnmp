@@ -63,10 +63,6 @@ def snmpsim_endpoint(tmp_path_factory):
             [
                 sys.executable,
                 str(simulator),
-                # Keep the data directory scoped to this engine. Without an
-                # explicit engine ID, snmpsim also scans its bundled sample
-                # data, whose cold-cache indexing can exceed the CI timeout.
-                "--v3-engine-id=auto",
                 "--data-dir={}".format(data_dir),
                 "--cache-dir={}".format(work_dir / "cache"),
                 "--v3-user=00000",

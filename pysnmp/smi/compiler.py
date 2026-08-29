@@ -8,17 +8,10 @@ from pathlib import Path
 
 defaultSources = ["file:///usr/share/snmp/mibs", "file:///usr/share/mibs"]
 
-<<<<<<< HEAD
 if sys.platform[:3] == 'win':
     defaultDest = str(Path.home() / 'PySNMP Configuration' / 'mibs')
 else:
     defaultDest = str(Path.home() / '.pysnmp' / 'mibs')
-=======
-if sys.platform[:3] == "win":
-    defaultDest = os.path.join(os.path.expanduser("~"), "PySNMP Configuration", "mibs")
-else:
-    defaultDest = os.path.join(os.path.expanduser("~"), ".pysnmp", "mibs")
->>>>>>> 8c3938ee (feat: add device reporting and MIB instance tools)
 
 defaultBorrowers = []
 

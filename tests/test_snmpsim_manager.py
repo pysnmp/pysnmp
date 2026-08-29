@@ -417,9 +417,9 @@ class TestAsyncioTimeout:
 # ---- Table cell API integration tests (Tier 4) ----
 # These tests validate the SMI table cell API against real snmpsim data.
 # The public@1 data file contains sysORTable rows (SNMPv2-MIB):
-#   sysORID  (col 2): 1.3.6.1.6.3.1, 1.3.6.1.6.3.10
-#   sysORDescr (col 3): "SNMP Framework MIB", "SNMP User-Based SM MIB"
-#   sysORUpTime (col 4): 100, 200
+#   sysORID  (col 2): 1.3.6.1.6.3.11.3.1.1, 1.3.6.1.6.3.15.2.1.1
+#   sysORDescr (col 3): "SNMP Management Architecture MIB", "User-based Security Model MIB"
+#   sysORUpTime (col 4): 123, 456
 
 SYS_OR_ID = "1.3.6.1.2.1.1.9.1.2"
 SYS_OR_DESCR = "1.3.6.1.2.1.1.9.1.3"
@@ -443,7 +443,7 @@ class TestTableCellApiIntegration:
         oid = mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysORDescr", 1)
         assert oid == (1, 3, 6, 1, 2, 1, 1, 9, 1, 3, 1)
 
-        # Query snmpsim with that OID — should return "SNMP Framework MIB"
+        # Query snmpsim with that OID — should return the fixture value.
         result = next(
             getCmd(
                 SnmpEngine(),
@@ -453,7 +453,7 @@ class TestTableCellApiIntegration:
                 ObjectType(ObjectIdentity(oid)),
             )
         )
-        assert get_value(result) == "SNMP Framework MIB"
+        assert get_value(result) == "SNMP Management Architecture MIB"
 
     def test_get_table_columns_count_matches_walked_columns(self, snmpsim_endpoint):
         """getTableColumns column count is consistent with a real SNMP walk."""
@@ -548,7 +548,7 @@ class TestTableCellApiIntegration:
         # Build an OID for sysORDescr.2 via the table cell API
         original_oid = mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysORDescr", 2)
 
-        # Query snmpsim — should return "SNMP User-Based SM MIB"
+        # Query snmpsim — should return the fixture value.
         result = next(
             getCmd(
                 SnmpEngine(),
@@ -558,7 +558,7 @@ class TestTableCellApiIntegration:
                 ObjectType(ObjectIdentity(original_oid)),
             )
         )
-        assert get_value(result) == "SNMP User-Based SM MIB"
+        assert get_value(result) == "User-based Security Model MIB"
 
         # Decompose the OID we built back into its components
         mod_name, row_name, col_name, indices = mibView.getTableCellInfo(original_oid)
