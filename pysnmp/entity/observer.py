@@ -3,7 +3,6 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from __future__ import annotations
 
 from collections.abc import Iterator, MutableMapping
 from contextlib import contextmanager

@@ -25,8 +25,7 @@ This version is a fork of Ilya Etingof deceased's project [etingof/pysnmp](https
 - [Asyncio](https://docs.python.org/3/library/asyncio.html) integration
 - [PySMI](https://github.com/pysnmp/pysmi) integration for dynamic MIB compilation
 - Built-in instrumentation exposing protocol engine operations
-- Python eggs and py2exe friendly
-- 100% Python, works with Python 2.4 though 3.7
+- 100% Python, supports Python 3.10 and later
 - MT-safe (if SnmpEngine is thread-local)
 
 Features, specific to SNMPv3 model include:
@@ -137,7 +136,7 @@ For more example scripts please refer to the `examples/` directory in this repos
 ## Async API migration
 
 PySNMP requires Python 3.10 or later and uses `asyncio` for asynchronous I/O.
-Asyncore was removed in 3.12 as such we have migrated to asyncio
+Because asyncore was removed in Python 3.12, PySNMP uses asyncio.
 
 ## Documentation
 

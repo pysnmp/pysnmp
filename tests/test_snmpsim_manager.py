@@ -412,3 +412,158 @@ class TestAsyncioTimeout:
         error_indication, error_status, error_index, var_binds = result
         print(f"  SNMP timeout: {error_indication}")
         assert error_indication is not None
+
+
+# ---- Table cell API integration tests (Tier 4) ----
+# These tests validate the SMI table cell API against real snmpsim data.
+# The public@1 data file contains sysORTable rows (SNMPv2-MIB):
+#   sysORID  (col 2): 1.3.6.1.6.3.11.3.1.1, 1.3.6.1.6.3.15.2.1.1
+#   sysORDescr (col 3): "SNMP Management Architecture MIB", "User-based Security Model MIB"
+#   sysORUpTime (col 4): 123, 456
+
+SYS_OR_ID = "1.3.6.1.2.1.1.9.1.2"
+SYS_OR_DESCR = "1.3.6.1.2.1.1.9.1.3"
+
+
+class TestTableCellApiIntegration:
+    """End-to-end tests for the table cell mangling API against snmpsim."""
+
+    def test_resolve_cell_oid_returns_real_data(self, snmpsim_endpoint):
+        """resolveCellOid produces an OID that retrieves real data from snmpsim."""
+        host, port = snmpsim_endpoint
+
+        from pysnmp.smi.builder import MibBuilder
+        from pysnmp.smi.view import MibViewController
+
+        mibBuilder = MibBuilder()
+        mibBuilder.loadModules("SNMPv2-MIB")
+        mibView = MibViewController(mibBuilder)
+
+        # Resolve sysORDescr (column 3) for sysORTable row 1
+        oid = mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysORDescr", 1)
+        assert oid == (1, 3, 6, 1, 2, 1, 1, 9, 1, 3, 1)
+
+        # Query snmpsim with that OID — should return the fixture value.
+        result = next(
+            getCmd(
+                SnmpEngine(),
+                CommunityData("public@1", mpModel=0),
+                UdpTransportTarget((host, port), timeout=1, retries=2),
+                ContextData(),
+                ObjectType(ObjectIdentity(oid)),
+            )
+        )
+        assert get_value(result) == "SNMP Management Architecture MIB"
+
+    def test_get_table_columns_count_matches_walked_columns(self, snmpsim_endpoint):
+        """getTableColumns column count is consistent with a real SNMP walk."""
+        host, port = snmpsim_endpoint
+
+        from pysnmp.smi.builder import MibBuilder
+        from pysnmp.smi.view import MibViewController
+
+        mibBuilder = MibBuilder()
+        mibBuilder.loadModules("SNMPv2-MIB")
+        mibView = MibViewController(mibBuilder)
+
+        columns = mibView.getTableColumns("SNMPv2-MIB", "sysOREntry")
+        column_ids = {col_id for col_id, _, _ in columns}
+
+        # Walk the sysORTable via SNMP nextCmd and collect unique column IDs.
+        # Use the first instance OID as the starting point.
+        walked_column_ids = set()
+        oid = SYS_OR_ID + ".1"
+        for _ in range(20):  # safety limit
+            result = next(
+                nextCmd(
+                    SnmpEngine(),
+                    CommunityData("public@1", mpModel=0),
+                    UdpTransportTarget((host, port), timeout=1, retries=2),
+                    ContextData(),
+                    ObjectType(ObjectIdentity(oid)),
+                )
+            )
+            error_indication, error_status, error_index, var_binds = result
+            if error_indication or not var_binds:
+                break
+            oid_str = str(var_binds[0][0])
+            if not oid_str.startswith("1.3.6.1.2.1.1.9.1."):
+                break
+            parts = oid_str.split(".")
+            col_id = int(parts[-2])
+            walked_column_ids.add(col_id)
+            oid = oid_str
+
+        # Every column ID we walked should be in getTableColumns
+        assert walked_column_ids.issubset(column_ids)
+
+    def test_get_table_cell_info_decomposes_walked_oid(self, snmpsim_endpoint):
+        """getTableCellInfo correctly decomposes OIDs returned by a real SNMP walk."""
+        host, port = snmpsim_endpoint
+
+        from pysnmp.smi.builder import MibBuilder
+        from pysnmp.smi.view import MibViewController
+
+        mibBuilder = MibBuilder()
+        mibBuilder.loadModules("SNMPv2-MIB")
+        mibView = MibViewController(mibBuilder)
+
+        # Use nextCmd starting from sysORDescr.1 to get the first table cell
+        result = next(
+            nextCmd(
+                SnmpEngine(),
+                CommunityData("public@1", mpModel=0),
+                UdpTransportTarget((host, port), timeout=1, retries=2),
+                ContextData(),
+                ObjectType(ObjectIdentity(SYS_OR_DESCR + ".1")),
+            )
+        )
+        error_indication, error_status, error_index, var_binds = result
+        assert error_indication is None
+        assert len(var_binds) > 0
+
+        # The response should be the next OID after sysORDescr.1
+        first_oid = tuple(var_binds[0][0])
+        oid_str = str(var_binds[0][0])
+        assert oid_str.startswith("1.3.6.1.2.1.1.9.1."), f"Expected sysORTable OID, got {oid_str}"
+
+        mod_name, row_name, col_name, indices = mibView.getTableCellInfo(first_oid)
+
+        assert mod_name == "SNMPv2-MIB"
+        assert row_name == "sysOREntry"
+        # The next OID after sysORDescr.1 should still be in the sysORTable
+        assert col_name in ("sysORDescr", "sysORUpTime", "sysORID", "sysORIndex")
+
+    def test_cell_oid_roundtrip(self, snmpsim_endpoint):
+        """resolveCellOid → getCmd → getTableCellInfo roundtrips correctly."""
+        host, port = snmpsim_endpoint
+
+        from pysnmp.smi.builder import MibBuilder
+        from pysnmp.smi.view import MibViewController
+
+        mibBuilder = MibBuilder()
+        mibBuilder.loadModules("SNMPv2-MIB")
+        mibView = MibViewController(mibBuilder)
+
+        # Build an OID for sysORDescr.2 via the table cell API
+        original_oid = mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysORDescr", 2)
+
+        # Query snmpsim — should return the fixture value.
+        result = next(
+            getCmd(
+                SnmpEngine(),
+                CommunityData("public@1", mpModel=0),
+                UdpTransportTarget((host, port), timeout=1, retries=2),
+                ContextData(),
+                ObjectType(ObjectIdentity(original_oid)),
+            )
+        )
+        assert get_value(result) == "User-based Security Model MIB"
+
+        # Decompose the OID we built back into its components
+        mod_name, row_name, col_name, indices = mibView.getTableCellInfo(original_oid)
+
+        assert mod_name == "SNMPv2-MIB"
+        assert row_name == "sysOREntry"
+        assert col_name == "sysORDescr"
+        assert int(indices[0]) == 2

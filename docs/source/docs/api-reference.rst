@@ -61,12 +61,6 @@ saves its configuration for the lifetime of SNMP engine object.
    :members: setLocalAddress
    :no-index:
 
-Legacy asyncore compatibility
------------------------------
-
-Legacy asyncore paths are deprecated aliases. Migrate asynchronous code to
-the coroutine-based :mod:`asyncio` API below before the next major release.
-
 Command Generator
 
 .. toctree::

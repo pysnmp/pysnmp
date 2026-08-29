@@ -3,14 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from __future__ import annotations
 
 import os
 import shutil
 import tempfile
+from pathlib import Path
 from typing import Any
-
-from pyasn1.compat.octets import str2octs
 
 from pysnmp import debug, error
 from pysnmp.entity import observer
@@ -112,21 +110,19 @@ class SnmpEngine:
             # Attempt to make some of snmp Engine settings persistent.
             # This should probably be generalized as a non-volatile MIB store.
 
-            persistentPath = os.path.join(
-                tempfile.gettempdir(), '__pysnmp', self.snmpEngineID.prettyPrint()
-            )
+            persistentPath = Path(tempfile.gettempdir()) / '__pysnmp' / self.snmpEngineID.prettyPrint()
 
             debug.logger & debug.flagApp and debug.logger(
                 'SnmpEngine: using persistent directory: %s' % persistentPath
             )
 
-            if not os.path.exists(persistentPath):
+            if not persistentPath.exists():
                 try:
-                    os.makedirs(persistentPath)
+                    persistentPath.mkdir(parents=True)
                 except OSError:
                     return
 
-            f = os.path.join(persistentPath, 'boots')
+            f = persistentPath / 'boots'
             try:
                 snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(open(f).read())
             except Exception:
@@ -139,7 +135,7 @@ class SnmpEngine:
 
             try:
                 fd, fn = tempfile.mkstemp(dir=persistentPath)
-                os.write(fd, str2octs(snmpEngineBoots.syntax.prettyPrint()))
+                os.write(fd, snmpEngineBoots.syntax.prettyPrint().encode('iso-8859-1'))
                 os.close(fd)
                 shutil.move(fn, f)
             except Exception as e:

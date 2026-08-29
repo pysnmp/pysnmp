@@ -74,9 +74,9 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
     work_dir = tmp_path / "snmpsim"
     work_dir.mkdir(parents=True, exist_ok=True)
     log_path = work_dir / "snmpsimd.log"
-    simulator = Path(sys.executable).with_name("snmpsimd.py")
+    simulator = Path(__file__).parent / "snmpsim_launcher.py"
     if not simulator.is_file():
-        pytest.fail("snmpsimd.py was not installed alongside the Python executable")
+        pytest.fail("snmpsim_launcher.py was not found in tests/")
 
     repository_root = Path(__file__).resolve().parents[1]
     environment = os.environ.copy()
@@ -88,15 +88,10 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
     cmd = [
         sys.executable,
         str(simulator),
-        # Keep the data directory scoped to this engine. Without an explicit
-        # engine ID, snmpsim also scans its bundled sample data, whose
-        # cold-cache indexing can exceed the CI timeout.
-        "--v3-engine-id=auto",
         "--data-dir={}".format(data_dir),
         "--cache-dir={}".format(work_dir / "cache"),
         "--v3-user=testuser",
         "--agent-udpv4-endpoint=127.0.0.1:{}".format(port),
-        "--logging-method=stderr",
         "--log-level=info",
     ]
 
@@ -117,7 +112,7 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
         while time.monotonic() < deadline:
             if process.poll() is not None:
                 log_content = log_path.read_text()
-                pytest.fail("snmpsimd.py exited early:\n{}".format(log_content))
+                pytest.fail("snmpsim exited early:\n{}".format(log_content))
             if "Listening at UDP/IPv4 endpoint" in log_path.read_text():
                 break
             time.sleep(0.05)
@@ -128,7 +123,7 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
             except subprocess.TimeoutExpired:
                 process.kill()
             log_content = log_path.read_text()
-            pytest.fail("snmpsimd.py did not become ready:\n{}".format(log_content))
+            pytest.fail("snmpsim did not become ready:\n{}".format(log_content))
 
     return ("127.0.0.1", port), process, log_path
 

@@ -5,7 +5,6 @@
 #
 
 from pyasn1.codec.ber import decoder, eoo
-from pyasn1.compat.octets import null
 from pyasn1.type import univ
 
 from pysnmp import debug
@@ -62,7 +61,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         # rfc3412: 7.1.5
         if not contextName:
-            contextName = null
+            contextName = b''
 
         debug.logger & debug.flagMP and debug.logger(
             f'prepareOutgoingMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}'
@@ -210,7 +209,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         # rfc3412: 7.1.5
         if not contextName:
-            contextName = null
+            contextName = b''
 
         # rfc3412: 7.1.6
         scopedPDU = (contextEngineId, contextName, pdu)

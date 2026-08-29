@@ -3,11 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from __future__ import annotations
 
 from typing import Any
-
-from pyasn1.compat.octets import null
 
 from pysnmp import error
 from pysnmp.carrier.base import AbstractTransport
@@ -24,7 +21,7 @@ class AbstractTransportTarget:
         transportAddr: tuple[str, ...],
         timeout: int = 1,
         retries: int = 5,
-        tagList: Any = null,
+        tagList: Any = b'',
     ) -> None:
         self.transportAddr = self._resolveAddr(transportAddr)
         self.timeout = timeout
@@ -41,7 +38,7 @@ class AbstractTransportTarget:
     def getTransportInfo(self) -> tuple[Any, tuple[str, ...]]:
         return self.transportDomain, self.transportAddr
 
-    def setLocalAddress(self, iface: tuple[str, ...] | None) -> AbstractTransportTarget:
+    def setLocalAddress(self, iface: tuple[str, ...] | None) -> "AbstractTransportTarget":
         """Set source address.
 
         Parameters

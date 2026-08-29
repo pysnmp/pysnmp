@@ -91,9 +91,8 @@ development resources to meet it sooner.
 You could greater speed up the development of particular feature by 
 sponsoring it. Please get back to us to discuss details.
 
-Contributions to the PySNMP source code is greatly appreciated as well. 
-We require contributed code to run with Python 2.4 through the latest 
-Python version (which is 3.7 at the time of this writing). Contributed
-code will be redistributed under the terms of the same 
+Contributions to the PySNMP source code are greatly appreciated as well.
+We require contributed code to run on every supported Python version,
+currently Python 3.10 through 3.13. Contributed code will be redistributed
+under the terms of the same
 :doc:`license <license>` as PySNMP is.
-

@@ -8,7 +8,6 @@ from collections.abc import Callable
 from typing import Any, NoReturn, TypeVar, cast
 
 from pyasn1.codec.ber import decoder, encoder, eoo
-from pyasn1.compat.octets import null
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import constraint, namedtype, univ
 
@@ -16,7 +15,6 @@ from pysnmp import debug
 from pysnmp.entity.observer import execution_context
 from pysnmp.proto import api, errind, error, rfc1155, rfc3411
 from pysnmp.proto.secmod.base import AbstractSecurityModel
-from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
 from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha, noauth
 from pysnmp.proto.secmod.rfc3414.priv import des, nopriv
 from pysnmp.proto.secmod.rfc3826.priv import aes
@@ -90,12 +88,6 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
     }
     privServices = {
         des.Des.serviceID: des.Des(),
-        des3.Des3.serviceID: des3.Des3(),
-        aes.Aes.serviceID: aes.Aes(),
-        aes192.AesBlumenthal192.serviceID: aes192.AesBlumenthal192(),
-        aes256.AesBlumenthal256.serviceID: aes256.AesBlumenthal256(),
-        aes192.Aes192.serviceID: aes192.Aes192(),  # non-standard
-        aes256.Aes256.serviceID: aes256.Aes256(),  # non-standard
         nopriv.NoPriv.serviceID: nopriv.NoPriv(),
     }
 
@@ -468,11 +460,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
         else:
             # 4. (start SNMP engine ID discovery)
-            securityEngineID = securityName = null
+            securityEngineID = securityName = b''
             securityLevel = 1
 
             scopedPDU.setComponentByPosition(
-                0, null, verifyConstraints=False, matchTags=False, matchConstraints=False
+                0, b'', verifyConstraints=False, matchTags=False, matchConstraints=False
             )
 
             headerData = msg.getComponentByPosition(1)
@@ -503,7 +495,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 matchConstraints=False,
             )
 
-            usmUserName = usmUserSecurityName = null
+            usmUserName = usmUserSecurityName = b''
             usmUserAuthProtocol = noauth.NoAuth.serviceID
             usmUserPrivProtocol = nopriv.NoPriv.serviceID
             usmUserAuthKeyLocalized = usmUserPrivKeyLocalized = None
@@ -830,7 +822,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         contextEngineId = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')[
             0
         ].syntax
-        contextName = null
+        contextName = b''
 
         snmpEngineID = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')[0].syntax
 
@@ -854,7 +846,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
                 usmStatsUnknownEngineIDs.syntax += 1
                 debug.logger & debug.flagSM and debug.logger(
-                    'processIncomingMsg: null or malformed msgAuthoritativeEngineId'
+                    'processIncomingMsg: b'' or malformed msgAuthoritativeEngineId'
                 )
                 (pysnmpUsmDiscoverable,) = mibBuilder.importSymbols(
                     '__PYSNMP-USM-MIB', 'pysnmpUsmDiscoverable'
@@ -972,7 +964,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 raise error.StatusInformation(errorIndication=errind.invalidMsg)
         else:
             # empty username used for engineID discovery
-            usmUserName = usmUserSecurityName = null
+            usmUserName = usmUserSecurityName = b''
             usmUserAuthProtocol = noauth.NoAuth.serviceID
             usmUserPrivProtocol = nopriv.NoPriv.serviceID
             usmUserAuthKeyLocalized = usmUserPrivKeyLocalized = None
@@ -1339,3 +1331,19 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
     def receiveTimerTick(self, snmpEngine, timeNow):
         self.__expireTimelineInfo()
+
+
+# These imports are deferred to the end of the module to break a circular
+# import: eso.priv.aesbase imports rfc3414.localkey, which triggers this
+# module via rfc3414.__init__, which imports this module before the eso.priv
+# classes are fully defined.
+from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3  # noqa: E402
+
+SnmpUSMSecurityModel.privServices.update({
+    des3.Des3.serviceID: des3.Des3(),
+    aes.Aes.serviceID: aes.Aes(),
+    aes192.AesBlumenthal192.serviceID: aes192.AesBlumenthal192(),
+    aes256.AesBlumenthal256.serviceID: aes256.AesBlumenthal256(),
+    aes192.Aes192.serviceID: aes192.Aes192(),  # non-standard
+    aes256.Aes256.serviceID: aes256.Aes256(),  # non-standard
+})

@@ -9,14 +9,10 @@ echo "Running pytest suite..."
 $PYTHON -m pytest tests/
 
 echo "Running example smoke tests..."
-for x in examples/hlapi/asyncore/sync/manager/cmdgen/*.py \
-         examples/hlapi/asyncore/sync/agent/ntforg/*.py \
-         examples/hlapi/asyncore/manager/cmdgen/*.py \
-         examples/hlapi/asyncore/agent/ntforg/*.py \
-         examples/v3arch/asyncore/manager/cmdgen/*.py \
-         examples/v3arch/asyncore/agent/ntforg/*.py \
-         examples/v1arch/asyncore/manager/cmdgen/*.py \
-         examples/v1arch/asyncore/agent/ntforg/*.py \
+for x in examples/hlapi/asyncio/manager/cmdgen/*.py \
+         examples/hlapi/asyncio/agent/ntforg/*.py \
+         examples/v3arch/asyncio/manager/cmdgen/*.py \
+         examples/v3arch/asyncio/agent/ntforg/*.py \
          examples/smi/manager/*py \
          examples/smi/agent/*.py
 do

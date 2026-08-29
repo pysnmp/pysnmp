@@ -3,6 +3,38 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+# ---------------------------------------------------------------------------
+# clone() vs subtype() — usage guidelines (TODO #7)
+# ---------------------------------------------------------------------------
+#
+# PyASN1 provides two methods for creating new type instances from existing
+# ones.  They have fundamentally different semantics and both are needed:
+#
+#   * ``clone(value=noValue, **kwargs)`` — **replaces** attributes.
+#     Use for: value instantiation (``syntax.clone(value)``) and replacing
+#     attributes such as ``namedValues``. With no arguments, immutable pyasn1
+#     objects return themselves.
+#
+#   * ``subtype(value=noValue, **kwargs)`` — **adds/intersects** attributes.
+#     Use for: adding constraints (``subtypeSpec=...``), applying ASN.1
+#     tagging (``implicitTag``/``explicitTag``).
+#
+# The key difference: ``clone`` does ``initializers.update(kwargs)`` (replace)
+# while ``subtype`` does ``initializers[arg] += option`` (add/intersect).
+# Using ``clone`` for constraints would *replace* inherited constraints
+# instead of intersecting them, potentially allowing invalid values.
+# Using ``subtype`` for namedValues would *concatenate* NamedValues objects,
+# producing garbage.
+#
+# Rule of thumb: **subtype for constraints, clone for everything else.**
+#
+# The chained MIB definition idiom is:
+#   Integer32()
+#     .subtype(subtypeSpec=ConstraintsUnion(...))   # intersect constraint
+#     .clone(namedValues=NamedValues(...))          # replace namedValues
+#     .clone('value')                                # set initial value
+#
+# ---------------------------------------------------------------------------
 import traceback
 
 from pyasn1.error import PyAsn1Error
@@ -845,15 +877,40 @@ class MibScalarInstance(MibTree):
 
 
 class MibTableColumn(MibScalar):
-    """MIB table column. Manages a set of column instance variables"""
+    """MIB table column. Manages a set of column instance variables.
+
+    Columns can be marked as *optional* via :meth:`setOptional` — optional
+    columns are allowed to have no value when a row transitions to the
+    ``active`` state (RowStatus).  This implements the "optional values/keys"
+    support described in the TODO.
+    """
 
     protoInstance = MibScalarInstance
+
+    # Whether this column may legitimately have no value in an active row.
+    optional = False
 
     def __init__(self, name, syntax):
         MibScalar.__init__(self, name, syntax)
         self.__createdInstances = {}
         self.__destroyedInstances = {}
         self.__rowOpWanted = {}
+
+    def isOptional(self):
+        """Return ``True`` if this column may be valueless in an active row."""
+        return self.optional
+
+    def setOptional(self, flag=True):
+        """Mark this column as optional (may have no value in an active row).
+
+        :param flag: ``True`` to mark optional, ``False`` to mark mandatory.
+        :return: ``self`` for chaining.
+        """
+        self.optional = bool(flag)
+        return self
+
+    is_optional = isOptional
+    set_optional = setOptional
 
     #
     # Subtree traversal
@@ -1251,6 +1308,11 @@ class MibTableRow(MibTree):
         rowIsActive = self.__delegate('Commit', name, val, idx, acInfo)
         if rowIsActive:
             for mibNode in self._vars.values():
+                # Optional is metadata on MibTableColumn, not on its
+                # MibScalarInstance children. Check it before looking up the
+                # cell because an optional cell may not exist at all.
+                if mibNode.isOptional():
+                    continue
                 colNode = mibNode.getNode(mibNode.name + name[len(self.name) + 1 :])
                 if not colNode.syntax.hasValue():
                     raise error.InconsistentValueError(
@@ -1339,6 +1401,76 @@ class MibTableRow(MibTree):
             instNames.append(self.getInstNameByIndex(*(columnName[-1],) + indices))
 
         return tuple(instNames)
+
+    # ---- Table cell mangling API (TODO #2) ----
+    # Convenience methods for cell-level access.  These wrap the existing
+    # index-conversion methods with clearer names and add column enumeration.
+
+    def getCellOid(self, colId, *indices):
+        """Return the full OID for a single table cell.
+
+        :param colId: The column number (last sub-OID of the column).
+        :param indices: Typed index values (e.g. ``'my-router'`` or ``1``).
+        :return: tuple of ints — the full OID identifying the cell.
+        """
+        columns = {columnId for columnId, _, _ in self.getColumns()}
+        if colId not in columns:
+            raise error.SmiError(f'Unknown column ID {colId!r} at row {self.name}')
+        if len(indices) != len(self.indexNames):
+            raise error.SmiError(
+                f'Row {self.name} expects {len(self.indexNames)} indices, got {len(indices)}'
+            )
+        return self.getInstNameByIndex(colId, *indices)
+
+    def getRowOids(self, *indices):
+        """Return OIDs for all columns in a row.
+
+        :param indices: Typed index values.
+        :return: tuple of OIDs, one per column.
+        """
+        if len(indices) != len(self.indexNames):
+            raise error.SmiError(
+                f'Row {self.name} expects {len(self.indexNames)} indices, got {len(indices)}'
+            )
+        return tuple(
+            self.getInstNameByIndex(columnId, *indices)
+            for columnId, _, _ in self.getColumns()
+        )
+
+    def getCellIndices(self, instId):
+        """Parse a raw instance OID suffix into typed index values.
+
+        :param instId: tuple of ints — the instance suffix from an OID.
+        :return: tuple of pyasn1 syntax objects.
+        """
+        return self.getIndicesFromInstId(tuple(instId))
+
+    def getColumns(self):
+        """Return a list of ``(colId, colName, colNode)`` for all columns.
+
+        :return: list of 3-tuples: (column number, column name, MibTableColumn).
+        """
+        columns = {}
+        for colName, colNode in self._vars.items():
+            columns[colName] = colNode
+
+        # MibViewController does not build the instrumentation tree, so rows
+        # may have no registered subtrees. Discover their columns directly
+        # from the builder as well, keeping this API useful to managers.
+        for mibMod in mibBuilder.mibSymbols.values():
+            for mibNode in mibMod.values():
+                if isinstance(mibNode, MibTableColumn) and mibNode.name[:-1] == self.name:
+                    columns[mibNode.name] = mibNode
+
+        return [
+            (colName[-1], colName, columns[colName])
+            for colName in sorted(columns)
+        ]
+
+    get_cell_oid = getCellOid
+    get_row_oids = getRowOids
+    get_cell_indices = getCellIndices
+    get_columns = getColumns
 
 
 class MibTable(MibTree):

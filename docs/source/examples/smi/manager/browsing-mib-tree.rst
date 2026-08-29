@@ -38,4 +38,15 @@ Manager side
 :download:`Download</../../examples/smi/manager/mib-tree-inspection.py>` script.
 
 
+.. include:: /../../examples/smi/manager/table-cell-api.py
+   :start-after: """
+   :end-before: """  #
+
+.. literalinclude:: /../../examples/smi/manager/table-cell-api.py
+   :start-after: """  #
+   :language: python
+
+:download:`Download</../../examples/smi/manager/table-cell-api.py>` script.
+
+
 See also: :doc:`library reference </docs/api-reference>`.

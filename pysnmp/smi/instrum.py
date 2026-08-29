@@ -3,7 +3,6 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from __future__ import annotations
 
 import traceback
 from typing import Any
@@ -247,7 +246,6 @@ class MibInstrumController(AbstractMibInstrumController):
                 raise origExc.with_traceback(origTraceback)
             finally:
                 # Break cycle between locals and traceback object
-                # (seems to be irrelevant on Py3 but just in case)
                 del origTraceback
         return outputVarBinds
 

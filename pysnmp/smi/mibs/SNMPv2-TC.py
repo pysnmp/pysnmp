@@ -6,7 +6,6 @@
 import inspect
 import string
 
-from pyasn1.compat import octets
 from pyasn1.type import univ
 from pyasn1.type.base import Asn1Item
 
@@ -107,7 +106,7 @@ class TextualConvention:
             while runningValue and displayHint:
                 # 1
                 if displayHint[0] == '*':
-                    repeatIndicator = repeatCount = octets.oct2int(runningValue[0])
+                    repeatIndicator = repeatCount = runningValue[0]  # oct2int: bytes element is already int in Python 3
                     displayHint = displayHint[1:]
                     runningValue = runningValue[1:]
                 else:
@@ -163,7 +162,7 @@ class TextualConvention:
                         while numberString:
                             number <<= 8
                             try:
-                                number |= octets.oct2int(numberString[0])
+                                number |= numberString[0]  # oct2int: bytes element is already int in Python 3
                                 numberString = numberString[1:]
                             except Exception as e:
                                 raise SmiError(
@@ -201,7 +200,7 @@ class TextualConvention:
         for failures on complicated DISPLAY-HINTs.
 
         Keep in mind that this parser only works with "text"
-        input meaning `unicode` (Py2) or `str` (Py3).
+        input meaning `str`.
         """
         for base in inspect.getmro(self.__class__):
             if not issubclass(base, TextualConvention) and issubclass(base, Asn1Item):
@@ -257,20 +256,20 @@ class TextualConvention:
         elif self.displayHint and self.__octetString.isSuperTypeOf(self, matchConstraints=False):
             numBase = {'x': 16, 'd': 10, 'o': 8}
             numDigits = {
-                'x': octets.str2octs(string.hexdigits),
-                'o': octets.str2octs(string.octdigits),
-                'd': octets.str2octs(string.digits),
+                'x': string.hexdigits.encode('iso-8859-1'),
+                'o': string.octdigits.encode('iso-8859-1'),
+                'd': string.digits.encode('iso-8859-1'),
             }
 
             # how do we know if object is initialized with display-hint
             # formatted text? based on "text" input maybe?
-            # That boils down to `str` object on Py3 or `unicode` on Py2.
-            if octets.isStringType(value) and not octets.isOctetsType(value):
+            # That boils down to `str` object.
+            if isinstance(value, str) and not isinstance(value, bytes):
                 value = base.prettyIn(self, value)
             else:
                 return base.prettyIn(self, value)
 
-            outputValue = octets.str2octs('')
+            outputValue = b''  # was octets.str2octs('')
             runningValue = value
             displayHint = self.displayHint
 
@@ -316,7 +315,7 @@ class TextualConvention:
                     outputValue += runningValue[:octetLength]
                 elif displayFormat in numBase:
                     if displaySep:
-                        guessedOctetLength = runningValue.find(octets.str2octs(displaySep))
+                        guessedOctetLength = runningValue.find(displaySep.encode('iso-8859-1'))
                         if guessedOctetLength == -1:
                             guessedOctetLength = len(runningValue)
                     else:
@@ -329,7 +328,7 @@ class TextualConvention:
 
                     try:
                         num = int(
-                            octets.octs2str(runningValue[:guessedOctetLength]),
+                            runningValue[:guessedOctetLength].decode('iso-8859-1'),
                             numBase[displayFormat],
                         )
                     except Exception as e:
@@ -351,7 +350,7 @@ class TextualConvention:
 
                     num_as_bytes.reverse()
 
-                    outputValue += octets.ints2octs(num_as_bytes)
+                    outputValue += bytes(num_as_bytes)  # was octets.ints2octs(num_as_bytes)
 
                     if displaySep:
                         guessedOctetLength += 1

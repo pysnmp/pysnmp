@@ -4,9 +4,9 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 """Internal callback helpers for the asyncio HLAPI."""
-from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def make_callback(

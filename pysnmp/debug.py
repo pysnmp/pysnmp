@@ -5,7 +5,7 @@
 #
 import logging
 
-from pyasn1.compat.octets import octs2ints
+# octs2ints replaced with list() (bytes is already iterable of ints in Python 3)
 
 from pysnmp import __version__, error
 
@@ -58,14 +58,7 @@ class Printer:
         return '<python built-in logging>'
 
 
-if hasattr(logging, 'NullHandler'):
-    NullHandler = logging.NullHandler
-else:
-    # Python 2.6 and older
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
+NullHandler = logging.NullHandler
 
 class Debug:
     defaultPrinter = None
@@ -126,6 +119,6 @@ def hexdump(octets):
     return ' '.join(
         [
             '{}{:02X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x)
-            for n, x in zip(range(len(octets)), octs2ints(octets))
+            for n, x in zip(range(len(octets)), list(octets))
         ]
     )

@@ -63,36 +63,8 @@ message building/parsing and network communication via one or more
 transports. It's fully up to the application to handle failures on 
 message and transport levels.
 
-Command Generator
-+++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/manager/cmdgen/fetching-variables
-   /examples/v1arch/asyncore/manager/cmdgen/modifying-variables
-   /examples/v1arch/asyncore/manager/cmdgen/walking-operations
-   /examples/v1arch/asyncore/manager/cmdgen/transport-tweaks
-
-Command Responder
-+++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/agent/cmdrsp/agent-side-mib-implementations
-
-Notification Originator
-+++++++++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/agent/ntforg/transport-tweaks
-
-Notification Receiver
-+++++++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/manager/ntfrcv/transport-tweaks
+The packet-level API has been removed in favor of the asyncio-based APIs.
+See the High-level SNMP and Native SNMP API sections above.
 
 Low-level MIB access
 --------------------
@@ -108,10 +80,9 @@ Using these examples
 --------------------
 
 Before doing cut&paste of the code below into your Python interpreter, 
-make sure to install pysnmp and its dependencies by running pip or 
-easy_install: ::
+make sure to install pysnmp and its dependencies with pip: ::
 
-    # pip pysnmp
+    $ python -m pip install pysnmp
 
 There's a public, multilingual SNMP Command Responder and Notification
 Receiver configured at

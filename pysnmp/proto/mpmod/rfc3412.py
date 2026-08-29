@@ -685,7 +685,6 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 raise statusInformation.with_traceback(origTraceback)
             finally:
                 # Break cycle between locals and traceback object
-                # (seems to be irrelevant on Py3 but just in case)
                 del origTraceback
         else:
             # Sniff for engineIdCache

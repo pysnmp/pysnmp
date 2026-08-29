@@ -5,6 +5,7 @@
 #
 import os
 import tempfile
+from pathlib import Path
 
 try:
     from socket import AF_UNIX
@@ -33,14 +34,14 @@ class UnixAsyncioTransport(DgramAsyncioProtocol):
         if iface is None:
             fd, iface = tempfile.mkstemp(prefix='pysnmp-', dir=tempfile.gettempdir())
             os.close(fd)
-        if os.path.exists(iface):
-            os.unlink(iface)
+        if Path(iface).exists():
+            Path(iface).unlink()
         self._iface = iface
         return DgramAsyncioProtocol.openClientMode(self, iface)
 
     def openServerMode(self, iface):
-        if os.path.exists(iface):
-            os.unlink(iface)
+        if Path(iface).exists():
+            Path(iface).unlink()
         self._iface = iface
         return DgramAsyncioProtocol.openServerMode(self, iface)
 

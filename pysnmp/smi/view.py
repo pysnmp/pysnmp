@@ -11,7 +11,6 @@ from pysnmp.smi.indices import OidOrderedDict, OrderedDict
 __all__ = ['MibViewController']
 
 classTypes = (type,)
-instanceTypes = (object,)
 
 
 class MibViewController:
@@ -81,7 +80,7 @@ class MibViewController:
                         )
                     globMibMod['typeToModIdx'][n] = modName
                     mibMod['typeToModIdx'][n] = modName
-                elif isinstance(v, instanceTypes):
+                else:
                     if isinstance(v, MibScalarInstance):
                         continue
                     if n in mibMod['varToNameIdx']:
@@ -97,8 +96,6 @@ class MibViewController:
                     mibMod['oidToModIdx'][v.name] = modName
                     globMibMod['oidToLabelIdx'][v.name] = (n,)
                     mibMod['oidToLabelIdx'][v.name] = (n,)
-                else:
-                    raise error.SmiError(f'Unexpected object {modName}::{n}')
 
         # Build oid->long-label index
         oidToLabelIdx = self.__mibSymbolsIdx['']['oidToLabelIdx']
@@ -344,3 +341,93 @@ class MibViewController:
             return self.__mibSymbolsIdx[m]['typeToModIdx'].nextKey(t)
         except KeyError:
             raise error.NoSuchObjectError(str=f'No type next to {modName}::{typeName} at {self}')
+
+    # ---- Table cell mangling API (TODO #2) ----
+    # Convenience methods for table-level introspection that clearly separate
+    # MIB module name, MIB object (table/row/column) name, and instance.
+
+    def getTableColumns(self, modName, rowSymName):
+        """Return column metadata for a MIB table row.
+
+        :param modName: MIB module name (e.g. ``'SNMPv2-MIB'``).
+        :param rowSymName: MIB symbol name of the table row/entry
+            (e.g. ``'sysOREntry'``).
+        :return: list of ``(colId, colName, colNode)`` tuples — one per
+            column in the row.  ``colId`` is the column number (last
+            sub-OID), ``colName`` is the full OID tuple, and ``colNode``
+            is the :class:`MibTableColumn` instance.
+        :raises SmiError: if the module or symbol is not found.
+
+        Examples
+        --------
+        >>> mibView = MibViewController(mibBuilder)
+        >>> cols = mibView.getTableColumns('SNMPv2-MIB', 'sysOREntry')
+        >>> for colId, colName, colNode in cols:
+        ...     print(colId, colNode.getMaxAccess())
+        """
+        (MibTableRow,) = self.mibBuilder.importSymbols('SNMPv2-SMI', 'MibTableRow')
+        (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
+        if not isinstance(rowNode, MibTableRow):
+            raise error.SmiError(
+                f'Symbol {modName}::{rowSymName} is not a MibTableRow at {self}'
+            )
+        return rowNode.getColumns()
+
+    def resolveCellOid(self, modName, rowSymName, column, *indices):
+        """Resolve a table cell address into a full OID.
+
+        :param modName: MIB module name.
+        :param rowSymName: MIB symbol name of the table row/entry.
+        :param column: Column symbol name or number (last sub-OID).
+        :param indices: Typed index values (e.g. ``'my-router'`` or ``1``).
+        :return: tuple of ints — the full OID identifying the cell.
+
+        Examples
+        --------
+        >>> oid = mibView.resolveCellOid('SNMP-COMMUNITY-MIB',
+        ...                              'snmpCommunityEntry', 2, 'my-router')
+        """
+        MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
+            'SNMPv2-SMI', 'MibTableColumn', 'MibTableRow'
+        )
+        (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
+        if not isinstance(rowNode, MibTableRow):
+            raise error.SmiError(
+                f'Symbol {modName}::{rowSymName} is not a MibTableRow at {self}'
+            )
+
+        if isinstance(column, str):
+            (columnNode,) = self.mibBuilder.importSymbols(modName, column)
+            if not isinstance(columnNode, MibTableColumn) or columnNode.name[:-1] != rowNode.name:
+                raise error.SmiError(
+                    f'Symbol {modName}::{column} is not a column of {rowSymName} at {self}'
+                )
+            column = columnNode.name[-1]
+
+        return rowNode.getCellOid(column, *indices)
+
+    def getTableCellInfo(self, cellOid):
+        """Split a table cell OID into its MIB names and typed indices.
+
+        :param cellOid: Complete table cell OID.
+        :return: ``(moduleName, rowName, columnName, indices)``.
+        :raises SmiError: if *cellOid* does not identify a table cell.
+        """
+        MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
+            'SNMPv2-SMI', 'MibTableColumn', 'MibTableRow'
+        )
+        modName, columnName, suffix = self.getNodeLocation(tuple(cellOid))
+        (columnNode,) = self.mibBuilder.importSymbols(modName, columnName)
+        if not isinstance(columnNode, MibTableColumn):
+            raise error.SmiError(f'OID {tuple(cellOid)!r} is not a table cell at {self}')
+
+        rowModName, rowName, rowSuffix = self.getNodeLocation(columnNode.name[:-1])
+        (rowNode,) = self.mibBuilder.importSymbols(rowModName, rowName)
+        if rowSuffix or not isinstance(rowNode, MibTableRow):
+            raise error.SmiError(f'Column {modName}::{columnName} has no table row at {self}')
+
+        return modName, rowName, columnName, rowNode.getCellIndices(suffix)
+
+    get_table_columns = getTableColumns
+    resolve_cell_oid = resolveCellOid
+    get_table_cell_info = getTableCellInfo

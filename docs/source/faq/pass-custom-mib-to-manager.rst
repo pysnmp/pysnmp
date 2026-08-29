@@ -45,4 +45,3 @@ add the directory to your MibBuilder's MibSources.
     builder.addMibSources(builder_module.DirMibSource(
         os.path.join( HERE, 'mibs')
     ))
-

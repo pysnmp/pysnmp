@@ -4,11 +4,6 @@ Sparse notes on major existing problems/plans
 
   1) multiple OID registration should be posible for
      customizing Managed Objects classes
-  2) in MIBVIEW object model: MIB module name, MIB object 
-     name and object instance should be clearly separated.
-     Dedicated, simple API for table cells mangling should be 
-     provided.
-
 * Notification filtering (RFC3413) implemented (§6 filter matching with
   subtree/mask/type, per-target per-varBind filtering, VACM per-target fix).
 
@@ -21,9 +16,6 @@ Sparse notes on major existing problems/plans
 
 * Implement partial context name match at isAccessAllowed()
   (partially addressed: prefix match implemented, optimization folded into ACL rework)
-
-* Sort out whether pyasn1 objects should probably have either clone() or 
-  subtype() methods.
 
 * TextualConvention subclassing order now depends upon DisplayHint 
   clause presense in MIB definition (for useful prettyIn/Out()). Maybe 
@@ -40,8 +32,6 @@ Sparse notes on major existing problems/plans
 * Rework UNIX sockets transport to make it STREAM-type.
 
 * redesign proto.errind.ErrorIndication
-
-* redesign PYSNMP MIB tables to better handle optional values (keys)
 
 * add RowStatus checks when reading MIB tables (LCD)
 

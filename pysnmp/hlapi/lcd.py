@@ -3,8 +3,6 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.compat.octets import null
-
 from pysnmp import error, nextid
 from pysnmp.entity import config
 from pysnmp.hlapi.auth import *
@@ -34,7 +32,7 @@ class AbstractLcdConfigurator:
 class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
     cacheKeys = ['auth', 'parm', 'tran', 'addr']
 
-    def configure(self, snmpEngine, authData, transportTarget, contextName=null, **options):
+    def configure(self, snmpEngine, authData, transportTarget, contextName=b'', **options):
         cache = self._getCache(snmpEngine)
         if isinstance(authData, CommunityData):
             if authData.communityIndex not in cache['auth']:
@@ -122,7 +120,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
 
         return addrName, paramsName
 
-    def unconfigure(self, snmpEngine, authData=None, contextName=null, **options):
+    def unconfigure(self, snmpEngine, authData=None, contextName=b'', **options):
         cache = self._getCache(snmpEngine)
         if authData:
             if isinstance(authData, CommunityData):
@@ -242,7 +240,7 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
 
         return notifyName
 
-    def unconfigure(self, snmpEngine, authData=None, contextName=null, **options):
+    def unconfigure(self, snmpEngine, authData=None, contextName=b'', **options):
         cache = self._getCache(snmpEngine)
         if authData:
             authDataKey = (

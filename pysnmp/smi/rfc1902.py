@@ -7,6 +7,8 @@
 from pyasn1.error import PyAsn1Error
 from pyasn1.type.base import AbstractSimpleAsn1Item
 
+import functools
+
 from pysnmp import debug
 from pysnmp.proto import rfc1902, rfc1905
 from pysnmp.proto.api import v2c
@@ -17,6 +19,7 @@ from pysnmp.smi.error import SmiError
 __all__ = ['ObjectIdentity', 'ObjectType', 'NotificationType']
 
 
+@functools.total_ordering
 class ObjectIdentity:
     """Create an object representing MIB variable ID.
 
@@ -565,39 +568,9 @@ class ObjectIdentity:
         else:
             raise SmiError('%s object not properly initialized' % self.__class__.__name__)
 
-    def __ne__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid != other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
     def __lt__(self, other):
         if self.__state & self.stClean:
             return self.__oid < other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __le__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid <= other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __gt__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid > other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __ge__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid > other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __nonzero__(self):
-        if self.__state & self.stClean:
-            return self.__oid != 0
         else:
             raise SmiError('%s object not properly initialized' % self.__class__.__name__)
 

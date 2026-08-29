@@ -27,8 +27,8 @@ Before generating code, scan the codebase to identify:
    - Never suggest features not available in the detected framework versions
 
 3. **Library Versions**: Note the exact versions of key libraries and dependencies
-   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=1.0.4,<2.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.1.3,<2.0.0`
-   - Dev dependencies (from `pyproject.toml` `[project.optional-dependencies]`): `sphinx >=4.3.0,<5.0.0`, `pytest >=6.2.5,<7.0.0`, `codecov >=2.1.12,<3.0.0`, `pytest-codecov >=0.4.0,<1.0.0`
+   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=1.0.4,<3.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.1.3,<2.0.0`
+   - Dev dependencies (from `pyproject.toml` `[project.optional-dependencies]`): `sphinx >=4.3.0,<5.0.0`, `pytest >=6.2.5,<9.0.0`, `codecov >=2.1.12,<3.0.0`, `pytest-codecov >=0.4.0,<1.0.0`
    - Generate code compatible with these specific versions
    - The project depends on the **pysnmp-pyasn1** fork, not upstream pyasn1. Import from `pyasn1.type`, `pyasn1.codec.ber`, `pyasn1.error`, and `pyasn1.compat.octets` as seen throughout `pysnmp/proto/` and `pysnmp/smi/`
    - Cryptography uses **pycryptodomex** (the `Cryptodome` namespace), imported under `pysnmp/proto/secmod/` for USM auth/priv protocols
@@ -68,8 +68,8 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 - `pysnmp/proto/` — Protocol layer: ASN.1/BER type definitions (`rfc1155.py`, `rfc1902.py`, `rfc1905.py`), message processing models (`mpmod/`), security models (`secmod/`), access control (`acmod/`), PDU API (`api/v1.py`, `api/v2c.py`), and proxy conversion (`proxy/rfc2576.py`). Files are named after the RFC they implement.
 - `pysnmp/smi/` — SMI layer: MIB builder/compiler (`builder.py`, `compiler.py`), instrumentation (`instrum.py`), MIB view (`view.py`), and the high-level SMI types in `smi/rfc1902.py` (`ObjectIdentity`, `ObjectType`, `NotificationType`). Bundled MIB modules live in `smi/mibs/`.
 - `pysnmp/entity/` — SNMP entity: `engine.py` (`SnmpEngine`, the central stateful coordinator per RFC 3412), `config.py` (LCD configuration helpers), `observer.py` (execution-context observer), and `rfc3413/` (SNMP applications: `cmdgen`, `cmdrsp`, `ntforg`, `ntfrcv`, `context`).
-- `pysnmp/carrier/` — Transport layer: `base.py` (`AbstractTransportDispatcher`, `TimerCallable`), with two I/O backends — `asyncore/` (legacy, default for sync HLAPI) and `asyncio/` (modern). Datagram transports (`dgram/udp.py`, `dgram/udp6.py`, `dgram/unix.py`) exist under each backend.
-- `pysnmp/hlapi/` — High-level API: `auth.py` (`CommunityData`, `UsmUserData`), `context.py` (`ContextData`), `transport.py` (`AbstractTransportTarget`), `varbinds.py` (varbind construction/resolution), `lcd.py` (LCD configurators). Subpackages `asyncio/` and `asyncore/` (with `asyncore/sync/` for the blocking facade) expose `getCmd`, `nextCmd`, `setCmd`, `bulkCmd`, `sendNotification`.
+- `pysnmp/carrier/` — Transport layer: `base.py` (`AbstractTransportDispatcher`, `TimerCallable`), with `asyncio/` as the sole I/O backend. Datagram transports (`dgram/udp.py`, `dgram/udp6.py`, `dgram/unix.py`) live under `asyncio/`.
+- `pysnmp/hlapi/` — High-level API: `auth.py` (`CommunityData`, `UsmUserData`), `context.py` (`ContextData`), `transport.py` (`AbstractTransportTarget`), `varbinds.py` (varbind construction/resolution), `lcd.py` (LCD configurators). The `asyncio/` subpackage (with `asyncio/sync/` for the blocking facade) exposes `getCmd`, `nextCmd`, `setCmd`, `bulkCmd`, `sendNotification`.
 - `pysnmp/error.py` — Base `PySnmpError` exception. All other error modules (`proto/error.py`, `proto/errind.py`, `smi/error.py`, `carrier/error.py`) derive from it.
 
 ### Architectural rules
@@ -77,8 +77,8 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 - **`SnmpEngine` is the only stateful object.** All SNMP operations take a `SnmpEngine` instance; in multithreaded environments each thread must have its own (see the class docstring in `pysnmp/entity/engine.py`).
 - **Keep RFC boundaries intact.** New protocol behavior goes in `proto/` under the appropriate `rfcXXXX.py` or `mpmod/`/`secmod/` submodule named after the RFC. SNMP application behavior goes in `entity/rfc3413/`.
 - **HLAPI is a thin facade.** `pysnmp/hlapi/` delegates to `pysnmp/entity/rfc3413/` and `pysnmp/proto/api/`; do not implement protocol logic in the hlapi layer.
-- **Two I/O backends coexist.** When adding transport or hlapi functionality, mirror the implementation across both `asyncore/` and `asyncio/` unless the change is explicitly backend-specific. The default synchronous API lives in `hlapi/asyncore/sync/`.
-- **Module-level singletons are used for stateless services.** Examples: `vbProcessor = CommandGeneratorVarBinds()` and `lcd = CommandGeneratorLcdConfigurator()` at the top of `hlapi/asyncio/cmdgen.py` and `hlapi/asyncore/cmdgen.py`. Follow this pattern for new stateless service objects.
+- **Single I/O backend.** The asyncore backend has been removed. All transport and hlapi functionality uses `asyncio/` only. The default synchronous API lives in `hlapi/asyncio/sync/`.
+- **Module-level singletons are used for stateless services.** Examples: `vbProcessor = CommandGeneratorVarBinds()` and `lcd = CommandGeneratorLcdConfigurator()` at the top of `hlapi/asyncio/cmdgen.py`. Follow this pattern for new stateless service objects.
 
 ## Code Quality Standards
 
@@ -160,7 +160,7 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
   ```
 - The available flags are defined in `pysnmp/debug.py`: `flagIO`, `flagDsp`, `flagMP`, `flagSM`, `flagBld`, `flagMIB`, `flagIns`, `flagACL`, `flagPrx`, `flagApp`, `flagAll`. Choose the flag matching the subsystem you're working in (`flagMP` for message processing, `flagSM` for security, `flagMIB`/`flagBld`/`flagIns` for SMI, `flagACL` for access control, `flagIO` for transport, `flagApp` for SNMP applications).
 - The `debug.logger & flag and debug.logger(...)` short-circuit pattern is mandatory — it avoids formatting cost when the flag is disabled.
-- Use `%`-style formatting in debug messages to match the dominant style in `proto/secmod/`, `proto/mpmod/`, and `entity/rfc3413/`; f-strings are acceptable in newer files (as in `carrier/asyncore/base.py` and `entity/engine.py`) but prefer consistency with the surrounding file.
+- Use `%`-style formatting in debug messages to match the dominant style in `proto/secmod/`, `proto/mpmod/`, and `entity/rfc3413/`; f-strings are acceptable in newer files (as in `entity/engine.py`) but prefer consistency with the surrounding file.
 
 ## Error Handling Patterns
 
@@ -168,11 +168,11 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 - SNMP v3 protocol errors derive from `ProtocolError(PySnmpError, PyAsn1Error)` in `proto/error.py`; SMI errors derive from `SmiError(PySnmpError, PyAsn1Error)` in `smi/error.py`; transport errors derive from `CarrierError(PySnmpError)` in `carrier/error.py`.
 - `ErrorIndication` (`proto/errind.py`) is a separate `Exception` hierarchy for SNMP error-indication values; instances are compared by string value and carry a `.prettyPrint()`-style description.
 - Abstract base classes raise `error.ProtocolError('method not implemented')` for unimplemented methods (see `proto/mpmod/base.py`, `proto/secmod/base.py`). Follow this when adding new abstract methods.
-- HLAPI functions return the `(errorIndication, errorStatus, errorIndex, varBinds)` tuple rather than raising for SNMP-level errors; raise `PySnmpError` only for usage/configuration errors. See `hlapi/asyncio/cmdgen.py:getCmd` and `hlapi/asyncore/cmdgen.py:getCmd`.
+- HLAPI functions return the `(errorIndication, errorStatus, errorIndex, varBinds)` tuple rather than raising for SNMP-level errors; raise `PySnmpError` only for usage/configuration errors. See `hlapi/asyncio/cmdgen.py:getCmd`.
 
 ## HLAPI Conventions
 
-- The four canonical command-generator functions are `getCmd`, `nextCmd`, `setCmd`, `bulkCmd`, plus `sendNotification` for notifications. Each takes `(snmpEngine, authData, transportTarget, contextData, *varBinds, **options)` and is `async` in `hlapi/asyncio/` and callback-based in `hlapi/asyncore/`.
+- The four canonical command-generator functions are `getCmd`, `nextCmd`, `setCmd`, `bulkCmd`, plus `sendNotification` for notifications. Each takes `(snmpEngine, authData, transportTarget, contextData, *varBinds, **options)` and is `async` in `hlapi/asyncio/`.
 - `isEndOfMib = lambda x: not cmdgen.getNextVarBinds(x)[1]` is the shared end-of-mib sentinel check; reuse it rather than re-deriving.
 - Varbind construction goes through `CommandGeneratorVarBinds` / `NotificationOriginatorVarBinds` (`hlapi/varbinds.py`); MIB resolution goes through `ObjectType.resolveWithMib(mibViewController, ignoreErrors=False)`.
 - LCD configuration goes through `CommandGeneratorLcdConfigurator` / `NotificationOriginatorLcdConfigurator` (`hlapi/lcd.py`), which cache per-`SnmpEngine` state under `snmpEngine.setUserContext(...)`. Do not call `entity/config.py` functions directly from hlapi code — use the configurators.
@@ -181,7 +181,7 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 
 - Follow Semantic Versioning patterns as applied in the codebase
 - The version appears in **two** places that must stay in sync: `pyproject.toml` (`version = "..."` under `[project]`) and `pysnmp/__init__.py` (`__version__ = '...'`). The `__init__.py` also derives `version` (tuple) and `majorVersionId` — preserve that derivation logic when bumping.
-- Match existing patterns for documenting breaking changes in `CHANGES.txt` (Revision-header sections with bulleted notes)
+- Match existing patterns for documenting breaking changes in `CHANGELOG.md` (Revision-header sections with bulleted notes)
 - Follow the same approach for deprecation notices
 
 ## General Best Practices
@@ -205,5 +205,5 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 - When in doubt, prioritize consistency with existing code over external best practices
 - When adding a new RFC implementation, name the file after the RFC number and place it in the appropriate submodule (`proto/`, `proto/mpmod/`, `proto/secmod/`, `entity/rfc3413/`)
 - When adding a new SNMP type, subclass the corresponding `pyasn1.type.univ.*` class in `proto/rfc1902.py` (v2c) or `proto/rfc1155.py` (v1) and declare it in `__all__`
-- When adding a new transport, subclass `AbstractTransport` (`carrier/base.py`) under both `carrier/asyncore/dgram/` and `carrier/asyncio/dgram/`, and expose the domain constant via `entity/config.py`
+- When adding a new transport, subclass `AbstractTransport` (`carrier/base.py`) under `carrier/asyncio/dgram/`, and expose the domain constant via `entity/config.py`
 - Examples under `examples/` are executable and run by `runtests.sh`; keep them working and follow their header-comment + `asyncio.run()` structure when adding new ones

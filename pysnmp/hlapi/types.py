@@ -8,7 +8,6 @@
 These types are used across the sync and asyncio HLAPI surfaces to
 provide consistent return-type annotations for SNMP command results.
 """
-from __future__ import annotations
 
 from typing import Any, NamedTuple
 
