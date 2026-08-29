@@ -12,7 +12,8 @@
 
 import socket
 
-from pyasn1.compat.octets import int2oct, oct2int
+# int2oct/oct2int replaced with native Python 3 (bytes((x,)) / x)
+# was: from pyasn1.compat.octets import int2oct, oct2int
 
 from pysnmp import error
 
@@ -358,8 +359,8 @@ class TransportAddressIPv4(TextualConvention, OctetString):
             # Wild hack -- need to implement TextualConvention.prettyIn
             value = (
                 inet_pton(socket.AF_INET, value[0])
-                + int2oct((value[1] >> 8) & 0xFF)
-                + int2oct(value[1] & 0xFF)
+                + bytes(((value[1] >> 8) & 0xFF,))
+                + bytes((value[1] & 0xFF,))
             )
         return OctetString.prettyIn(self, value)
 
@@ -369,7 +370,7 @@ class TransportAddressIPv4(TextualConvention, OctetString):
             v = self.asOctets()
             self.__tuple_value = (
                 inet_ntop(socket.AF_INET, v[:4]),
-                oct2int(v[4]) << 8 | oct2int(v[5]),
+                v[4] << 8 | v[5],
             )
         return self.__tuple_value
 
@@ -393,8 +394,8 @@ class TransportAddressIPv6(TextualConvention, OctetString):
         if isinstance(value, tuple):
             value = (
                 inet_pton(socket.AF_INET6, value[0])
-                + int2oct((value[1] >> 8) & 0xFF)
-                + int2oct(value[1] & 0xFF)
+                + bytes(((value[1] >> 8) & 0xFF,))
+                + bytes((value[1] & 0xFF,))
             )
         return OctetString.prettyIn(self, value)
 
@@ -406,7 +407,7 @@ class TransportAddressIPv6(TextualConvention, OctetString):
             v = self.asOctets()
             self.__tuple_value = (
                 inet_ntop(socket.AF_INET6, v[:16]),
-                oct2int(v[16]) << 8 | oct2int(v[17]),
+                v[16] << 8 | v[17],
                 0,  # flowinfo
                 0,
             )  # scopeid

@@ -4,7 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 
 from pysnmp import debug, nextid
 from pysnmp.entity.rfc3413 import config
@@ -655,7 +655,7 @@ def _sendNotification(
     additionalVarBinds=(),
     cbFun=None,
     cbCtx=None,
-    contextName=null,
+    contextName=b'',
     instanceIndex=None,
 ):
     if self.snmpContext is None:

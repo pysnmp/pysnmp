@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 from pyasn1.type import univ
 
 from pysnmp import debug, error
@@ -22,7 +22,7 @@ class SnmpContext:
         debug.logger & debug.flagIns and debug.logger(
             f'SnmpContext: contextEngineId \"{self.contextEngineId!r}\"'
         )
-        self.contextNames = {null: snmpEngine.msgAndPduDsp.mibInstrumController}  # Default name
+        self.contextNames = {b'': snmpEngine.msgAndPduDsp.mibInstrumController}  # Default name
 
     def registerContextName(self, contextName, mibInstrum=None):
         contextName = univ.OctetString(contextName).asOctets()
@@ -32,7 +32,7 @@ class SnmpContext:
             f'registerContextName: registered contextName {contextName!r}, mibInstrum {mibInstrum!r}'
         )
         if mibInstrum is None:
-            self.contextNames[contextName] = self.contextNames[null]
+            self.contextNames[contextName] = self.contextNames[b'']
         else:
             self.contextNames[contextName] = mibInstrum
 
@@ -44,7 +44,7 @@ class SnmpContext:
             )
             del self.contextNames[contextName]
 
-    def getMibInstrum(self, contextName=null):
+    def getMibInstrum(self, contextName=b''):
         contextName = univ.OctetString(contextName).asOctets()
         if contextName not in self.contextNames:
             debug.logger & debug.flagIns and debug.logger(

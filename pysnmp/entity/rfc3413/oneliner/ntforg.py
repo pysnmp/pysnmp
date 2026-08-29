@@ -6,7 +6,7 @@
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 
 from pysnmp.entity import config
 from pysnmp.entity.rfc3413 import context
@@ -83,7 +83,7 @@ class AsynNotificationOriginator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,  # XXX ordering incompatibility
-        contextName=null,
+        contextName=b'',
     ):
 
         def __cbFun(
@@ -106,7 +106,7 @@ class AsynNotificationOriginator:
                 return cbFun(sendRequestHandle, errorIndication, cbCtx)
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b'' and authData.contextName:
             contextName = authData.contextName
 
         if not isinstance(notificationType, (ObjectIdentity, ObjectType, NotificationType)):
@@ -169,7 +169,7 @@ class NotificationOriginator:
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
             notifyType,
             notificationType.addVarBinds(*varBinds),
             **kwargs,

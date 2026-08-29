@@ -6,7 +6,7 @@
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 from pyasn1.type import univ
 
 from pysnmp.hlapi.asyncio import *
@@ -63,7 +63,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=null,
+        contextName=b'',
     ):
 
         def __cbFun(
@@ -79,7 +79,7 @@ class AsynCommandGenerator:
             cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b'' and authData.contextName:
             contextName = authData.contextName
 
         return getCmd(
@@ -102,7 +102,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=null,
+        contextName=b'',
     ):
 
         def __cbFun(
@@ -118,7 +118,7 @@ class AsynCommandGenerator:
             cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b'' and authData.contextName:
             contextName = authData.contextName
 
         return setCmd(
@@ -141,7 +141,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=null,
+        contextName=b'',
     ):
 
         def __cbFun(
@@ -159,7 +159,7 @@ class AsynCommandGenerator:
             )
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b'' and authData.contextName:
             contextName = authData.contextName
 
         return nextCmd(
@@ -184,7 +184,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=null,
+        contextName=b'',
     ):
 
         def __cbFun(
@@ -202,7 +202,7 @@ class AsynCommandGenerator:
             )
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b'' and authData.contextName:
             contextName = authData.contextName
 
         return bulkCmd(
@@ -236,7 +236,7 @@ class CommandGenerator:
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
             *[(x, self._null) for x in varNames],
             **kwargs,
         ):
@@ -253,7 +253,7 @@ class CommandGenerator:
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
             *varBinds,
             **kwargs,
         ):
@@ -274,7 +274,7 @@ class CommandGenerator:
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
             *[(x, self._null) for x in varNames],
             **kwargs,
         ):
@@ -300,7 +300,7 @@ class CommandGenerator:
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', null)),
+            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
             nonRepeaters,
             maxRepetitions,
             *[(x, self._null) for x in varNames],

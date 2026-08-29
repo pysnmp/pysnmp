@@ -8,7 +8,7 @@ from collections.abc import Callable
 from typing import Any, NoReturn, TypeVar, cast
 
 from pyasn1.codec.ber import decoder, encoder, eoo
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import constraint, namedtype, univ
 
@@ -468,11 +468,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
         else:
             # 4. (start SNMP engine ID discovery)
-            securityEngineID = securityName = null
+            securityEngineID = securityName = b''
             securityLevel = 1
 
             scopedPDU.setComponentByPosition(
-                0, null, verifyConstraints=False, matchTags=False, matchConstraints=False
+                0, b'', verifyConstraints=False, matchTags=False, matchConstraints=False
             )
 
             headerData = msg.getComponentByPosition(1)
@@ -503,7 +503,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 matchConstraints=False,
             )
 
-            usmUserName = usmUserSecurityName = null
+            usmUserName = usmUserSecurityName = b''
             usmUserAuthProtocol = noauth.NoAuth.serviceID
             usmUserPrivProtocol = nopriv.NoPriv.serviceID
             usmUserAuthKeyLocalized = usmUserPrivKeyLocalized = None
@@ -830,7 +830,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         contextEngineId = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')[
             0
         ].syntax
-        contextName = null
+        contextName = b''
 
         snmpEngineID = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')[0].syntax
 
@@ -854,7 +854,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
                 usmStatsUnknownEngineIDs.syntax += 1
                 debug.logger & debug.flagSM and debug.logger(
-                    'processIncomingMsg: null or malformed msgAuthoritativeEngineId'
+                    'processIncomingMsg: b'' or malformed msgAuthoritativeEngineId'
                 )
                 (pysnmpUsmDiscoverable,) = mibBuilder.importSymbols(
                     '__PYSNMP-USM-MIB', 'pysnmpUsmDiscoverable'
@@ -972,7 +972,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 raise error.StatusInformation(errorIndication=errind.invalidMsg)
         else:
             # empty username used for engineID discovery
-            usmUserName = usmUserSecurityName = null
+            usmUserName = usmUserSecurityName = b''
             usmUserAuthProtocol = noauth.NoAuth.serviceID
             usmUserPrivProtocol = nopriv.NoPriv.serviceID
             usmUserAuthKeyLocalized = usmUserPrivKeyLocalized = None

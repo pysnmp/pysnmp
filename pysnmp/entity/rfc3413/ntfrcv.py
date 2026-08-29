@@ -4,7 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 
 from pysnmp import debug
 from pysnmp.proto import error, rfc3411
@@ -18,7 +18,7 @@ class NotificationReceiver:
 
     def __init__(self, snmpEngine, cbFun, cbCtx=None):
         snmpEngine.msgAndPduDsp.registerContextEngineId(
-            null, self.pduTypes, self.processPdu  # '' is a wildcard
+            b'', self.pduTypes, self.processPdu  # '' is a wildcard
         )
 
         self.__snmpTrapCommunity = ''
@@ -32,7 +32,7 @@ class NotificationReceiver:
         snmpEngine.observer.registerObserver(storeSnmpTrapCommunity, 'rfc2576.processIncomingMsg')
 
     def close(self, snmpEngine):
-        snmpEngine.msgAndPduDsp.unregisterContextEngineId(null, self.pduTypes)
+        snmpEngine.msgAndPduDsp.unregisterContextEngineId(b'', self.pduTypes)
         self.__cbFun = self.__cbCtx = None
 
     def processPdu(

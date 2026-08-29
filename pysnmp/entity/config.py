@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pyasn1.compat.octets import null
+# null replaced with b'' (empty bytes, was pyasn1.compat.octets.null)
 
 from pysnmp import debug, error
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
@@ -105,7 +105,7 @@ def addV1System(
         contextEngineId = snmpEngineID.syntax.clone(contextEngineId)
 
     if contextName is None:
-        contextName = null
+        contextName = b''
 
     securityName = securityName is not None and securityName or communityIndex
 
@@ -230,7 +230,7 @@ def addV3User(
     masterAuthKey = localAuthKey = authKey
 
     if authKeyType < usmKeyTypeMaster:  # pass phrase is given
-        masterAuthKey = authServices[authProtocol].hashPassphrase(authKey or null)
+        masterAuthKey = authServices[authProtocol].hashPassphrase(authKey or b'')
 
     if authKeyType < usmKeyTypeLocalized:  # pass phrase or master key is given
         localAuthKey = authServices[authProtocol].localizeKey(masterAuthKey, securityEngineId)
@@ -244,7 +244,7 @@ def addV3User(
     masterPrivKey = localPrivKey = privKey
 
     if privKeyType < usmKeyTypeMaster:  # pass phrase is given
-        masterPrivKey = privServices[privProtocol].hashPassphrase(authProtocol, privKey or null)
+        masterPrivKey = privServices[privProtocol].hashPassphrase(authProtocol, privKey or b'')
 
     if privKeyType < usmKeyTypeLocalized:  # pass phrase or master key is given
         localPrivKey = privServices[privProtocol].localizeKey(
@@ -432,7 +432,7 @@ def addTargetAddr(
     params: str,
     timeout: Any | None = None,
     retryCount: Any | None = None,
-    tagList: Any = null,
+    tagList: Any = b'',
     sourceAddress: Any | None = None,
 ) -> None:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
@@ -731,7 +731,7 @@ def addVacmUser(
     readSubTree: Any = (),
     writeSubTree: Any = (),
     notifySubTree: Any = (),
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     (groupName, securityLevel, readView, writeView, notifyView) = __cookVacmUserInfo(
         snmpEngine, securityModel, securityName, securityLevel
@@ -750,11 +750,11 @@ def addVacmUser(
         notifyView,
     )
     if readSubTree:
-        addVacmView(snmpEngine, readView, 'included', readSubTree, null)
+        addVacmView(snmpEngine, readView, 'included', readSubTree, b'')
     if writeSubTree:
-        addVacmView(snmpEngine, writeView, 'included', writeSubTree, null)
+        addVacmView(snmpEngine, writeView, 'included', writeSubTree, b'')
     if notifySubTree:
-        addVacmView(snmpEngine, notifyView, 'included', notifySubTree, null)
+        addVacmView(snmpEngine, notifyView, 'included', notifySubTree, b'')
 
 
 def delVacmUser(
@@ -765,7 +765,7 @@ def delVacmUser(
     readSubTree: Any = (),
     writeSubTree: Any = (),
     notifySubTree: Any = (),
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     (groupName, securityLevel, readView, writeView, notifyView) = __cookVacmUserInfo(
         snmpEngine, securityModel, securityName, securityLevel
@@ -790,7 +790,7 @@ def addRoUser(
     securityName: Any,
     securityLevel: int,
     subTree: Any,
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     addVacmUser(
         snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=contextName
@@ -803,7 +803,7 @@ def delRoUser(
     securityName: Any,
     securityLevel: int,
     subTree: Any,
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     delVacmUser(
         snmpEngine, securityModel, securityName, securityLevel, subTree, contextName=contextName
@@ -816,7 +816,7 @@ def addRwUser(
     securityName: Any,
     securityLevel: int,
     subTree: Any,
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     addVacmUser(
         snmpEngine,
@@ -835,7 +835,7 @@ def delRwUser(
     securityName: Any,
     securityLevel: int,
     subTree: Any,
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     delVacmUser(
         snmpEngine,
@@ -854,7 +854,7 @@ def addTrapUser(
     securityName: Any,
     securityLevel: int,
     subTree: Any,
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     addVacmUser(
         snmpEngine,
@@ -874,7 +874,7 @@ def delTrapUser(
     securityName: Any,
     securityLevel: int,
     subTree: Any,
-    contextName: Any = null,
+    contextName: Any = b'',
 ) -> None:
     delVacmUser(
         snmpEngine,

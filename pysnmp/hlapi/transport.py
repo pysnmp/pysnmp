@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 
 from pysnmp import error
 from pysnmp.carrier.base import AbstractTransport
@@ -24,7 +24,7 @@ class AbstractTransportTarget:
         transportAddr: tuple[str, ...],
         timeout: int = 1,
         retries: int = 5,
-        tagList: Any = null,
+        tagList: Any = b'',
     ) -> None:
         self.transportAddr = self._resolveAddr(transportAddr)
         self.timeout = timeout

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 
 __all__ = ['ContextData']
 
@@ -49,7 +49,7 @@ class ContextData:
 
     """
 
-    def __init__(self, contextEngineId: Any = None, contextName: Any = null) -> None:
+    def __init__(self, contextEngineId: Any = None, contextName: Any = b'') -> None:
         self.contextEngineId = contextEngineId
         self.contextName = contextName
 

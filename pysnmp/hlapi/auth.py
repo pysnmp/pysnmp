@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, NoReturn
 
-from pyasn1.compat.octets import null
+# null replaced with b'' (was pyasn1.compat.octets.null)
 
 from pysnmp import error
 from pysnmp.entity import config
@@ -117,8 +117,8 @@ class CommunityData:
     mpModel: int = 1  # Default is SMIv2
     securityModel: int = mpModel + 1
     securityLevel: str = 'noAuthNoPriv'
-    contextName: Any = null
-    tag: Any = null
+    contextName: Any = b''
+    tag: Any = b''
 
     def __init__(
         self,
@@ -384,7 +384,7 @@ class UsmUserData:
     securityLevel: str = 'noAuthNoPriv'
     securityModel: int = 3
     mpModel: int = 3
-    contextName: Any = null
+    contextName: Any = b''
 
     def __init__(
         self,
