@@ -2,136 +2,76 @@
 Revision 5.0.25, released 2026-08-29
 ------------------------------------
 
-**Merged pull requests by @bmfmancini:**
-
-- PR #105: Add docs building step to CI — adds Sphinx doc build to CI,
-  fixes broken cross-references, bumps Sphinx version
-- PR #104: Device reporting and MIB instance tools — adds sync and asyncio
-  device-report helpers, generates loadable IANA PEN MIB instances,
-  generates MIB instance stubs from ASN.1 modules, supports pysmi 1.x and
-  2.x compiler APIs, adds integration and runtime-loading tests
-- PR #103: Add Python 3.14 CI checks — moves from deprecated
-  `pysnmp.carrier.asynsock`, adds 3.14 to CI matrix
-- PR #102: RFC 3413 notification filtering — implements the notification
-  filtering mechanism described in RFC 3413
-- PR #101: Deduplication work — consolidates repeated asyncio callbacks,
-  SNMPv3 message assembly, USM error handling, and observer context
-  management; improves cleanup on exception paths; adds characterization
-  tests for unknown users, invalid digests, time-window failures, and
-  decryption errors
-- PR #100: Typing sweep — first pass at adding type annotations to functions
-  across the codebase
-- PR #99: Quality sweep Round 1 — adds black, isort, ruff, pylint, mypy
-  tooling config; adds `py.typed` PEP 561 marker; applies isort/black/ruff
-  auto-fixes; runs pyupgrade `--py310-plus`; converts 88 `sys.exc_info()`
-  idioms to modern `except ... as e:` syntax across 22 files
-- PR #98: Fix auth/priv combinations — replaces asyncore with asyncio
-  (asyncore removed in 3.12); fixes regression where server-mode transports
-  ended up on a different event loop than the dispatcher, causing SNMPv3
-  integration to silently time out; adds unit tests for all auth/priv
-  combinations
-- PR #96: Address TODO list — fixes SNMP value conversion (clone proxied
-  values into destination ASN.1 type), allows empty OctetString SET
-  values, corrects VACM candidate selection for matching/`any` security
-  models, uses `isinstance` for typed MIB-view filtering, adds regression
-  coverage
-- PR #95: Update deprecated libraries — bumps minimum Python to 3.10,
-  removes dead Python 2-era fallbacks (imp, md5/sha, hashlib SHA-2,
-  socket.inet_ntop, errno.ENOENT, Cryptodome), updates pysmi API calls
-  to snake_case names, widens pysnmp-pysmi pin for pysmi 2.x, promotes
-  pyasyncore to runtime dependency
-- PR #94: Setup unit tests and SNMP device simulations — adds snmpsim
-  integration tests and test infrastructure
-- PR #93: Migrate from poetry to uv — migrates build system from poetry
-  to uv with hatchling backend
-- PR #91: Fix deprecated GitHub Actions versions
-- PR #90: Fix pyc MIB loading (PEP 552) — reads bitfield to determine
-  timestamp-based vs hash-based invalidation, strips 16-byte header before
-  `marshal.loads()`
-- PR #89: Fix deprecated `asyncio.get_event_loop()` — replaces deprecated
-  `asyncio.get_event_loop()` calls
-- PR #88: Remove snmplabs URLs — removes references to snmplabs.com
-  (domain now points to phishing sites)
-
-**Breaking changes:**
-
-- Removed deprecated `asyncore`/`asynsock` carrier shims and `hlapi/asyncore`
-  modules entirely. The `asyncore` module was removed from the Python stdlib
-  in 3.12; all transport and HLAPI functionality now uses `asyncio` only.
-  Users must migrate from `pysnmp.carrier.asyncore` / `pysnmp.hlapi.asyncore`
-  to `pysnmp.carrier.asyncio` / `pysnmp.hlapi.asyncio`.
-- Removed all deprecated asyncore example scripts (61 files across
-  `examples/v1arch/asyncore/` and `examples/v3arch/asyncore/`).
-
-**Python 2 compatibility removal:**
-
-- Removed all 16 `from __future__ import annotations` imports (unnecessary
-  on Python 3.10+; annotations now evaluate as real objects at runtime)
-- Removed `hasattr(logging, 'NullHandler')` fallback in `debug.py` (dead
-  since Python 2.6)
-- Removed `imp` module fallback and `sys.version_info[0] <= 2` branch in
-  `examples/smi/manager/builder.py`
-- Removed redundant `instanceTypes = (object,)` in `smi/view.py` (everything
-  is an object in Python 3)
-- Removed `__nonzero__` method in `ObjectIdentity` (Python 2 only; `__bool__`
-  is the Python 3 equivalent)
-- Cleaned up Python 2-referencing comments throughout the codebase
-
-**pyasn1.compat.octets decoupling:**
-
+- Removed deprecated `asyncore`/`asynsock` carrier shims and
+  `hlapi/asyncore` modules entirely; all transport and HLAPI
+  functionality now uses `asyncio` only (#98, #103)
+- Removed all deprecated asyncore example scripts (61 files) and
+  associated Sphinx documentation (#98)
+- Migrated build system from poetry to uv with hatchling backend (#93)
+- Added snmpsim integration tests and test infrastructure (#94)
+- Bumped minimum Python version to 3.10; removed dead Python 2-era
+  fallbacks (`imp`, `md5`/`sha`, `hashlib` SHA-2, `socket.inet_ntop`,
+  `errno.ENOENT`, `Cryptodome`, Python 2.6 compat directory) (#95)
+- Updated pysmi API calls to snake_case names; widened
+  `pysnmp-pysmi` pin to allow pysmi 2.x (#95)
+- Replaced asyncore with asyncio; fixed regression where server-mode
+  transports ended up on a different event loop than the dispatcher,
+  causing SNMPv3 integration to silently time out (#98)
+- Fixed SNMP value conversion to always clone proxied values into the
+  destination ASN.1 type; allowed empty OctetString SET values when MIB
+  syntax permits (#96)
+- Corrected VACM candidate selection for matching/`any` security
+  models, permitted security levels, exact contexts, and longest
+  prefixes (#96)
+- Implemented RFC 3413 notification filtering mechanism (#102)
+- Added device reporting and MIB instance tools (sync and asyncio
+  device-report helpers, IANA PEN MIB instance generation, MIB instance
+  stubs from ASN.1 modules) (#104)
+- Added black, isort, ruff, pylint, mypy tooling config; added
+  `py.typed` PEP 561 marker; applied auto-fixes; ran pyupgrade
+  `--py310-plus`; converted 88 `sys.exc_info()` idioms to modern
+  `except ... as e:` syntax (#99)
+- Added type annotations to functions across the codebase (#100)
+- Consolidated repeated asyncio callbacks, SNMPv3 message assembly, USM
+  error handling, and observer context management; improved cleanup on
+  exception paths (#101)
+- Added Python 3.14 to CI matrix; added docs building step to CI (#103,
+  #105)
+- Removed all 16 `from __future__ import annotations` imports
+- Removed `hasattr(logging, 'NullHandler')` fallback in `debug.py`
+- Removed redundant `instanceTypes = (object,)` in `smi/view.py`
+- Removed `__nonzero__` method in `ObjectIdentity` (Python 2 only)
 - Replaced all `pyasn1.compat.octets` shim usage with native Python 3
-  equivalents across 19 files. Uses Latin-1 (`iso-8859-1`) encoding for
-  `str2octs`/`octs2str` — NOT UTF-8 — to preserve wire/display-hint behavior
-  for non-ASCII values.
-- Fixed 5 `is null` identity checks → `== b''` in oneliner command generator
-  and notification originator (`b'' is b''` is not guaranteed in Python 3)
-
-**Bug fixes:**
-
-- Fixed dangerous old-style ternary expressions in `CommunityData.clone()`
-  and `UsmUserData.clone()` (18 instances). The pattern
-  `x is None and self.x or x` silently discarded falsy non-None values
-  (`mpModel=0`, `contextName=''`, `authKey=b''`, `authKeyType=0`). Replaced
-  with `x if x is not None else self.x`. This was a security-relevant fix:
-  empty auth/priv keys and `mpModel=0` (SNMPv1) are legitimate configurations.
-- Fixed `ObjectIdentity.__ge__` bug (delegated to `>` instead of `>=`) and
-  `ObjectIdentity.__le__` bug (delegated to `<` instead of `<=`) by applying
-  `functools.total_ordering`.
-
-**Feature uplifts (Python 3.10+):**
-
-- Applied `functools.total_ordering` to `ErrorIndication`, `TimerCallable`,
-  and `ObjectIdentity` — eliminates 4 comparison methods per class
-- Applied `@dataclass(eq=False, repr=False)` to `ContextData` — preserves
-  identity equality and hashability while reducing boilerplate
+  equivalents across 19 files (Latin-1 encoding for `str2octs`/`octs2str`)
+- Fixed 5 `is null` identity checks → `== b''` in oneliner command
+  generator and notification originator
+- Fixed dangerous old-style ternary expressions in
+  `CommunityData.clone()` and `UsmUserData.clone()` (18 instances) that
+  silently discarded falsy non-None values (`mpModel=0`, `contextName=''`,
+  `authKey=b''`, `authKeyType=0`)
+- Fixed `ObjectIdentity.__ge__` and `__le__` bugs (delegated to `>` / `<`
+  instead of `>=` / `<=`) by applying `functools.total_ordering`
+- Applied `functools.total_ordering` to `ErrorIndication`,
+  `TimerCallable`, and `ObjectIdentity`
+- Applied `@dataclass(eq=False, repr=False)` to `ContextData`
 - Replaced `typing.Callable` with `collections.abc.Callable` in
   `hlapi/asyncio/_callback.py`
-- Applied narrow `pathlib.Path` to filesystem operations in `engine.py`,
-  `compiler.py`, and `carrier/asyncio/dgram/unix.py` (kept `MibBuilder`
-  public API returning `str` for ZIP-loader compatibility)
-
-**Documentation and metadata:**
-
+- Applied `pathlib.Path` to filesystem operations in `engine.py`,
+  `compiler.py`, and `carrier/asyncio/dgram/unix.py`
+- Fixed pyc MIB loading to support PEP 552 hash-based invalidation (#90)
+- Fixed deprecated `asyncio.get_event_loop()` calls (#89)
+- Fixed deprecated GitHub Actions versions (#91)
+- Removed references to snmplabs.com (domain now points to phishing
+  sites) (#88)
 - Renamed `CHANGES.txt` to `CHANGELOG.md`
-- Updated docs version from 4.4 to 5.0.24
-- Updated `docs/source/contents.rst`: Python 2.4–3.7 → Python 3.10+
-- Removed `easy_install`/`ez_setup.py` references from download docs
-- Updated PyPI URL from `pypi.python.org` to `pypi.org`
+- Updated docs version from 4.4 to 5.0.24; updated Python version
+  references from 2.4–3.7 to 3.10+
+- Removed `easy_install`/`ez_setup.py` references; updated PyPI URL
 - Removed Python 2 era `py2exe` FAQ
-- Fixed garbled sentence in asyncio examples docs
 - Added Python 3.10–3.13 classifiers to `pyproject.toml`
-- Fixed stale dependency versions in `.github/copilot/copilot-instructions.md`
-- Updated `runtests.sh` to reference asyncio examples instead of removed
-  asyncore examples
+- Fixed stale dependency versions in copilot-instructions.md
+- Updated `runtests.sh` to reference asyncio examples
 - Cleaned `pylint-baseline.json` of 17 asyncore entries
-- Updated `.github/copilot/copilot-instructions.md` to remove all asyncore
-  architecture guidance
-
-**Testing:**
-
-- Added 5 characterization test files (96 tests, 7 xfail documenting known
-  bugs now fixed) covering Latin-1 conversion semantics, empty-context
-  behavior, falsy clone overrides, comparison contracts, and repr formats
 
 Revision 5.0.24, released 2026-08-25
 ------------------------------------
