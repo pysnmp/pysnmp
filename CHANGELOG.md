@@ -1,4 +1,87 @@
 
+Revision 5.0.25, released 2026-08-29
+------------------------------------
+
+**Breaking changes:**
+
+- Removed deprecated `asyncore`/`asynsock` carrier shims and `hlapi/asyncore`
+  modules entirely. The `asyncore` module was removed from the Python stdlib
+  in 3.12; all transport and HLAPI functionality now uses `asyncio` only.
+  Users must migrate from `pysnmp.carrier.asyncore` / `pysnmp.hlapi.asyncore`
+  to `pysnmp.carrier.asyncio` / `pysnmp.hlapi.asyncio`.
+- Removed all deprecated asyncore example scripts (61 files across
+  `examples/v1arch/asyncore/` and `examples/v3arch/asyncore/`).
+
+**Python 2 compatibility removal:**
+
+- Removed all 16 `from __future__ import annotations` imports (unnecessary
+  on Python 3.10+; annotations now evaluate as real objects at runtime)
+- Removed `hasattr(logging, 'NullHandler')` fallback in `debug.py` (dead
+  since Python 2.6)
+- Removed `imp` module fallback and `sys.version_info[0] <= 2` branch in
+  `examples/smi/manager/builder.py`
+- Removed redundant `instanceTypes = (object,)` in `smi/view.py` (everything
+  is an object in Python 3)
+- Removed `__nonzero__` method in `ObjectIdentity` (Python 2 only; `__bool__`
+  is the Python 3 equivalent)
+- Cleaned up Python 2-referencing comments throughout the codebase
+
+**pyasn1.compat.octets decoupling:**
+
+- Replaced all `pyasn1.compat.octets` shim usage with native Python 3
+  equivalents across 19 files. Uses Latin-1 (`iso-8859-1`) encoding for
+  `str2octs`/`octs2str` — NOT UTF-8 — to preserve wire/display-hint behavior
+  for non-ASCII values.
+- Fixed 5 `is null` identity checks → `== b''` in oneliner command generator
+  and notification originator (`b'' is b''` is not guaranteed in Python 3)
+
+**Bug fixes:**
+
+- Fixed dangerous old-style ternary expressions in `CommunityData.clone()`
+  and `UsmUserData.clone()` (18 instances). The pattern
+  `x is None and self.x or x` silently discarded falsy non-None values
+  (`mpModel=0`, `contextName=''`, `authKey=b''`, `authKeyType=0`). Replaced
+  with `x if x is not None else self.x`. This was a security-relevant fix:
+  empty auth/priv keys and `mpModel=0` (SNMPv1) are legitimate configurations.
+- Fixed `ObjectIdentity.__ge__` bug (delegated to `>` instead of `>=`) and
+  `ObjectIdentity.__le__` bug (delegated to `<` instead of `<=`) by applying
+  `functools.total_ordering`.
+
+**Feature uplifts (Python 3.10+):**
+
+- Applied `functools.total_ordering` to `ErrorIndication`, `TimerCallable`,
+  and `ObjectIdentity` — eliminates 4 comparison methods per class
+- Applied `@dataclass(eq=False, repr=False)` to `ContextData` — preserves
+  identity equality and hashability while reducing boilerplate
+- Replaced `typing.Callable` with `collections.abc.Callable` in
+  `hlapi/asyncio/_callback.py`
+- Applied narrow `pathlib.Path` to filesystem operations in `engine.py`,
+  `compiler.py`, and `carrier/asyncio/dgram/unix.py` (kept `MibBuilder`
+  public API returning `str` for ZIP-loader compatibility)
+
+**Documentation and metadata:**
+
+- Renamed `CHANGES.txt` to `CHANGELOG.md`
+- Updated docs version from 4.4 to 5.0.24
+- Updated `docs/source/contents.rst`: Python 2.4–3.7 → Python 3.10+
+- Removed `easy_install`/`ez_setup.py` references from download docs
+- Updated PyPI URL from `pypi.python.org` to `pypi.org`
+- Removed Python 2 era `py2exe` FAQ
+- Fixed garbled sentence in asyncio examples docs
+- Added Python 3.10–3.13 classifiers to `pyproject.toml`
+- Fixed stale dependency versions in `.github/copilot/copilot-instructions.md`
+- Updated `runtests.sh` to reference asyncio examples instead of removed
+  asyncore examples
+- Cleaned `pylint-baseline.json` of 17 asyncore entries
+- Updated `.github/copilot/copilot-instructions.md` to remove all asyncore
+  architecture guidance
+
+**Testing:**
+
+- Added 5 characterization test files (96 tests, 7 xfail documenting known
+  bugs now fixed) covering Latin-1 conversion semantics, empty-context
+  behavior, falsy clone overrides, comparison contracts, and repr formats
+
 Revision 5.0.24, released 2026-08-25
 ------------------------------------
 

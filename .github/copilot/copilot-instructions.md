@@ -181,7 +181,7 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 
 - Follow Semantic Versioning patterns as applied in the codebase
 - The version appears in **two** places that must stay in sync: `pyproject.toml` (`version = "..."` under `[project]`) and `pysnmp/__init__.py` (`__version__ = '...'`). The `__init__.py` also derives `version` (tuple) and `majorVersionId` — preserve that derivation logic when bumping.
-- Match existing patterns for documenting breaking changes in `CHANGES.txt` (Revision-header sections with bulleted notes)
+- Match existing patterns for documenting breaking changes in `CHANGELOG.md` (Revision-header sections with bulleted notes)
 - Follow the same approach for deprecation notices
 
 ## General Best Practices
