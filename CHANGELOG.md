@@ -17,6 +17,9 @@ Revision 5.0.25, released 2026-08-29
 - Replaced asyncore with asyncio; fixed regression where server-mode
   transports ended up on a different event loop than the dispatcher,
   causing SNMPv3 integration to silently time out (#98)
+- Replaced the test suite's removed asyncore-based `snmpsimd.py` dependency
+  with an asyncio-compatible in-tree simulator covering SNMPv1/v2c/v3,
+  GETNEXT/GETBULK, and the USM auth/privacy matrix (#54)
 - Fixed SNMP value conversion to always clone proxied values into the
   destination ASN.1 type; allowed empty OctetString SET values when MIB
   syntax permits (#96)

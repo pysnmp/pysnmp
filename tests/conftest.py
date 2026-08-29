@@ -20,9 +20,9 @@ def snmpsim_endpoint(tmp_path_factory):
     data_dir = Path(__file__).parent / "snmpsimdata"
     work_dir = tmp_path_factory.mktemp("snmpsim")
     log_path = work_dir / "snmpsimd.log"
-    simulator = Path(sys.executable).with_name("snmpsimd.py")
+    simulator = Path(__file__).parent / "snmpsim_launcher.py"
     if not simulator.is_file():
-        pytest.fail("snmpsimd.py was not installed alongside the Python executable")
+        pytest.fail("snmpsim_launcher.py was not found in tests/")
 
     repository_root = Path(__file__).resolve().parents[1]
     environment = os.environ.copy()
@@ -69,7 +69,6 @@ def snmpsim_endpoint(tmp_path_factory):
                 "--v3-auth-key=authkey1",
                 "--v3-auth-proto=MD5",
                 "--agent-udpv4-endpoint=127.0.0.1:{}".format(port),
-                "--logging-method=stderr",
                 "--log-level=info",
             ],
             stdout=subprocess.DEVNULL,
@@ -80,14 +79,14 @@ def snmpsim_endpoint(tmp_path_factory):
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
             if process.poll() is not None:
-                pytest.fail("snmpsimd.py exited early:\n{}".format(log_path.read_text()))
+                pytest.fail("snmpsim exited early:\n{}".format(log_path.read_text()))
             if "Listening at UDP/IPv4 endpoint" in log_path.read_text():
                 break
             time.sleep(0.05)
         else:
             process.terminate()
             process.wait(timeout=5)
-            pytest.fail("snmpsimd.py did not become ready:\n{}".format(log_path.read_text()))
+            pytest.fail("snmpsim did not become ready:\n{}".format(log_path.read_text()))
 
     try:
         yield "127.0.0.1", port

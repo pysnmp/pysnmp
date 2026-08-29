@@ -16,7 +16,6 @@ from pysnmp import debug
 from pysnmp.entity.observer import execution_context
 from pysnmp.proto import api, errind, error, rfc1155, rfc3411
 from pysnmp.proto.secmod.base import AbstractSecurityModel
-from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
 from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha, noauth
 from pysnmp.proto.secmod.rfc3414.priv import des, nopriv
 from pysnmp.proto.secmod.rfc3826.priv import aes
@@ -90,12 +89,6 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
     }
     privServices = {
         des.Des.serviceID: des.Des(),
-        des3.Des3.serviceID: des3.Des3(),
-        aes.Aes.serviceID: aes.Aes(),
-        aes192.AesBlumenthal192.serviceID: aes192.AesBlumenthal192(),
-        aes256.AesBlumenthal256.serviceID: aes256.AesBlumenthal256(),
-        aes192.Aes192.serviceID: aes192.Aes192(),  # non-standard
-        aes256.Aes256.serviceID: aes256.Aes256(),  # non-standard
         nopriv.NoPriv.serviceID: nopriv.NoPriv(),
     }
 
@@ -1339,3 +1332,19 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
     def receiveTimerTick(self, snmpEngine, timeNow):
         self.__expireTimelineInfo()
+
+
+# These imports are deferred to the end of the module to break a circular
+# import: eso.priv.aesbase imports rfc3414.localkey, which triggers this
+# module via rfc3414.__init__, which imports this module before the eso.priv
+# classes are fully defined.
+from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3  # noqa: E402
+
+SnmpUSMSecurityModel.privServices.update({
+    des3.Des3.serviceID: des3.Des3(),
+    aes.Aes.serviceID: aes.Aes(),
+    aes192.AesBlumenthal192.serviceID: aes192.AesBlumenthal192(),
+    aes256.AesBlumenthal256.serviceID: aes256.AesBlumenthal256(),
+    aes192.Aes192.serviceID: aes192.Aes192(),  # non-standard
+    aes256.Aes256.serviceID: aes256.Aes256(),  # non-standard
+})
