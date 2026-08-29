@@ -16,10 +16,10 @@ Fetch SNMP variable
 So just cut&paste the following code right into your Python prompt. The 
 code will performs SNMP GET operation for a sysDescr.0 object at a 
 publically available SNMP Command Responder at
-`localhost`_:
+``localhost``:
 
 .. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/v1-get.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 :download:`Download</../../examples/hlapi/asyncio/manager/cmdgen/v1-get.py>` script.
@@ -38,11 +38,11 @@ Send SNMP TRAP
 --------------
 
 To send a trivial TRAP message to our hosted Notification Receiver at
-`localhost`_
+``localhost``
 , just cut&paste the following code into your interactive Python session:
 
 .. literalinclude:: /../../examples/hlapi/asyncio/agent/ntforg/default-v1-trap.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 :download:`Download</../../examples/hlapi/asyncio/agent/ntforg/default-v1-trap.py>` script.

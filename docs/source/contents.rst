@@ -57,6 +57,8 @@ Documentation
    /docs/tutorial
    /docs/api-reference
    /docs/smi-table-api
+   /docs/device-report
+   /docs/mib-tools
 
 Examples
 --------

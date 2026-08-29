@@ -6,10 +6,10 @@ Transport tweaks
 
 .. include:: /../../examples/v1arch/asyncore/manager/cmdgen/spoof-source-address.py
    :start-after: """
-   :end-before: """#
+   :end-before: """  #
 
 .. literalinclude:: /../../examples/v1arch/asyncore/manager/cmdgen/spoof-source-address.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 :download:`Download</../../examples/v1arch/asyncore/manager/cmdgen/spoof-source-address.py>` script.
@@ -17,10 +17,10 @@ Transport tweaks
 
 .. include:: /../../examples/v1arch/asyncore/manager/cmdgen/broadcast-agent-discovery.py
    :start-after: """
-   :end-before: """#
+   :end-before: """  #
 
 .. literalinclude:: /../../examples/v1arch/asyncore/manager/cmdgen/broadcast-agent-discovery.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 :download:`Download</../../examples/v1arch/asyncore/manager/cmdgen/broadcast-agent-discovery.py>` script.
