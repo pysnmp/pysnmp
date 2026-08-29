@@ -16,7 +16,7 @@ Before generating code, scan the codebase to identify:
 
 1. **Language Versions**: Detect the exact versions of programming languages in use
    - Examine `pyproject.toml` for the Python version constraint (`python = "^3.10"`)
-   - Target Python 3.10+ syntax and features only; never use features introduced after 3.10
+   - Python Support from 3.10 to 3.14 is allowed, but do not use features introduced in versions later than the detected version or earlier than 3.10
    - The codebase uses f-strings (e.g. `pysnmp/error.py`, `pysnmp/entity/engine.py`) — f-strings are permitted
    - The `match` statement (3.10+) is permitted; do not introduce `type` aliases (3.12+) or other post-3.10 syntax
 
