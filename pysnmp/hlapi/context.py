@@ -4,13 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from dataclasses import dataclass
 from typing import Any
-
-# null replaced with b'' (was pyasn1.compat.octets.null)
 
 __all__ = ['ContextData']
 
 
+@dataclass(eq=False, repr=False)
 class ContextData:
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
@@ -48,9 +48,8 @@ class ContextData:
 
     """
 
-    def __init__(self, contextEngineId: Any = None, contextName: Any = b'') -> None:
-        self.contextEngineId = contextEngineId
-        self.contextName = contextName
+    contextEngineId: Any = None
+    contextName: Any = b''
 
     def __repr__(self) -> str:
         return '{}(contextEngineId={!r}, contextName={!r})'.format(

@@ -4,9 +4,12 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+import functools
+
 from pysnmp.carrier import error
 
 
+@functools.total_ordering
 class TimerCallable:
     def __init__(self, cbFun, callInterval):
         self.__cbFun = cbFun
@@ -22,20 +25,8 @@ class TimerCallable:
     def __eq__(self, cbFun):
         return self.__cbFun == cbFun
 
-    def __ne__(self, cbFun):
-        return self.__cbFun != cbFun
-
     def __lt__(self, cbFun):
         return self.__cbFun < cbFun
-
-    def __le__(self, cbFun):
-        return self.__cbFun <= cbFun
-
-    def __gt__(self, cbFun):
-        return self.__cbFun > cbFun
-
-    def __ge__(self, cbFun):
-        return self.__cbFun >= cbFun
 
     @property
     def interval(self):

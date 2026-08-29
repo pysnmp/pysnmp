@@ -4,7 +4,10 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+import functools
 
+
+@functools.total_ordering
 class ErrorIndication(Exception):
     """SNMPv3 error-indication values"""
 
@@ -18,20 +21,8 @@ class ErrorIndication(Exception):
     def __eq__(self, other):
         return self.__value == other
 
-    def __ne__(self, other):
-        return self.__value != other
-
     def __lt__(self, other):
         return self.__value < other
-
-    def __le__(self, other):
-        return self.__value <= other
-
-    def __gt__(self, other):
-        return self.__value > other
-
-    def __ge__(self, other):
-        return self.__value >= other
 
     def __str__(self):
         return self.__descr
