@@ -3,7 +3,61 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from __future__ import annotations
+
+from collections.abc import Iterator, MutableMapping
+from contextlib import contextmanager
+from typing import Any
+
 from pysnmp import error
+
+_MISSING_CONTEXT = object()
+
+
+@contextmanager
+def execution_context(
+    snmpEngine: Any,
+    execpoint: str,
+    variables: MutableMapping[str, Any] | None = None,
+    **context: Any,
+) -> Iterator[MutableMapping[str, Any]]:
+    """Context manager for observer store/clear execution context.
+
+    Replaces paired ``storeExecutionContext`` / ``clearExecutionContext``
+    calls to eliminate the risk of forgetting ``clear``::
+
+        with execution_context(snmpEngine, 'rfc3412.prepareOutgoingMessage',
+                                msg=msg):
+            ...
+
+    """
+
+    if variables is not None and context:
+        raise TypeError('execution context accepts either a mapping or keyword variables')
+
+    variables = variables if variables is not None else context
+    meta_observer = snmpEngine.observer
+    try:
+        previous = meta_observer.getExecutionContext(execpoint)
+    except KeyError:
+        previous = _MISSING_CONTEXT
+
+    stored = False
+    try:
+        meta_observer.storeExecutionContext(snmpEngine, execpoint, variables)
+        stored = True
+    finally:
+        if not stored:
+            meta_observer.clearExecutionContext(snmpEngine, execpoint)
+            if previous is not _MISSING_CONTEXT:
+                meta_observer._restore_execution_context(execpoint, previous)
+
+    try:
+        yield variables
+    finally:
+        meta_observer.clearExecutionContext(snmpEngine, execpoint)
+        if previous is not _MISSING_CONTEXT:
+            meta_observer._restore_execution_context(execpoint, previous)
 
 
 class MetaObserver:
@@ -63,3 +117,7 @@ class MetaObserver:
 
     def getExecutionContext(self, execpoint):
         return self.__execpoints[execpoint]
+
+    def _restore_execution_context(self, execpoint, variables):
+        """Restore a nested context without invoking observers again."""
+        self.__execpoints[execpoint] = variables

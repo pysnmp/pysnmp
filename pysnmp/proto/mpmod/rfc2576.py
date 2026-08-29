@@ -9,6 +9,7 @@ from pyasn1.compat.octets import null
 from pyasn1.type import univ
 
 from pysnmp import debug
+from pysnmp.entity.observer import execution_context
 from pysnmp.proto import errind, error, rfc3411
 from pysnmp.proto.api import v1, v2c
 from pysnmp.proto.mpmod.base import AbstractMessageProcessingModel
@@ -134,25 +135,21 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         communityName = msg.getComponentByPosition(1)  # for observer
 
-        snmpEngine.observer.storeExecutionContext(
+        with execution_context(
             snmpEngine,
             'rfc2576.prepareOutgoingMessage',
-            dict(
-                transportDomain=transportDomain,
-                transportAddress=transportAddress,
-                wholeMsg=wholeMsg,
-                securityModel=securityModel,
-                securityName=securityName,
-                securityLevel=securityLevel,
-                contextEngineId=contextEngineId,
-                contextName=contextName,
-                communityName=communityName,
-                pdu=pdu,
-            ),
-        )
-        snmpEngine.observer.clearExecutionContext(snmpEngine, 'rfc2576.prepareOutgoingMessage')
-
-        return transportDomain, transportAddress, wholeMsg
+            transportDomain=transportDomain,
+            transportAddress=transportAddress,
+            wholeMsg=wholeMsg,
+            securityModel=securityModel,
+            securityName=securityName,
+            securityLevel=securityLevel,
+            contextEngineId=contextEngineId,
+            contextName=contextName,
+            communityName=communityName,
+            pdu=pdu,
+        ):
+            return transportDomain, transportAddress, wholeMsg
 
     # rfc3412: 7.1
     def prepareResponseMessage(
@@ -260,25 +257,21 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # recover unique request-id right after PDU serialization
         pdu.setComponentByPosition(0, msgID)
 
-        snmpEngine.observer.storeExecutionContext(
+        with execution_context(
             snmpEngine,
             'rfc2576.prepareResponseMessage',
-            dict(
-                transportDomain=transportDomain,
-                transportAddress=transportAddress,
-                securityModel=securityModel,
-                securityName=securityName,
-                securityLevel=securityLevel,
-                contextEngineId=contextEngineId,
-                contextName=contextName,
-                securityEngineId=snmpEngineId,
-                communityName=msg.getComponentByPosition(1),
-                pdu=pdu,
-            ),
-        )
-        snmpEngine.observer.clearExecutionContext(snmpEngine, 'rfc2576.prepareResponseMessage')
-
-        return transportDomain, transportAddress, wholeMsg
+            transportDomain=transportDomain,
+            transportAddress=transportAddress,
+            securityModel=securityModel,
+            securityName=securityName,
+            securityLevel=securityLevel,
+            contextEngineId=contextEngineId,
+            contextName=contextName,
+            securityEngineId=snmpEngineId,
+            communityName=msg.getComponentByPosition(1),
+            pdu=pdu,
+        ):
+            return transportDomain, transportAddress, wholeMsg
 
     # rfc3412: 7.2.1
 
@@ -341,21 +334,17 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         except error.StatusInformation as statusInformation:
 
-            snmpEngine.observer.storeExecutionContext(
+            with execution_context(
                 snmpEngine,
                 'rfc2576.prepareDataElements:sm-failure',
-                dict(
-                    transportDomain=transportDomain,
-                    transportAddress=transportAddress,
-                    securityModel=securityModel,
-                    securityLevel=securityLevel,
-                    securityParameters=securityParameters,
-                    statusInformation=statusInformation,
-                ),
-            )
-            snmpEngine.observer.clearExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:sm-failure'
-            )
+                transportDomain=transportDomain,
+                transportAddress=transportAddress,
+                securityModel=securityModel,
+                securityLevel=securityLevel,
+                securityParameters=securityParameters,
+                statusInformation=statusInformation,
+            ):
+                pass
 
             raise
 
@@ -418,25 +407,21 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
             stateReference = None
 
-            snmpEngine.observer.storeExecutionContext(
+            with execution_context(
                 snmpEngine,
                 'rfc2576.prepareDataElements:response',
-                dict(
-                    transportDomain=transportDomain,
-                    transportAddress=transportAddress,
-                    securityModel=securityModel,
-                    securityName=securityName,
-                    securityLevel=securityLevel,
-                    contextEngineId=contextEngineId,
-                    contextName=contextName,
-                    securityEngineId=securityEngineId,
-                    communityName=communityName,
-                    pdu=pdu,
-                ),
-            )
-            snmpEngine.observer.clearExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:response'
-            )
+                transportDomain=transportDomain,
+                transportAddress=transportAddress,
+                securityModel=securityModel,
+                securityName=securityName,
+                securityLevel=securityLevel,
+                contextEngineId=contextEngineId,
+                contextName=contextName,
+                securityEngineId=securityEngineId,
+                communityName=communityName,
+                pdu=pdu,
+            ):
+                pass
 
             # rfc3412: 7.2.12c
             smHandler.releaseStateInformation(securityStateReference)
@@ -493,25 +478,21 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 transportAddress=transportAddress,
             )
 
-            snmpEngine.observer.storeExecutionContext(
+            with execution_context(
                 snmpEngine,
                 'rfc2576.prepareDataElements:confirmed',
-                dict(
-                    transportDomain=transportDomain,
-                    transportAddress=transportAddress,
-                    securityModel=securityModel,
-                    securityName=securityName,
-                    securityLevel=securityLevel,
-                    contextEngineId=contextEngineId,
-                    contextName=contextName,
-                    securityEngineId=securityEngineId,
-                    communityName=communityName,
-                    pdu=pdu,
-                ),
-            )
-            snmpEngine.observer.clearExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:confirmed'
-            )
+                transportDomain=transportDomain,
+                transportAddress=transportAddress,
+                securityModel=securityModel,
+                securityName=securityName,
+                securityLevel=securityLevel,
+                contextEngineId=contextEngineId,
+                contextName=contextName,
+                securityEngineId=securityEngineId,
+                communityName=communityName,
+                pdu=pdu,
+            ):
+                pass
 
             debug.logger & debug.flagMP and debug.logger(
                 'prepareDataElements: cached by new stateReference %s' % stateReference
@@ -539,25 +520,21 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             # Pass new stateReference to let app browse request details
             stateReference = self._cache.newStateReference()
 
-            snmpEngine.observer.storeExecutionContext(
+            with execution_context(
                 snmpEngine,
                 'rfc2576.prepareDataElements:unconfirmed',
-                dict(
-                    transportDomain=transportDomain,
-                    transportAddress=transportAddress,
-                    securityModel=securityModel,
-                    securityName=securityName,
-                    securityLevel=securityLevel,
-                    contextEngineId=contextEngineId,
-                    contextName=contextName,
-                    securityEngineId=securityEngineId,
-                    communityName=communityName,
-                    pdu=pdu,
-                ),
-            )
-            snmpEngine.observer.clearExecutionContext(
-                snmpEngine, 'rfc2576.prepareDataElements:unconfirmed'
-            )
+                transportDomain=transportDomain,
+                transportAddress=transportAddress,
+                securityModel=securityModel,
+                securityName=securityName,
+                securityLevel=securityLevel,
+                contextEngineId=contextEngineId,
+                contextName=contextName,
+                securityEngineId=securityEngineId,
+                communityName=communityName,
+                pdu=pdu,
+            ):
+                pass
 
             # This is not specified explicitly in RFC
             smHandler.releaseStateInformation(securityStateReference)
