@@ -3,7 +3,6 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from __future__ import annotations
 
 from typing import Any
 
@@ -41,7 +40,7 @@ class AbstractTransportTarget:
     def getTransportInfo(self) -> tuple[Any, tuple[str, ...]]:
         return self.transportDomain, self.transportAddr
 
-    def setLocalAddress(self, iface: tuple[str, ...] | None) -> AbstractTransportTarget:
+    def setLocalAddress(self, iface: tuple[str, ...] | None) -> "AbstractTransportTarget":
         """Set source address.
 
         Parameters

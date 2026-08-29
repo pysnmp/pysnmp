@@ -3,7 +3,6 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from __future__ import annotations
 
 from typing import Any, NoReturn
 
@@ -180,7 +179,7 @@ class CommunityData:
         contextName: Any = None,
         tag: Any = None,
         securityName: str | None = None,
-    ) -> CommunityData:
+    ) -> "CommunityData":
         # a single arg is considered as a community name
         if communityName is None:
             communityName, communityIndex = communityIndex, None
@@ -453,7 +452,7 @@ class UsmUserData:
         securityName: str | None = None,
         authKeyType: int | None = None,
         privKeyType: int | None = None,
-    ) -> UsmUserData:
+    ) -> "UsmUserData":
         return self.__class__(
             userName is None and self.userName or userName,
             authKey is None and self.authKey or authKey,
