@@ -63,36 +63,8 @@ message building/parsing and network communication via one or more
 transports. It's fully up to the application to handle failures on 
 message and transport levels.
 
-Command Generator
-+++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/manager/cmdgen/fetching-variables
-   /examples/v1arch/asyncore/manager/cmdgen/modifying-variables
-   /examples/v1arch/asyncore/manager/cmdgen/walking-operations
-   /examples/v1arch/asyncore/manager/cmdgen/transport-tweaks
-
-Command Responder
-+++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/agent/cmdrsp/agent-side-mib-implementations
-
-Notification Originator
-+++++++++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/agent/ntforg/transport-tweaks
-
-Notification Receiver
-+++++++++++++++++++++
-
-.. toctree::
-
-   /examples/v1arch/asyncore/manager/ntfrcv/transport-tweaks
+The packet-level API has been removed in favor of the asyncio-based APIs.
+See the High-level SNMP and Native SNMP API sections above.
 
 Low-level MIB access
 --------------------
