@@ -100,7 +100,7 @@ Setting transport and target
 
 PySNMP supports UDP-over-IPv4 and UDP-over-IPv6 network transports.
 In this example we will query 
-`public SNMP Simulator`_
+`public SNMP Simulator <https://pypi.org/project/snmpsim/>`__
 available over IPv4 on the Internet at *localhost*. Transport
 configuration is passed to SNMP LCD in form of properly initialized
 :py:class:`~pysnmp.hlapi.UdpTransportTarget` or

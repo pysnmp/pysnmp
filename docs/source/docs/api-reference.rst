@@ -55,9 +55,11 @@ saves its configuration for the lifetime of SNMP engine object.
 
 .. autoclass:: pysnmp.hlapi.UdpTransportTarget
    :members: setLocalAddress
+   :no-index:
 
 .. autoclass:: pysnmp.hlapi.Udp6TransportTarget
    :members: setLocalAddress
+   :no-index:
 
 Command Generator
 
@@ -121,9 +123,11 @@ Transport configuration
 
 .. autoclass:: pysnmp.hlapi.asyncio.UdpTransportTarget
    :members: setLocalAddress
+   :no-index:
 
 .. autoclass:: pysnmp.hlapi.asyncio.Udp6TransportTarget
    :members: setLocalAddress
+   :no-index:
 
 
 SNMP Engine
