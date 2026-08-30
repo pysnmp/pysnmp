@@ -11,7 +11,6 @@ def sendNotification(
     try:
         asyncio.get_running_loop()
     except RuntimeError:
-        existing_loop = asyncio.get_event_loop()
         loop = asyncio.new_event_loop()
     else:
         raise RuntimeError(
@@ -39,4 +38,4 @@ def sendNotification(
             snmpEngine.transportDispatcher.closeDispatcher()
             loop.run_until_complete(asyncio.sleep(0))
         loop.close()
-        asyncio.set_event_loop(existing_loop)
+        asyncio.set_event_loop(None)
