@@ -52,7 +52,8 @@ $ pip install pysnmplib
 To download and install PySNMP along with its dependencies:
 
 - [PyASN1](https://github.com/pysnmp/pyasn1)
-- [PyCryptodomex](https://pycryptodome.readthedocs.io) (required only if SNMPv3 encryption is in use)
+- [PyCryptodomex](https://pycryptodome.readthedocs.io) (required for SNMPv3 encryption; imported lazily, so
+  SNMPv1, SNMPv2c and the SNMPv3 noAuthNoPriv/authNoPriv security levels work without it)
 - [PySMI](https://github.com/pysnmp/pysmi) (required for MIB services only)
 
 Besides the library, command-line [SNMP utilities](https://github.com/etingof/snmpclitools)

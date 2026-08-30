@@ -4,11 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+import warnings
 from typing import Any
 
 from pysnmp import debug, error
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
 from pysnmp.proto import rfc1902, rfc1905
+from pysnmp.proto.secmod import cipherbackend
 from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
 from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha, noauth
 from pysnmp.proto.secmod.rfc3414.priv import des, nopriv
@@ -51,6 +53,66 @@ usmNoPrivProtocol = nopriv.NoPriv.serviceID
 usmKeyTypePassphrase = 0
 usmKeyTypeMaster = 1
 usmKeyTypeLocalized = 2
+
+# Protocols that are still implemented for interoperability with deployed
+# equipment, but that must not be chosen for new deployments. Configuring one
+# of these emits a `PySnmpWeakCryptoWarning`.
+WEAK_PROTOCOLS: dict[Any, str] = {
+    usmDESPrivProtocol: (
+        'usmDESPrivProtocol (DES-CBC) has a 56-bit effective key and is '
+        'disallowed for encryption by NIST SP 800-131A. Use '
+        'usmAesCfb128Protocol instead.'
+    ),
+    usm3DESEDEPrivProtocol: (
+        'usm3DESEDEPrivProtocol (3DES-EDE) has a 64-bit block and is '
+        'vulnerable to Sweet32 (CVE-2016-2183); NIST SP 800-131A Rev 2 '
+        'disallows it for encryption. Use usmAesCfb128Protocol instead.'
+    ),
+    usmHMACMD5AuthProtocol: (
+        'usmHMACMD5AuthProtocol relies on MD5, deprecated by RFC 6151. Use '
+        'usmHMAC192SHA256AuthProtocol instead.'
+    ),
+}
+
+# Protocols that are cryptographically sound but were never standardised by
+# the IETF. They are needed to talk to some vendors' equipment, and are not a
+# portable choice. Configuring one emits a `PySnmpNonStandardCryptoWarning`.
+NON_STANDARD_PROTOCOLS: dict[Any, str] = {
+    usmAesBlumenthalCfb192Protocol: 'usmAesBlumenthalCfb192Protocol',
+    usmAesBlumenthalCfb256Protocol: 'usmAesBlumenthalCfb256Protocol',
+    usmAesCfb192Protocol: 'usmAesCfb192Protocol',
+    usmAesCfb256Protocol: 'usmAesCfb256Protocol',
+}
+
+
+def __warnAboutProtocol(protocol: Any, stacklevel: int) -> None:
+    reason = WEAK_PROTOCOLS.get(protocol)
+    if reason is not None:
+        warnings.warn(reason, error.PySnmpWeakCryptoWarning, stacklevel=stacklevel)
+        return
+
+    name = NON_STANDARD_PROTOCOLS.get(protocol)
+    if name is not None:
+        warnings.warn(
+            f'{name} is based on an expired IETF draft rather than a published '
+            f'standard, and interoperates only with equipment implementing the '
+            f'same draft. usmAesCfb128Protocol (RFC 3826) is the standards-track '
+            f'privacy protocol.',
+            error.PySnmpNonStandardCryptoWarning,
+            stacklevel=stacklevel,
+        )
+
+
+def __checkPrivBackend(privProtocol: Any) -> None:
+    if privProtocol not in privServices:
+        raise error.PySnmpError(f'Unknown privacy protocol {privProtocol}')
+
+    if privProtocol == usmNoPrivProtocol:
+        return
+
+    if not cipherbackend.isAvailable():
+        raise error.PySnmpError(cipherbackend.INSTALL_HINT)
+
 
 # Auth services
 authServices: dict[Any, Any] = {
@@ -178,6 +240,10 @@ def addV3User(
     contextEngineId: Any | None = None,
 ) -> None:
 
+    __checkPrivBackend(privProtocol)
+    __warnAboutProtocol(authProtocol, stacklevel=3)
+    __warnAboutProtocol(privProtocol, stacklevel=3)
+
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     if securityName is None:
@@ -212,9 +278,6 @@ def addV3User(
 
     if authProtocol not in authServices:
         raise error.PySnmpError(f'Unknown auth protocol {authProtocol}')
-
-    if privProtocol not in privServices:
-        raise error.PySnmpError(f'Unknown privacy protocol {privProtocol}')
 
     (pysnmpUsmKeyType,) = mibBuilder.importSymbols('__PYSNMP-USM-MIB', 'pysnmpUsmKeyType')
 
