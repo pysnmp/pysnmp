@@ -888,7 +888,7 @@ class ObjectType:
         try:
             self.__args[1] = mibNode.getSyntax().clone(self.__args[1])
         except PyAsn1Error as e:
-            err = 'MIB object %r having type %r failed to cast value ' '%r: %s' % (
+            err = 'MIB object %r having type %r failed to cast value %r: %s' % (
                 self.__args[0].prettyPrint(),
                 mibNode.getSyntax().__class__.__name__,
                 self.__args[1],

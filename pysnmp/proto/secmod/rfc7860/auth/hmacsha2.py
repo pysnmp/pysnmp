@@ -39,9 +39,6 @@ class HmacSha2(base.AbstractAuthenticationService):
         sha512ServiceID: sha512,
     }
 
-    __ipad = [0x36] * 64
-    __opad = [0x5C] * 64
-
     def __init__(self, oid):
         if oid not in self.hashAlgorithms:
             raise error.ProtocolError(f'No SHA-2 authentication algorithm {oid} available')

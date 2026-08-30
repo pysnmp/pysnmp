@@ -125,8 +125,10 @@ class SnmpEngine:
             f = persistentPath / 'boots'
             try:
                 snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(open(f).read())
-            except Exception:
-                pass
+            except OSError as e:
+                debug.logger & debug.flagApp and debug.logger(
+                    'SnmpEngine: could not load SNMP Engine Boots: %s' % e
+                )
 
             try:
                 snmpEngineBoots.syntax += 1
@@ -194,7 +196,4 @@ class SnmpEngine:
         return self.cache.get('__%s' % arg)
 
     def delUserContext(self, arg: str) -> None:
-        try:
-            del self.cache['__%s' % arg]
-        except KeyError:
-            pass
+        self.cache.pop('__%s' % arg, None)

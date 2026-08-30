@@ -3,17 +3,42 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pysnmp.entity.engine import *
+from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi import auth
 from pysnmp.hlapi.asyncio.device import DeviceReport as DeviceReport
 from pysnmp.hlapi.asyncio.device import SysOREntry as SysOREntry
 
 # default is a synchronous facade over the asyncio API
-from pysnmp.hlapi.asyncio.sync import *
-from pysnmp.hlapi.context import *
-from pysnmp.proto.rfc1902 import *
+from pysnmp.hlapi.asyncio.sync import (
+    UnixTransportTarget,
+    Udp6TransportTarget,
+    UdpTransportTarget,
+    bulkCmd,
+    get_device_report,
+    getCmd,
+    getDeviceReport,
+    nextCmd,
+    sendNotification,
+    setCmd,
+)
+from pysnmp.hlapi.context import ContextData
+from pysnmp.proto.rfc1902 import (
+    Bits,
+    Counter32,
+    Counter64,
+    Gauge32,
+    Integer,
+    Integer32,
+    IpAddress,
+    Null,
+    ObjectIdentifier,
+    OctetString,
+    Opaque,
+    TimeTicks,
+    Unsigned32,
+)
 from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
-from pysnmp.smi.rfc1902 import *
+from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
 
 CommunityData = auth.CommunityData
 UsmUserData = auth.UsmUserData

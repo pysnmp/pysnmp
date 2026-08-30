@@ -5,7 +5,7 @@
 #
 from pysnmp import error, nextid
 from pysnmp.entity import config
-from pysnmp.hlapi.auth import *
+from pysnmp.hlapi.auth import CommunityData, UsmUserData
 
 __all__ = ['CommandGeneratorLcdConfigurator', 'NotificationOriginatorLcdConfigurator']
 
@@ -23,9 +23,11 @@ class AbstractLcdConfigurator:
         return cache
 
     def configure(self, snmpEngine, *args, **kwargs):
+        # Subclasses provide protocol-specific configuration.
         pass
 
     def unconfigure(self, snmpEngine, *args, **kwargs):
+        # Subclasses provide protocol-specific cleanup.
         pass
 
 

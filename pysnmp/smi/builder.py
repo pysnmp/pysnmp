@@ -59,7 +59,7 @@ class __AbstractMibSource:
             self.__inited = self._init()
             if self.__inited is self:
                 self.__inited = True
-        if self.__inited is True:
+        if self.__inited:
             return self
 
         else:
@@ -147,7 +147,7 @@ class __AbstractMibSource:
         raise NotImplementedError()
 
     def _getData(self, f: str, mode: str) -> tuple[Any, str]:
-        NotImplementedError()
+        raise NotImplementedError()
 
 
 class ZipMibSource(__AbstractMibSource):

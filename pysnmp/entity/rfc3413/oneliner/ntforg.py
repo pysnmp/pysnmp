@@ -8,10 +8,13 @@
 #
 from pysnmp.entity import config
 from pysnmp.entity.rfc3413 import context
-from pysnmp.hlapi.asyncio import *
 from pysnmp.hlapi.asyncio import sync
-from pysnmp.hlapi.lcd import *
-from pysnmp.hlapi.varbinds import *
+from pysnmp.entity.engine import SnmpEngine
+from pysnmp.hlapi.asyncio.ntforg import sendNotification
+from pysnmp.hlapi.context import ContextData
+from pysnmp.hlapi.lcd import NotificationOriginatorLcdConfigurator
+from pysnmp.hlapi.varbinds import NotificationOriginatorVarBinds
+from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
 
 __all__ = ['AsynNotificationOriginator', 'NotificationOriginator', 'MibVariable']
 

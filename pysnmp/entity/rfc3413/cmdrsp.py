@@ -24,6 +24,7 @@ class CommandResponderBase:
         self.__pendingReqs = {}
 
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
+        # Concrete responders implement their management operation here.
         pass
 
     def close(self, snmpEngine):

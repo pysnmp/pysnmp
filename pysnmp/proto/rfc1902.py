@@ -331,7 +331,7 @@ class IpAddress(OctetString):
         if isinstance(value, str) and len(value) != 4:
             try:
                 value = [int(x) for x in value.split('.')]
-            except:
+            except Exception:
                 raise error.ProtocolError('Bad IP address syntax %s' % value)
         value = OctetString.prettyIn(self, value)
         if len(value) != 4:

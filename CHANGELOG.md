@@ -1,4 +1,3 @@
-
 Revision 5.0.25, released 2026-08-29
 ------------------------------------
 
@@ -75,6 +74,11 @@ Revision 5.0.25, released 2026-08-29
 - Fixed stale dependency versions in copilot-instructions.md
 - Updated `runtests.sh` to reference asyncio examples
 - Cleaned `pylint-baseline.json` of 17 asyncore entries
+- Replaced wildcard imports with explicit public dependencies and preserved
+  the high-level API re-exports.
+- Improved static-analysis compliance for error handling, no-op extension
+  hooks, identifier generation, and protocol salt initialization.
+- Added project-level exclusions for intentional established naming conventions.
 
 Revision 5.0.24, released 2026-08-25
 ------------------------------------

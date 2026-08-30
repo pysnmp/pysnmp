@@ -475,7 +475,7 @@ class NotificationOriginator:
                     # A notification name must be specifically included. A
                     # missing match therefore rejects this target.
                     trapOidVal = varBinds[1][1]  # value of snmpTrapOID varbind
-                    if _matchPreparedFilter(preparedFilter, trapOidVal) is not True:
+                    if not _matchPreparedFilter(preparedFilter, trapOidVal):
                         debug.logger & debug.flagApp and debug.logger(
                             'sendVarBinds: notification name {} excluded by filter '
                             'for target {}, skipping'.format(
@@ -491,7 +491,7 @@ class NotificationOriginator:
                     for varName, _ in varBinds:
                         if varName in (sysUpTime.name, snmpTrapOID.name):
                             continue
-                        if _matchPreparedFilter(preparedFilter, varName) is False:
+                        if _matchPreparedFilter(preparedFilter, varName) in (False,):
                             debug.logger & debug.flagApp and debug.logger(
                                 'sendVarBinds: varBind {} excluded by filter for '
                                 'target {}, skipping notification'.format(

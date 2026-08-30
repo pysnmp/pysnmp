@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import random
+import secrets
 from hashlib import md5, sha1
 
 from Cryptodome.Cipher import DES3
@@ -14,9 +14,6 @@ from pysnmp.proto.secmod.rfc3414 import localkey
 from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
 from pysnmp.proto.secmod.rfc3414.priv import base
 from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
-
-random.seed()
-
 
 # 5.1.1
 
@@ -29,7 +26,7 @@ class Des3(base.AbstractEncryptionService):
 
     serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 2, 3)  # usm3DESEDEPrivProtocol
     keySize = 32
-    _localInt = random.randrange(0, 0xFFFFFFFF)
+    _localInt = secrets.randbits(32)
 
     def hashPassphrase(self, authProtocol, privKey):
         if authProtocol == hmacmd5.HmacMd5.serviceID:

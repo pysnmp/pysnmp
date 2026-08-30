@@ -11,14 +11,13 @@ def sendNotification(
     try:
         asyncio.get_running_loop()
     except RuntimeError:
-        pass
+        loop = asyncio.new_event_loop()
     else:
         raise RuntimeError(
             'The synchronous HLAPI cannot run while an asyncio event loop is running; '
             'use pysnmp.hlapi.asyncio instead'
         )
 
-    loop = asyncio.new_event_loop()
     try:
         asyncio.set_event_loop(loop)
         while varBinds:

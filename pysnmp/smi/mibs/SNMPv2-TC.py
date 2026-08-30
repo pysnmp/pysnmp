@@ -10,7 +10,13 @@ from pyasn1.type import univ
 from pyasn1.type.base import Asn1Item
 
 from pysnmp import debug
-from pysnmp.smi.error import *
+from pysnmp.smi.error import (
+    InconsistentValueError,
+    MibOperationError,
+    RowCreationWanted,
+    RowDestructionWanted,
+    SmiError,
+)
 
 OctetString, Integer, ObjectIdentifier = mibBuilder.importSymbols(
     'ASN1', 'OctetString', 'Integer', 'ObjectIdentifier'

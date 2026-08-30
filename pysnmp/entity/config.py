@@ -138,7 +138,7 @@ def delV1System(snmpEngine: Any, communityIndex: str) -> None:
     )
 
     debug.logger & debug.flagSM and debug.logger(
-        'delV1System: deleted table entry by communityIndex ' '"%s"' % (communityIndex,)
+        'delV1System: deleted table entry by communityIndex "%s"' % (communityIndex,)
     )
 
 
@@ -477,11 +477,13 @@ def delTargetAddr(snmpEngine: Any, addrName: str) -> None:
 
 
 def addTransport(snmpEngine: Any, transportDomain: Any, transport: Any) -> None:
-    if snmpEngine.transportDispatcher:
-        if not transport.isCompatibleWithDispatcher(snmpEngine.transportDispatcher):
-            raise error.PySnmpError(
-                f'Transport {transport!r} is not compatible with dispatcher {snmpEngine.transportDispatcher!r}'
-            )
+    if (
+        snmpEngine.transportDispatcher
+        and not transport.isCompatibleWithDispatcher(snmpEngine.transportDispatcher)
+    ):
+        raise error.PySnmpError(
+            f'Transport {transport!r} is not compatible with dispatcher {snmpEngine.transportDispatcher!r}'
+        )
     else:
         dispatcherArgs = {}
         if hasattr(transport, 'loop'):

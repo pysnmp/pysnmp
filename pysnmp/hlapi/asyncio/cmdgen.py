@@ -36,13 +36,9 @@ from typing import Any
 
 from pysnmp.entity.rfc3413 import cmdgen
 from pysnmp.hlapi.asyncio._callback import make_callback
-from pysnmp.hlapi.asyncio.transport import *
-from pysnmp.hlapi.auth import *
-from pysnmp.hlapi.context import *
-from pysnmp.hlapi.lcd import *
+from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.hlapi.types import SnmpResponse
-from pysnmp.hlapi.varbinds import *
-from pysnmp.smi.rfc1902 import *
+from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 
 __all__ = ['getCmd', 'nextCmd', 'setCmd', 'bulkCmd', 'isEndOfMib']
 

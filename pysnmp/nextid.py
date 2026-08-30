@@ -3,9 +3,7 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import random
-
-random.seed()
+import secrets
 
 
 class Integer:
@@ -17,7 +15,7 @@ class Integer:
             increment = maximum
         self.__increment = increment
         self.__threshold = increment // 2
-        e = random.randrange(self.__maximum - self.__increment)
+        e = secrets.randbelow(self.__maximum - self.__increment)
         self.__bank = list(range(e, e + self.__increment))
 
     def __repr__(self):
