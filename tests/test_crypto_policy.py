@@ -143,6 +143,16 @@ class TestSafeProtocolsAreSilent:
         assert [w for w in caught if issubclass(w.category, PySnmpCryptoWarning)] == []
 
 
+class TestUnknownProtocols:
+    def test_unknown_priv_protocol_rejected(self, snmpEngine):
+        with pytest.raises(PySnmpError, match='Unknown privacy protocol'):
+            addUser(snmpEngine, 'unknown-priv', privProtocol=(1, 3, 6, 1, 4, 1, 99999))
+
+    def test_unknown_auth_protocol_rejected(self, snmpEngine):
+        with pytest.raises(PySnmpError, match='Unknown auth protocol'):
+            addUser(snmpEngine, 'unknown-auth', authProtocol=(1, 3, 6, 1, 4, 1, 99999))
+
+
 class TestMissingBackend:
     def test_unknown_protocol_precedes_backend_error(self, snmpEngine, monkeypatch):
         monkeypatch.setattr(cipherbackend, 'isAvailable', lambda: False)

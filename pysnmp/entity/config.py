@@ -279,9 +279,6 @@ def addV3User(
     if authProtocol not in authServices:
         raise error.PySnmpError(f'Unknown auth protocol {authProtocol}')
 
-    if privProtocol not in privServices:
-        raise error.PySnmpError(f'Unknown privacy protocol {privProtocol}')
-
     (pysnmpUsmKeyType,) = mibBuilder.importSymbols('__PYSNMP-USM-MIB', 'pysnmpUsmKeyType')
 
     authKeyType = pysnmpUsmKeyType.syntax.clone(authKeyType)
