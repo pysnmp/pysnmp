@@ -96,7 +96,8 @@ class TestSnmpEngine:
 
         SnmpEngine(snmpEngineID=engine_id)
 
-        assert boots_path.read_text(encoding='ascii') != '-1'
+        persisted_boots = int(boots_path.read_text(encoding='ascii'))
+        assert persisted_boots >= 0
 
 class TestMetaObserver:
     def test_register_unregister_observer(self):
