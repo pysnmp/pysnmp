@@ -144,6 +144,12 @@ class TestSafeProtocolsAreSilent:
 
 
 class TestMissingBackend:
+    def test_unknown_protocol_precedes_backend_error(self, snmpEngine, monkeypatch):
+        monkeypatch.setattr(cipherbackend, 'isAvailable', lambda: False)
+
+        with pytest.raises(PySnmpError, match='Unknown privacy protocol'):
+            addUser(snmpEngine, 'unknown-priv', privProtocol=(1, 3, 6, 1, 4, 1, 99999))
+
     def test_priv_config_raises_actionable_error(self, snmpEngine, monkeypatch):
         monkeypatch.setattr(cipherbackend, 'isAvailable', lambda: False)
 

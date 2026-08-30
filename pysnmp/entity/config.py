@@ -104,6 +104,9 @@ def __warnAboutProtocol(protocol: Any, stacklevel: int) -> None:
 
 
 def __checkPrivBackend(privProtocol: Any) -> None:
+    if privProtocol not in privServices:
+        raise error.PySnmpError(f'Unknown privacy protocol {privProtocol}')
+
     if privProtocol == usmNoPrivProtocol:
         return
 

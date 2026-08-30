@@ -58,8 +58,8 @@ Privacy protocols
 =========================================  =============  ====================================
 Protocol                                   Status         Notes
 =========================================  =============  ====================================
-``usmAesCfb128Protocol``                   Recommended    RFC 3826; the only standards-track
-                                                          privacy protocol for SNMPv3
+``usmAesCfb128Protocol``                   Recommended    RFC 3826; recommended standards-track
+                                                          privacy option for SNMPv3
 ``usmAesCfb192Protocol``                   Non-standard   Reeder draft; needed for some
 ``usmAesCfb256Protocol``                                  vendors, including Cisco
 ``usmAesBlumenthalCfb192Protocol``         Non-standard   Blumenthal draft, expired
