@@ -5,6 +5,8 @@
 #
 
 import importlib
+import importlib.machinery
+import importlib.util
 import marshal
 import os
 import struct
