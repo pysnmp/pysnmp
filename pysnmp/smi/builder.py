@@ -59,7 +59,7 @@ class __AbstractMibSource:
             self.__inited = self._init()
             if self.__inited is self:
                 self.__inited = True
-        if self.__inited:
+        if isinstance(self.__inited, bool) and self.__inited:
             return self
 
         else:
