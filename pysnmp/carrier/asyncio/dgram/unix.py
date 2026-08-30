@@ -48,10 +48,7 @@ class UnixAsyncioTransport(DgramAsyncioProtocol):
     def closeTransport(self):
         DgramAsyncioProtocol.closeTransport(self)
         if self._iface:
-            try:
-                os.unlink(self._iface)
-            except OSError:
-                pass
+            Path(self._iface).unlink(missing_ok=True)
 
 
 UnixTransport = UnixAsyncioTransport

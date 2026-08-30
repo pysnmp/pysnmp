@@ -30,9 +30,11 @@ def getNextVarBinds(varBinds, origVarBinds=None):
             rfc1905.EndOfMibView.tagSet,
         ):
             nonNulls -= 1
-        elif origVarBinds is not None:
-            if v2c.ObjectIdentifier(origVarBinds[idx][0]).asTuple() >= varBinds[idx][0].asTuple():
-                errorIndication = errind.oidNotIncreasing
+        elif (
+            origVarBinds is not None
+            and v2c.ObjectIdentifier(origVarBinds[idx][0]).asTuple() >= varBinds[idx][0].asTuple()
+        ):
+            errorIndication = errind.oidNotIncreasing
 
         rspVarBinds.insert(0, (varBinds[idx][0], __null))
 
@@ -179,7 +181,7 @@ class CommandGenerator:
         if (
             origMessageProcessingModel != messageProcessingModel
             or origSecurityModel != securityModel
-            or origSecurityName != origSecurityName
+            or origSecurityName != securityName
             or origContextEngineId
             and origContextEngineId != contextEngineId
             or origContextName

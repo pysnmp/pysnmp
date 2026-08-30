@@ -28,3 +28,4 @@ venv*
 .tox/
 .env
 openspec/
+sonar_plan.md

@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import random
+import secrets
 from hashlib import md5, sha1
 
 from pyasn1.type import univ
@@ -15,9 +15,6 @@ from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
 from pysnmp.proto.secmod.rfc3414.priv import base
 from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
-random.seed()
-
-
 # RFC3826
 
 #
@@ -26,7 +23,7 @@ random.seed()
 class Aes(base.AbstractEncryptionService):
     serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 2, 4)  # usmAesCfb128Protocol
     keySize = 16
-    _localInt = random.randrange(0, 0xFFFFFFFFFFFFFFFF)
+    _localInt = secrets.randbits(64)
 
     # 3.1.2.1
     def __getEncryptionKey(self, privKey, snmpEngineBoots, snmpEngineTime):

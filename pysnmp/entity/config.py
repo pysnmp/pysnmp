@@ -200,7 +200,7 @@ def delV1System(snmpEngine: Any, communityIndex: str) -> None:
     )
 
     debug.logger & debug.flagSM and debug.logger(
-        'delV1System: deleted table entry by communityIndex ' '"%s"' % (communityIndex,)
+        'delV1System: deleted table entry by communityIndex "%s"' % (communityIndex,)
     )
 
 

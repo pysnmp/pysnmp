@@ -863,6 +863,7 @@ class MibScalarInstance(MibTree):
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def destroyCommit(self, name, val, idx, acInfo):
+        # No persistent state changes are required for this operation.
         pass
 
     # noinspection PyUnusedLocal
@@ -870,6 +871,7 @@ class MibScalarInstance(MibTree):
         self.branchVersionId += 1
 
     def destroyUndo(self, name, val, idx, acInfo):
+        # There is no state change to roll back for this operation.
         pass
 
 

@@ -59,4 +59,5 @@ class AbstractSecurityModel:
         self._cache.pop(stateReference)
 
     def receiveTimerTick(self, snmpEngine, timeNow):
+        # Security models without timers do not need to take action.
         pass
