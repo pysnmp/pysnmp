@@ -6,10 +6,10 @@
 import secrets
 from hashlib import md5, sha1
 
-from Cryptodome.Cipher import DES
 from pyasn1.type import univ
 
 from pysnmp.proto import errind, error
+from pysnmp.proto.secmod import cipherbackend
 from pysnmp.proto.secmod.rfc3414 import localkey
 from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
 from pysnmp.proto.secmod.rfc3414.priv import base
@@ -86,6 +86,7 @@ class Des(base.AbstractEncryptionService):
 
     # 8.2.4.1
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
+        DES = cipherbackend.getCipher('DES')
         if DES is None:
             raise error.StatusInformation(errorIndication=errind.encryptionError)
 
@@ -109,6 +110,7 @@ class Des(base.AbstractEncryptionService):
 
     # 8.2.4.2
     def decryptData(self, decryptKey, privParameters, encryptedData):
+        DES = cipherbackend.getCipher('DES')
         if DES is None:
             raise error.StatusInformation(errorIndication=errind.decryptionError)
 
