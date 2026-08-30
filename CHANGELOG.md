@@ -1,6 +1,21 @@
 Revision 5.0.25, released 2026-08-29
 ------------------------------------
 
+- Moved `Cryptodome.Cipher` imports behind a lazy `pysnmp.proto.secmod.cipherbackend`
+  helper; pysnmp now imports and serves SNMPv1, SNMPv2c and the SNMPv3
+  noAuthNoPriv/authNoPriv security levels when pycryptodomex is absent, and
+  configuring a privacy protocol raises `PySnmpError` naming the missing
+  package instead of failing at packet processing time (#40)
+- Added `PySnmpWeakCryptoWarning` for DES, 3DES and HMAC-MD5, and
+  `PySnmpNonStandardCryptoWarning` for the Reeder/Blumenthal AES-192/256
+  variants, both emitted from `addV3User` at configuration time (#40)
+- Added a Security Considerations documentation page stating the recommended
+  AES-128-CFB plus HMAC-SHA-256 configuration and the status of every USM
+  protocol (#40)
+- Fixed `pysnmp.smi.builder` relying on another module to import
+  `importlib.util` and `importlib.machinery`
+- Corrected the README claim that pycryptodomex is optional
+
 - Removed deprecated `asyncore`/`asynsock` carrier shims and
   `hlapi/asyncore` modules entirely; all transport and HLAPI
   functionality now uses `asyncio` only (#98, #103)
