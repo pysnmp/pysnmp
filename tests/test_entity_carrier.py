@@ -86,6 +86,17 @@ class TestSnmpEngine:
         engine = SnmpEngine()
         assert isinstance(engine.cache, dict)
 
+    def test_invalid_persisted_boots(self, monkeypatch, tmp_path):
+        engine_id = OctetString(hexValue='80004fb8050102030405')
+        persistent_path = tmp_path / '__pysnmp' / engine_id.prettyPrint()
+        persistent_path.mkdir(parents=True)
+        boots_path = persistent_path / 'boots'
+        boots_path.write_text('-1', encoding='ascii')
+        monkeypatch.setattr(tempfile, 'gettempdir', lambda: str(tmp_path))
+
+        SnmpEngine(snmpEngineID=engine_id)
+
+        assert boots_path.read_text(encoding='ascii') != '-1'
 
 class TestMetaObserver:
     def test_register_unregister_observer(self):

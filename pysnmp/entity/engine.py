@@ -10,6 +10,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from pyasn1.type.error import ValueConstraintError
+
 from pysnmp import debug, error
 from pysnmp.entity import observer
 from pysnmp.proto.acmod import rfc3415, void
@@ -125,7 +127,7 @@ class SnmpEngine:
             f = persistentPath / 'boots'
             try:
                 snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(open(f).read())
-            except OSError as e:
+            except (OSError, UnicodeDecodeError, ValueConstraintError, ValueError) as e:
                 debug.logger & debug.flagApp and debug.logger(
                     'SnmpEngine: could not load SNMP Engine Boots: %s' % e
                 )
