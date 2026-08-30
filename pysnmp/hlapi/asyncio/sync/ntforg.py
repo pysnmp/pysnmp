@@ -11,7 +11,10 @@ def sendNotification(
     try:
         asyncio.get_running_loop()
     except RuntimeError:
-        existing_loop = asyncio.get_event_loop()
+        try:
+            existing_loop = asyncio.get_event_loop()
+        except RuntimeError:
+            existing_loop = None
         loop = asyncio.new_event_loop()
     else:
         raise RuntimeError(

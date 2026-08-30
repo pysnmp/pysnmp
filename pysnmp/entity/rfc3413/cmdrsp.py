@@ -188,6 +188,8 @@ class CommandResponderBase:
                 # Request REPORT generation
                 statusInformation['oid'] = errorIndication['oid']
                 statusInformation['val'] = errorIndication['val']
+            else:
+                errorStatus, errorIndex = 'genErr', errorIndication['idx'] + 1
 
         # Handle PDU-level SMI errors
 
@@ -205,9 +207,6 @@ class CommandResponderBase:
 
         except pysnmp.smi.error.ReadOnlyError as e:
             errorStatus, errorIndex = 'readOnly', e['idx'] + 1
-
-        except pysnmp.smi.error.GenError as e:
-            errorStatus, errorIndex = 'genErr', e['idx'] + 1
 
         except pysnmp.smi.error.NoAccessError as e:
             errorStatus, errorIndex = 'noAccess', e['idx'] + 1

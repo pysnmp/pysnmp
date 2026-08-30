@@ -178,11 +178,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         cachedParams = self._cache.popByStateRef(stateReference)
         msgID = cachedParams['msgID']
         reqID = cachedParams['reqID']
-        contextEngineId = cachedParams['contextEngineId']
-        contextName = cachedParams['contextName']
-        securityModel = cachedParams['securityModel']
-        securityName = cachedParams['securityName']
-        securityLevel = cachedParams['securityLevel']
+        responseContextEngineId = cachedParams['contextEngineId']
+        responseContextName = cachedParams['contextName']
+        responseSecurityModel = cachedParams['securityModel']
+        responseSecurityName = cachedParams['securityName']
+        responseSecurityLevel = cachedParams['securityLevel']
         securityStateReference = cachedParams['securityStateReference']
         maxMessageSize = cachedParams['msgMaxSize']
         transportDomain = cachedParams['transportDomain']
@@ -204,18 +204,18 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # rfc3412: 7.1.4
         # Since there's no SNMP engine identification in v1/2c,
         # set destination contextEngineId to ours
-        if not contextEngineId:
-            contextEngineId = snmpEngineId
+        if not responseContextEngineId:
+            responseContextEngineId = snmpEngineId
 
         # rfc3412: 7.1.5
-        if not contextName:
-            contextName = b''
+        if not responseContextName:
+            responseContextName = b''
 
         # rfc3412: 7.1.6
-        scopedPDU = (contextEngineId, contextName, pdu)
+        scopedPDU = (responseContextEngineId, responseContextName, pdu)
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareResponseMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}'
+            f'prepareResponseMessage: using contextEngineId {responseContextEngineId!r} contextName {responseContextName!r}'
         )
 
         msg = self._snmpMsgSpec
@@ -230,7 +230,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # rfc3412: 7.1.7
         globalData = (msg,)
 
-        k = int(securityModel)
+        k = int(responseSecurityModel)
         if k in snmpEngine.securityModels:
             smHandler = snmpEngine.securityModels[k]
         else:
@@ -245,10 +245,10 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             self.messageProcessingModelID,
             globalData,
             maxMessageSize,
-            securityModel,
+            responseSecurityModel,
             snmpEngineId,
-            securityName,
-            securityLevel,
+            responseSecurityName,
+            responseSecurityLevel,
             scopedPDU,
             securityStateReference,
         )
@@ -261,11 +261,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             'rfc2576.prepareResponseMessage',
             transportDomain=transportDomain,
             transportAddress=transportAddress,
-            securityModel=securityModel,
-            securityName=securityName,
-            securityLevel=securityLevel,
-            contextEngineId=contextEngineId,
-            contextName=contextName,
+            securityModel=responseSecurityModel,
+            securityName=responseSecurityName,
+            securityLevel=responseSecurityLevel,
+            contextEngineId=responseContextEngineId,
+            contextName=responseContextName,
             securityEngineId=snmpEngineId,
             communityName=msg.getComponentByPosition(1),
             pdu=pdu,
