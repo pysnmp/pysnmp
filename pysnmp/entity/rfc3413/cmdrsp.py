@@ -189,7 +189,10 @@ class CommandResponderBase:
                 statusInformation['oid'] = errorIndication['oid']
                 statusInformation['val'] = errorIndication['val']
             else:
-                errorStatus, errorIndex = 'genErr', errorIndication.get('idx', 0) + 1
+                errorStatus, errorIndex = (
+                    'genErr',
+                    errorIndication['idx'] + 1 if 'idx' in errorIndication else 0,
+                )
 
         # Handle PDU-level SMI errors
 
