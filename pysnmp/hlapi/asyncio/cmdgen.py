@@ -40,12 +40,14 @@ from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.hlapi.types import SnmpResponse
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 
-__all__ = ['getCmd', 'nextCmd', 'setCmd', 'bulkCmd', 'isEndOfMib']
+__all__ = ["getCmd", "nextCmd", "setCmd", "bulkCmd", "isEndOfMib"]
 
 vbProcessor = CommandGeneratorVarBinds()
 lcd = CommandGeneratorLcdConfigurator()
 
-isEndOfMib = lambda x: not cmdgen.getNextVarBinds(x)[1]
+
+def isEndOfMib(x):
+    return not cmdgen.getNextVarBinds(x)[1]
 
 
 async def getCmd(
@@ -141,7 +143,7 @@ async def getCmd(
         contextData.contextName,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get('lookupMib', True), future),
+        (options.get("lookupMib", True), future),
     )
     return await future
 
@@ -238,7 +240,7 @@ async def setCmd(
         contextData.contextName,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get('lookupMib', True), future),
+        (options.get("lookupMib", True), future),
     )
     return await future
 
@@ -339,7 +341,7 @@ async def nextCmd(
         contextData.contextName,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get('lookupMib', True), future),
+        (options.get("lookupMib", True), future),
     )
     return await future
 
@@ -474,6 +476,6 @@ async def bulkCmd(
         maxRepetitions,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get('lookupMib', True), future),
+        (options.get("lookupMib", True), future),
     )
     return await future

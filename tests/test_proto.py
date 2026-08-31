@@ -1,13 +1,12 @@
 """Unit tests for protocol RFC modules and API layer."""
 
 import pytest
-
+from pyasn1.codec.ber import encoder
 from pyasn1.type import univ
-from pyasn1.codec.ber import decoder, encoder
 
-from pysnmp.proto import rfc1155, rfc1157, rfc1901, rfc1902, rfc1905, rfc3411
-from pysnmp.proto import error as proto_error, errind
-from pysnmp.proto.api import verdec, v1, v2c
+from pysnmp.proto import errind, rfc1155, rfc1157, rfc1901, rfc1902, rfc1905, rfc3411
+from pysnmp.proto import error as proto_error
+from pysnmp.proto.api import v1, v2c, verdec
 
 
 class TestRfc1902Types:
@@ -25,7 +24,7 @@ class TestRfc1902Types:
 
     def test_integer_with_named_values(self):
         State = rfc1902.Integer.withNamedValues(enable=1, disable=0)
-        val = State('enable')
+        val = State("enable")
         assert int(val) == 1
 
     def test_integer_with_range(self):
@@ -41,16 +40,16 @@ class TestRfc1902Types:
             Discreet(5)
 
     def test_octet_string_creation(self):
-        val = rfc1902.OctetString('hello')
-        assert str(val) == 'hello'
+        val = rfc1902.OctetString("hello")
+        assert str(val) == "hello"
 
     def test_octet_string_hexvalue(self):
-        val = rfc1902.OctetString(hexValue='deadbeef')
-        assert val.asOctets() == b'\xde\xad\xbe\xef'
+        val = rfc1902.OctetString(hexValue="deadbeef")
+        assert val.asOctets() == b"\xde\xad\xbe\xef"
 
     def test_octet_string_concat(self):
-        val = rfc1902.OctetString('hello') + ' world'
-        assert str(val) == 'hello world'
+        val = rfc1902.OctetString("hello") + " world"
+        assert str(val) == "hello world"
 
     def test_object_identifier(self):
         oid = rfc1902.ObjectIdentifier((1, 3, 6, 1))
@@ -77,23 +76,23 @@ class TestRfc1902Types:
         assert int(val) == 2**40
 
     def test_ip_address(self):
-        val = rfc1902.IpAddress('192.168.1.1')
-        assert '192.168.1.1' in val.prettyPrint()
+        val = rfc1902.IpAddress("192.168.1.1")
+        assert "192.168.1.1" in val.prettyPrint()
 
     def test_ip_address_bad(self):
         with pytest.raises(proto_error.ProtocolError):
-            rfc1902.IpAddress('not.an.ip')
+            rfc1902.IpAddress("not.an.ip")
 
     def test_null(self):
-        val = rfc1902.Null('')
-        assert str(val) == ''
+        val = rfc1902.Null("")
+        assert str(val) == ""
 
     def test_bits(self):
         val = rfc1902.Bits()
         assert val is not None
 
     def test_opaque(self):
-        val = rfc1902.Opaque(b'\x01\x02')
+        val = rfc1902.Opaque(b"\x01\x02")
         assert val is not None
 
 
@@ -121,27 +120,27 @@ class TestRfc1905Pdu:
         assert int(v2c.apiBulkPDU.getMaxRepetitions(pdu)) == 10
 
     def test_no_such_object(self):
-        assert 'No Such Object' in rfc1905.noSuchObject.prettyPrint()
+        assert "No Such Object" in rfc1905.noSuchObject.prettyPrint()
 
     def test_no_such_instance(self):
-        assert 'No Such Instance' in rfc1905.noSuchInstance.prettyPrint()
+        assert "No Such Instance" in rfc1905.noSuchInstance.prettyPrint()
 
     def test_end_of_mib_view(self):
-        assert 'No more variables' in rfc1905.endOfMibView.prettyPrint()
+        assert "No more variables" in rfc1905.endOfMibView.prettyPrint()
 
     def test_var_bind_set_get(self):
         pdu = rfc1905.GetRequestPDU()
         v2c.apiPDU.setDefaults(pdu)
-        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString('test'))]
+        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString("test"))]
         v2c.apiPDU.setVarBinds(pdu, varBinds)
         result = v2c.apiPDU.getVarBinds(pdu)
         assert len(result) == 1
         assert tuple(result[0][0]) == (1, 3, 6, 1, 2, 1, 1, 1, 0)
 
     def test_error_status_named_values(self):
-        assert int(rfc1905.errorStatus.clone('noError')) == 0
-        assert int(rfc1905.errorStatus.clone('tooBig')) == 1
-        assert int(rfc1905.errorStatus.clone('genErr')) == 5
+        assert int(rfc1905.errorStatus.clone("noError")) == 0
+        assert int(rfc1905.errorStatus.clone("tooBig")) == 1
+        assert int(rfc1905.errorStatus.clone("genErr")) == 5
 
     def test_pdu_choice(self):
         pdu = rfc1905.GetRequestPDU()
@@ -153,7 +152,7 @@ class TestRfc1905Pdu:
     def test_set_end_of_mib_error(self):
         pdu = rfc1905.GetRequestPDU()
         v2c.apiPDU.setDefaults(pdu)
-        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString('test'))]
+        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString("test"))]
         v2c.apiPDU.setVarBinds(pdu, varBinds)
         v2c.apiPDU.setEndOfMibError(pdu, 1)
         # Verify the error was set by checking the var bind list directly
@@ -163,7 +162,7 @@ class TestRfc1905Pdu:
     def test_set_no_such_instance_error(self):
         pdu = rfc1905.GetRequestPDU()
         v2c.apiPDU.setDefaults(pdu)
-        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString('test'))]
+        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString("test"))]
         v2c.apiPDU.setVarBinds(pdu, varBinds)
         v2c.apiPDU.setNoSuchInstanceError(pdu, 1)
         # Verify the error was set by checking the var bind list directly
@@ -176,9 +175,9 @@ class TestRfc1905Pdu:
         v2c.apiBulkPDU.setNonRepeaters(req, 1)
         v2c.apiBulkPDU.setMaxRepetitions(req, 2)
         reqVarBinds = [
-            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.Null('')),
-            ((1, 3, 6, 1, 2, 1, 1, 2, 0), rfc1902.Null('')),
-            ((1, 3, 6, 1, 2, 1, 1, 3, 0), rfc1902.Null('')),
+            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.Null("")),
+            ((1, 3, 6, 1, 2, 1, 1, 2, 0), rfc1902.Null("")),
+            ((1, 3, 6, 1, 2, 1, 1, 3, 0), rfc1902.Null("")),
         ]
         v2c.apiBulkPDU.setVarBinds(req, reqVarBinds)
 
@@ -186,11 +185,11 @@ class TestRfc1905Pdu:
         v2c.apiPDU.setDefaults(rsp)
         v2c.apiPDU.setRequestID(rsp, v2c.apiBulkPDU.getRequestID(req))
         rspVarBinds = [
-            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString('a')),
-            ((1, 3, 6, 1, 2, 1, 1, 2, 0), rfc1902.OctetString('b')),
-            ((1, 3, 6, 1, 2, 1, 1, 3, 0), rfc1902.OctetString('c')),
-            ((1, 3, 6, 1, 2, 1, 1, 4, 0), rfc1902.OctetString('d')),
-            ((1, 3, 6, 1, 2, 1, 1, 5, 0), rfc1902.OctetString('e')),
+            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString("a")),
+            ((1, 3, 6, 1, 2, 1, 1, 2, 0), rfc1902.OctetString("b")),
+            ((1, 3, 6, 1, 2, 1, 1, 3, 0), rfc1902.OctetString("c")),
+            ((1, 3, 6, 1, 2, 1, 1, 4, 0), rfc1902.OctetString("d")),
+            ((1, 3, 6, 1, 2, 1, 1, 5, 0), rfc1902.OctetString("e")),
         ]
         v2c.apiPDU.setVarBinds(rsp, rspVarBinds)
 
@@ -200,12 +199,12 @@ class TestRfc1905Pdu:
 
 class TestRfc1155Types:
     def test_ip_address(self):
-        val = rfc1155.IpAddress('10.0.0.1')
-        assert '10.0.0.1' in val.prettyPrint()
+        val = rfc1155.IpAddress("10.0.0.1")
+        assert "10.0.0.1" in val.prettyPrint()
 
     def test_ip_address_pretty_out_empty(self):
-        val = rfc1155.IpAddress('0.0.0.0')
-        assert val.prettyPrint() == '0.0.0.0'
+        val = rfc1155.IpAddress("0.0.0.0")
+        assert val.prettyPrint() == "0.0.0.0"
 
     def test_counter(self):
         val = rfc1155.Counter(42)
@@ -213,7 +212,7 @@ class TestRfc1155Types:
 
     def test_network_address_clone(self):
         na = rfc1155.NetworkAddress()
-        cloned = na.clone(rfc1155.IpAddress('1.2.3.4'))
+        cloned = na.clone(rfc1155.IpAddress("1.2.3.4"))
         assert cloned is not None
 
     def test_network_address_clone_from_name(self):
@@ -229,7 +228,7 @@ class TestRfc1157Message:
         assert msg is not None
 
     def test_version_value(self):
-        assert int(rfc1157.version.clone('version-1')) == 0
+        assert int(rfc1157.version.clone("version-1")) == 0
 
     def test_get_request_pdu_tag(self):
         pdu = rfc1157.GetRequestPDU()
@@ -255,8 +254,8 @@ class TestRfc1157Message:
     def test_trap_get_set_agent_addr(self):
         pdu = rfc1157.TrapPDU()
         v1.apiTrapPDU.setDefaults(pdu)
-        v1.apiTrapPDU.setAgentAddr(pdu, '10.0.0.1')
-        assert '10.0.0.1' in v1.apiTrapPDU.getAgentAddr(pdu).prettyPrint()
+        v1.apiTrapPDU.setAgentAddr(pdu, "10.0.0.1")
+        assert "10.0.0.1" in v1.apiTrapPDU.getAgentAddr(pdu).prettyPrint()
 
     def test_trap_get_set_specific_trap(self):
         pdu = rfc1157.TrapPDU()
@@ -279,7 +278,7 @@ class TestRfc1157Message:
     def test_v1_pdu_api_var_binds(self):
         pdu = rfc1157.GetRequestPDU()
         v1.apiPDU.setDefaults(pdu)
-        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.Opaque(b'\x01'))]
+        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.Opaque(b"\x01"))]
         v1.apiPDU.setVarBinds(pdu, varBinds)
         result = v1.apiPDU.getVarBinds(pdu)
         assert len(result) == 1
@@ -312,7 +311,7 @@ class TestRfc1157Message:
 
 class TestRfc1901Message:
     def test_version_value(self):
-        assert int(rfc1901.version.clone('version-2c')) == 1
+        assert int(rfc1901.version.clone("version-2c")) == 1
 
     def test_message_creation(self):
         msg = rfc1901.Message()
@@ -352,7 +351,7 @@ class TestVerdec:
     def test_decode_message_version_v1(self):
         msg = rfc1157.Message()
         msg.setComponentByPosition(0, rfc1157.version.clone(0))
-        msg.setComponentByPosition(1, univ.OctetString('public'))
+        msg.setComponentByPosition(1, univ.OctetString("public"))
         pdu = rfc1157.GetRequestPDU()
         v1.apiPDU.setDefaults(pdu)
         pdus = rfc1157.PDUs()
@@ -365,7 +364,7 @@ class TestVerdec:
     def test_decode_message_version_v2c(self):
         msg = rfc1901.Message()
         msg.setComponentByPosition(0, rfc1901.version.clone(1))
-        msg.setComponentByPosition(1, univ.OctetString('public'))
+        msg.setComponentByPosition(1, univ.OctetString("public"))
         pdu = rfc1905.GetRequestPDU()
         v2c.apiPDU.setDefaults(pdu)
         pdus = rfc1905.PDUs()
@@ -377,20 +376,20 @@ class TestVerdec:
 
     def test_decode_bad_ber(self):
         with pytest.raises(proto_error.ProtocolError):
-            verdec.decodeMessageVersion(b'\x00\x00\x00')
+            verdec.decodeMessageVersion(b"\x00\x00\x00")
 
 
 class TestProtoError:
     def test_protocol_error(self):
-        err = proto_error.ProtocolError('test error')
-        assert 'test error' in str(err)
+        err = proto_error.ProtocolError("test error")
+        assert "test error" in str(err)
 
     def test_status_information(self):
-        si = proto_error.StatusInformation(errorIndication='test')
-        assert si['errorIndication'] == 'test'
-        assert 'errorIndication' in si
-        assert si.get('errorIndication') == 'test'
-        assert 'test' in str(si)
+        si = proto_error.StatusInformation(errorIndication="test")
+        assert si["errorIndication"] == "test"
+        assert "errorIndication" in si
+        assert si.get("errorIndication") == "test"
+        assert "test" in str(si)
 
     def test_cache_expired_error(self):
         err = proto_error.CacheExpiredError()
@@ -411,13 +410,13 @@ class TestProtoError:
 
 class TestErrind:
     def test_error_indication_str(self):
-        assert str(errind.requestTimedOut) == 'No SNMP response received before timeout'
+        assert str(errind.requestTimedOut) == "No SNMP response received before timeout"
 
     def test_error_indication_equality(self):
-        assert errind.requestTimedOut == 'requestTimedOut'
+        assert errind.requestTimedOut == "requestTimedOut"
 
     def test_serialization_error(self):
-        assert str(errind.serializationError) == 'SNMP message serialization error'
+        assert str(errind.serializationError) == "SNMP message serialization error"
 
 
 class TestProxyRfc2576:
@@ -430,8 +429,8 @@ class TestProxyRfc2576:
         v1Pdu = rfc1157.GetRequestPDU()
         v1.apiPDU.setDefaults(v1Pdu)
         v1VarBinds = [
-            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.OctetString('test value')),
-            ((1, 3, 6, 1, 2, 1, 1, 2, 0), rfc1155.ObjectIdentifier((1, 3, 6))),
+            ((1, 3, 6, 1, 2, 1, 1, 1, 0), univ.OctetString("test value")),
+            ((1, 3, 6, 1, 2, 1, 1, 2, 0), univ.ObjectIdentifier((1, 3, 6))),
         ]
         v1.apiPDU.setVarBinds(v1Pdu, v1VarBinds)
 
@@ -439,14 +438,14 @@ class TestProxyRfc2576:
         assert v2Pdu is not None
         v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
         assert len(v2VarBinds) == 2
-        assert str(v2VarBinds[0][1]) == 'test value'
+        assert str(v2VarBinds[0][1]) == "test value"
         assert tuple(v2VarBinds[1][1]) == (1, 3, 6)
 
         v1Pdu2 = rfc2576.v2ToV1(v2Pdu, v1Pdu)
         assert v1Pdu2 is not None
         v1VarBinds2 = v1.apiPDU.getVarBinds(v1Pdu2)
         assert len(v1VarBinds2) == 2
-        assert str(v1VarBinds2[0][1]) == 'test value'
+        assert str(v1VarBinds2[0][1]) == "test value"
         assert tuple(v1VarBinds2[1][1]) == (1, 3, 6)
 
     def test_v1_to_v2_counter(self):
@@ -469,7 +468,7 @@ class TestProxyRfc2576:
         """Verify Counter32 type coercion from v2 to v1."""
         from pysnmp.proto.proxy import rfc2576
 
-        v2Pdu = rfc1905.GetResponsePDU()
+        v2Pdu = rfc1905.ResponsePDU()
         v2c.apiPDU.setDefaults(v2Pdu)
         v2VarBinds = [
             ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.Counter32(99)),
@@ -487,14 +486,14 @@ class TestProxyRfc2576:
 
         v1Pdu = rfc1157.GetResponsePDU()
         v1.apiPDU.setDefaults(v1Pdu)
-        v1Val = rfc1155.OctetString('hello')
+        v1Val = univ.OctetString("hello")
         v1VarBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), v1Val)]
         v1.apiPDU.setVarBinds(v1Pdu, v1VarBinds)
 
         v2Pdu = rfc2576.v1ToV2(v1Pdu)
         v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
 
-        assert str(v2VarBinds[0][1]) == 'hello'
+        assert str(v2VarBinds[0][1]) == "hello"
         assert type(v2VarBinds[0][1]) is v2c.OctetString
 
     def test_v1_to_v2_rejects_integer_outside_integer32_range(self):
@@ -503,36 +502,39 @@ class TestProxyRfc2576:
 
         v1Pdu = rfc1157.GetResponsePDU()
         v1.apiPDU.setDefaults(v1Pdu)
-        v1.apiPDU.setVarBinds(v1Pdu, [
-            ((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.Integer(2147483648)),
-        ])
+        v1.apiPDU.setVarBinds(
+            v1Pdu,
+            [
+                ((1, 3, 6, 1, 2, 1, 1, 1, 0), univ.Integer(2147483648)),
+            ],
+        )
 
         with pytest.raises(Exception):
             rfc2576.v1ToV2(v1Pdu)
 
     def test_deserialization_error(self):
-        assert str(errind.deserializationError) == 'SNMP message deserialization error'
+        assert str(errind.deserializationError) == "SNMP message deserialization error"
 
     def test_unsupported_msg_processing_model(self):
-        assert 'Unknown SNMP message processing model' in str(errind.unsupportedMsgProcessingModel)
+        assert "Unknown SNMP message processing model" in str(errind.unsupportedMsgProcessingModel)
 
     def test_unknown_pdu_handler(self):
-        assert 'Unhandled PDU type' in str(errind.unknownPDUHandler)
+        assert "Unhandled PDU type" in str(errind.unknownPDUHandler)
 
     def test_unsupported_pdu_type(self):
-        assert 'Unsupported SNMP PDU type' in str(errind.unsupportedPDUtype)
+        assert "Unsupported SNMP PDU type" in str(errind.unsupportedPDUtype)
 
     def test_request_timed_out(self):
-        assert 'No SNMP response' in str(errind.requestTimedOut)
+        assert "No SNMP response" in str(errind.requestTimedOut)
 
     def test_empty_response(self):
-        assert 'Empty SNMP response' in str(errind.emptyResponse)
+        assert "Empty SNMP response" in str(errind.emptyResponse)
 
     def test_non_reportable(self):
-        assert 'Report PDU generation' in str(errind.nonReportable)
+        assert "Report PDU generation" in str(errind.nonReportable)
 
     def test_data_mismatch(self):
-        assert 'mismatched' in str(errind.dataMismatch)
+        assert "mismatched" in str(errind.dataMismatch)
 
     def test_engine_id_mismatch(self):
         assert errind.engineIDMismatch is not None
@@ -541,32 +543,37 @@ class TestProxyRfc2576:
 class TestProtoCache:
     def test_cache_add_pop(self):
         from pysnmp.proto.cache import Cache
+
         c = Cache()
         c.add(1, a=1, b=2)
         result = c.pop(1)
-        assert result == {'a': 1, 'b': 2}
+        assert result == {"a": 1, "b": 2}
 
     def test_cache_pop_missing(self):
         from pysnmp.proto.cache import Cache
+
         c = Cache()
         assert c.pop(999) is None
 
     def test_cache_update(self):
         from pysnmp.proto.cache import Cache
+
         c = Cache()
         c.add(1, a=1)
         c.update(1, b=2)
         result = c.pop(1)
-        assert result == {'a': 1, 'b': 2}
+        assert result == {"a": 1, "b": 2}
 
     def test_cache_update_missing_raises(self):
         from pysnmp.proto.cache import Cache
+
         c = Cache()
         with pytest.raises(proto_error.ProtocolError):
             c.update(999, a=1)
 
     def test_cache_expire(self):
         from pysnmp.proto.cache import Cache
+
         c = Cache()
         c.add(1, a=1)
         c.add(2, b=2)
@@ -577,6 +584,7 @@ class TestProtoCache:
 
     def test_cache_expire_selective(self):
         from pysnmp.proto.cache import Cache
+
         c = Cache()
         c.add(1, a=1)
         c.add(2, b=2)
@@ -595,8 +603,8 @@ class TestV2cMessageAPI:
     def test_message_get_set_community(self):
         msg = rfc1901.Message()
         v2c.apiMessage.setDefaults(msg)
-        v2c.apiMessage.setCommunity(msg, 'public')
-        assert str(v2c.apiMessage.getCommunity(msg)) == 'public'
+        v2c.apiMessage.setCommunity(msg, "public")
+        assert str(v2c.apiMessage.getCommunity(msg)) == "public"
 
     def test_message_get_set_pdu(self):
         msg = rfc1901.Message()
@@ -626,16 +634,17 @@ class TestV1MessageAPI:
     def test_message_get_set_community(self):
         msg = rfc1157.Message()
         v1.apiMessage.setDefaults(msg)
-        v1.apiMessage.setCommunity(msg, 'public')
-        assert str(v1.apiMessage.getCommunity(msg)) == 'public'
+        v1.apiMessage.setCommunity(msg, "public")
+        assert str(v1.apiMessage.getCommunity(msg)) == "public"
 
 
-class TestProxyRfc2576:
+class TestProxyRfc2576PduMapping:
     def test_v1_to_v2_get_request(self):
         pdu = rfc1157.GetRequestPDU()
         v1.apiPDU.setDefaults(pdu)
         v1.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1155.Counter(42))])
         from pysnmp.proto.proxy import rfc2576
+
         v2pdu = rfc2576.v1ToV2(pdu)
         assert v2pdu.tagSet == rfc1905.GetRequestPDU.tagSet
 
@@ -644,6 +653,7 @@ class TestProxyRfc2576:
         v1.apiTrapPDU.setDefaults(pdu)
         v1.apiTrapPDU.setGenericTrap(pdu, 0)  # coldStart
         from pysnmp.proto.proxy import rfc2576
+
         v2pdu = rfc2576.v1ToV2(pdu)
         assert v2pdu.tagSet == rfc1905.SNMPv2TrapPDU.tagSet
 
@@ -652,14 +662,16 @@ class TestProxyRfc2576:
         v2c.apiPDU.setDefaults(pdu)
         v2c.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.Integer(42))])
         from pysnmp.proto.proxy import rfc2576
+
         v1pdu = rfc2576.v2ToV1(pdu)
         assert v1pdu.tagSet == rfc1157.GetRequestPDU.tagSet
 
     def test_v2_to_v1_response(self):
         pdu = rfc1905.ResponsePDU()
         v2c.apiPDU.setDefaults(pdu)
-        v2c.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString('test'))])
+        v2c.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString("test"))])
         from pysnmp.proto.proxy import rfc2576
+
         v1pdu = rfc2576.v2ToV1(pdu)
         assert v1pdu.tagSet == rfc1157.GetResponsePDU.tagSet
 
@@ -667,6 +679,7 @@ class TestProxyRfc2576:
         pdu = rfc1905.GetBulkRequestPDU()
         v2c.apiBulkPDU.setDefaults(pdu)
         from pysnmp.proto.proxy import rfc2576
+
         v1pdu = rfc2576.v2ToV1(pdu)
         assert v1pdu.tagSet == rfc1157.GetNextRequestPDU.tagSet
 
@@ -674,5 +687,6 @@ class TestProxyRfc2576:
         pdu = rfc1905.ReportPDU()
         v2c.apiPDU.setDefaults(pdu)
         from pysnmp.proto.proxy import rfc2576
+
         with pytest.raises(proto_error.ProtocolError):
             rfc2576.v2ToV1(pdu)

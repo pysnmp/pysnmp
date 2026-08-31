@@ -6,36 +6,30 @@ import tempfile
 
 import pytest
 
-from pysnmp.entity.engine import SnmpEngine
-from pysnmp.entity import config
-from pysnmp.entity import observer
-from pysnmp.entity.rfc3413 import context as rfc3413_context
-from pysnmp.entity.rfc3413 import cmdgen as rfc3413_cmdgen
-from pysnmp.entity.rfc3413 import cmdrsp
-from pysnmp.entity.rfc3413 import ntforg
-from pysnmp.entity.rfc3413 import ntfrcv
-from pysnmp.entity.rfc3413 import config as rfc3413_config
+from pysnmp.carrier.asyncio.dgram import udp
+from pysnmp.carrier.asyncio.dispatch import AsyncioDispatcher
 from pysnmp.carrier.base import (
-    AbstractTransportDispatcher,
     AbstractTransport,
     AbstractTransportAddress,
+    AbstractTransportDispatcher,
     TimerCallable,
 )
 from pysnmp.carrier.error import CarrierError
-from pysnmp.carrier.asyncio.dispatch import AsyncioDispatcher
-from pysnmp.carrier.asyncio.dgram import udp
+from pysnmp.entity import config, observer
+from pysnmp.entity.engine import SnmpEngine
+from pysnmp.entity.rfc3413 import cmdgen as rfc3413_cmdgen
+from pysnmp.entity.rfc3413 import config as rfc3413_config
+from pysnmp.entity.rfc3413 import context as rfc3413_context
+from pysnmp.entity.rfc3413 import ntfrcv
+from pysnmp.hlapi.asyncio.transport import UdpTransportTarget
 from pysnmp.hlapi.auth import CommunityData, UsmUserData
 from pysnmp.hlapi.context import ContextData
-from pysnmp.hlapi.transport import AbstractTransportTarget
-from pysnmp.hlapi.asyncio.transport import UdpTransportTarget
-from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds, NotificationOriginatorVarBinds
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
-from pysnmp.proto import errind, error
-from pysnmp.proto.api import v2c
+from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds, NotificationOriginatorVarBinds
+from pysnmp.proto import error
+from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.smi.error import SmiError
-from pysnmp.proto.rfc1902 import OctetString, Integer, ObjectIdentifier
-from pysnmp.smi.rfc1902 import ObjectType, ObjectIdentity, NotificationType
-from pysnmp import debug
+from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 
 
 class TestSnmpEngine:
@@ -46,7 +40,7 @@ class TestSnmpEngine:
 
     def test_repr(self):
         engine = SnmpEngine()
-        assert 'SnmpEngine' in repr(engine)
+        assert "SnmpEngine" in repr(engine)
 
     def test_get_mib_builder(self):
         engine = SnmpEngine()
@@ -54,18 +48,18 @@ class TestSnmpEngine:
 
     def test_user_context(self):
         engine = SnmpEngine()
-        engine.setUserContext(mykey='myvalue')
-        assert engine.getUserContext('mykey') == 'myvalue'
+        engine.setUserContext(mykey="myvalue")
+        assert engine.getUserContext("mykey") == "myvalue"
 
     def test_del_user_context(self):
         engine = SnmpEngine()
-        engine.setUserContext(mykey='myvalue')
-        engine.delUserContext('mykey')
-        assert engine.getUserContext('mykey') is None
+        engine.setUserContext(mykey="myvalue")
+        engine.delUserContext("mykey")
+        assert engine.getUserContext("mykey") is None
 
     def test_get_user_context_missing(self):
         engine = SnmpEngine()
-        assert engine.getUserContext('nonexistent') is None
+        assert engine.getUserContext("nonexistent") is None
 
     def test_message_processing_subsystems(self):
         engine = SnmpEngine()
@@ -88,17 +82,18 @@ class TestSnmpEngine:
         assert isinstance(engine.cache, dict)
 
     def test_invalid_persisted_boots(self, monkeypatch, tmp_path):
-        engine_id = OctetString(hexValue='80004fb8050102030405')
-        persistent_path = tmp_path / '__pysnmp' / engine_id.prettyPrint()
+        engine_id = OctetString(hexValue="80004fb8050102030405")
+        persistent_path = tmp_path / "__pysnmp" / engine_id.prettyPrint()
         persistent_path.mkdir(parents=True)
-        boots_path = persistent_path / 'boots'
-        boots_path.write_text('-1', encoding='ascii')
-        monkeypatch.setattr(tempfile, 'gettempdir', lambda: str(tmp_path))
+        boots_path = persistent_path / "boots"
+        boots_path.write_text("-1", encoding="ascii")
+        monkeypatch.setattr(tempfile, "gettempdir", lambda: str(tmp_path))
 
         SnmpEngine(snmpEngineID=engine_id)
 
-        persisted_boots = int(boots_path.read_text(encoding='ascii'))
+        persisted_boots = int(boots_path.read_text(encoding="ascii"))
         assert persisted_boots >= 0
+
 
 class TestMetaObserver:
     def test_register_unregister_observer(self):
@@ -108,47 +103,51 @@ class TestMetaObserver:
         def cbFun(snmpEngine, execpoint, variables, cbCtx):
             calls.append((execpoint, variables, cbCtx))
 
-        obs.registerObserver(cbFun, 'test.execpoint', cbCtx='context')
-        obs.storeExecutionContext(None, 'test.execpoint', {'a': 1})
+        obs.registerObserver(cbFun, "test.execpoint", cbCtx="context")
+        obs.storeExecutionContext(None, "test.execpoint", {"a": 1})
         assert len(calls) == 1
-        assert calls[0][0] == 'test.execpoint'
+        assert calls[0][0] == "test.execpoint"
 
-        obs.clearExecutionContext(None, 'test.execpoint')
+        obs.clearExecutionContext(None, "test.execpoint")
         obs.unregisterObserver(cbFun)
         # After unregister, storing should not call
-        obs.storeExecutionContext(None, 'test.execpoint', {'b': 2})
+        obs.storeExecutionContext(None, "test.execpoint", {"b": 2})
         assert len(calls) == 1
 
     def test_register_duplicate_observer_raises(self):
         obs = observer.MetaObserver()
+
         def cbFun(snmpEngine, execpoint, variables, cbCtx):
             pass
-        obs.registerObserver(cbFun, 'test.execpoint')
+
+        obs.registerObserver(cbFun, "test.execpoint")
         with pytest.raises(Exception):
-            obs.registerObserver(cbFun, 'test.execpoint')
+            obs.registerObserver(cbFun, "test.execpoint")
 
     def test_unregister_all(self):
         obs = observer.MetaObserver()
+
         def cbFun(snmpEngine, execpoint, variables, cbCtx):
             pass
-        obs.registerObserver(cbFun, 'test1', 'test2')
+
+        obs.registerObserver(cbFun, "test1", "test2")
         obs.unregisterObserver()
         # Should not raise
-        obs.storeExecutionContext(None, 'test1', {})
+        obs.storeExecutionContext(None, "test1", {})
 
     def test_get_execution_context(self):
         obs = observer.MetaObserver()
-        obs.storeExecutionContext(None, 'test.execpoint', {'a': 1})
-        ctx = obs.getExecutionContext('test.execpoint')
-        assert ctx == {'a': 1}
+        obs.storeExecutionContext(None, "test.execpoint", {"a": 1})
+        ctx = obs.getExecutionContext("test.execpoint")
+        assert ctx == {"a": 1}
 
     def test_clear_all_execution_contexts(self):
         obs = observer.MetaObserver()
-        obs.storeExecutionContext(None, 'test1', {'a': 1})
-        obs.storeExecutionContext(None, 'test2', {'b': 2})
+        obs.storeExecutionContext(None, "test1", {"a": 1})
+        obs.storeExecutionContext(None, "test2", {"b": 2})
         obs.clearExecutionContext(None)
         with pytest.raises(KeyError):
-            obs.getExecutionContext('test1')
+            obs.getExecutionContext("test1")
 
 
 class TestAbstractTransportDispatcher:
@@ -221,15 +220,15 @@ class TestAbstractTransportDispatcher:
 
     def test_job_started_finished(self):
         td = AbstractTransportDispatcher()
-        td.jobStarted('job1')
+        td.jobStarted("job1")
         assert td.jobsArePending()
-        td.jobFinished('job1')
+        td.jobFinished("job1")
         assert not td.jobsArePending()
 
     def test_send_message_no_transport(self):
         td = AbstractTransportDispatcher()
         with pytest.raises(CarrierError):
-            td.sendMessage(b'msg', (1, 3, 6), ('127.0.0.1', 161))
+            td.sendMessage(b"msg", (1, 3, 6), ("127.0.0.1", 161))
 
     def test_get_transport_not_registered(self):
         td = AbstractTransportDispatcher()
@@ -263,10 +262,15 @@ class TestTimerCallable:
         assert tc.interval == 3.0
 
     def test_equality(self):
-        def cb(t): pass
+        def cb(t):
+            pass
+
         tc = TimerCallable(cb, 1.0)
         assert tc == cb
-        other_cb = lambda t: None
+
+        def other_cb(t):
+            return None
+
         assert tc != other_cb
 
 
@@ -274,11 +278,13 @@ class TestAbstractTransport:
     def test_is_compatible_with_dispatcher(self):
         class FakeTransport(AbstractTransport):
             protoTransportDispatcher = AbstractTransportDispatcher
+
         assert FakeTransport.isCompatibleWithDispatcher(AbstractTransportDispatcher())
 
     def test_register_cb_fun(self):
         class FakeTransport(AbstractTransport):
             pass
+
         t = FakeTransport()
         t.registerCbFun(lambda *args: None)
         with pytest.raises(CarrierError):
@@ -287,6 +293,7 @@ class TestAbstractTransport:
     def test_unregister_cb_fun(self):
         class FakeTransport(AbstractTransport):
             pass
+
         t = FakeTransport()
         t.registerCbFun(lambda *args: None)
         t.unregisterCbFun()
@@ -295,6 +302,7 @@ class TestAbstractTransport:
     def test_open_client_mode_raises(self):
         class FakeTransport(AbstractTransport):
             pass
+
         t = FakeTransport()
         with pytest.raises(CarrierError):
             t.openClientMode()
@@ -302,20 +310,23 @@ class TestAbstractTransport:
     def test_open_server_mode_raises(self):
         class FakeTransport(AbstractTransport):
             pass
+
         t = FakeTransport()
         with pytest.raises(CarrierError):
-            t.openServerMode(('127.0.0.1', 161))
+            t.openServerMode(("127.0.0.1", 161))
 
     def test_send_message_raises(self):
         class FakeTransport(AbstractTransport):
             pass
+
         t = FakeTransport()
         with pytest.raises(CarrierError):
-            t.sendMessage(b'msg', ('127.0.0.1', 161))
+            t.sendMessage(b"msg", ("127.0.0.1", 161))
 
     def test_close_transport(self):
         class FakeTransport(AbstractTransport):
             pass
+
         t = FakeTransport()
         t.registerCbFun(lambda *args: None)
         t.closeTransport()
@@ -325,26 +336,28 @@ class TestAbstractTransport:
 class TestAbstractTransportAddress:
     def test_set_local_address(self):
         addr = AbstractTransportAddress()
-        addr.setLocalAddress(('0.0.0.0', 0))
-        assert addr.getLocalAddress() == ('0.0.0.0', 0)
+        addr.setLocalAddress(("0.0.0.0", 0))
+        assert addr.getLocalAddress() == ("0.0.0.0", 0)
 
     def test_clone(self):
         class TestAddr(AbstractTransportAddress):
             def __init__(self, source=None):
                 pass
+
         addr = TestAddr()
-        addr.setLocalAddress(('0.0.0.0', 0))
-        cloned = addr.clone(('10.0.0.1', 200))
-        assert cloned.getLocalAddress() == ('10.0.0.1', 200)
+        addr.setLocalAddress(("0.0.0.0", 0))
+        cloned = addr.clone(("10.0.0.1", 200))
+        assert cloned.getLocalAddress() == ("10.0.0.1", 200)
 
     def test_clone_no_arg(self):
         class TestAddr(AbstractTransportAddress):
             def __init__(self, source=None):
                 pass
+
         addr = TestAddr()
-        addr.setLocalAddress(('0.0.0.0', 0))
+        addr.setLocalAddress(("0.0.0.0", 0))
         cloned = addr.clone()
-        assert cloned.getLocalAddress() == ('0.0.0.0', 0)
+        assert cloned.getLocalAddress() == ("0.0.0.0", 0)
 
 
 class TestAsyncioDispatcher:
@@ -374,13 +387,13 @@ class TestUdpTransport:
         assert udp.domainName == (1, 3, 6, 1, 6, 1, 1)
 
     def test_udp_transport_address(self):
-        addr = udp.UdpTransportAddress(('127.0.0.1', 161))
-        assert addr == ('127.0.0.1', 161)
+        addr = udp.UdpTransportAddress(("127.0.0.1", 161))
+        assert addr == ("127.0.0.1", 161)
 
     def test_udp_transport_address_set_local(self):
-        addr = udp.UdpTransportAddress(('127.0.0.1', 161))
-        addr.setLocalAddress(('0.0.0.0', 0))
-        assert addr.getLocalAddress() == ('0.0.0.0', 0)
+        addr = udp.UdpTransportAddress(("127.0.0.1", 161))
+        addr.setLocalAddress(("0.0.0.0", 0))
+        assert addr.getLocalAddress() == ("0.0.0.0", 0)
 
     def test_broadcast_option_is_applied_after_connection(self):
         loop = asyncio.new_event_loop()
@@ -394,26 +407,28 @@ class TestUdpTransport:
 
     def test_packet_information_is_explicitly_unsupported(self):
         transport = udp.UdpAsyncioTransport()
-        with pytest.raises(CarrierError, match='Packet-information'):
+        with pytest.raises(CarrierError, match="Packet-information"):
             transport.enablePktInfo()
 
 
-@pytest.mark.skipif(not hasattr(__import__('socket'), 'AF_UNIX'),
-                    reason='Unix-domain datagrams are unavailable on this platform')
+@pytest.mark.skipif(
+    not hasattr(__import__("socket"), "AF_UNIX"),
+    reason="Unix-domain datagrams are unavailable on this platform",
+)
 class TestUnixTransport:
     def test_unix_transport_target(self):
         from pysnmp.hlapi.asyncio.transport import UnixTransportTarget
 
-        target = UnixTransportTarget('/tmp/pysnmp-test.sock')
-        assert target.transportAddr == '/tmp/pysnmp-test.sock'
-        with pytest.raises(error.PySnmpError, match='path string'):
-            UnixTransportTarget(('127.0.0.1', 161))
+        target = UnixTransportTarget("/tmp/pysnmp-test.sock")
+        assert target.transportAddr == "/tmp/pysnmp-test.sock"
+        with pytest.raises(error.PySnmpError, match="path string"):
+            UnixTransportTarget(("127.0.0.1", 161))
 
     def test_client_and_server_exchange_datagram(self):
         from pysnmp.carrier.asyncio.dgram import unix
 
         loop = asyncio.new_event_loop()
-        fd, server_path = tempfile.mkstemp(prefix='pysnmp-server-', dir=tempfile.gettempdir())
+        fd, server_path = tempfile.mkstemp(prefix="pysnmp-server-", dir=tempfile.gettempdir())
         os.close(fd)
         os.unlink(server_path)
         received = []
@@ -422,9 +437,9 @@ class TestUnixTransport:
         server.registerCbFun(lambda _, address, message: received.append((address, message)))
         try:
             loop.run_until_complete(asyncio.sleep(0))
-            client.sendMessage(b'ping', unix.UnixTransportAddress(server_path))
+            client.sendMessage(b"ping", unix.UnixTransportAddress(server_path))
             loop.run_until_complete(asyncio.sleep(0.05))
-            assert received == [(client.getLocalAddress(), b'ping')]
+            assert received == [(client.getLocalAddress(), b"ping")]
         finally:
             client.closeTransport()
             server.closeTransport()
@@ -435,95 +450,98 @@ class TestUnixTransport:
 
 class TestUdpTransportTarget:
     def test_creation(self):
-        target = UdpTransportTarget(('127.0.0.1', 161))
+        target = UdpTransportTarget(("127.0.0.1", 161))
         assert target is not None
-        assert target.transportAddr == ('127.0.0.1', 161)
+        assert target.transportAddr == ("127.0.0.1", 161)
 
     def test_timeout_retries(self):
-        target = UdpTransportTarget(('127.0.0.1', 161), timeout=2, retries=3)
+        target = UdpTransportTarget(("127.0.0.1", 161), timeout=2, retries=3)
         assert target.timeout == 2
         assert target.retries == 3
 
     def test_set_local_address(self):
-        target = UdpTransportTarget(('127.0.0.1', 161))
-        result = target.setLocalAddress(('0.0.0.0', 0))
+        target = UdpTransportTarget(("127.0.0.1", 161))
+        result = target.setLocalAddress(("0.0.0.0", 0))
         assert result is target
-        assert target.iface == ('0.0.0.0', 0)
+        assert target.iface == ("0.0.0.0", 0)
 
     def test_get_transport_info(self):
-        target = UdpTransportTarget(('127.0.0.1', 161))
+        target = UdpTransportTarget(("127.0.0.1", 161))
         domain, addr = target.getTransportInfo()
         assert domain == udp.domainName
 
     def test_repr(self):
-        target = UdpTransportTarget(('127.0.0.1', 161))
-        assert 'UdpTransportTarget' in repr(target)
+        target = UdpTransportTarget(("127.0.0.1", 161))
+        assert "UdpTransportTarget" in repr(target)
 
     def test_bad_address_raises(self):
         from pysnmp.error import PySnmpError
+
         with pytest.raises(PySnmpError):
-            UdpTransportTarget(('nonexistent.invalid.host', 161))
+            UdpTransportTarget(("nonexistent.invalid.host", 161))
 
 
 class TestCommunityData:
     def test_creation_default(self):
-        cd = CommunityData('public')
-        assert cd.communityName == 'public'
+        cd = CommunityData("public")
+        assert cd.communityName == "public"
         assert cd.mpModel == 1
 
     def test_creation_v1(self):
-        cd = CommunityData('public', mpModel=0)
+        cd = CommunityData("public", mpModel=0)
         assert cd.mpModel == 0
         assert cd.securityModel == 1
 
     def test_creation_v2c(self):
-        cd = CommunityData('public', mpModel=1)
+        cd = CommunityData("public", mpModel=1)
         assert cd.mpModel == 1
         assert cd.securityModel == 2
 
     def test_with_context_name(self):
-        cd = CommunityData('public', contextName='mycontext')
-        assert cd.contextName == 'mycontext'
+        cd = CommunityData("public", contextName="mycontext")
+        assert cd.contextName == "mycontext"
 
     def test_with_tag(self):
-        cd = CommunityData('public', tag='mytag')
-        assert cd.tag == 'mytag'
+        cd = CommunityData("public", tag="mytag")
+        assert cd.tag == "mytag"
 
     def test_with_security_name(self):
-        cd = CommunityData('public', 'public', securityName='secname')
-        assert cd.securityName == 'secname'
+        cd = CommunityData("public", "public", securityName="secname")
+        assert cd.securityName == "secname"
 
     def test_not_hashable(self):
-        cd = CommunityData('public')
+        cd = CommunityData("public")
         with pytest.raises(TypeError):
             hash(cd)
 
     def test_clone(self):
-        cd = CommunityData('public', 'public')
-        cloned = cd.clone('private')
-        assert cloned.communityName == 'private'
+        cd = CommunityData("public", "public")
+        cloned = cd.clone("private")
+        assert cloned.communityName == "private"
 
     def test_repr(self):
-        cd = CommunityData('public')
-        assert 'CommunityData' in repr(cd)
+        cd = CommunityData("public")
+        assert "CommunityData" in repr(cd)
 
 
 class TestUsmUserData:
     def test_creation_no_auth_no_priv(self):
-        user = UsmUserData('user1')
-        assert user.userName == 'user1'
+        user = UsmUserData("user1")
+        assert user.userName == "user1"
 
     def test_creation_with_auth(self):
-        user = UsmUserData('user1', 'authkey1', authProtocol=config.usmHMACMD5AuthProtocol)
-        assert user.userName == 'user1'
+        user = UsmUserData("user1", "authkey1", authProtocol=config.usmHMACMD5AuthProtocol)
+        assert user.userName == "user1"
 
     def test_creation_with_auth_priv(self):
         user = UsmUserData(
-            'user1', 'authkey1', 'privkey1',
+            "user1",
+            "authkey1",
+            "privkey1",
             authProtocol=config.usmHMACMD5AuthProtocol,
-            privProtocol=config.usmDESPrivProtocol
+            privProtocol=config.usmDESPrivProtocol,
         )
-        assert user.userName == 'user1'
+        assert user.userName == "user1"
 
 
 class TestContextData:
@@ -532,16 +550,16 @@ class TestContextData:
         assert ctx.contextEngineId is None
 
     def test_with_context_name(self):
-        ctx = ContextData(contextName='mycontext')
-        assert ctx.contextName == 'mycontext'
+        ctx = ContextData(contextName="mycontext")
+        assert ctx.contextName == "mycontext"
 
     def test_with_context_engine_id(self):
-        ctx = ContextData(contextEngineId='0x010203')
-        assert ctx.contextEngineId == '0x010203'
+        ctx = ContextData(contextEngineId="0x010203")
+        assert ctx.contextEngineId == "0x010203"
 
     def test_repr(self):
         ctx = ContextData()
-        assert 'ContextData' in repr(ctx)
+        assert "ContextData" in repr(ctx)
 
 
 class TestSnmpContext:
@@ -553,23 +571,23 @@ class TestSnmpContext:
     def test_register_context_name(self):
         engine = SnmpEngine()
         ctx = rfc3413_context.SnmpContext(engine)
-        ctx.registerContextName('test')
-        assert ctx.getMibInstrum('test') is not None
+        ctx.registerContextName("test")
+        assert ctx.getMibInstrum("test") is not None
 
     def test_register_duplicate_context_name(self):
         engine = SnmpEngine()
         ctx = rfc3413_context.SnmpContext(engine)
-        ctx.registerContextName('test')
-        with pytest.raises(error.PySnmpError, match='Duplicate contextName'):
-            ctx.registerContextName('test')
+        ctx.registerContextName("test")
+        with pytest.raises(error.PySnmpError, match="Duplicate contextName"):
+            ctx.registerContextName("test")
 
     def test_unregister_context_name(self):
         engine = SnmpEngine()
         ctx = rfc3413_context.SnmpContext(engine)
-        ctx.registerContextName('test')
-        ctx.unregisterContextName('test')
-        with pytest.raises(error.PySnmpError, match='Missing contextName'):
-            ctx.getMibInstrum('test')
+        ctx.registerContextName("test")
+        ctx.unregisterContextName("test")
+        with pytest.raises(error.PySnmpError, match="Missing contextName"):
+            ctx.getMibInstrum("test")
 
     def test_get_mib_instrum_default(self):
         engine = SnmpEngine()
@@ -579,8 +597,8 @@ class TestSnmpContext:
     def test_get_mib_instrum_missing(self):
         engine = SnmpEngine()
         ctx = rfc3413_context.SnmpContext(engine)
-        with pytest.raises(error.PySnmpError, match='Missing contextName'):
-            ctx.getMibInstrum('nonexistent')
+        with pytest.raises(error.PySnmpError, match="Missing contextName"):
+            ctx.getMibInstrum("nonexistent")
 
 
 class TestCommandGeneratorVarBinds:
@@ -596,13 +614,15 @@ class TestCommandGeneratorVarBinds:
     def test_make_var_binds_oid(self):
         engine = SnmpEngine()
         vb = CommandGeneratorVarBinds()
-        result = vb.makeVarBinds(engine, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), OctetString('test'))])
+        result = vb.makeVarBinds(
+            engine, [ObjectType(ObjectIdentity("1.3.6.1.2.1.1.1.0"), OctetString("test"))]
+        )
         assert len(result) == 1
 
     def test_unmake_var_binds_no_lookup(self):
         engine = SnmpEngine()
         vb = CommandGeneratorVarBinds()
-        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), OctetString('test'))]
+        varBinds = [((1, 3, 6, 1, 2, 1, 1, 1, 0), OctetString("test"))]
         result = vb.unmakeVarBinds(engine, varBinds, lookupMib=False)
         assert len(result) == 1
 
@@ -619,8 +639,8 @@ class TestCommandGeneratorLcdConfigurator:
     def test_configure_community(self):
         engine = SnmpEngine()
         lcd = CommandGeneratorLcdConfigurator()
-        authData = CommunityData('public')
-        target = UdpTransportTarget(('127.0.0.1', 161))
+        authData = CommunityData("public")
+        target = UdpTransportTarget(("127.0.0.1", 161))
         addrName, paramsName = lcd.configure(engine, authData, target)
         assert addrName is not None
         assert paramsName is not None
@@ -628,8 +648,8 @@ class TestCommandGeneratorLcdConfigurator:
     def test_unconfigure_community(self):
         engine = SnmpEngine()
         lcd = CommandGeneratorLcdConfigurator()
-        authData = CommunityData('public')
-        target = UdpTransportTarget(('127.0.0.1', 161))
+        authData = CommunityData("public")
+        target = UdpTransportTarget(("127.0.0.1", 161))
         lcd.configure(engine, authData, target)
         addrNames, paramsNames = lcd.unconfigure(engine, authData)
         assert len(addrNames) >= 0
@@ -637,21 +657,23 @@ class TestCommandGeneratorLcdConfigurator:
     def test_configure_unsupported_auth_raises(self):
         engine = SnmpEngine()
         lcd = CommandGeneratorLcdConfigurator()
-        target = UdpTransportTarget(('127.0.0.1', 161))
+        target = UdpTransportTarget(("127.0.0.1", 161))
         with pytest.raises(error.PySnmpError):
-            lcd.configure(engine, 'bad-auth-data', target)
+            lcd.configure(engine, "bad-auth-data", target)
 
 
 class TestRfc3413Cmdgen:
     def test_get_next_var_binds_empty(self):
         from pysnmp.proto.rfc1905 import EndOfMibView
-        varBinds = [((1, 3, 6), EndOfMibView(''))]
+
+        varBinds = [((1, 3, 6), EndOfMibView(""))]
         errorInd, rspVarBinds = rfc3413_cmdgen.getNextVarBinds(varBinds)
         assert rspVarBinds == []
 
     def test_get_next_var_binds_non_null(self):
         from pyasn1.type.univ import Null
-        varBinds = [((1, 3, 6), Null(''))]
+
+        varBinds = [((1, 3, 6), Null(""))]
         errorInd, rspVarBinds = rfc3413_cmdgen.getNextVarBinds(varBinds)
         assert len(rspVarBinds) == 1
         assert errorInd is None
@@ -686,75 +708,59 @@ class TestRfc3413Ntfrcv:
 class TestRfc3413Config:
     def test_get_target_addr_not_configured(self):
         engine = SnmpEngine()
-        with pytest.raises(SmiError, match='not configured'):
-            rfc3413_config.getTargetAddr(engine, 'nonexistent')
+        with pytest.raises(SmiError, match="not configured"):
+            rfc3413_config.getTargetAddr(engine, "nonexistent")
 
     def test_get_target_params_not_configured(self):
         engine = SnmpEngine()
-        with pytest.raises(SmiError, match='not configured'):
-            rfc3413_config.getTargetParams(engine, 'nonexistent')
+        with pytest.raises(SmiError, match="not configured"):
+            rfc3413_config.getTargetParams(engine, "nonexistent")
 
 
 class TestEntityConfig:
     def test_add_v1_system(self):
         engine = SnmpEngine()
-        config.addV1System(engine, 'test-comm', 'public')
+        config.addV1System(engine, "test-comm", "public")
         # Should not raise
 
     def test_add_del_v1_system(self):
         engine = SnmpEngine()
-        config.addV1System(engine, 'test-comm2', 'public')
-        config.delV1System(engine, 'test-comm2')
+        config.addV1System(engine, "test-comm2", "public")
+        config.delV1System(engine, "test-comm2")
 
     def test_add_v3_user_no_auth_no_priv(self):
         engine = SnmpEngine()
-        config.addV3User(engine, 'test-user')
+        config.addV3User(engine, "test-user")
         # Should not raise
 
     def test_add_v3_user_with_auth(self):
         engine = SnmpEngine()
         config.addV3User(
-            engine, 'test-user2',
-            authProtocol=config.usmHMACMD5AuthProtocol,
-            authKey='authkey1'
+            engine, "test-user2", authProtocol=config.usmHMACMD5AuthProtocol, authKey="authkey1"
         )
 
     def test_add_v3_user_bad_auth_protocol(self):
         engine = SnmpEngine()
         with pytest.raises(error.PySnmpError):
-            config.addV3User(
-                engine, 'test-user3',
-                authProtocol=(9, 9, 9),
-                authKey='authkey1'
-            )
+            config.addV3User(engine, "test-user3", authProtocol=(9, 9, 9), authKey="authkey1")
 
     def test_add_v3_user_bad_priv_protocol(self):
         engine = SnmpEngine()
         with pytest.raises(error.PySnmpError):
-            config.addV3User(
-                engine, 'test-user4',
-                privProtocol=(9, 9, 9),
-                privKey='privkey1'
-            )
+            config.addV3User(engine, "test-user4", privProtocol=(9, 9, 9), privKey="privkey1")
 
     def test_add_target_params(self):
         engine = SnmpEngine()
-        config.addV1System(engine, 'comm-params', 'public')
-        config.addTargetParams(engine, 'test-params', 'secname', 'noAuthNoPriv', 1)
+        config.addV1System(engine, "comm-params", "public")
+        config.addTargetParams(engine, "test-params", "secname", "noAuthNoPriv", 1)
 
     def test_add_target_addr(self):
         engine = SnmpEngine()
-        config.addV1System(engine, 'comm-addr', 'public')
-        config.addTargetParams(engine, 'test-params2', 'comm-addr', 'noAuthNoPriv', 1)
+        config.addV1System(engine, "comm-addr", "public")
+        config.addTargetParams(engine, "test-params2", "comm-addr", "noAuthNoPriv", 1)
         config.addTransport(
-            engine,
-            (1, 3, 6, 1, 6, 1, 1),
-            udp.UdpAsyncioTransport().openClientMode()
+            engine, (1, 3, 6, 1, 6, 1, 1), udp.UdpAsyncioTransport().openClientMode()
         )
         config.addTargetAddr(
-            engine, 'test-addr',
-            (1, 3, 6, 1, 6, 1, 1),
-            ('127.0.0.1', 161),
-            'test-params2',
-            100, 3
+            engine, "test-addr", (1, 3, 6, 1, 6, 1, 1), ("127.0.0.1", 161), "test-params2", 100, 3
         )

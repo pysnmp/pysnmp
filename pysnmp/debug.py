@@ -6,7 +6,6 @@
 import logging
 
 # octs2ints replaced with list() (bytes is already iterable of ints in Python 3)
-
 from pysnmp import __version__, error
 
 flagNone = 0x0000
@@ -23,29 +22,29 @@ flagApp = 0x0200
 flagAll = 0xFFFF
 
 flagMap = {
-    'io': flagIO,
-    'dsp': flagDsp,
-    'msgproc': flagMP,
-    'secmod': flagSM,
-    'mibbuild': flagBld,
-    'mibview': flagMIB,
-    'mibinstrum': flagIns,
-    'acl': flagACL,
-    'proxy': flagPrx,
-    'app': flagApp,
-    'all': flagAll,
+    "io": flagIO,
+    "dsp": flagDsp,
+    "msgproc": flagMP,
+    "secmod": flagSM,
+    "mibbuild": flagBld,
+    "mibview": flagMIB,
+    "mibinstrum": flagIns,
+    "acl": flagACL,
+    "proxy": flagPrx,
+    "app": flagApp,
+    "all": flagAll,
 }
 
 
 class Printer:
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
-            logger = logging.getLogger('pysnmp')
+            logger = logging.getLogger("pysnmp")
         logger.setLevel(logging.DEBUG)
         if handler is None:
             handler = logging.StreamHandler()
         if formatter is None:
-            formatter = logging.Formatter('%(asctime)s %(name)s: %(message)s')
+            formatter = logging.Formatter("%(asctime)s %(name)s: %(message)s")
         handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
         logger.addHandler(handler)
@@ -55,31 +54,32 @@ class Printer:
         self.__logger.debug(msg)
 
     def __str__(self):
-        return '<python built-in logging>'
+        return "<python built-in logging>"
 
 
 NullHandler = logging.NullHandler
+
 
 class Debug:
     defaultPrinter = None
 
     def __init__(self, *flags, **options):
         self._flags = flagNone
-        if options.get('printer') is not None:
-            self._printer = options.get('printer')
+        if options.get("printer") is not None:
+            self._printer = options.get("printer")
         elif self.defaultPrinter is not None:
             self._printer = self.defaultPrinter
         else:
-            if 'loggerName' in options:
+            if "loggerName" in options:
                 # route our logs to parent logger
                 self._printer = Printer(
-                    logger=logging.getLogger(options['loggerName']), handler=NullHandler()
+                    logger=logging.getLogger(options["loggerName"]), handler=NullHandler()
                 )
             else:
                 self._printer = Printer()
-        self('running pysnmp version %s' % __version__)
+        self("running pysnmp version %s" % __version__)
         for f in flags:
-            inverse = f and f[0] in ('!', '~')
+            inverse = f and f[0] in ("!", "~")
             if inverse:
                 f = f[1:]
             try:
@@ -88,12 +88,12 @@ class Debug:
                 else:
                     self._flags |= flagMap[f]
             except KeyError:
-                raise error.PySnmpError('bad debug flag %s' % f)
+                raise error.PySnmpError("bad debug flag %s" % f)
 
-            self('debug category \'{}\' {}'.format(f, inverse and 'disabled' or 'enabled'))
+            self("debug category '{}' {}".format(f, inverse and "disabled" or "enabled"))
 
     def __str__(self):
-        return f'logger {self._printer}, flags {self._flags:x}'
+        return f"logger {self._printer}, flags {self._flags:x}"
 
     def __call__(self, msg):
         self._printer(msg)
@@ -110,15 +110,15 @@ class Debug:
 logger = 0
 
 
-def setLogger(l):
+def setLogger(newLogger):
     global logger
-    logger = l
+    logger = newLogger
 
 
 def hexdump(octets):
-    return ' '.join(
+    return " ".join(
         [
-            '{}{:02X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x)
+            "{}{:02X}".format(n % 16 == 0 and ("\n%.5d: " % n) or "", x)
             for n, x in zip(range(len(octets)), list(octets))
         ]
     )
