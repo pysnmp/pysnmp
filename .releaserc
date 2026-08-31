@@ -32,8 +32,8 @@
             "files": [
               "pysnmp/__init__.py"
             ],
-            "from": "__version__ ?= '.*'",
-            "to": "__version__ = '${nextRelease.version}'",
+            "from": "^__version__ ?=.*",
+            "to": "__version__ = \"${nextRelease.version}\"",
             "results": [
               {
                 "file": "pysnmp/__init__.py",
@@ -48,7 +48,7 @@
             "files": [
               "pyproject.toml"
             ],
-            "from": "version ?=.*",
+            "from": "^version ?=.*",
             "to": "version = \"${nextRelease.version}\"",
             "results": [
               {
