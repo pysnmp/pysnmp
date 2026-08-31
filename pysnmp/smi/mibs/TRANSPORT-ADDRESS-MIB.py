@@ -72,7 +72,7 @@ else:
 
         def inet_ntop(address_family, packed_ip):
             if address_family == socket.AF_INET:
-                return socket.inet_ntop(packed_ip)
+                return socket.inet_ntoa(packed_ip)
             elif address_family != socket.AF_INET6:
                 raise OSError(f'Unknown address family {address_family}')
 
