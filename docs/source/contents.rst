@@ -56,6 +56,7 @@ Documentation
 
    /docs/tutorial
    /docs/api-reference
+   /docs/breaking-changes
    /docs/security-considerations
    /docs/smi-table-api
    /docs/device-report
