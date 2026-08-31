@@ -40,10 +40,10 @@
 )
 snmpInBadTypes = MibScalar((1, 3, 6, 1, 2, 1, 11, 7), Counter32()).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
-    snmpInBadTypes.setStatus('mandatory')
+    snmpInBadTypes.setStatus("mandatory")
 snmpOutReadOnlys = MibScalar((1, 3, 6, 1, 2, 1, 11, 23), Counter32()).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
-    snmpOutReadOnlys.setStatus('mandatory')
+    snmpOutReadOnlys.setStatus("mandatory")
 mibBuilder.exportSymbols(
     "RFC1158-MIB", snmpOutReadOnlys=snmpOutReadOnlys, snmpInBadTypes=snmpInBadTypes
 )

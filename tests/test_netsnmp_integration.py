@@ -29,12 +29,15 @@ from pysnmp.hlapi import (
 )
 from pysnmp.hlapi.asyncio import (
     UdpTransportTarget as AsyncUdpTransportTarget,
+)
+from pysnmp.hlapi.asyncio import (
     bulkCmd as async_bulkCmd,
+)
+from pysnmp.hlapi.asyncio import (
     getCmd as async_getCmd,
 )
 from pysnmp.proto.rfc1902 import OctetString, TimeTicks
 from pysnmp.proto.rfc1905 import NoSuchInstance
-
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("NETSNMP_PROFILE"),
@@ -106,9 +109,7 @@ def wrong_credentials():
     if p == "v3-noauth":
         return UsmUserData("ci-nonexistent")
     if p == "v3-sha":
-        return UsmUserData(
-            "ci-sha", "WRONG-AUTH-PASS", authProtocol=usmHMACSHAAuthProtocol
-        )
+        return UsmUserData("ci-sha", "WRONG-AUTH-PASS", authProtocol=usmHMACSHAAuthProtocol)
     if p == "v3-aes":
         return UsmUserData(
             "ci-aes",

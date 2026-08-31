@@ -7,7 +7,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-__all__ = ['ContextData']
+__all__ = ["ContextData"]
 
 
 @dataclass(eq=False, repr=False)
@@ -49,9 +49,7 @@ class ContextData:
     """
 
     contextEngineId: Any = None
-    contextName: Any = b''
+    contextName: Any = b""
 
     def __repr__(self) -> str:
-        return '{}(contextEngineId={!r}, contextName={!r})'.format(
-            self.__class__.__name__, self.contextEngineId, self.contextName
-        )
+        return f"{self.__class__.__name__}(contextEngineId={self.contextEngineId!r}, contextName={self.contextName!r})"

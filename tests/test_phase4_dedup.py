@@ -41,49 +41,49 @@ class _Future:
 def test_execution_context_preserves_writable_mapping():
     meta_observer = observer.MetaObserver()
     engine = SimpleNamespace(observer=meta_observer)
-    variables = {'communityName': 'public'}
+    variables = {"communityName": "public"}
 
     def rewrite_community(snmpEngine, execpoint, context, cbCtx):
-        context['communityName'] = 'private'
+        context["communityName"] = "private"
 
-    meta_observer.registerObserver(rewrite_community, 'test.writable')
+    meta_observer.registerObserver(rewrite_community, "test.writable")
 
-    with observer.execution_context(engine, 'test.writable', variables) as context:
+    with observer.execution_context(engine, "test.writable", variables) as context:
         assert context is variables
-        assert meta_observer.getExecutionContext('test.writable') is variables
+        assert meta_observer.getExecutionContext("test.writable") is variables
 
-    assert variables['communityName'] == 'private'
+    assert variables["communityName"] == "private"
     with pytest.raises(KeyError):
-        meta_observer.getExecutionContext('test.writable')
+        meta_observer.getExecutionContext("test.writable")
 
 
 def test_execution_context_clears_after_body_exception():
     meta_observer = observer.MetaObserver()
     engine = SimpleNamespace(observer=meta_observer)
 
-    with pytest.raises(RuntimeError, match='boom'):
-        with observer.execution_context(engine, 'test.exception', value=1):
-            assert meta_observer.getExecutionContext('test.exception') == {'value': 1}
-            raise RuntimeError('boom')
+    with pytest.raises(RuntimeError, match="boom"):
+        with observer.execution_context(engine, "test.exception", value=1):
+            assert meta_observer.getExecutionContext("test.exception") == {"value": 1}
+            raise RuntimeError("boom")
 
     with pytest.raises(KeyError):
-        meta_observer.getExecutionContext('test.exception')
+        meta_observer.getExecutionContext("test.exception")
 
 
 def test_execution_context_restores_outer_context():
     meta_observer = observer.MetaObserver()
     engine = SimpleNamespace(observer=meta_observer)
-    outer = {'level': 'outer'}
-    inner = {'level': 'inner'}
+    outer = {"level": "outer"}
+    inner = {"level": "inner"}
 
-    with observer.execution_context(engine, 'test.nested', outer):
-        with observer.execution_context(engine, 'test.nested', inner):
-            assert meta_observer.getExecutionContext('test.nested') is inner
+    with observer.execution_context(engine, "test.nested", outer):
+        with observer.execution_context(engine, "test.nested", inner):
+            assert meta_observer.getExecutionContext("test.nested") is inner
 
-        assert meta_observer.getExecutionContext('test.nested') is outer
+        assert meta_observer.getExecutionContext("test.nested") is outer
 
     with pytest.raises(KeyError):
-        meta_observer.getExecutionContext('test.nested')
+        meta_observer.getExecutionContext("test.nested")
 
 
 def test_execution_context_clears_when_observer_raises():
@@ -91,23 +91,23 @@ def test_execution_context_clears_when_observer_raises():
     engine = SimpleNamespace(observer=meta_observer)
 
     def fail_observer(snmpEngine, execpoint, context, cbCtx):
-        raise RuntimeError('observer failure')
+        raise RuntimeError("observer failure")
 
-    meta_observer.registerObserver(fail_observer, 'test.observer-error')
+    meta_observer.registerObserver(fail_observer, "test.observer-error")
 
-    with pytest.raises(RuntimeError, match='observer failure'):
-        with observer.execution_context(engine, 'test.observer-error'):
+    with pytest.raises(RuntimeError, match="observer failure"):
+        with observer.execution_context(engine, "test.observer-error"):
             pass
 
     with pytest.raises(KeyError):
-        meta_observer.getExecutionContext('test.observer-error')
+        meta_observer.getExecutionContext("test.observer-error")
 
 
 def test_execution_context_rejects_mapping_and_keywords():
     engine = SimpleNamespace(observer=observer.MetaObserver())
 
-    with pytest.raises(TypeError, match='either a mapping or keyword variables'):
-        with observer.execution_context(engine, 'test.invalid', {}, value=1):
+    with pytest.raises(TypeError, match="either a mapping or keyword variables"):
+        with observer.execution_context(engine, "test.invalid", {}, value=1):
             pass
 
 
@@ -131,7 +131,7 @@ def test_callback_unmakes_each_table_row():
 
 
 def test_callback_propagates_unmake_exception_to_future():
-    failure = ValueError('bad varbind')
+    failure = ValueError("bad varbind")
     future = _Future()
 
     def fail(engine, varBinds, lookupMib):
@@ -148,7 +148,7 @@ def test_callback_ignores_cancelled_future():
     future = _Future(cancelled=True)
 
     def fail_if_called(engine, varBinds, lookupMib):
-        pytest.fail('cancelled callback should not process varbinds')
+        pytest.fail("cancelled callback should not process varbinds")
 
     callback = make_callback(fail_if_called)
     callback(None, None, None, 0, 0, [], (True, future))
@@ -159,24 +159,24 @@ def test_callback_ignores_cancelled_future():
 
 def test_usm_error_helper_preserves_exact_key_set():
     with pytest.raises(error.StatusInformation) as exc_info:
-        _raise_usm_error(errind.unknownEngineID, oid='counter', val=1)
+        _raise_usm_error(errind.unknownEngineID, oid="counter", val=1)
 
     status = exc_info.value
-    assert status['errorIndication'] is errind.unknownEngineID
-    assert status['oid'] == 'counter'
-    assert status['val'] == 1
-    assert 'msgUserName' not in status
-    assert 'securityStateReference' not in status
+    assert status["errorIndication"] is errind.unknownEngineID
+    assert status["oid"] == "counter"
+    assert status["val"] == 1
+    assert "msgUserName" not in status
+    assert "securityStateReference" not in status
 
 
 def test_serialization_helper_covers_component_assignment():
     def fail_assignment():
-        raise PyAsn1Error('component assignment failed')
+        raise PyAsn1Error("component assignment failed")
 
     with pytest.raises(error.StatusInformation) as exc_info:
-        _run_or_raise_serialization_error(fail_assignment, 'securityParameters')
+        _run_or_raise_serialization_error(fail_assignment, "securityParameters")
 
-    assert exc_info.value['errorIndication'] is errind.serializationError
+    assert exc_info.value["errorIndication"] is errind.serializationError
 
 
 class _HeaderRecorder:
@@ -239,9 +239,9 @@ def test_response_header_preserves_uncoerced_security_model_and_options():
     assert call == (
         (3, security_model),
         {
-            'verifyConstraints': False,
-            'matchTags': False,
-            'matchConstraints': False,
+            "verifyConstraints": False,
+            "matchTags": False,
+            "matchConstraints": False,
         },
     )
     assert security_model.int_calls == 0
@@ -261,16 +261,16 @@ class _RecordingTransportDispatcher:
 def _build_v3_request(
     *,
     security_level,
-    sender_user='test-user',
-    receiver_user='test-user',
-    sender_auth_key='authkey1',
-    receiver_auth_key='authkey1',
-    sender_priv_key='privkey1',
-    receiver_priv_key='privkey1',
+    sender_user="test-user",
+    receiver_user="test-user",
+    sender_auth_key="authkey1",
+    receiver_auth_key="authkey1",
+    sender_priv_key="privkey1",
+    receiver_priv_key="privkey1",
     synchronize_time=True,
 ):
-    sender = SnmpEngine(snmpEngineID=univ.OctetString(hexValue='80004fb8050102030405'))
-    receiver = SnmpEngine(snmpEngineID=univ.OctetString(hexValue='80004fb805060708090a'))
+    sender = SnmpEngine(snmpEngineID=univ.OctetString(hexValue="80004fb8050102030405"))
+    receiver = SnmpEngine(snmpEngineID=univ.OctetString(hexValue="80004fb805060708090a"))
     receiver.transportDispatcher = _RecordingTransportDispatcher()
 
     auth_protocol = (
@@ -298,7 +298,7 @@ def _build_v3_request(
     if security_level >= 2 and synchronize_time:
         engine_boots, engine_time = (
             receiver.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                '__SNMP-FRAMEWORK-MIB', 'snmpEngineBoots', 'snmpEngineTime'
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineBoots", "snmpEngineTime"
             )
         )
         current_engine_time = engine_time.syntax.clone()
@@ -311,16 +311,16 @@ def _build_v3_request(
 
     pdu = v2c.GetRequestPDU()
     v2c.apiPDU.setDefaults(pdu)
-    v2c.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), univ.Null(''))])
+    v2c.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), univ.Null(""))])
     transport_domain = (1, 3, 6, 1, 6, 1, 1)
-    transport_address = ('127.0.0.1', 161)
+    transport_address = ("127.0.0.1", 161)
     message_model = sender.messageProcessingSubsystems[3]
     message_model._SnmpV3MessageProcessingModel__engineIdCache[
         (transport_domain, transport_address)
     ] = {
-        'securityEngineId': receiver.snmpEngineID,
-        'contextEngineId': receiver.snmpEngineID,
-        'contextName': univ.OctetString(''),
+        "securityEngineId": receiver.snmpEngineID,
+        "contextEngineId": receiver.snmpEngineID,
+        "contextName": univ.OctetString(""),
     }
     whole_message = message_model.prepareOutgoingMessage(
         sender,
@@ -331,7 +331,7 @@ def _build_v3_request(
         univ.OctetString(sender_user),
         security_level,
         receiver.snmpEngineID,
-        '',
+        "",
         1,
         pdu,
         True,
@@ -350,31 +350,31 @@ def _prepare_v3_request(receiver, transport_domain, transport_address, whole_mes
 def test_prepare_data_elements_characterizes_unknown_user():
     request = _build_v3_request(
         security_level=1,
-        sender_user='missing-user',
-        receiver_user='other-user',
+        sender_user="missing-user",
+        receiver_user="other-user",
     )
 
     with pytest.raises(error.StatusInformation) as exc_info:
         _prepare_v3_request(*request)
 
     status = exc_info.value
-    assert status['errorIndication'] is errind.unknownSecurityName
-    assert status['msgUserName'] == univ.OctetString('missing-user')
-    assert 'securityStateReference' in status
-    assert 'oid' in status
+    assert status["errorIndication"] is errind.unknownSecurityName
+    assert status["msgUserName"] == univ.OctetString("missing-user")
+    assert "securityStateReference" in status
+    assert "oid" in status
 
 
 def test_prepare_data_elements_characterizes_wrong_digest():
-    request = _build_v3_request(security_level=2, receiver_auth_key='wrongkey1')
+    request = _build_v3_request(security_level=2, receiver_auth_key="wrongkey1")
 
     with pytest.raises(error.StatusInformation) as exc_info:
         _prepare_v3_request(*request)
 
     status = exc_info.value
-    assert status['errorIndication'] is errind.authenticationFailure
-    assert status['msgUserName'] == univ.OctetString('test-user')
-    assert 'securityStateReference' in status
-    assert 'oid' in status
+    assert status["errorIndication"] is errind.authenticationFailure
+    assert status["msgUserName"] == univ.OctetString("test-user")
+    assert "securityStateReference" in status
+    assert "oid" in status
 
 
 def test_prepare_data_elements_characterizes_not_in_time_window():
@@ -384,26 +384,26 @@ def test_prepare_data_elements_characterizes_not_in_time_window():
         _prepare_v3_request(*request)
 
     status = exc_info.value
-    assert status['errorIndication'] is errind.notInTimeWindow
-    assert status['securityLevel'] == 2
-    assert status['msgUserName'] == univ.OctetString('test-user')
-    assert 'oid' in status
+    assert status["errorIndication"] is errind.notInTimeWindow
+    assert status["securityLevel"] == 2
+    assert status["msgUserName"] == univ.OctetString("test-user")
+    assert "oid" in status
 
 
 def test_prepare_data_elements_characterizes_decryption_error():
-    request = _build_v3_request(security_level=3, receiver_priv_key='wrongkey1')
+    request = _build_v3_request(security_level=3, receiver_priv_key="wrongkey1")
 
     with pytest.raises(error.StatusInformation) as exc_info:
         _prepare_v3_request(*request)
 
     status = exc_info.value
-    assert status['errorIndication'] is errind.decryptionError
-    assert status['msgUserName'] == univ.OctetString('test-user')
+    assert status["errorIndication"] is errind.decryptionError
+    assert status["msgUserName"] == univ.OctetString("test-user")
 
 
 def test_request_transport_context_is_removed_when_application_raises(monkeypatch):
     dispatcher = MsgAndPduDispatcher()
-    context_engine_id = univ.OctetString('engine')
+    context_engine_id = univ.OctetString("engine")
     pdu = v2c.GetRequestPDU()
     v2c.apiPDU.setDefaults(pdu)
     state_reference = 17
@@ -413,10 +413,10 @@ def test_request_transport_context_is_removed_when_application_raises(monkeypatc
             return (
                 3,
                 3,
-                univ.OctetString('user'),
+                univ.OctetString("user"),
                 1,
                 context_engine_id,
-                univ.OctetString(''),
+                univ.OctetString(""),
                 1,
                 pdu,
                 pdu.tagSet,
@@ -427,19 +427,19 @@ def test_request_transport_context_is_removed_when_application_raises(monkeypatc
             )
 
     def fail_processing(*args):
-        raise RuntimeError('application failure')
+        raise RuntimeError("application failure")
 
     dispatcher.registerContextEngineId(context_engine_id, (pdu.tagSet,), fail_processing)
     engine = SimpleNamespace(
         messageProcessingSubsystems={3: MessageModel()},
         observer=observer.MetaObserver(),
     )
-    monkeypatch.setattr('pysnmp.proto.rfc3412.verdec.decodeMessageVersion', lambda msg: 3)
+    monkeypatch.setattr("pysnmp.proto.rfc3412.verdec.decodeMessageVersion", lambda msg: 3)
 
-    with pytest.raises(RuntimeError, match='application failure'):
-        dispatcher.receiveMessage(engine, 'domain', 'address', b'message')
+    with pytest.raises(RuntimeError, match="application failure"):
+        dispatcher.receiveMessage(engine, "domain", "address", b"message")
 
     with pytest.raises(error.ProtocolError):
         dispatcher.getTransportInfo(state_reference)
     with pytest.raises(KeyError):
-        engine.observer.getExecutionContext('rfc3412.receiveMessage:request')
+        engine.observer.getExecutionContext("rfc3412.receiveMessage:request")

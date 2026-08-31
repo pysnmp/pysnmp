@@ -41,7 +41,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     ):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-        (snmpEngineId,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
+        (snmpEngineId,) = mibBuilder.importSymbols("__SNMP-FRAMEWORK-MIB", "snmpEngineID")
         snmpEngineId = snmpEngineId.syntax
 
         # rfc3412: 7.1.1b
@@ -50,7 +50,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             msgID = self._cache.newMsgID()
             reqID = pdu.getComponentByPosition(0)
             debug.logger & debug.flagMP and debug.logger(
-                f'prepareOutgoingMessage: PDU request-id {reqID} replaced with unique ID {msgID}'
+                f"prepareOutgoingMessage: PDU request-id {reqID} replaced with unique ID {msgID}"
             )
 
         # rfc3412: 7.1.4
@@ -61,10 +61,10 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         # rfc3412: 7.1.5
         if not contextName:
-            contextName = b''
+            contextName = b""
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareOutgoingMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}'
+            f"prepareOutgoingMessage: using contextEngineId {contextEngineId!r} contextName {contextName!r}"
         )
 
         # rfc3412: 7.1.6
@@ -89,7 +89,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # rfc3412: 7.1.9.a & rfc2576: 5.2.1 --> no-op
 
         (snmpEngineMaxMessageSize,) = mibBuilder.importSymbols(
-            '__SNMP-FRAMEWORK-MIB', 'snmpEngineMaxMessageSize'
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineMaxMessageSize"
         )
 
         # fix unique request-id right prior PDU serialization
@@ -136,7 +136,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         with execution_context(
             snmpEngine,
-            'rfc2576.prepareOutgoingMessage',
+            "rfc2576.prepareOutgoingMessage",
             transportDomain=transportDomain,
             transportAddress=transportAddress,
             wholeMsg=wholeMsg,
@@ -168,7 +168,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     ):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-        (snmpEngineId,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
+        (snmpEngineId,) = mibBuilder.importSymbols("__SNMP-FRAMEWORK-MIB", "snmpEngineID")
         snmpEngineId = snmpEngineId.syntax
 
         # rfc3412: 7.1.2.b
@@ -176,22 +176,20 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             raise error.StatusInformation(errorIndication=errind.nonReportable)
 
         cachedParams = self._cache.popByStateRef(stateReference)
-        msgID = cachedParams['msgID']
-        reqID = cachedParams['reqID']
-        responseContextEngineId = cachedParams['contextEngineId']
-        responseContextName = cachedParams['contextName']
-        responseSecurityModel = cachedParams['securityModel']
-        responseSecurityName = cachedParams['securityName']
-        responseSecurityLevel = cachedParams['securityLevel']
-        securityStateReference = cachedParams['securityStateReference']
-        maxMessageSize = cachedParams['msgMaxSize']
-        transportDomain = cachedParams['transportDomain']
-        transportAddress = cachedParams['transportAddress']
+        msgID = cachedParams["msgID"]
+        reqID = cachedParams["reqID"]
+        responseContextEngineId = cachedParams["contextEngineId"]
+        responseContextName = cachedParams["contextName"]
+        responseSecurityModel = cachedParams["securityModel"]
+        responseSecurityName = cachedParams["securityName"]
+        responseSecurityLevel = cachedParams["securityLevel"]
+        securityStateReference = cachedParams["securityStateReference"]
+        maxMessageSize = cachedParams["msgMaxSize"]
+        transportDomain = cachedParams["transportDomain"]
+        transportAddress = cachedParams["transportAddress"]
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareResponseMessage: cache read msgID {} transportDomain {} transportAddress {} by stateReference {}'.format(
-                msgID, transportDomain, transportAddress, stateReference
-            )
+            f"prepareResponseMessage: cache read msgID {msgID} transportDomain {transportDomain} transportAddress {transportAddress} by stateReference {stateReference}"
         )
 
         # rfc3412: 7.1.3
@@ -209,13 +207,13 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         # rfc3412: 7.1.5
         if not responseContextName:
-            responseContextName = b''
+            responseContextName = b""
 
         # rfc3412: 7.1.6
         scopedPDU = (responseContextEngineId, responseContextName, pdu)
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareResponseMessage: using contextEngineId {responseContextEngineId!r} contextName {responseContextName!r}'
+            f"prepareResponseMessage: using contextEngineId {responseContextEngineId!r} contextName {responseContextName!r}"
         )
 
         msg = self._snmpMsgSpec
@@ -258,7 +256,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         with execution_context(
             snmpEngine,
-            'rfc2576.prepareResponseMessage',
+            "rfc2576.prepareResponseMessage",
             transportDomain=transportDomain,
             transportAddress=transportAddress,
             securityModel=responseSecurityModel,
@@ -280,7 +278,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # rfc3412: 7.2.2
         msg, restOfWholeMsg = decoder.decode(wholeMsg, asn1Spec=self._snmpMsgSpec)
 
-        debug.logger & debug.flagMP and debug.logger(f'prepareDataElements: {msg.prettyPrint()}')
+        debug.logger & debug.flagMP and debug.logger(f"prepareDataElements: {msg.prettyPrint()}")
 
         if eoo.endOfOctets.isSameTypeWith(msg):
             raise error.StatusInformation(errorIndication=errind.parseError)
@@ -290,7 +288,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
         # rfc2576: 5.2.1
         (snmpEngineMaxMessageSize,) = mibBuilder.importSymbols(
-            '__SNMP-FRAMEWORK-MIB', 'snmpEngineMaxMessageSize'
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineMaxMessageSize"
         )
         communityName = msg.getComponentByPosition(1)
         # transportDomain identifies local endpoint
@@ -302,7 +300,6 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         # rfc3412: 7.2.4 -- 7.2.5 -> no-op
 
         try:
-
             try:
                 smHandler = snmpEngine.securityModels[securityModel]
 
@@ -328,14 +325,13 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             )
 
             debug.logger & debug.flagMP and debug.logger(
-                f'prepareDataElements: SM returned securityEngineId {securityEngineId!r} securityName {securityName!r}'
+                f"prepareDataElements: SM returned securityEngineId {securityEngineId!r} securityName {securityName!r}"
             )
 
         except error.StatusInformation as statusInformation:
-
             with execution_context(
                 snmpEngine,
-                'rfc2576.prepareDataElements:sm-failure',
+                "rfc2576.prepareDataElements:sm-failure",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -371,16 +367,16 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 raise error.StatusInformation(errorIndication=errind.dataMismatch)
 
             # recover original PDU request-id to return to app
-            pdu.setComponentByPosition(0, cachedReqParams['reqID'])
+            pdu.setComponentByPosition(0, cachedReqParams["reqID"])
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: unique PDU request-id {} replaced with original ID {}'.format(
-                    msgID, cachedReqParams['reqID']
+                "prepareDataElements: unique PDU request-id {} replaced with original ID {}".format(
+                    msgID, cachedReqParams["reqID"]
                 )
             )
 
             # 7.2.10b
-            sendPduHandle = cachedReqParams['sendPduHandle']
+            sendPduHandle = cachedReqParams["sendPduHandle"]
         else:
             sendPduHandle = None
 
@@ -395,11 +391,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             # rfc3412: 7.2.12b
             # noinspection PyUnboundLocalVariable
             if (
-                securityModel != cachedReqParams['securityModel']
-                or securityName != cachedReqParams['securityName']
-                or securityLevel != cachedReqParams['securityLevel']
-                or contextEngineId != cachedReqParams['contextEngineId']
-                or contextName != cachedReqParams['contextName']
+                securityModel != cachedReqParams["securityModel"]
+                or securityName != cachedReqParams["securityName"]
+                or securityLevel != cachedReqParams["securityLevel"]
+                or contextEngineId != cachedReqParams["contextEngineId"]
+                or contextName != cachedReqParams["contextName"]
             ):
                 smHandler.releaseStateInformation(securityStateReference)
                 raise error.StatusInformation(errorIndication=errind.dataMismatch)
@@ -408,7 +404,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
             with execution_context(
                 snmpEngine,
-                'rfc2576.prepareDataElements:response',
+                "rfc2576.prepareDataElements:response",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -449,11 +445,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             msgID = self._cache.newMsgID()
             pdu.setComponentByPosition(0, msgID)
             debug.logger & debug.flagMP and debug.logger(
-                f'prepareDataElements: received PDU request-id {reqID} replaced with unique ID {msgID}'
+                f"prepareDataElements: received PDU request-id {reqID} replaced with unique ID {msgID}"
             )
 
             # rfc3412: 7.2.13a
-            (snmpEngineId,) = mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB', 'snmpEngineID')
+            (snmpEngineId,) = mibBuilder.importSymbols("__SNMP-FRAMEWORK-MIB", "snmpEngineID")
             if securityEngineId != snmpEngineId.syntax:
                 smHandler.releaseStateInformation(securityStateReference)
                 raise error.StatusInformation(errorIndication=errind.engineIDMismatch)
@@ -479,7 +475,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
             with execution_context(
                 snmpEngine,
-                'rfc2576.prepareDataElements:confirmed',
+                "rfc2576.prepareDataElements:confirmed",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -494,7 +490,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 pass
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: cached by new stateReference %s' % stateReference
+                "prepareDataElements: cached by new stateReference %s" % stateReference
             )
 
             # rfc3412: 7.2.13c
@@ -521,7 +517,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
             with execution_context(
                 snmpEngine,
-                'rfc2576.prepareDataElements:unconfirmed',
+                "rfc2576.prepareDataElements:unconfirmed",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,

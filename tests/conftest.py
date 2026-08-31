@@ -1,11 +1,11 @@
 """Shared fixtures for integration tests."""
 
 import os
-from pathlib import Path
 import socket
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import pytest
 
@@ -44,31 +44,23 @@ def snmpsim_endpoint(tmp_path_factory):
         check=False,
     )
     if import_probe.returncode:
-        pytest.fail(
-            "could not import pysnmp in simulator environment:\n{}".format(
-                import_probe.stderr
-            )
-        )
+        pytest.fail(f"could not import pysnmp in simulator environment:\n{import_probe.stderr}")
 
     imported_package = Path(import_probe.stdout.strip())
     if not imported_package.is_relative_to(repository_root):
-        pytest.fail(
-            "simulator resolved pysnmp outside this checkout: {}".format(
-                imported_package
-            )
-        )
+        pytest.fail(f"simulator resolved pysnmp outside this checkout: {imported_package}")
 
     with log_path.open("w") as log_file:
         process = subprocess.Popen(
             [
                 sys.executable,
                 str(simulator),
-                "--data-dir={}".format(data_dir),
+                f"--data-dir={data_dir}",
                 "--cache-dir={}".format(work_dir / "cache"),
                 "--v3-user=00000",
                 "--v3-auth-key=authkey1",
                 "--v3-auth-proto=MD5",
-                "--agent-udpv4-endpoint=127.0.0.1:{}".format(port),
+                f"--agent-udpv4-endpoint=127.0.0.1:{port}",
                 "--log-level=info",
             ],
             stdout=subprocess.DEVNULL,
@@ -79,14 +71,14 @@ def snmpsim_endpoint(tmp_path_factory):
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
             if process.poll() is not None:
-                pytest.fail("snmpsim exited early:\n{}".format(log_path.read_text()))
+                pytest.fail(f"snmpsim exited early:\n{log_path.read_text()}")
             if "Listening at UDP/IPv4 endpoint" in log_path.read_text():
                 break
             time.sleep(0.05)
         else:
             process.terminate()
             process.wait(timeout=5)
-            pytest.fail("snmpsim did not become ready:\n{}".format(log_path.read_text()))
+            pytest.fail(f"snmpsim did not become ready:\n{log_path.read_text()}")
 
     try:
         yield "127.0.0.1", port

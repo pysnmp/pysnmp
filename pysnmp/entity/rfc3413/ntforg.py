@@ -40,9 +40,7 @@ def _prepareFilterEntries(filterEntries):
         else:
             normalizedSubtree = subtree
 
-        prepared.append(
-            (subtree, normalizedSubtree, ignoredSubOids, int(filterType) == 1)
-        )
+        prepared.append((subtree, normalizedSubtree, ignoredSubOids, int(filterType) == 1))
 
     # RFC 3413 section 6 gives precedence to the longest original subtree,
     # then to the lexicographically largest original subtree at equal length.
@@ -101,7 +99,7 @@ class NotificationOriginator:
     def __init__(self, **options):
         self.__pendingReqs = {}
         self.__pendingNotifications = {}
-        self.snmpContext = options.pop('snmpContext', None)  # this is deprecated
+        self.snmpContext = options.pop("snmpContext", None)  # this is deprecated
         self.__options = options
 
     def processResponsePdu(
@@ -123,7 +121,7 @@ class NotificationOriginator:
 
         # 3.3.6d
         if sendPduHandle not in self.__pendingReqs:
-            raise error.ProtocolError('Missing sendPduHandle %s' % sendPduHandle)
+            raise error.ProtocolError("Missing sendPduHandle %s" % sendPduHandle)
 
         (
             origTransportDomain,
@@ -145,12 +143,10 @@ class NotificationOriginator:
 
         if statusInformation:
             debug.logger & debug.flagApp and debug.logger(
-                'processResponsePdu: sendRequestHandle {}, sendPduHandle {} statusInformation {}'.format(
-                    sendRequestHandle, sendPduHandle, statusInformation
-                )
+                f"processResponsePdu: sendRequestHandle {sendRequestHandle}, sendPduHandle {sendPduHandle} statusInformation {statusInformation}"
             )
 
-            errorIndication = statusInformation['errorIndication']
+            errorIndication = statusInformation["errorIndication"]
 
             if errorIndication in (errind.notInTimeWindow, errind.unknownEngineID):
                 origDiscoveryRetries += 1
@@ -160,10 +156,10 @@ class NotificationOriginator:
                 origRetries += 1
 
             if origRetries > origRetryCount or origDiscoveryRetries > self.__options.get(
-                'discoveryRetries', 4
+                "discoveryRetries", 4
             ):
                 debug.logger & debug.flagApp and debug.logger(
-                    'processResponsePdu: sendRequestHandle %s, sendPduHandle %s retry count %d exceeded'
+                    "processResponsePdu: sendRequestHandle %s, sendPduHandle %s retry count %d exceeded"
                     % (sendRequestHandle, sendPduHandle, origRetries)
                 )
                 cbFun(snmpEngine, sendRequestHandle, errorIndication, None, cbCtx)
@@ -203,14 +199,12 @@ class NotificationOriginator:
                 )
             except error.StatusInformation as statusInformation:
                 debug.logger & debug.flagApp and debug.logger(
-                    'processResponsePdu: sendRequestHandle {}: sendPdu() failed with {!r} '.format(
-                        sendRequestHandle, statusInformation
-                    )
+                    f"processResponsePdu: sendRequestHandle {sendRequestHandle}: sendPdu() failed with {statusInformation!r} "
                 )
                 cbFun(
                     snmpEngine,
                     sendRequestHandle,
-                    statusInformation['errorIndication'],
+                    statusInformation["errorIndication"],
                     None,
                     cbCtx,
                 )
@@ -219,7 +213,7 @@ class NotificationOriginator:
             snmpEngine.transportDispatcher.jobStarted(id(self))
 
             debug.logger & debug.flagApp and debug.logger(
-                'processResponsePdu: sendRequestHandle %s, sendPduHandle %s, timeout %d, retry %d of %d'
+                "processResponsePdu: sendRequestHandle %s, sendPduHandle %s, timeout %d, retry %d of %d"
                 % (sendRequestHandle, sendPduHandle, origTimeout, origRetries, origRetryCount)
             )
 
@@ -296,7 +290,7 @@ class NotificationOriginator:
             )
 
             debug.logger & debug.flagApp and debug.logger(
-                'sendPdu: sendPduHandle %s, timeout %d' % (sendPduHandle, timeout)
+                "sendPdu: sendPduHandle %s, timeout %d" % (sendPduHandle, timeout)
             )
 
             # 3.3.6b
@@ -334,7 +328,7 @@ class NotificationOriginator:
 
             sendRequestHandle = None
 
-            debug.logger & debug.flagApp and debug.logger('sendPdu: message sent')
+            debug.logger & debug.flagApp and debug.logger("sendPdu: message sent")
 
         return sendRequestHandle
 
@@ -344,19 +338,12 @@ class NotificationOriginator:
         self.__pendingNotifications[notificationHandle].remove(sendRequestHandle)
 
         debug.logger & debug.flagApp and debug.logger(
-            'processResponseVarBinds: notificationHandle {}, sendRequestHandle {}, errorIndication {}, pending requests {}'.format(
-                notificationHandle,
-                sendRequestHandle,
-                errorIndication,
-                self.__pendingNotifications[notificationHandle],
-            )
+            f"processResponseVarBinds: notificationHandle {notificationHandle}, sendRequestHandle {sendRequestHandle}, errorIndication {errorIndication}, pending requests {self.__pendingNotifications[notificationHandle]}"
         )
 
         if not self.__pendingNotifications[notificationHandle]:
             debug.logger & debug.flagApp and debug.logger(
-                'processResponseVarBinds: notificationHandle {}, sendRequestHandle {} -- completed'.format(
-                    notificationHandle, sendRequestHandle
-                )
+                f"processResponseVarBinds: notificationHandle {notificationHandle}, sendRequestHandle {sendRequestHandle} -- completed"
             )
             del self.__pendingNotifications[notificationHandle]
             cbFun(
@@ -385,14 +372,14 @@ class NotificationOriginator:
     ):
         debug.logger & debug.flagApp and debug.logger(
             'sendVarBinds: notificationTarget {}, contextEngineId {}, contextName "{}", varBinds {}'.format(
-                notificationTarget, contextEngineId or '<default>', contextName, varBinds
+                notificationTarget, contextEngineId or "<default>", contextName, varBinds
             )
         )
 
         if contextName:
             (__SnmpAdminString,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                    'SNMP-FRAMEWORK-MIB', 'SnmpAdminString'
+                    "SNMP-FRAMEWORK-MIB", "SnmpAdminString"
                 )
             )
             contextName = __SnmpAdminString(contextName)
@@ -403,9 +390,7 @@ class NotificationOriginator:
         notificationHandle = getNextHandle()
 
         debug.logger & debug.flagApp and debug.logger(
-            'sendVarBinds: notificationHandle {}, notifyTag {}, notifyType {}'.format(
-                notificationHandle, notifyTag, notifyType
-            )
+            f"sendVarBinds: notificationHandle {notificationHandle}, notifyTag {notifyTag}, notifyType {notifyType}"
         )
 
         varBinds = [(v2c.ObjectIdentifier(x), y) for x, y in varBinds]
@@ -413,7 +398,7 @@ class NotificationOriginator:
         # 3.3.2 & 3.3.3
         snmpTrapOID, sysUpTime = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                '__SNMPv2-MIB', 'snmpTrapOID', 'sysUpTime'
+                "__SNMPv2-MIB", "snmpTrapOID", "sysUpTime"
             )
         )
 
@@ -438,7 +423,7 @@ class NotificationOriginator:
         sendRequestHandle = -1
         notificationsSent = 0
 
-        debug.logger & debug.flagApp and debug.logger(f'sendVarBinds: final varBinds {varBinds}')
+        debug.logger & debug.flagApp and debug.logger(f"sendVarBinds: final varBinds {varBinds}")
 
         for targetAddrName in config.getTargetNames(snmpEngine, notifyTag):
             (transportDomain, transportAddress, timeout, retryCount, params) = (
@@ -455,9 +440,7 @@ class NotificationOriginator:
                 filterEntries = config.getNotifyFilter(snmpEngine, filterProfileName)
 
                 debug.logger & debug.flagApp and debug.logger(
-                    'sendVarBinds: filterProfileName {!r}, filterEntries {}'.format(
-                        filterProfileName, filterEntries
-                    )
+                    f"sendVarBinds: filterProfileName {filterProfileName!r}, filterEntries {filterEntries}"
                 )
 
                 if filterEntries:
@@ -477,10 +460,8 @@ class NotificationOriginator:
                     trapOidVal = varBinds[1][1]  # value of snmpTrapOID varbind
                     if not _matchPreparedFilter(preparedFilter, trapOidVal):
                         debug.logger & debug.flagApp and debug.logger(
-                            'sendVarBinds: notification name {} excluded by filter '
-                            'for target {}, skipping'.format(
-                                trapOidVal, targetAddrName
-                            )
+                            f"sendVarBinds: notification name {trapOidVal} excluded by filter "
+                            f"for target {targetAddrName}, skipping"
                         )
                         continue
 
@@ -493,10 +474,8 @@ class NotificationOriginator:
                             continue
                         if _matchPreparedFilter(preparedFilter, varName) in (False,):
                             debug.logger & debug.flagApp and debug.logger(
-                                'sendVarBinds: varBind {} excluded by filter for '
-                                'target {}, skipping notification'.format(
-                                    varName, targetAddrName
-                                )
+                                f"sendVarBinds: varBind {varName} excluded by filter for "
+                                f"target {targetAddrName}, skipping notification"
                             )
                             objectExcluded = True
                             break
@@ -505,15 +484,7 @@ class NotificationOriginator:
                         continue
 
             debug.logger & debug.flagApp and debug.logger(
-                'sendVarBinds: notificationHandle {}, notifyTag {} yields: transportDomain {}, transportAddress {!r}, securityModel {}, securityName {}, securityLevel {}'.format(
-                    notificationHandle,
-                    notifyTag,
-                    transportDomain,
-                    transportAddress,
-                    securityModel,
-                    securityName,
-                    securityLevel,
-                )
+                f"sendVarBinds: notificationHandle {notificationHandle}, notifyTag {notifyTag} yields: transportDomain {transportDomain}, transportAddress {transportAddress!r}, securityModel {securityModel}, securityName {securityName}, securityLevel {securityLevel}"
             )
 
             trapOidVal = varBinds[1][1]
@@ -531,21 +502,19 @@ class NotificationOriginator:
                         securityModel,
                         securityName,
                         securityLevel,
-                        'notify',
+                        "notify",
                         contextName,
                         varName,
                     )
 
                     debug.logger & debug.flagApp and debug.logger(
-                        f'sendVarBinds: ACL succeeded for OID {varName} securityName {securityName}'
+                        f"sendVarBinds: ACL succeeded for OID {varName} securityName {securityName}"
                     )
 
                 except error.StatusInformation:
                     debug.logger & debug.flagApp and debug.logger(
-                        'sendVarBinds: ACL denied access for OID {} securityName {}, '
-                        'skipping notification for target {}'.format(
-                            varName, securityName, targetAddrName
-                        )
+                        f"sendVarBinds: ACL denied access for OID {varName} securityName {securityName}, "
+                        f"skipping notification for target {targetAddrName}"
                     )
                     vacmDenied = True
                     break
@@ -559,7 +528,7 @@ class NotificationOriginator:
             elif notifyType == 2:
                 pdu = v2c.InformRequestPDU()
             else:
-                raise error.ProtocolError('Unknown notify-type %r', notifyType)
+                raise error.ProtocolError("Unknown notify-type %r", notifyType)
 
             v2c.apiPDU.setDefaults(pdu)
             v2c.apiPDU.setVarBinds(pdu, varBinds)
@@ -578,9 +547,7 @@ class NotificationOriginator:
 
             except error.StatusInformation as statusInformation:
                 debug.logger & debug.flagApp and debug.logger(
-                    'sendVarBinds: sendRequestHandle {}: sendPdu() failed with {!r}'.format(
-                        sendRequestHandle, statusInformation
-                    )
+                    f"sendVarBinds: sendRequestHandle {sendRequestHandle}: sendPdu() failed with {statusInformation!r}"
                 )
                 if (
                     notificationHandle not in self.__pendingNotifications
@@ -592,7 +559,7 @@ class NotificationOriginator:
                         cbFun(
                             snmpEngine,
                             notificationHandle,
-                            statusInformation['errorIndication'],
+                            statusInformation["errorIndication"],
                             0,
                             0,
                             (),
@@ -601,7 +568,7 @@ class NotificationOriginator:
                 return notificationHandle
 
             debug.logger & debug.flagApp and debug.logger(
-                'sendVarBinds: notificationHandle %s, sendRequestHandle %s, timeout %d'
+                "sendVarBinds: notificationHandle %s, sendRequestHandle %s, timeout %d"
                 % (notificationHandle, sendRequestHandle, timeout)
             )
 
@@ -619,9 +586,7 @@ class NotificationOriginator:
             cbFun(snmpEngine, notificationHandle, None, 0, 0, (), cbCtx)
 
         debug.logger & debug.flagApp and debug.logger(
-            'sendVarBinds: notificationHandle {}, sendRequestHandle {}, notification(s) sent'.format(
-                notificationHandle, sendRequestHandle
-            )
+            f"sendVarBinds: notificationHandle {notificationHandle}, sendRequestHandle {sendRequestHandle}, notification(s) sent"
         )
 
         return notificationHandle
@@ -653,18 +618,18 @@ def _sendNotification(
     additionalVarBinds=(),
     cbFun=None,
     cbCtx=None,
-    contextName=b'',
+    contextName=b"",
     instanceIndex=None,
 ):
     if self.snmpContext is None:
-        raise error.ProtocolError('SNMP context not specified')
+        raise error.ProtocolError("SNMP context not specified")
 
     #
     # Here we first expand trap OID into associated OBJECTS
     # and then look them up at context-specific MIB
     #
 
-    mibViewController = snmpEngine.getUserContext('mibViewController')
+    mibViewController = snmpEngine.getUserContext("mibViewController")
     if not mibViewController:
         mibViewController = view.MibViewController(snmpEngine.getMibBuilder())
         snmpEngine.setUserContext(mibViewController=mibViewController)

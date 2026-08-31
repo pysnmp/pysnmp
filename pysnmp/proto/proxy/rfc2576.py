@@ -96,11 +96,11 @@ __v2ToV1ErrorMap = {
 __zeroInt = v1.Integer(0)
 
 
-def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=''):
+def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=""):
     pduType = v1Pdu.tagSet
     v2Pdu = __v1ToV2PduMap[pduType].clone()
 
-    debug.logger & debug.flagPrx and debug.logger('v1ToV2: v1Pdu %s' % v1Pdu.prettyPrint())
+    debug.logger & debug.flagPrx and debug.logger("v1ToV2: v1Pdu %s" % v1Pdu.prettyPrint())
 
     v2VarBinds = []
 
@@ -164,20 +164,20 @@ def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=''):
 
     v2c.apiPDU.setVarBinds(v2Pdu, v2VarBinds)
 
-    debug.logger & debug.flagPrx and debug.logger('v1ToV2: v2Pdu %s' % v2Pdu.prettyPrint())
+    debug.logger & debug.flagPrx and debug.logger("v1ToV2: v2Pdu %s" % v2Pdu.prettyPrint())
 
     return v2Pdu
 
 
 def v2ToV1(v2Pdu, origV1Pdu=None):
-    debug.logger & debug.flagPrx and debug.logger('v2ToV1: v2Pdu %s' % v2Pdu.prettyPrint())
+    debug.logger & debug.flagPrx and debug.logger("v2ToV1: v2Pdu %s" % v2Pdu.prettyPrint())
 
     pduType = v2Pdu.tagSet
 
     if pduType in __v2ToV1PduMap:
         v1Pdu = __v2ToV1PduMap[pduType].clone()
     else:
-        raise error.ProtocolError('Unsupported PDU type')
+        raise error.ProtocolError("Unsupported PDU type")
 
     v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
     v1VarBinds = []
@@ -187,7 +187,7 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
         # 3.2.1
         snmpTrapOID, snmpTrapOIDParam = v2VarBinds[1]
         if snmpTrapOID != v2c.apiTrapPDU.snmpTrapOID:
-            raise error.ProtocolError('Second OID not snmpTrapOID')
+            raise error.ProtocolError("Second OID not snmpTrapOID")
         snmpTrapOID, snmpTrapOIDParam = v2VarBinds[1]
         if snmpTrapOIDParam in __v2ToV1TrapMap:
             for oid, val in v2VarBinds:
@@ -212,7 +212,7 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
                 )  # v2c.OctetString is more constrained
                 break
         else:
-            v1.apiTrapPDU.setAgentAddr(v1Pdu, v1.IpAddress('0.0.0.0'))
+            v1.apiTrapPDU.setAgentAddr(v1Pdu, v1.IpAddress("0.0.0.0"))
 
         # 3.2.3
         if snmpTrapOIDParam in __v2ToV1TrapMap:
@@ -259,7 +259,7 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
                 elif origV1Pdu.tagSet == v1.GetNextRequestPDU.tagSet:
                     raise error.StatusInformation(idx=idx, pdu=v2Pdu)
                 else:
-                    raise error.ProtocolError('Counter64 on the way')
+                    raise error.ProtocolError("Counter64 on the way")
 
             # 4.1.2.2.1&2
             if val.tagSet in (
@@ -296,6 +296,6 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
 
         v1.apiPDU.setRequestID(v1Pdu, v2c.apiPDU.getRequestID(v2Pdu))
 
-    debug.logger & debug.flagPrx and debug.logger('v2ToV1: v1Pdu %s' % v1Pdu.prettyPrint())
+    debug.logger & debug.flagPrx and debug.logger("v2ToV1: v1Pdu %s" % v1Pdu.prettyPrint())
 
     return v1Pdu

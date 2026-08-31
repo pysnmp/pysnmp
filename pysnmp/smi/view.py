@@ -8,7 +8,7 @@ from pysnmp import debug
 from pysnmp.smi import error
 from pysnmp.smi.indices import OidOrderedDict, OrderedDict
 
-__all__ = ['MibViewController']
+__all__ = ["MibViewController"]
 
 classTypes = (type,)
 
@@ -25,9 +25,9 @@ class MibViewController:
         if self.lastBuildId == self.mibBuilder.lastBuildId:
             return
 
-        debug.logger & debug.flagMIB and debug.logger('indexMib: re-indexing MIB view')
+        debug.logger & debug.flagMIB and debug.logger("indexMib: re-indexing MIB view")
 
-        (MibScalarInstance,) = self.mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+        (MibScalarInstance,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
 
         #
         # Create indices
@@ -53,14 +53,14 @@ class MibViewController:
         modNames.sort(key=__sortFun)
 
         # Index modules names
-        for modName in [''] + modNames:
+        for modName in [""] + modNames:
             # Modules index
             self.__mibSymbolsIdx[modName] = mibMod = {
-                'oidToLabelIdx': OidOrderedDict(),
-                'labelToOidIdx': {},
-                'varToNameIdx': {},
-                'typeToModIdx': OrderedDict(),
-                'oidToModIdx': {},
+                "oidToLabelIdx": OidOrderedDict(),
+                "labelToOidIdx": {},
+                "varToNameIdx": {},
+                "typeToModIdx": OrderedDict(),
+                "oidToModIdx": {},
             }
 
             if not modName:
@@ -72,34 +72,34 @@ class MibViewController:
                 if n == self.mibBuilder.moduleID:  # do not index this
                     continue  # special symbol
                 if isinstance(v, classTypes):
-                    if n in mibMod['typeToModIdx']:
+                    if n in mibMod["typeToModIdx"]:
                         raise error.SmiError(
-                            'Duplicate SMI type {}::{}, has {}'.format(
-                                modName, n, mibMod['typeToModIdx'][n]
+                            "Duplicate SMI type {}::{}, has {}".format(
+                                modName, n, mibMod["typeToModIdx"][n]
                             )
                         )
-                    globMibMod['typeToModIdx'][n] = modName
-                    mibMod['typeToModIdx'][n] = modName
+                    globMibMod["typeToModIdx"][n] = modName
+                    mibMod["typeToModIdx"][n] = modName
                 else:
                     if isinstance(v, MibScalarInstance):
                         continue
-                    if n in mibMod['varToNameIdx']:
+                    if n in mibMod["varToNameIdx"]:
                         raise error.SmiError(
-                            'Duplicate MIB variable {}::{} has {}'.format(
-                                modName, n, mibMod['varToNameIdx'][n]
+                            "Duplicate MIB variable {}::{} has {}".format(
+                                modName, n, mibMod["varToNameIdx"][n]
                             )
                         )
-                    globMibMod['varToNameIdx'][n] = v.name
-                    mibMod['varToNameIdx'][n] = v.name
+                    globMibMod["varToNameIdx"][n] = v.name
+                    mibMod["varToNameIdx"][n] = v.name
                     # Potentionally ambiguous mapping ahead
-                    globMibMod['oidToModIdx'][v.name] = modName
-                    mibMod['oidToModIdx'][v.name] = modName
-                    globMibMod['oidToLabelIdx'][v.name] = (n,)
-                    mibMod['oidToLabelIdx'][v.name] = (n,)
+                    globMibMod["oidToModIdx"][v.name] = modName
+                    mibMod["oidToModIdx"][v.name] = modName
+                    globMibMod["oidToLabelIdx"][v.name] = (n,)
+                    mibMod["oidToLabelIdx"][v.name] = (n,)
 
         # Build oid->long-label index
-        oidToLabelIdx = self.__mibSymbolsIdx['']['oidToLabelIdx']
-        labelToOidIdx = self.__mibSymbolsIdx['']['labelToOidIdx']
+        oidToLabelIdx = self.__mibSymbolsIdx[""]["oidToLabelIdx"]
+        labelToOidIdx = self.__mibSymbolsIdx[""]["labelToOidIdx"]
         prevOid = ()
         baseLabel = ()
         for key in oidToLabelIdx.keys():
@@ -132,9 +132,9 @@ class MibViewController:
 
         # Build module-scope oid->long-label index
         for mibMod in self.__mibSymbolsIdx.values():
-            for oid in mibMod['oidToLabelIdx'].keys():
-                mibMod['oidToLabelIdx'][oid] = oidToLabelIdx[oid]
-                mibMod['labelToOidIdx'][oidToLabelIdx[oid]] = oid
+            for oid in mibMod["oidToLabelIdx"].keys():
+                mibMod["oidToLabelIdx"][oid] = oidToLabelIdx[oid]
+                mibMod["labelToOidIdx"][oidToLabelIdx[oid]] = oid
 
         self.lastBuildId = self.mibBuilder.lastBuildId
 
@@ -145,7 +145,7 @@ class MibViewController:
         modNames = self.__mibSymbolsIdx.keys()
         if modNames:
             return modNames[index]
-        raise error.SmiError('No modules loaded at %s' % self)
+        raise error.SmiError("No modules loaded at %s" % self)
 
     def getFirstModuleName(self):
         return self.getOrderedModuleName(0)
@@ -158,7 +158,7 @@ class MibViewController:
         try:
             return self.__mibSymbolsIdx.nextKey(modName)
         except KeyError:
-            raise error.SmiError(f'No module next to {modName} at {self}')
+            raise error.SmiError(f"No module next to {modName} at {self}")
 
     # MIB tree node management
 
@@ -182,40 +182,40 @@ class MibViewController:
             return resOid, oidToLabelIdx[resOid], ()
         return oid, label, suffix
 
-    def getNodeNameByOid(self, nodeName, modName=''):
+    def getNodeNameByOid(self, nodeName, modName=""):
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
         else:
-            raise error.SmiError(f'No module {modName} at {self}')
+            raise error.SmiError(f"No module {modName} at {self}")
         oid, label, suffix = self.__getOidLabel(
-            nodeName, mibMod['oidToLabelIdx'], mibMod['labelToOidIdx']
+            nodeName, mibMod["oidToLabelIdx"], mibMod["labelToOidIdx"]
         )
         if oid == label:
             raise error.NoSuchObjectError(
-                str='Can\'t resolve node name {}::{} at {}'.format(modName, nodeName, self)
+                str=f"Can't resolve node name {modName}::{nodeName} at {self}"
             )
         debug.logger & debug.flagMIB and debug.logger(
-            f'getNodeNameByOid: resolved {modName}:{nodeName} -> {label}.{suffix}'
+            f"getNodeNameByOid: resolved {modName}:{nodeName} -> {label}.{suffix}"
         )
         return oid, label, suffix
 
-    def getNodeNameByDesc(self, nodeName, modName=''):
+    def getNodeNameByDesc(self, nodeName, modName=""):
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
         else:
-            raise error.SmiError(f'No module {modName} at {self}')
-        if nodeName in mibMod['varToNameIdx']:
-            oid = mibMod['varToNameIdx'][nodeName]
+            raise error.SmiError(f"No module {modName} at {self}")
+        if nodeName in mibMod["varToNameIdx"]:
+            oid = mibMod["varToNameIdx"][nodeName]
         else:
-            raise error.NoSuchObjectError(str=f'No such symbol {modName}::{nodeName} at {self}')
+            raise error.NoSuchObjectError(str=f"No such symbol {modName}::{nodeName} at {self}")
         debug.logger & debug.flagMIB and debug.logger(
-            f'getNodeNameByDesc: resolved {modName}:{nodeName} -> {oid}'
+            f"getNodeNameByDesc: resolved {modName}:{nodeName} -> {oid}"
         )
         return self.getNodeNameByOid(oid, modName)
 
-    def getNodeName(self, nodeName, modName=''):
+    def getNodeName(self, nodeName, modName=""):
         # nodeName may be either an absolute OID/label or a
         # ( MIB-symbol, su, ff, ix)
         try:
@@ -227,30 +227,30 @@ class MibViewController:
             # ...with trailing suffix
             return self.getNodeNameByOid(oid + suffix + nodeName[1:], modName)
 
-    def getOrderedNodeName(self, index, modName='', nodeType=None):
+    def getOrderedNodeName(self, index, modName="", nodeType=None):
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
         else:
-            raise error.SmiError(f'No module {modName} at {self}')
-        if not mibMod['oidToLabelIdx']:
-            raise error.NoSuchObjectError(str=f'No variables at MIB module {modName} at {self}')
+            raise error.SmiError(f"No module {modName} at {self}")
+        if not mibMod["oidToLabelIdx"]:
+            raise error.NoSuchObjectError(str=f"No variables at MIB module {modName} at {self}")
         if nodeType is not None:
             # Filter by node type (scalar, table, column, row)
             MibScalar, MibTable, MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
-                'SNMPv2-SMI', 'MibScalar', 'MibTable', 'MibTableColumn', 'MibTableRow'
+                "SNMPv2-SMI", "MibScalar", "MibTable", "MibTableColumn", "MibTableRow"
             )
             nodeTypeMap = {
-                'scalar': MibScalar,
-                'table': MibTable,
-                'column': MibTableColumn,
-                'row': MibTableRow,
+                "scalar": MibScalar,
+                "table": MibTable,
+                "column": MibTableColumn,
+                "row": MibTableRow,
             }
             targetClass = nodeTypeMap.get(nodeType)
             if targetClass is None:
-                raise error.SmiError(f'Unknown node type {nodeType!r} at {self}')
+                raise error.SmiError(f"Unknown node type {nodeType!r} at {self}")
             filtered = []
-            for oid, label in mibMod['oidToLabelIdx'].items():
+            for oid, label in mibMod["oidToLabelIdx"].items():
                 symName = label[-1]
                 if symName in self.mibBuilder.mibSymbols[modName]:
                     symObj = self.mibBuilder.mibSymbols[modName][symName]
@@ -258,7 +258,7 @@ class MibViewController:
                         filtered.append((oid, label))
             if not filtered:
                 raise error.NoSuchObjectError(
-                    str=f'No {nodeType} nodes at MIB module {modName} at {self}'
+                    str=f"No {nodeType} nodes at MIB module {modName} at {self}"
                 )
             try:
                 if index < 0:
@@ -266,81 +266,81 @@ class MibViewController:
                 oid, label = filtered[index]
             except IndexError:
                 raise error.NoSuchObjectError(
-                    str=f'No {nodeType} symbol at position {index} in MIB module {modName} at {self}'
+                    str=f"No {nodeType} symbol at position {index} in MIB module {modName} at {self}"
                 )
             return oid, label, ()
         try:
-            oid, label = mibMod['oidToLabelIdx'].items()[index]
+            oid, label = mibMod["oidToLabelIdx"].items()[index]
         except KeyError:
             raise error.NoSuchObjectError(
-                str=f'No symbol at position {index} in MIB module {modName} at {self}'
+                str=f"No symbol at position {index} in MIB module {modName} at {self}"
             )
         return oid, label, ()
 
-    def getFirstNodeName(self, modName='', nodeType=None):
+    def getFirstNodeName(self, modName="", nodeType=None):
         return self.getOrderedNodeName(0, modName, nodeType)
 
-    def getLastNodeName(self, modName='', nodeType=None):
+    def getLastNodeName(self, modName="", nodeType=None):
         return self.getOrderedNodeName(-1, modName, nodeType)
 
-    def getNextNodeName(self, nodeName, modName=''):
+    def getNextNodeName(self, nodeName, modName=""):
         oid, label, suffix = self.getNodeName(nodeName, modName)
         try:
             return self.getNodeName(
-                self.__mibSymbolsIdx[modName]['oidToLabelIdx'].nextKey(oid) + suffix, modName
+                self.__mibSymbolsIdx[modName]["oidToLabelIdx"].nextKey(oid) + suffix, modName
             )
         except KeyError:
-            raise error.NoSuchObjectError(str=f'No name next to {modName}::{nodeName} at {self}')
+            raise error.NoSuchObjectError(str=f"No name next to {modName}::{nodeName} at {self}")
 
-    def getParentNodeName(self, nodeName, modName=''):
+    def getParentNodeName(self, nodeName, modName=""):
         oid, label, suffix = self.getNodeName(nodeName, modName)
         if len(oid) < 2:
             raise error.NoSuchObjectError(
-                str='No parent name for {}::{} at {}'.format(modName, nodeName, self)
+                str=f"No parent name for {modName}::{nodeName} at {self}"
             )
         return oid[:-1], label[:-1], oid[-1:] + suffix
 
-    def getNodeLocation(self, nodeName, modName=''):
+    def getNodeLocation(self, nodeName, modName=""):
         oid, label, suffix = self.getNodeName(nodeName, modName)
-        return self.__mibSymbolsIdx['']['oidToModIdx'][oid], label[-1], suffix
+        return self.__mibSymbolsIdx[""]["oidToModIdx"][oid], label[-1], suffix
 
     # MIB type management
 
-    def getTypeName(self, typeName, modName=''):
+    def getTypeName(self, typeName, modName=""):
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
         else:
-            raise error.SmiError(f'No module {modName} at {self}')
-        if typeName in mibMod['typeToModIdx']:
-            m = mibMod['typeToModIdx'][typeName]
+            raise error.SmiError(f"No module {modName} at {self}")
+        if typeName in mibMod["typeToModIdx"]:
+            m = mibMod["typeToModIdx"][typeName]
         else:
-            raise error.NoSuchObjectError(str=f'No such type {modName}::{typeName} at {self}')
+            raise error.NoSuchObjectError(str=f"No such type {modName}::{typeName} at {self}")
         return m, typeName
 
-    def getOrderedTypeName(self, index, modName=''):
+    def getOrderedTypeName(self, index, modName=""):
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
         else:
-            raise error.SmiError(f'No module {modName} at {self}')
-        if not mibMod['typeToModIdx']:
-            raise error.NoSuchObjectError(str=f'No types at MIB module {modName} at {self}')
-        t = mibMod['typeToModIdx'].keys()[index]
-        return mibMod['typeToModIdx'][t], t
+            raise error.SmiError(f"No module {modName} at {self}")
+        if not mibMod["typeToModIdx"]:
+            raise error.NoSuchObjectError(str=f"No types at MIB module {modName} at {self}")
+        t = mibMod["typeToModIdx"].keys()[index]
+        return mibMod["typeToModIdx"][t], t
 
-    def getFirstTypeName(self, modName=''):
+    def getFirstTypeName(self, modName=""):
         return self.getOrderedTypeName(0, modName)
 
-    def getLastTypeName(self, modName=''):
+    def getLastTypeName(self, modName=""):
         return self.getOrderedTypeName(-1, modName)
 
-    def getNextType(self, typeName, modName=''):
+    def getNextType(self, typeName, modName=""):
         m, t = self.getTypeName(typeName, modName)
         try:
-            return self.__mibSymbolsIdx[m]['typeToModIdx'].nextKey(t)
+            return self.__mibSymbolsIdx[m]["typeToModIdx"].nextKey(t)
         except KeyError:
-            raise error.NoSuchObjectError(str=f'No type next to {modName}::{typeName} at {self}')
+            raise error.NoSuchObjectError(str=f"No type next to {modName}::{typeName} at {self}")
 
     # ---- Table cell mangling API (TODO #2) ----
     # Convenience methods for table-level introspection that clearly separate
@@ -365,12 +365,10 @@ class MibViewController:
         >>> for colId, colName, colNode in cols:
         ...     print(colId, colNode.getMaxAccess())
         """
-        (MibTableRow,) = self.mibBuilder.importSymbols('SNMPv2-SMI', 'MibTableRow')
+        (MibTableRow,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "MibTableRow")
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
         if not isinstance(rowNode, MibTableRow):
-            raise error.SmiError(
-                f'Symbol {modName}::{rowSymName} is not a MibTableRow at {self}'
-            )
+            raise error.SmiError(f"Symbol {modName}::{rowSymName} is not a MibTableRow at {self}")
         return rowNode.getColumns()
 
     def resolveCellOid(self, modName, rowSymName, column, *indices):
@@ -388,19 +386,17 @@ class MibViewController:
         ...                              'snmpCommunityEntry', 2, 'my-router')
         """
         MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
-            'SNMPv2-SMI', 'MibTableColumn', 'MibTableRow'
+            "SNMPv2-SMI", "MibTableColumn", "MibTableRow"
         )
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
         if not isinstance(rowNode, MibTableRow):
-            raise error.SmiError(
-                f'Symbol {modName}::{rowSymName} is not a MibTableRow at {self}'
-            )
+            raise error.SmiError(f"Symbol {modName}::{rowSymName} is not a MibTableRow at {self}")
 
         if isinstance(column, str):
             (columnNode,) = self.mibBuilder.importSymbols(modName, column)
             if not isinstance(columnNode, MibTableColumn) or columnNode.name[:-1] != rowNode.name:
                 raise error.SmiError(
-                    f'Symbol {modName}::{column} is not a column of {rowSymName} at {self}'
+                    f"Symbol {modName}::{column} is not a column of {rowSymName} at {self}"
                 )
             column = columnNode.name[-1]
 
@@ -414,17 +410,17 @@ class MibViewController:
         :raises SmiError: if *cellOid* does not identify a table cell.
         """
         MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
-            'SNMPv2-SMI', 'MibTableColumn', 'MibTableRow'
+            "SNMPv2-SMI", "MibTableColumn", "MibTableRow"
         )
         modName, columnName, suffix = self.getNodeLocation(tuple(cellOid))
         (columnNode,) = self.mibBuilder.importSymbols(modName, columnName)
         if not isinstance(columnNode, MibTableColumn):
-            raise error.SmiError(f'OID {tuple(cellOid)!r} is not a table cell at {self}')
+            raise error.SmiError(f"OID {tuple(cellOid)!r} is not a table cell at {self}")
 
         rowModName, rowName, rowSuffix = self.getNodeLocation(columnNode.name[:-1])
         (rowNode,) = self.mibBuilder.importSymbols(rowModName, rowName)
         if rowSuffix or not isinstance(rowNode, MibTableRow):
-            raise error.SmiError(f'Column {modName}::{columnName} has no table row at {self}')
+            raise error.SmiError(f"Column {modName}::{columnName} has no table row at {self}")
 
         return modName, rowName, columnName, rowNode.getCellIndices(suffix)
 

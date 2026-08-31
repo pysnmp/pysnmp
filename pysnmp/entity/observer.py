@@ -32,7 +32,7 @@ def execution_context(
     """
 
     if variables is not None and context:
-        raise TypeError('execution context accepts either a mapping or keyword variables')
+        raise TypeError("execution context accepts either a mapping or keyword variables")
 
     variables = variables if variables is not None else context
     meta_observer = snmpEngine.observer
@@ -82,9 +82,9 @@ class MetaObserver:
 
     def registerObserver(self, cbFun, *execpoints, **kwargs):
         if cbFun in self.__contexts:
-            raise error.PySnmpError('duplicate observer %s' % cbFun)
+            raise error.PySnmpError("duplicate observer %s" % cbFun)
         else:
-            self.__contexts[cbFun] = kwargs.get('cbCtx')
+            self.__contexts[cbFun] = kwargs.get("cbCtx")
         for execpoint in execpoints:
             if execpoint not in self.__observers:
                 self.__observers[execpoint] = []

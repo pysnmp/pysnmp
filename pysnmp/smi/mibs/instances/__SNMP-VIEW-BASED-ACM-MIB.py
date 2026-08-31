@@ -3,9 +3,9 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-(MibScalarInstance,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+(MibScalarInstance,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
 
-(vacmViewSpinLock,) = mibBuilder.importSymbols('SNMP-VIEW-BASED-ACM-MIB', 'vacmViewSpinLock')
+(vacmViewSpinLock,) = mibBuilder.importSymbols("SNMP-VIEW-BASED-ACM-MIB", "vacmViewSpinLock")
 
 __vacmViewSpinLock = MibScalarInstance(vacmViewSpinLock.name, (0,), vacmViewSpinLock.syntax)
 

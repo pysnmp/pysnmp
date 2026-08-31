@@ -21,7 +21,7 @@ from pysnmp.proto.rfc3412 import MsgAndPduDispatcher
 from pysnmp.proto.secmod.rfc2576 import SnmpV1SecurityModel, SnmpV2cSecurityModel
 from pysnmp.proto.secmod.rfc3414 import SnmpUSMSecurityModel
 
-__all__ = ['SnmpEngine']
+__all__ = ["SnmpEngine"]
 
 
 class SnmpEngine:
@@ -84,19 +84,19 @@ class SnmpEngine:
         self.transportDispatcher = None
 
         if self.msgAndPduDsp.mibInstrumController is None:
-            raise error.PySnmpError('MIB instrumentation does not yet exist')
+            raise error.PySnmpError("MIB instrumentation does not yet exist")
         (snmpEngineMaxMessageSize,) = (
             self.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                '__SNMP-FRAMEWORK-MIB', 'snmpEngineMaxMessageSize'
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineMaxMessageSize"
             )
         )
         snmpEngineMaxMessageSize.syntax = snmpEngineMaxMessageSize.syntax.clone(maxMessageSize)
         (snmpEngineBoots,) = self.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            '__SNMP-FRAMEWORK-MIB', 'snmpEngineBoots'
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineBoots"
         )
         snmpEngineBoots.syntax += 1
         (origSnmpEngineID,) = self.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            '__SNMP-FRAMEWORK-MIB', 'snmpEngineID'
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
         )
 
         if snmpEngineID is None:
@@ -106,16 +106,18 @@ class SnmpEngine:
             self.snmpEngineID = origSnmpEngineID.syntax
 
             debug.logger & debug.flagApp and debug.logger(
-                'SnmpEngine: using custom SNMP Engine ID: %s' % self.snmpEngineID.prettyPrint()
+                "SnmpEngine: using custom SNMP Engine ID: %s" % self.snmpEngineID.prettyPrint()
             )
 
             # Attempt to make some of snmp Engine settings persistent.
             # This should probably be generalized as a non-volatile MIB store.
 
-            persistentPath = Path(tempfile.gettempdir()) / '__pysnmp' / self.snmpEngineID.prettyPrint()
+            persistentPath = (
+                Path(tempfile.gettempdir()) / "__pysnmp" / self.snmpEngineID.prettyPrint()
+            )
 
             debug.logger & debug.flagApp and debug.logger(
-                'SnmpEngine: using persistent directory: %s' % persistentPath
+                "SnmpEngine: using persistent directory: %s" % persistentPath
             )
 
             if not persistentPath.exists():
@@ -124,12 +126,12 @@ class SnmpEngine:
                 except OSError:
                     return
 
-            f = persistentPath / 'boots'
+            f = persistentPath / "boots"
             try:
                 snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(open(f).read())
             except (OSError, UnicodeDecodeError, ValueConstraintError, ValueError) as e:
                 debug.logger & debug.flagApp and debug.logger(
-                    'SnmpEngine: could not load SNMP Engine Boots: %s' % e
+                    "SnmpEngine: could not load SNMP Engine Boots: %s" % e
                 )
 
             try:
@@ -139,21 +141,21 @@ class SnmpEngine:
 
             try:
                 fd, fn = tempfile.mkstemp(dir=persistentPath)
-                os.write(fd, snmpEngineBoots.syntax.prettyPrint().encode('iso-8859-1'))
+                os.write(fd, snmpEngineBoots.syntax.prettyPrint().encode("iso-8859-1"))
                 os.close(fd)
                 shutil.move(fn, f)
             except Exception as e:
                 debug.logger & debug.flagApp and debug.logger(
-                    'SnmpEngine: could not stored SNMP Engine Boots: %s' % e
+                    "SnmpEngine: could not stored SNMP Engine Boots: %s" % e
                 )
             else:
                 debug.logger & debug.flagApp and debug.logger(
-                    'SnmpEngine: stored SNMP Engine Boots: %s'
+                    "SnmpEngine: stored SNMP Engine Boots: %s"
                     % snmpEngineBoots.syntax.prettyPrint()
                 )
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(snmpEngineID={self.snmpEngineID!r})'
+        return f"{self.__class__.__name__}(snmpEngineID={self.snmpEngineID!r})"
 
     # Transport dispatcher bindings
 
@@ -174,7 +176,7 @@ class SnmpEngine:
             self.transportDispatcher is not None
             and self.transportDispatcher is not transportDispatcher
         ):
-            raise error.PySnmpError('Transport dispatcher already registered')
+            raise error.PySnmpError("Transport dispatcher already registered")
         transportDispatcher.registerRecvCbFun(self.__receiveMessageCbFun, recvId)
         if self.transportDispatcher is None:
             transportDispatcher.registerTimerCbFun(self.__receiveTimerTickCbFun)
@@ -182,7 +184,7 @@ class SnmpEngine:
 
     def unregisterTransportDispatcher(self, recvId: Any = None) -> None:
         if self.transportDispatcher is None:
-            raise error.PySnmpError('Transport dispatcher not registered')
+            raise error.PySnmpError("Transport dispatcher not registered")
         self.transportDispatcher.unregisterRecvCbFun(recvId)
         self.transportDispatcher.unregisterTimerCbFun()
         self.transportDispatcher = None
@@ -192,10 +194,10 @@ class SnmpEngine:
 
     # User app may attach opaque objects to SNMP Engine
     def setUserContext(self, **kwargs: Any) -> None:
-        self.cache.update({'__%s' % k: kwargs[k] for k in kwargs})
+        self.cache.update({"__%s" % k: kwargs[k] for k in kwargs})
 
     def getUserContext(self, arg: str) -> Any:
-        return self.cache.get('__%s' % arg)
+        return self.cache.get("__%s" % arg)
 
     def delUserContext(self, arg: str) -> None:
-        self.cache.pop('__%s' % arg, None)
+        self.cache.pop("__%s" % arg, None)

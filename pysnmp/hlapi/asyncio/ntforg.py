@@ -17,7 +17,7 @@ from pysnmp.hlapi.lcd import NotificationOriginatorLcdConfigurator
 from pysnmp.hlapi.types import SnmpResponse
 from pysnmp.hlapi.varbinds import NotificationOriginatorVarBinds
 
-__all__ = ['sendNotification']
+__all__ = ["sendNotification"]
 
 vbProcessor = NotificationOriginatorVarBinds()
 lcd = NotificationOriginatorLcdConfigurator()
@@ -123,10 +123,10 @@ async def sendNotification(
         contextData.contextName,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get('lookupMib', True), future),
+        (options.get("lookupMib", True), future),
     )
 
-    if notifyType == 'trap':
+    if notifyType == "trap":
 
         def __trapFun(future):
             if future.cancelled():

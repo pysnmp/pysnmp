@@ -9,13 +9,13 @@ from typing import Any
 from pysnmp.smi import view
 from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
 
-__all__ = ['CommandGeneratorVarBinds', 'NotificationOriginatorVarBinds']
+__all__ = ["CommandGeneratorVarBinds", "NotificationOriginatorVarBinds"]
 
 
 class AbstractVarBinds:
     @staticmethod
     def getMibViewController(snmpEngine: Any) -> Any:
-        mibViewController = snmpEngine.getUserContext('mibViewController')
+        mibViewController = snmpEngine.getUserContext("mibViewController")
         if not mibViewController:
             mibViewController = view.MibViewController(snmpEngine.getMibBuilder())
             snmpEngine.setUserContext(mibViewController=mibViewController)

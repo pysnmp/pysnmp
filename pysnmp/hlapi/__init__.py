@@ -10,9 +10,9 @@ from pysnmp.hlapi.asyncio.device import SysOREntry as SysOREntry
 
 # default is a synchronous facade over the asyncio API
 from pysnmp.hlapi.asyncio.sync import (
-    UnixTransportTarget,
     Udp6TransportTarget,
     UdpTransportTarget,
+    UnixTransportTarget,
     bulkCmd,
     get_device_report,
     getCmd,

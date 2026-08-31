@@ -11,7 +11,7 @@ SNMPv1, SNMPv2c and the SNMPv3 noAuthNoPriv/authNoPriv security levels usable
 in environments where pycryptodomex has been stripped from the install.
 """
 
-from functools import lru_cache
+from functools import cache
 
 INSTALL_HINT = (
     "SNMPv3 privacy requires the 'pycryptodomex' package, which could not be "
@@ -19,7 +19,7 @@ INSTALL_HINT = (
 )
 
 
-@lru_cache(maxsize=None)
+@cache
 def getCipher(name: str):
     """Return the named ``Cryptodome.Cipher`` module, or None if unavailable.
 
@@ -36,7 +36,7 @@ def getCipher(name: str):
     try:
         from importlib import import_module
 
-        return import_module(f'Cryptodome.Cipher.{name}')
+        return import_module(f"Cryptodome.Cipher.{name}")
 
     except ImportError:
         return None
@@ -44,4 +44,4 @@ def getCipher(name: str):
 
 def isAvailable() -> bool:
     """Return True if the cipher backend can be imported."""
-    return getCipher('AES') is not None
+    return getCipher("AES") is not None

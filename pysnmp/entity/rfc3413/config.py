@@ -10,17 +10,17 @@ from pysnmp.smi.error import NoSuchInstanceError, SmiError
 def getTargetAddr(snmpEngine, snmpTargetAddrName):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpTargetAddrEntry,) = mibBuilder.importSymbols('SNMP-TARGET-MIB', 'snmpTargetAddrEntry')
+    (snmpTargetAddrEntry,) = mibBuilder.importSymbols("SNMP-TARGET-MIB", "snmpTargetAddrEntry")
 
-    cache = snmpEngine.getUserContext('getTargetAddr')
+    cache = snmpEngine.getUserContext("getTargetAddr")
     if cache is None:
-        cache = {'id': -1}
+        cache = {"id": -1}
         snmpEngine.setUserContext(getTargetAddr=cache)
 
-    if cache['id'] != snmpTargetAddrEntry.branchVersionId:
-        cache['nameToTargetMap'] = {}
+    if cache["id"] != snmpTargetAddrEntry.branchVersionId:
+        cache["nameToTargetMap"] = {}
 
-    nameToTargetMap = cache['nameToTargetMap']
+    nameToTargetMap = cache["nameToTargetMap"]
 
     if snmpTargetAddrName not in nameToTargetMap:
         (
@@ -30,15 +30,15 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
             snmpTargetAddrRetryCount,
             snmpTargetAddrParams,
         ) = mibBuilder.importSymbols(
-            'SNMP-TARGET-MIB',
-            'snmpTargetAddrTDomain',
-            'snmpTargetAddrTAddress',
-            'snmpTargetAddrTimeout',
-            'snmpTargetAddrRetryCount',
-            'snmpTargetAddrParams',
+            "SNMP-TARGET-MIB",
+            "snmpTargetAddrTDomain",
+            "snmpTargetAddrTAddress",
+            "snmpTargetAddrTimeout",
+            "snmpTargetAddrRetryCount",
+            "snmpTargetAddrParams",
         )
         (snmpSourceAddrTAddress,) = mibBuilder.importSymbols(
-            'PYSNMP-SOURCE-MIB', 'snmpSourceAddrTAddress'
+            "PYSNMP-SOURCE-MIB", "snmpSourceAddrTAddress"
         )
 
         tblIdx = snmpTargetAddrEntry.getInstIdFromIndices(snmpTargetAddrName)
@@ -63,14 +63,14 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
                 snmpSourceAddrTAddress.name + tblIdx
             ).syntax
         except NoSuchInstanceError:
-            raise SmiError('Target %s not configured to LCD' % snmpTargetAddrName)
+            raise SmiError("Target %s not configured to LCD" % snmpTargetAddrName)
 
         transport = snmpEngine.transportDispatcher.getTransport(snmpTargetAddrTDomain)
 
         if snmpTargetAddrTDomain[: len(config.snmpUDPDomain)] == config.snmpUDPDomain:
             (SnmpUDPAddress,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                    'SNMPv2-TM', 'SnmpUDPAddress'
+                    "SNMPv2-TM", "SnmpUDPAddress"
                 )
             )
             snmpTargetAddrTAddress = transport.addressType(
@@ -79,7 +79,7 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
         elif snmpTargetAddrTDomain[: len(config.snmpUDP6Domain)] == config.snmpUDP6Domain:
             (TransportAddressIPv6,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                    'TRANSPORT-ADDRESS-MIB', 'TransportAddressIPv6'
+                    "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
                 )
             )
             snmpTargetAddrTAddress = transport.addressType(
@@ -96,7 +96,7 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
             snmpTargetAddrParams,
         )
 
-        cache['id'] = snmpTargetAddrEntry.branchVersionId
+        cache["id"] = snmpTargetAddrEntry.branchVersionId
 
     return nameToTargetMap[snmpTargetAddrName]
 
@@ -104,17 +104,17 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
 def getTargetParams(snmpEngine, paramsName):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpTargetParamsEntry,) = mibBuilder.importSymbols('SNMP-TARGET-MIB', 'snmpTargetParamsEntry')
+    (snmpTargetParamsEntry,) = mibBuilder.importSymbols("SNMP-TARGET-MIB", "snmpTargetParamsEntry")
 
-    cache = snmpEngine.getUserContext('getTargetParams')
+    cache = snmpEngine.getUserContext("getTargetParams")
     if cache is None:
-        cache = {'id': -1}
+        cache = {"id": -1}
         snmpEngine.setUserContext(getTargetParams=cache)
 
-    if cache['id'] != snmpTargetParamsEntry.branchVersionId:
-        cache['nameToParamsMap'] = {}
+    if cache["id"] != snmpTargetParamsEntry.branchVersionId:
+        cache["nameToParamsMap"] = {}
 
-    nameToParamsMap = cache['nameToParamsMap']
+    nameToParamsMap = cache["nameToParamsMap"]
 
     if paramsName not in nameToParamsMap:
         (
@@ -123,11 +123,11 @@ def getTargetParams(snmpEngine, paramsName):
             snmpTargetParamsSecurityName,
             snmpTargetParamsSecurityLevel,
         ) = mibBuilder.importSymbols(
-            'SNMP-TARGET-MIB',
-            'snmpTargetParamsMPModel',
-            'snmpTargetParamsSecurityModel',
-            'snmpTargetParamsSecurityName',
-            'snmpTargetParamsSecurityLevel',
+            "SNMP-TARGET-MIB",
+            "snmpTargetParamsMPModel",
+            "snmpTargetParamsSecurityModel",
+            "snmpTargetParamsSecurityName",
+            "snmpTargetParamsSecurityLevel",
         )
 
         tblIdx = snmpTargetParamsEntry.getInstIdFromIndices(paramsName)
@@ -146,7 +146,7 @@ def getTargetParams(snmpEngine, paramsName):
                 snmpTargetParamsSecurityLevel.name + tblIdx
             ).syntax
         except NoSuchInstanceError:
-            raise SmiError('Parameters %s not configured at LCD' % paramsName)
+            raise SmiError("Parameters %s not configured at LCD" % paramsName)
 
         nameToParamsMap[paramsName] = (
             snmpTargetParamsMPModel,
@@ -155,7 +155,7 @@ def getTargetParams(snmpEngine, paramsName):
             snmpTargetParamsSecurityLevel,
         )
 
-        cache['id'] = snmpTargetParamsEntry.branchVersionId
+        cache["id"] = snmpTargetParamsEntry.branchVersionId
 
     return nameToParamsMap[paramsName]
 
@@ -192,21 +192,21 @@ def getTargetInfo(snmpEngine, snmpTargetAddrName):
 def getNotificationInfo(snmpEngine, notificationTarget):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpNotifyEntry,) = mibBuilder.importSymbols('SNMP-NOTIFICATION-MIB', 'snmpNotifyEntry')
+    (snmpNotifyEntry,) = mibBuilder.importSymbols("SNMP-NOTIFICATION-MIB", "snmpNotifyEntry")
 
-    cache = snmpEngine.getUserContext('getNotificationInfo')
+    cache = snmpEngine.getUserContext("getNotificationInfo")
     if cache is None:
-        cache = {'id': -1}
+        cache = {"id": -1}
         snmpEngine.setUserContext(getNotificationInfo=cache)
 
-    if cache['id'] != snmpNotifyEntry.branchVersionId:
-        cache['targetToNotifyMap'] = {}
+    if cache["id"] != snmpNotifyEntry.branchVersionId:
+        cache["targetToNotifyMap"] = {}
 
-    targetToNotifyMap = cache['targetToNotifyMap']
+    targetToNotifyMap = cache["targetToNotifyMap"]
 
     if notificationTarget not in targetToNotifyMap:
         (snmpNotifyTag, snmpNotifyType) = mibBuilder.importSymbols(
-            'SNMP-NOTIFICATION-MIB', 'snmpNotifyTag', 'snmpNotifyType'
+            "SNMP-NOTIFICATION-MIB", "snmpNotifyTag", "snmpNotifyType"
         )
 
         tblIdx = snmpNotifyEntry.getInstIdFromIndices(notificationTarget)
@@ -216,11 +216,11 @@ def getNotificationInfo(snmpEngine, notificationTarget):
             snmpNotifyType = snmpNotifyType.getNode(snmpNotifyType.name + tblIdx).syntax
 
         except NoSuchInstanceError:
-            raise SmiError('Target %s not configured at LCD' % notificationTarget)
+            raise SmiError("Target %s not configured at LCD" % notificationTarget)
 
         targetToNotifyMap[notificationTarget] = (snmpNotifyTag, snmpNotifyType)
 
-        cache['id'] = snmpNotifyEntry.branchVersionId
+        cache["id"] = snmpNotifyEntry.branchVersionId
 
     return targetToNotifyMap[notificationTarget]
 
@@ -228,22 +228,22 @@ def getNotificationInfo(snmpEngine, notificationTarget):
 def getTargetNames(snmpEngine, tag):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpTargetAddrEntry,) = mibBuilder.importSymbols('SNMP-TARGET-MIB', 'snmpTargetAddrEntry')
+    (snmpTargetAddrEntry,) = mibBuilder.importSymbols("SNMP-TARGET-MIB", "snmpTargetAddrEntry")
 
-    cache = snmpEngine.getUserContext('getTargetNames')
+    cache = snmpEngine.getUserContext("getTargetNames")
     if cache is None:
-        cache = {'id': -1}
+        cache = {"id": -1}
         snmpEngine.setUserContext(getTargetNames=cache)
 
-    if cache['id'] == snmpTargetAddrEntry.branchVersionId:
-        tagToTargetsMap = cache['tagToTargetsMap']
+    if cache["id"] == snmpTargetAddrEntry.branchVersionId:
+        tagToTargetsMap = cache["tagToTargetsMap"]
     else:
-        cache['tagToTargetsMap'] = {}
+        cache["tagToTargetsMap"] = {}
 
-        tagToTargetsMap = cache['tagToTargetsMap']
+        tagToTargetsMap = cache["tagToTargetsMap"]
 
         (SnmpTagValue, snmpTargetAddrName, snmpTargetAddrTagList) = mibBuilder.importSymbols(
-            'SNMP-TARGET-MIB', 'SnmpTagValue', 'snmpTargetAddrName', 'snmpTargetAddrTagList'
+            "SNMP-TARGET-MIB", "SnmpTagValue", "snmpTargetAddrName", "snmpTargetAddrTagList"
         )
         mibNode = snmpTargetAddrTagList
         while True:
@@ -262,10 +262,10 @@ def getTargetNames(snmpEngine, tag):
                     tagToTargetsMap[_tag] = []
                 tagToTargetsMap[_tag].append(_snmpTargetAddrName)
 
-        cache['id'] = snmpTargetAddrEntry.branchVersionId
+        cache["id"] = snmpTargetAddrEntry.branchVersionId
 
     if tag not in tagToTargetsMap:
-        raise SmiError('Transport tag %s not configured at LCD' % tag)
+        raise SmiError("Transport tag %s not configured at LCD" % tag)
 
     return tagToTargetsMap[tag]
 
@@ -282,26 +282,24 @@ def getNotifyFilterProfile(snmpEngine, paramsName):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpNotifyFilterProfileEntry,) = mibBuilder.importSymbols(
-        'SNMP-NOTIFICATION-MIB', 'snmpNotifyFilterProfileEntry'
+        "SNMP-NOTIFICATION-MIB", "snmpNotifyFilterProfileEntry"
     )
 
-    cache = snmpEngine.getUserContext('getNotifyFilterProfile')
+    cache = snmpEngine.getUserContext("getNotifyFilterProfile")
     if cache is None:
-        cache = {'id': -1}
+        cache = {"id": -1}
         snmpEngine.setUserContext(getNotifyFilterProfile=cache)
 
-    if cache['id'] != snmpNotifyFilterProfileEntry.branchVersionId:
-        cache['paramsToProfileMap'] = {}
+    if cache["id"] != snmpNotifyFilterProfileEntry.branchVersionId:
+        cache["paramsToProfileMap"] = {}
 
-    paramsToProfileMap = cache['paramsToProfileMap']
+    paramsToProfileMap = cache["paramsToProfileMap"]
 
     if paramsName not in paramsToProfileMap:
-        (snmpNotifyFilterProfileName, snmpNotifyFilterProfileRowStatus) = (
-            mibBuilder.importSymbols(
-                'SNMP-NOTIFICATION-MIB',
-                'snmpNotifyFilterProfileName',
-                'snmpNotifyFilterProfileRowStatus',
-            )
+        (snmpNotifyFilterProfileName, snmpNotifyFilterProfileRowStatus) = mibBuilder.importSymbols(
+            "SNMP-NOTIFICATION-MIB",
+            "snmpNotifyFilterProfileName",
+            "snmpNotifyFilterProfileRowStatus",
         )
 
         tblIdx = snmpNotifyFilterProfileEntry.getInstIdFromIndices(paramsName)
@@ -319,7 +317,7 @@ def getNotifyFilterProfile(snmpEngine, paramsName):
             profileName = None
 
         paramsToProfileMap[paramsName] = profileName
-        cache['id'] = snmpNotifyFilterProfileEntry.branchVersionId
+        cache["id"] = snmpNotifyFilterProfileEntry.branchVersionId
 
     return paramsToProfileMap[paramsName]
 
@@ -336,26 +334,26 @@ def getNotifyFilter(snmpEngine, filterProfileName):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpNotifyFilterEntry,) = mibBuilder.importSymbols(
-        'SNMP-NOTIFICATION-MIB', 'snmpNotifyFilterEntry'
+        "SNMP-NOTIFICATION-MIB", "snmpNotifyFilterEntry"
     )
 
-    cache = snmpEngine.getUserContext('getNotifyFilter')
+    cache = snmpEngine.getUserContext("getNotifyFilter")
     if cache is None:
-        cache = {'id': -1}
+        cache = {"id": -1}
         snmpEngine.setUserContext(getNotifyFilter=cache)
 
-    if cache['id'] != snmpNotifyFilterEntry.branchVersionId:
+    if cache["id"] != snmpNotifyFilterEntry.branchVersionId:
         (
             snmpNotifyFilterSubtree,
             snmpNotifyFilterMask,
             snmpNotifyFilterType,
             snmpNotifyFilterRowStatus,
         ) = mibBuilder.importSymbols(
-            'SNMP-NOTIFICATION-MIB',
-            'snmpNotifyFilterSubtree',
-            'snmpNotifyFilterMask',
-            'snmpNotifyFilterType',
-            'snmpNotifyFilterRowStatus',
+            "SNMP-NOTIFICATION-MIB",
+            "snmpNotifyFilterSubtree",
+            "snmpNotifyFilterMask",
+            "snmpNotifyFilterType",
+            "snmpNotifyFilterRowStatus",
         )
 
         profileToFiltersMap = {}
@@ -383,14 +381,12 @@ def getNotifyFilter(snmpEngine, filterProfileName):
             except NoSuchInstanceError:
                 continue
 
-            profileToFiltersMap.setdefault(profileName, []).append(
-                (subtree, mask, filterType)
-            )
+            profileToFiltersMap.setdefault(profileName, []).append((subtree, mask, filterType))
 
-        cache['profileToFiltersMap'] = profileToFiltersMap
-        cache['id'] = snmpNotifyFilterEntry.branchVersionId
+        cache["profileToFiltersMap"] = profileToFiltersMap
+        cache["id"] = snmpNotifyFilterEntry.branchVersionId
 
-    return cache['profileToFiltersMap'].get(filterProfileName, [])
+    return cache["profileToFiltersMap"].get(filterProfileName, [])
 
 
 # convert cmdrsp/cmdgen into this api

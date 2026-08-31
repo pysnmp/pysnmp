@@ -30,7 +30,7 @@ class AbstractMessageProcessingModel:
         expectResponse,
         sendPduHandle,
     ):
-        raise error.ProtocolError('method not implemented')
+        raise error.ProtocolError("method not implemented")
 
     def prepareResponseMessage(
         self,
@@ -47,10 +47,10 @@ class AbstractMessageProcessingModel:
         stateReference,
         statusInformation,
     ):
-        raise error.ProtocolError('method not implemented')
+        raise error.ProtocolError("method not implemented")
 
     def prepareDataElements(self, snmpEngine, transportDomain, transportAddress, wholeMsg):
-        raise error.ProtocolError('method not implemented')
+        raise error.ProtocolError("method not implemented")
 
     def releaseStateInformation(self, sendPduHandle):
         try:

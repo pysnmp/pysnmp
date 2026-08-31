@@ -76,14 +76,14 @@ TextualConvention, AutonomousType, DisplayString = mibBuilder.importSymbols(
 )
 snmpUsmMIB = ModuleIdentity((1, 3, 6, 1, 6, 3, 15))
 if mibBuilder.loadTexts:
-    snmpUsmMIB.setRevisions(('1999-10-06 00:00',))
+    snmpUsmMIB.setRevisions(("1999-10-06 00:00",))
 if mibBuilder.loadTexts:
-    snmpUsmMIB.setLastUpdated('9910060000Z')
+    snmpUsmMIB.setLastUpdated("9910060000Z")
 if mibBuilder.loadTexts:
-    snmpUsmMIB.setOrganization('SNMPv3 Working Group')
+    snmpUsmMIB.setOrganization("SNMPv3 Working Group")
 if mibBuilder.loadTexts:
     snmpUsmMIB.setContactInfo(
-        'WG-email: snmpv3@lists.tislabs.com Subscribe: majordomo@lists.tislabs.com In msg body: subscribe snmpv3 Chair: Russ Mundy NAI Labs postal: 3060 Washington Rd Glenwood MD 21738 USA email: mundy@tislabs.com phone: +1-443-259-2307 Co-editor: David Reeder NAI Labs postal: 3060 Washington Road (Route 97) Glenwood, MD 21738 USA email: dreeder@tislabs.com phone: +1-443-259-2348 Co-editor: Olafur Gudmundsson NAI Labs postal: 3060 Washington Road (Route 97) Glenwood, MD 21738 USA email: ogud@tislabs.com phone: +1-443-259-2389 '
+        "WG-email: snmpv3@lists.tislabs.com Subscribe: majordomo@lists.tislabs.com In msg body: subscribe snmpv3 Chair: Russ Mundy NAI Labs postal: 3060 Washington Rd Glenwood MD 21738 USA email: mundy@tislabs.com phone: +1-443-259-2307 Co-editor: David Reeder NAI Labs postal: 3060 Washington Road (Route 97) Glenwood, MD 21738 USA email: dreeder@tislabs.com phone: +1-443-259-2348 Co-editor: Olafur Gudmundsson NAI Labs postal: 3060 Washington Road (Route 97) Glenwood, MD 21738 USA email: ogud@tislabs.com phone: +1-443-259-2389 "
     )
 if mibBuilder.loadTexts:
     snmpUsmMIB.setDescription(
@@ -91,12 +91,12 @@ if mibBuilder.loadTexts:
     )
 usm3DESEDEPrivProtocol = ObjectIdentity((1, 3, 6, 1, 6, 3, 10, 1, 2, 3))
 if mibBuilder.loadTexts:
-    usm3DESEDEPrivProtocol.setStatus('current')
+    usm3DESEDEPrivProtocol.setStatus("current")
 if mibBuilder.loadTexts:
-    usm3DESEDEPrivProtocol.setDescription('The 3DES-EDE Symmetric Encryption Protocol.')
+    usm3DESEDEPrivProtocol.setDescription("The 3DES-EDE Symmetric Encryption Protocol.")
 if mibBuilder.loadTexts:
     usm3DESEDEPrivProtocol.setReference(
-        '- Data Encryption Standard, National Institute of Standards and Technology. Federal Information Processing Standard (FIPS) Publication 46-3, (1999, pending approval). Will supersede FIPS Publication 46-2. - Data Encryption Algorithm, American National Standards Institute. ANSI X3.92-1981, (December, 1980). - DES Modes of Operation, National Institute of Standards and Technology. Federal Information Processing Standard (FIPS) Publication 81, (December, 1980). - Data Encryption Algorithm - Modes of Operation, American National Standards Institute. ANSI X3.106-1983, (May 1983). '
+        "- Data Encryption Standard, National Institute of Standards and Technology. Federal Information Processing Standard (FIPS) Publication 46-3, (1999, pending approval). Will supersede FIPS Publication 46-2. - Data Encryption Algorithm, American National Standards Institute. ANSI X3.92-1981, (December, 1980). - DES Modes of Operation, National Institute of Standards and Technology. Federal Information Processing Standard (FIPS) Publication 81, (December, 1980). - Data Encryption Algorithm - Modes of Operation, American National Standards Institute. ANSI X3.106-1983, (May 1983). "
     )
 mibBuilder.exportSymbols(
     "SNMP-USER-BASED-SM-3DES-MIB",

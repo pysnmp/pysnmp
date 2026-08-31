@@ -78,11 +78,13 @@ _hlapi_. Here's a quick example on how to SNMP GET:
 ```python
 from pysnmp.hlapi import *
 
-iterator = getCmd(SnmpEngine(),
-                  CommunityData('public'),
-                  UdpTransportTarget(('localhost', 161)),
-                  ContextData(),
-                  ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)))
+iterator = getCmd(
+    SnmpEngine(),
+    CommunityData("public"),
+    UdpTransportTarget(("localhost", 161)),
+    ContextData(),
+    ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)),
+)
 
 errorIndication, errorStatus, errorIndex, varBinds = next(iterator)
 
@@ -90,10 +92,13 @@ if errorIndication:  # SNMP engine errors
     print(errorIndication)
 else:
     if errorStatus:  # SNMP agent errors
-        print('%s at %s' % (errorStatus.prettyPrint(), varBinds[int(errorIndex)-1] if errorIndex else '?'))
+        print(
+            "%s at %s"
+            % (errorStatus.prettyPrint(), varBinds[int(errorIndex) - 1] if errorIndex else "?")
+        )
     else:
         for varBind in varBinds:  # SNMP response contents
-            print(' = '.join([x.prettyPrint() for x in varBind]))
+            print(" = ".join([x.prettyPrint() for x in varBind]))
 ```
 
 This is how to send SNMP TRAP:
@@ -103,14 +108,18 @@ from pysnmp.hlapi import *
 
 errorIndication, errorStatus, errorIndex, varBinds = next(
     sendNotification(
-        SnmpEngine(OctetString(hexValue='8000000001020304')),
-        UsmUserData('usr-sha-aes128', 'authkey1', 'privkey1',
-                    authProtocol=usmHMACSHAAuthProtocol,
-                    privProtocol=usmAesCfb128Protocol),
-        UdpTransportTarget(('localhost', 162)),
+        SnmpEngine(OctetString(hexValue="8000000001020304")),
+        UsmUserData(
+            "usr-sha-aes128",
+            "authkey1",
+            "privkey1",
+            authProtocol=usmHMACSHAAuthProtocol,
+            privProtocol=usmAesCfb128Protocol,
+        ),
+        UdpTransportTarget(("localhost", 162)),
         ContextData(),
-        'trap',
-        NotificationType(ObjectIdentity('SNMPv2-MIB', 'authenticationFailure'))
+        "trap",
+        NotificationType(ObjectIdentity("SNMPv2-MIB", "authenticationFailure")),
     )
 )
 

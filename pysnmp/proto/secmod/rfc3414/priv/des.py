@@ -32,7 +32,7 @@ class Des(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(f'Unknown auth protocol {authProtocol}')
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         return localkey.hashPassphrase(privKey, hashAlgo)
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
@@ -43,7 +43,7 @@ class Des(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(f'Unknown auth protocol {authProtocol}')
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
         return localPrivKey[: self.keySize]
 
@@ -86,7 +86,7 @@ class Des(base.AbstractEncryptionService):
 
     # 8.2.4.1
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
-        DES = cipherbackend.getCipher('DES')
+        DES = cipherbackend.getCipher("DES")
         if DES is None:
             raise error.StatusInformation(errorIndication=errind.encryptionError)
 
@@ -110,7 +110,7 @@ class Des(base.AbstractEncryptionService):
 
     # 8.2.4.2
     def decryptData(self, decryptKey, privParameters, encryptedData):
-        DES = cipherbackend.getCipher('DES')
+        DES = cipherbackend.getCipher("DES")
         if DES is None:
             raise error.StatusInformation(errorIndication=errind.decryptionError)
 

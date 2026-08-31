@@ -10,6 +10,7 @@ to `x` (not `self.x`) when `self.x` is falsy, even if `x is None`.
 """
 
 import pytest
+
 from pysnmp.hlapi.auth import CommunityData, UsmUserData
 
 

@@ -7,16 +7,16 @@
 # Never use interfaces below for new applications!
 #
 from pysnmp.entity import config
+from pysnmp.entity.engine import SnmpEngine
 from pysnmp.entity.rfc3413 import context
 from pysnmp.hlapi.asyncio import sync
-from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi.asyncio.ntforg import sendNotification
 from pysnmp.hlapi.context import ContextData
 from pysnmp.hlapi.lcd import NotificationOriginatorLcdConfigurator
 from pysnmp.hlapi.varbinds import NotificationOriginatorVarBinds
 from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
 
-__all__ = ['AsynNotificationOriginator', 'NotificationOriginator', 'MibVariable']
+__all__ = ["AsynNotificationOriginator", "NotificationOriginator", "MibVariable"]
 
 MibVariable = ObjectIdentity
 
@@ -47,7 +47,7 @@ class AsynNotificationOriginator:
 
         if snmpContext is None:
             self.snmpContext = context.SnmpContext(self.snmpEngine)
-            config.addContext(self.snmpEngine, '')  # this is leaky
+            config.addContext(self.snmpEngine, "")  # this is leaky
         else:
             self.snmpContext = snmpContext
 
@@ -81,7 +81,7 @@ class AsynNotificationOriginator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,  # XXX ordering incompatibility
-        contextName=b'',
+        contextName=b"",
     ):
 
         def __cbFun(
@@ -104,7 +104,7 @@ class AsynNotificationOriginator:
                 return cbFun(sendRequestHandle, errorIndication, cbCtx)
 
         # for backward compatibility
-        if contextName == b'' and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
         if not isinstance(notificationType, (ObjectIdentity, ObjectType, NotificationType)):
@@ -147,10 +147,10 @@ class NotificationOriginator:
     def sendNotification(
         self, authData, transportTarget, notifyType, notificationType, *varBinds, **kwargs
     ):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
         if not isinstance(notificationType, (ObjectIdentity, ObjectType, NotificationType)):
             if isinstance(notificationType[0], tuple):
                 # legacy
@@ -167,12 +167,12 @@ class NotificationOriginator:
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
             notifyType,
             notificationType.addVarBinds(*varBinds),
             **kwargs,
         ):
-            if notifyType == 'inform':
+            if notifyType == "inform":
                 return errorIndication, errorStatus, errorIndex, rspVarBinds
             else:
                 break

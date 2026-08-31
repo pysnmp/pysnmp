@@ -2,7 +2,7 @@ import asyncio
 
 from pysnmp.hlapi.asyncio import ntforg
 
-__all__ = ['sendNotification']
+__all__ = ["sendNotification"]
 
 
 def sendNotification(
@@ -14,8 +14,8 @@ def sendNotification(
         loop = asyncio.new_event_loop()
     else:
         raise RuntimeError(
-            'The synchronous HLAPI cannot run while an asyncio event loop is running; '
-            'use pysnmp.hlapi.asyncio instead'
+            "The synchronous HLAPI cannot run while an asyncio event loop is running; "
+            "use pysnmp.hlapi.asyncio instead"
         )
 
     try:

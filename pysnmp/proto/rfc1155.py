@@ -9,7 +9,7 @@ from pyasn1.type import constraint, namedtype, tag, univ
 from pysnmp.proto import error
 from pysnmp.smi.error import SmiError
 
-__all__ = ['Opaque', 'NetworkAddress', 'ObjectName', 'TimeTicks', 'Counter', 'Gauge', 'IpAddress']
+__all__ = ["Opaque", "NetworkAddress", "ObjectName", "TimeTicks", "Counter", "Gauge", "IpAddress"]
 
 
 class IpAddress(univ.OctetString):
@@ -21,18 +21,18 @@ class IpAddress(univ.OctetString):
     def prettyIn(self, value):
         if isinstance(value, str) and len(value) != 4:
             try:
-                value = [int(x) for x in value.split('.')]
+                value = [int(x) for x in value.split(".")]
             except Exception:
-                raise error.ProtocolError('Bad IP address syntax %s' % value)
+                raise error.ProtocolError("Bad IP address syntax %s" % value)
         if len(value) != 4:
-            raise error.ProtocolError('Bad IP address syntax')
+            raise error.ProtocolError("Bad IP address syntax")
         return univ.OctetString.prettyIn(self, value)
 
     def prettyOut(self, value):
         if value:
-            return '.'.join(['%d' % x for x in self.__class__(value).asNumbers()])
+            return ".".join(["%d" % x for x in self.__class__(value).asNumbers()])
         else:
-            return ''
+            return ""
 
 
 class Counter(univ.Integer):
@@ -43,7 +43,7 @@ class Counter(univ.Integer):
 
 
 class NetworkAddress(univ.Choice):
-    componentType = namedtype.NamedTypes(namedtype.NamedType('internet', IpAddress()))
+    componentType = namedtype.NamedTypes(namedtype.NamedType("internet", IpAddress()))
 
     def clone(self, value=univ.noValue, **kwargs):
         """Clone this instance.
@@ -69,7 +69,7 @@ class NetworkAddress(univ.Choice):
             try:
                 tagSet = value.tagSet
             except AttributeError:
-                raise PyAsn1Error(f'component value {value!r} has no tag set')
+                raise PyAsn1Error(f"component value {value!r} has no tag set")
             cloned.setComponentByType(tagSet, value)
         return cloned
 
@@ -84,18 +84,18 @@ class NetworkAddress(univ.Choice):
         kind = value[0]
         clone = self.clone()
         if kind == 1:
-            clone['internet'] = tuple(value[1:5])
+            clone["internet"] = tuple(value[1:5])
             return clone, value[5:]
         else:
-            raise SmiError(f'unknown NetworkAddress type {kind!r}')
+            raise SmiError(f"unknown NetworkAddress type {kind!r}")
 
     def cloneAsName(self, impliedFlag, parentRow, parentIndices):
         kind = self.getName()
         component = self.getComponent()
-        if kind == 'internet':
+        if kind == "internet":
             return (1,) + tuple(component.asNumbers())
         else:
-            raise SmiError(f'unknown NetworkAddress type {kind!r}')
+            raise SmiError(f"unknown NetworkAddress type {kind!r}")
 
 
 class Gauge(univ.Integer):
@@ -129,33 +129,33 @@ class TypeCoercionHackMixIn:  # XXX keep this old-style class till pyasn1 types 
         componentType = self._componentType
         if componentType:
             if idx >= len(componentType):
-                raise PyAsn1Error('Component type error out of range')
+                raise PyAsn1Error("Component type error out of range")
             t = componentType[idx].getType()
             if not t.getTagSet().isSuperTagSetOf(value.getTagSet()):
-                raise PyAsn1Error(f'Component type error {t!r} vs {value!r}')
+                raise PyAsn1Error(f"Component type error {t!r} vs {value!r}")
 
 
 class SimpleSyntax(TypeCoercionHackMixIn, univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('number', univ.Integer()),
-        namedtype.NamedType('string', univ.OctetString()),
-        namedtype.NamedType('object', univ.ObjectIdentifier()),
-        namedtype.NamedType('empty', univ.Null()),
+        namedtype.NamedType("number", univ.Integer()),
+        namedtype.NamedType("string", univ.OctetString()),
+        namedtype.NamedType("object", univ.ObjectIdentifier()),
+        namedtype.NamedType("empty", univ.Null()),
     )
 
 
 class ApplicationSyntax(TypeCoercionHackMixIn, univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('address', NetworkAddress()),
-        namedtype.NamedType('counter', Counter()),
-        namedtype.NamedType('gauge', Gauge()),
-        namedtype.NamedType('ticks', TimeTicks()),
-        namedtype.NamedType('arbitrary', Opaque()),
+        namedtype.NamedType("address", NetworkAddress()),
+        namedtype.NamedType("counter", Counter()),
+        namedtype.NamedType("gauge", Gauge()),
+        namedtype.NamedType("ticks", TimeTicks()),
+        namedtype.NamedType("arbitrary", Opaque()),
     )
 
 
 class ObjectSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('simple', SimpleSyntax()),
-        namedtype.NamedType('application-wide', ApplicationSyntax()),
+        namedtype.NamedType("simple", SimpleSyntax()),
+        namedtype.NamedType("application-wide", ApplicationSyntax()),
     )

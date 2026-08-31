@@ -21,7 +21,7 @@ class AbstractTransportTarget:
         transportAddr: tuple[str, ...],
         timeout: int = 1,
         retries: int = 5,
-        tagList: Any = b'',
+        tagList: Any = b"",
     ) -> None:
         self.transportAddr = self._resolveAddr(transportAddr)
         self.timeout = timeout
@@ -31,9 +31,7 @@ class AbstractTransportTarget:
         self.transport = None
 
     def __repr__(self) -> str:
-        return '{}({!r}, timeout={!r}, retries={!r}, tagList={!r})'.format(
-            self.__class__.__name__, self.transportAddr, self.timeout, self.retries, self.tagList
-        )
+        return f"{self.__class__.__name__}({self.transportAddr!r}, timeout={self.timeout!r}, retries={self.retries!r}, tagList={self.tagList!r})"
 
     def getTransportInfo(self) -> tuple[Any, tuple[str, ...]]:
         return self.transportDomain, self.transportAddr
@@ -62,9 +60,7 @@ class AbstractTransportTarget:
     def verifyDispatcherCompatibility(self, snmpEngine: Any) -> None:
         if not self.protoTransport.isCompatibleWithDispatcher(snmpEngine.transportDispatcher):
             raise error.PySnmpError(
-                'Transport {!r} is not compatible with dispatcher {!r}'.format(
-                    self.protoTransport, snmpEngine.transportDispatcher
-                )
+                f"Transport {self.protoTransport!r} is not compatible with dispatcher {snmpEngine.transportDispatcher!r}"
             )
 
     def _resolveAddr(self, transportAddr: tuple[str, ...]) -> tuple[str, ...]:

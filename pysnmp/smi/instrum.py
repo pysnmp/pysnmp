@@ -10,7 +10,7 @@ from typing import Any
 from pysnmp import debug
 from pysnmp.smi import error
 
-__all__ = ['AbstractMibInstrumController', 'MibInstrumController']
+__all__ = ["AbstractMibInstrumController", "MibInstrumController"]
 
 
 class AbstractMibInstrumController:
@@ -27,35 +27,35 @@ class AbstractMibInstrumController:
 class MibInstrumController(AbstractMibInstrumController):
     fsmReadVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
-        ('start', 'ok'): 'readTest',
-        ('readTest', 'ok'): 'readGet',
-        ('readGet', 'ok'): 'stop',
-        ('*', 'err'): 'stop',
+        ("start", "ok"): "readTest",
+        ("readTest", "ok"): "readGet",
+        ("readGet", "ok"): "stop",
+        ("*", "err"): "stop",
     }
     fsmReadNextVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
-        ('start', 'ok'): 'readTestNext',
-        ('readTestNext', 'ok'): 'readGetNext',
-        ('readGetNext', 'ok'): 'stop',
-        ('*', 'err'): 'stop',
+        ("start", "ok"): "readTestNext",
+        ("readTestNext", "ok"): "readGetNext",
+        ("readGetNext", "ok"): "stop",
+        ("*", "err"): "stop",
     }
     fsmWriteVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
-        ('start', 'ok'): 'writeTest',
-        ('writeTest', 'ok'): 'writeCommit',
-        ('writeCommit', 'ok'): 'writeCleanup',
-        ('writeCleanup', 'ok'): 'readTest',
+        ("start", "ok"): "writeTest",
+        ("writeTest", "ok"): "writeCommit",
+        ("writeCommit", "ok"): "writeCleanup",
+        ("writeCleanup", "ok"): "readTest",
         # Do read after successful write
-        ('readTest', 'ok'): 'readGet',
-        ('readGet', 'ok'): 'stop',
+        ("readTest", "ok"): "readGet",
+        ("readGet", "ok"): "stop",
         # Error handling
-        ('writeTest', 'err'): 'writeCleanup',
-        ('writeCommit', 'err'): 'writeUndo',
-        ('writeUndo', 'ok'): 'readTest',
+        ("writeTest", "err"): "writeCleanup",
+        ("writeCommit", "err"): "writeUndo",
+        ("writeUndo", "ok"): "readTest",
         # Ignore read errors (removed columns)
-        ('readTest', 'err'): 'stop',
-        ('readGet', 'err'): 'stop',
-        ('*', 'err'): 'stop',
+        ("readTest", "err"): "stop",
+        ("readGet", "err"): "stop",
+        ("*", "err"): "stop",
     }
 
     def __init__(self, mibBuilder: Any) -> None:
@@ -75,16 +75,16 @@ class MibInstrumController(AbstractMibInstrumController):
 
         (MibScalarInstance, MibScalar, MibTableColumn, MibTableRow, MibTable) = (
             self.mibBuilder.importSymbols(
-                'SNMPv2-SMI',
-                'MibScalarInstance',
-                'MibScalar',
-                'MibTableColumn',
-                'MibTableRow',
-                'MibTable',
+                "SNMPv2-SMI",
+                "MibScalarInstance",
+                "MibScalar",
+                "MibTableColumn",
+                "MibTableRow",
+                "MibTable",
             )
         )
 
-        (mibTree,) = self.mibBuilder.importSymbols('SNMPv2-SMI', 'iso')
+        (mibTree,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "iso")
 
         #
         # Management Instrumentation gets organized as follows:
@@ -150,7 +150,7 @@ class MibInstrumController(AbstractMibInstrumController):
             elif inst.typeName in cols:
                 cols[inst.typeName].registerSubtrees(inst)
             else:
-                raise error.SmiError(f'Orphan MIB scalar instance {inst!r} at {self!r}')
+                raise error.SmiError(f"Orphan MIB scalar instance {inst!r} at {self!r}")
             lastBuildSyms[inst.name] = inst.typeName
 
         # Attach Table Columns to Table Rows
@@ -159,7 +159,7 @@ class MibInstrumController(AbstractMibInstrumController):
             if rowName in rows:
                 rows[rowName].registerSubtrees(col)
             else:
-                raise error.SmiError(f'Orphan MIB table column {col!r} at {self!r}')
+                raise error.SmiError(f"Orphan MIB table column {col!r} at {self!r}")
             lastBuildSyms[col.name] = rowName
 
         # Attach Table Rows to MIB tree
@@ -181,7 +181,7 @@ class MibInstrumController(AbstractMibInstrumController):
 
         self.lastBuildId = self.mibBuilder.lastBuildId
 
-        debug.logger & debug.flagIns and debug.logger('__indexMib: rebuilt')
+        debug.logger & debug.flagIns and debug.logger("__indexMib: rebuilt")
 
     # MIB instrumentation
 
@@ -190,34 +190,34 @@ class MibInstrumController(AbstractMibInstrumController):
     ) -> list[Any]:
         self.__indexMib()
         debug.logger & debug.flagIns and debug.logger(
-            f'flipFlopFsm: input var-binds {inputVarBinds!r}'
+            f"flipFlopFsm: input var-binds {inputVarBinds!r}"
         )
-        (mibTree,) = self.mibBuilder.importSymbols('SNMPv2-SMI', 'iso')
+        (mibTree,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "iso")
         outputVarBinds = []
-        state, status = 'start', 'ok'
+        state, status = "start", "ok"
         origExc = None
         while True:
             k = (state, status)
             if k in fsmTable:
                 fsmState = fsmTable[k]
             else:
-                k = ('*', status)
+                k = ("*", status)
                 if k in fsmTable:
                     fsmState = fsmTable[k]
                 else:
-                    raise error.SmiError(f'Unresolved FSM state {state}, {status}')
+                    raise error.SmiError(f"Unresolved FSM state {state}, {status}")
             debug.logger & debug.flagIns and debug.logger(
-                f'flipFlopFsm: state {state} status {status} -> fsmState {fsmState}'
+                f"flipFlopFsm: state {state} status {status} -> fsmState {fsmState}"
             )
             state = fsmState
-            status = 'ok'
-            if state == 'stop':
+            status = "ok"
+            if state == "stop":
                 break
             idx = 0
             for name, val in inputVarBinds:
                 f = getattr(mibTree, state, None)
                 if f is None:
-                    raise error.SmiError(f'Unsupported state handler {state} at {self}')
+                    raise error.SmiError(f"Unsupported state handler {state} at {self}")
                 try:
                     # Convert to tuple to avoid ObjectName instantiation
                     # on subscription
@@ -226,17 +226,15 @@ class MibInstrumController(AbstractMibInstrumController):
                     exc_t = type(exc_v)
                     exc_tb = exc_v.__traceback__
                     debug.logger & debug.flagIns and debug.logger(
-                        'flipFlopFsm: fun {} exception {} for {}={!r} with traceback: {}'.format(
-                            f, exc_t, name, val, traceback.format_exception(exc_t, exc_v, exc_tb)
-                        )
+                        f"flipFlopFsm: fun {f} exception {exc_t} for {name}={val!r} with traceback: {traceback.format_exception(exc_t, exc_v, exc_tb)}"
                     )
                     if origExc is None:  # Take the first exception
                         origExc, origTraceback = exc_v, exc_tb
-                    status = 'err'
+                    status = "err"
                     break
                 else:
                     debug.logger & debug.flagIns and debug.logger(
-                        f'flipFlopFsm: fun {f} suceeded for {name}={val!r}'
+                        f"flipFlopFsm: fun {f} suceeded for {name}={val!r}"
                     )
                     if rval is not None:
                         outputVarBinds.append((rval[0], rval[1]))

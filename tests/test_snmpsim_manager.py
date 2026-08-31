@@ -2,8 +2,6 @@
 
 import asyncio
 
-import pytest
-
 from pysnmp.hlapi import (
     CommunityData,
     ContextData,
@@ -13,21 +11,24 @@ from pysnmp.hlapi import (
     SnmpEngine,
     UdpTransportTarget,
     UsmUserData,
+    bulkCmd,
     getCmd,
     nextCmd,
-    bulkCmd,
     sendNotification,
-    setCmd,
     usmHMACMD5AuthProtocol,
 )
 from pysnmp.hlapi.asyncio import (
-    getCmd as asyncio_getCmd,
-    nextCmd as asyncio_nextCmd,
-    bulkCmd as asyncio_bulkCmd,
     UdpTransportTarget as AsyncioUdpTransportTarget,
 )
-from pysnmp.proto.rfc1902 import Integer, OctetString
-
+from pysnmp.hlapi.asyncio import (
+    bulkCmd as asyncio_bulkCmd,
+)
+from pysnmp.hlapi.asyncio import (
+    getCmd as asyncio_getCmd,
+)
+from pysnmp.hlapi.asyncio import (
+    nextCmd as asyncio_nextCmd,
+)
 
 SYS_DESCR = "1.3.6.1.2.1.1.1.0"
 SYS_OBJECTID = "1.3.6.1.2.1.1.2.0"
@@ -60,6 +61,7 @@ def get_all_values(result):
 
 
 # ---- Versioned GET tests (synchronous asyncio facade) ----
+
 
 class TestSyncGetV1:
     def test_get_sys_descr(self, snmpsim_endpoint):
@@ -199,6 +201,7 @@ class TestSyncGetV3:
 
 # ---- Traversal tests (synchronous asyncio facade) ----
 
+
 class TestSyncNextV2c:
     def test_next_cmd(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
@@ -246,7 +249,8 @@ class TestSyncBulkV2c:
             CommunityData("public"),
             UdpTransportTarget((host, port), timeout=1, retries=2),
             ContextData(),
-            0, 10,
+            0,
+            10,
             ObjectType(ObjectIdentity("1.3.6.1.2.1.1")),
         )
         results = []
@@ -263,6 +267,7 @@ class TestSyncBulkV2c:
 
 
 # ---- Unreachable device test ----
+
 
 class TestUnreachableDevice:
     def test_timeout_v2c(self):
@@ -296,6 +301,7 @@ class TestUnreachableDevice:
 
 
 # ---- Asyncio tests ----
+
 
 class TestAsyncioGetV2c:
     def test_asyncio_get_sys_descr(self, snmpsim_endpoint):
@@ -382,7 +388,8 @@ class TestAsyncioBulkV2c:
                 CommunityData("public"),
                 AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
                 ContextData(),
-                0, 10,
+                0,
+                10,
                 ObjectType(ObjectIdentity("1.3.6.1.2.1.1")),
             )
             return result

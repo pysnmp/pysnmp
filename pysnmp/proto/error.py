@@ -26,7 +26,7 @@ class StatusInformation(SnmpV3Error):
         self.__errorIndication = kwargs
         debug.logger & (
             debug.flagDsp | debug.flagMP | debug.flagSM | debug.flagACL
-        ) and debug.logger('StatusInformation: %s' % kwargs)
+        ) and debug.logger("StatusInformation: %s" % kwargs)
 
     def __str__(self):
         return str(self.__errorIndication)

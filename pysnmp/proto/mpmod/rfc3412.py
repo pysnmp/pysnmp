@@ -21,38 +21,38 @@ pMod = api.protoModules[api.protoVersion2c]
 
 class ScopedPDU(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('contextEngineId', univ.OctetString()),
-        namedtype.NamedType('contextName', univ.OctetString()),
-        namedtype.NamedType('data', rfc1905.PDUs()),
+        namedtype.NamedType("contextEngineId", univ.OctetString()),
+        namedtype.NamedType("contextName", univ.OctetString()),
+        namedtype.NamedType("data", rfc1905.PDUs()),
     )
 
 
 class ScopedPduData(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('plaintext', ScopedPDU()),
-        namedtype.NamedType('encryptedPDU', univ.OctetString()),
+        namedtype.NamedType("plaintext", ScopedPDU()),
+        namedtype.NamedType("encryptedPDU", univ.OctetString()),
     )
 
 
 class HeaderData(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType(
-            'msgID',
+            "msgID",
             univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, 2147483647)),
         ),
         namedtype.NamedType(
-            'msgMaxSize',
+            "msgMaxSize",
             univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(484, 2147483647)),
         ),
         namedtype.NamedType(
-            'msgFlags',
+            "msgFlags",
             univ.OctetString().subtype(subtypeSpec=constraint.ValueSizeConstraint(1, 1)),
         ),
         # NOTE (etingof): constrain SNMPv3 message to only USM+ security models
         # because SNMPv1/v2c seems incompatible in pysnmp implementation, not sure
         # if it's intended by the SNMP standard at all...
         namedtype.NamedType(
-            'msgSecurityModel',
+            "msgSecurityModel",
             univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(3, 2147483647)),
         ),
     )
@@ -61,12 +61,12 @@ class HeaderData(univ.Sequence):
 class SNMPv3Message(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType(
-            'msgVersion',
+            "msgVersion",
             univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, 2147483647)),
         ),
-        namedtype.NamedType('msgGlobalData', HeaderData()),
-        namedtype.NamedType('msgSecurityParameters', univ.OctetString()),
-        namedtype.NamedType('msgData', ScopedPduData()),
+        namedtype.NamedType("msgGlobalData", HeaderData()),
+        namedtype.NamedType("msgSecurityParameters", univ.OctetString()),
+        namedtype.NamedType("msgData", ScopedPduData()),
     )
 
 
@@ -84,14 +84,14 @@ _snmpErrors = {
 class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
     messageProcessingModelID = univ.Integer(3)  # SNMPv3
     snmpMsgSpec = SNMPv3Message
-    _emptyStr = univ.OctetString('')
+    _emptyStr = univ.OctetString("")
     _msgFlags = {
-        0: univ.OctetString('\x00'),
-        1: univ.OctetString('\x01'),
-        3: univ.OctetString('\x03'),
-        4: univ.OctetString('\x04'),
-        5: univ.OctetString('\x05'),
-        7: univ.OctetString('\x07'),
+        0: univ.OctetString("\x00"),
+        1: univ.OctetString("\x01"),
+        3: univ.OctetString("\x03"),
+        4: univ.OctetString("\x04"),
+        5: univ.OctetString("\x05"),
+        7: univ.OctetString("\x07"),
     }
 
     def __init__(self):
@@ -149,7 +149,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
 
         (snmpEngineMaxMessageSize,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                '__SNMP-FRAMEWORK-MIB', 'snmpEngineMaxMessageSize'
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineMaxMessageSize"
             )
         )
 
@@ -172,7 +172,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         elif securityLevel == 3:
             msgFlags |= 0x03
         else:
-            raise error.ProtocolError('Unknown securityLevel %s' % securityLevel)
+            raise error.ProtocolError("Unknown securityLevel %s" % securityLevel)
 
         if pdu.tagSet in rfc3411.confirmedClassPDUs:
             msgFlags |= 0x04
@@ -204,9 +204,9 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         k = transportDomain, transportAddress
         if k in self.__engineIdCache:
             return (
-                self.__engineIdCache[k]['securityEngineId'],
-                self.__engineIdCache[k]['contextEngineId'],
-                self.__engineIdCache[k]['contextName'],
+                self.__engineIdCache[k]["securityEngineId"],
+                self.__engineIdCache[k]["contextEngineId"],
+                self.__engineIdCache[k]["contextName"],
             )
         else:
             return None, None, None
@@ -229,7 +229,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         sendPduHandle,
     ):
         (snmpEngineID,) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            '__SNMP-FRAMEWORK-MIB', 'snmpEngineID'
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
         )
         snmpEngineID = snmpEngineID.syntax
 
@@ -237,7 +237,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         msgID = self._cache.newMsgID()
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareOutgoingMessage: new msgID %s' % msgID
+            "prepareOutgoingMessage: new msgID %s" % msgID
         )
 
         k = (transportDomain, transportAddress)
@@ -247,9 +247,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             peerSnmpEngineData = None
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareOutgoingMessage: peer SNMP engine data {} for transport {}, address {}'.format(
-                peerSnmpEngineData, transportDomain, transportAddress
-            )
+            f"prepareOutgoingMessage: peer SNMP engine data {peerSnmpEngineData} for transport {transportDomain}, address {transportAddress}"
         )
 
         # 7.1.4
@@ -257,18 +255,18 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             if peerSnmpEngineData is None:
                 contextEngineId = snmpEngineID
             else:
-                contextEngineId = peerSnmpEngineData['contextEngineId']
+                contextEngineId = peerSnmpEngineData["contextEngineId"]
                 # Defaulting contextEngineID to securityEngineId should
                 # probably be done on Agent side (see 7.1.3.d.2,) so this
                 # is a sort of workaround.
                 if not contextEngineId:
-                    contextEngineId = peerSnmpEngineData['securityEngineId']
+                    contextEngineId = peerSnmpEngineData["securityEngineId"]
         # 7.1.5
         if not contextName:
             contextName = self._emptyStr
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareOutgoingMessage: using contextEngineId {contextEngineId!r}, contextName {contextName!r}'
+            f"prepareOutgoingMessage: using contextEngineId {contextEngineId!r}, contextName {contextName!r}"
         )
 
         # 7.1.6
@@ -280,7 +278,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         )
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareOutgoingMessage: {msg.prettyPrint()}'
+            f"prepareOutgoingMessage: {msg.prettyPrint()}"
         )
 
         if securityModel in snmpEngine.securityModels:
@@ -295,18 +293,16 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         else:
             if peerSnmpEngineData is None:
                 debug.logger & debug.flagMP and debug.logger(
-                    'prepareOutgoingMessage: peer SNMP engine is not known'
+                    "prepareOutgoingMessage: peer SNMP engine is not known"
                 )
 
                 securityEngineId = None
 
             else:
-                securityEngineId = peerSnmpEngineData['securityEngineId']
+                securityEngineId = peerSnmpEngineData["securityEngineId"]
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareOutgoingMessage: securityModel {!r}, securityEngineId {!r}, securityName {!r}, securityLevel {!r}'.format(
-                securityModel, securityEngineId, securityName, securityLevel
-            )
+            f"prepareOutgoingMessage: securityModel {securityModel!r}, securityEngineId {securityEngineId!r}, securityName {securityName!r}, securityLevel {securityLevel!r}"
         )
 
         # 7.1.9.b
@@ -345,7 +341,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
 
         with execution_context(
             snmpEngine,
-            'rfc3412.prepareOutgoingMessage',
+            "rfc3412.prepareOutgoingMessage",
             transportDomain=transportDomain,
             transportAddress=transportAddress,
             wholeMsg=wholeMsg,
@@ -374,30 +370,30 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         statusInformation,
     ):
         (snmpEngineID,) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            '__SNMP-FRAMEWORK-MIB', 'snmpEngineID'
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
         )
         snmpEngineID = snmpEngineID.syntax
 
         # 7.1.2.b
         cachedParams = self._cache.popByStateRef(stateReference)
-        msgID = cachedParams['msgID']
-        responseContextEngineId = cachedParams['contextEngineId']
-        responseContextName = cachedParams['contextName']
-        responseSecurityModel = cachedParams['securityModel']
-        responseSecurityName = cachedParams['securityName']
-        responseSecurityLevel = cachedParams['securityLevel']
-        securityStateReference = cachedParams['securityStateReference']
-        reportableFlag = cachedParams['reportableFlag']
-        maxMessageSize = cachedParams['msgMaxSize']
-        transportDomain = cachedParams['transportDomain']
-        transportAddress = cachedParams['transportAddress']
+        msgID = cachedParams["msgID"]
+        responseContextEngineId = cachedParams["contextEngineId"]
+        responseContextName = cachedParams["contextName"]
+        responseSecurityModel = cachedParams["securityModel"]
+        responseSecurityName = cachedParams["securityName"]
+        responseSecurityLevel = cachedParams["securityLevel"]
+        securityStateReference = cachedParams["securityStateReference"]
+        reportableFlag = cachedParams["reportableFlag"]
+        maxMessageSize = cachedParams["msgMaxSize"]
+        transportDomain = cachedParams["transportDomain"]
+        transportAddress = cachedParams["transportAddress"]
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareResponseMessage: stateReference %s' % stateReference
+            "prepareResponseMessage: stateReference %s" % stateReference
         )
 
         # 7.1.3
-        if statusInformation is not None and 'oid' in statusInformation:
+        if statusInformation is not None and "oid" in statusInformation:
             # 7.1.3a
             if pdu is None:
                 pduType = None
@@ -417,7 +413,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             # 7.1.3c
             reportPDU = rfc1905.ReportPDU()
             pMod.apiPDU.setVarBinds(
-                reportPDU, ((statusInformation['oid'], statusInformation['val']),)
+                reportPDU, ((statusInformation["oid"], statusInformation["val"]),)
             )
             pMod.apiPDU.setErrorStatus(reportPDU, 0)
             pMod.apiPDU.setErrorIndex(reportPDU, 0)
@@ -428,20 +424,20 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 pMod.apiPDU.setRequestID(reportPDU, requestID)
 
             # 7.1.3d.1
-            if 'securityLevel' in statusInformation:
-                responseSecurityLevel = statusInformation['securityLevel']
+            if "securityLevel" in statusInformation:
+                responseSecurityLevel = statusInformation["securityLevel"]
             else:
                 responseSecurityLevel = 1
 
             # 7.1.3d.2
-            if 'contextEngineId' in statusInformation:
-                responseContextEngineId = statusInformation['contextEngineId']
+            if "contextEngineId" in statusInformation:
+                responseContextEngineId = statusInformation["contextEngineId"]
             else:
                 responseContextEngineId = snmpEngineID
 
             # 7.1.3d.3
-            if 'contextName' in statusInformation:
-                responseContextName = statusInformation['contextName']
+            if "contextName" in statusInformation:
+                responseContextName = statusInformation["contextName"]
             else:
                 responseContextName = ""
 
@@ -449,7 +445,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             pdu = reportPDU
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareResponseMessage: prepare report PDU for statusInformation %s'
+                "prepareResponseMessage: prepare report PDU for statusInformation %s"
                 % statusInformation
             )
         # 7.1.4
@@ -461,7 +457,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             responseContextName = self._emptyStr
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareResponseMessage: using contextEngineId {responseContextEngineId!r}, contextName {responseContextName!r}'
+            f"prepareResponseMessage: using contextEngineId {responseContextEngineId!r}, contextName {responseContextName!r}"
         )
 
         # 7.1.6
@@ -473,7 +469,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         )
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareResponseMessage: {msg.prettyPrint()}'
+            f"prepareResponseMessage: {msg.prettyPrint()}"
         )
 
         if responseSecurityModel in snmpEngine.securityModels:
@@ -482,9 +478,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareResponseMessage: securityModel {!r}, securityEngineId {!r}, securityName {!r}, securityLevel {!r}'.format(
-                responseSecurityModel, snmpEngineID, responseSecurityName, responseSecurityLevel
-            )
+            f"prepareResponseMessage: securityModel {responseSecurityModel!r}, securityEngineId {snmpEngineID!r}, securityName {responseSecurityName!r}, securityLevel {responseSecurityLevel!r}"
         )
 
         # 7.1.8a
@@ -505,7 +499,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             # 7.1.8.b
             raise
 
-        debug.logger & debug.flagMP and debug.logger('prepareResponseMessage: SM finished')
+        debug.logger & debug.flagMP and debug.logger("prepareResponseMessage: SM finished")
 
         # Message size constraint verification
         if len(wholeMsg) > min(snmpEngineMaxMessageSize.syntax, maxMessageSize):
@@ -513,7 +507,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
 
         with execution_context(
             snmpEngine,
-            'rfc3412.prepareResponseMessage',
+            "rfc3412.prepareResponseMessage",
             transportDomain=transportDomain,
             transportAddress=transportAddress,
             securityModel=responseSecurityModel,
@@ -532,7 +526,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         # 7.2.2
         msg, restOfwholeMsg = decoder.decode(wholeMsg, asn1Spec=self._snmpMsgSpec)
 
-        debug.logger & debug.flagMP and debug.logger(f'prepareDataElements: {msg.prettyPrint()}')
+        debug.logger & debug.flagMP and debug.logger(f"prepareDataElements: {msg.prettyPrint()}")
 
         if eoo.endOfOctets.isSameTypeWith(msg):
             raise error.StatusInformation(errorIndication=errind.parseError)
@@ -547,16 +541,14 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         securityParameters = msg.getComponentByPosition(2)
 
         debug.logger & debug.flagMP and debug.logger(
-            'prepareDataElements: msg data msgVersion {} msgID {} securityModel {}'.format(
-                msgVersion, msgID, securityModel
-            )
+            f"prepareDataElements: msg data msgVersion {msgVersion} msgID {msgID} securityModel {securityModel}"
         )
 
         # 7.2.4
         if securityModel not in snmpEngine.securityModels:
             (snmpUnknownSecurityModels,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                    '__SNMP-MPD-MIB', 'snmpUnknownSecurityModels'
+                    "__SNMP-MPD-MIB", "snmpUnknownSecurityModels"
                 )
             )
             snmpUnknownSecurityModels.syntax += 1
@@ -572,7 +564,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         else:
             (snmpInvalidMsgs,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                    '__SNMP-MPD-MIB', 'snmpInvalidMsgs'
+                    "__SNMP-MPD-MIB", "snmpInvalidMsgs"
                 )
             )
             snmpInvalidMsgs.syntax += 1
@@ -602,18 +594,18 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 wholeMsg,
                 msg,
             )
-            debug.logger & debug.flagMP and debug.logger('prepareDataElements: SM succeeded')
+            debug.logger & debug.flagMP and debug.logger("prepareDataElements: SM succeeded")
 
         except error.StatusInformation as statusInformation:
             origTraceback = statusInformation.__traceback__
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: SM failed, statusInformation %s' % statusInformation
+                "prepareDataElements: SM failed, statusInformation %s" % statusInformation
             )
 
             with execution_context(
                 snmpEngine,
-                'rfc3412.prepareDataElements:sm-failure',
+                "rfc3412.prepareDataElements:sm-failure",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -623,19 +615,19 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             ):
                 pass
 
-            if 'errorIndication' in statusInformation:
+            if "errorIndication" in statusInformation:
                 # 7.2.6a
-                if 'oid' in statusInformation:
+                if "oid" in statusInformation:
                     # 7.2.6a1
-                    securityStateReference = statusInformation['securityStateReference']
-                    contextEngineId = statusInformation['contextEngineId']
-                    contextName = statusInformation['contextName']
-                    if 'scopedPDU' in statusInformation:
-                        scopedPDU = statusInformation['scopedPDU']
+                    securityStateReference = statusInformation["securityStateReference"]
+                    contextEngineId = statusInformation["contextEngineId"]
+                    contextName = statusInformation["contextName"]
+                    if "scopedPDU" in statusInformation:
+                        scopedPDU = statusInformation["scopedPDU"]
                         pdu = scopedPDU.getComponentByPosition(2).getComponent()
                     else:
                         pdu = None
-                    maxSizeResponseScopedPDU = statusInformation['maxSizeResponseScopedPDU']
+                    maxSizeResponseScopedPDU = statusInformation["maxSizeResponseScopedPDU"]
                     securityName = None  # XXX secmod cache used
 
                     # 7.2.6a2
@@ -677,7 +669,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                         pass
 
                     debug.logger & debug.flagMP and debug.logger(
-                        'prepareDataElements: error reported'
+                        "prepareDataElements: error reported"
                     )
 
             # 7.2.6b
@@ -698,9 +690,9 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 # come only in the course of engine-to-engine communication.
                 if pdu.tagSet in rfc3411.internalClassPDUs:
                     self.__engineIdCache[k] = {
-                        'securityEngineId': securityEngineId,
-                        'contextEngineId': contextEngineId,
-                        'contextName': contextName,
+                        "securityEngineId": securityEngineId,
+                        "contextEngineId": contextEngineId,
+                        "contextName": contextName,
                     }
 
                     expireAt = int(
@@ -712,13 +704,11 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                     self.__engineIdCacheExpQueue[expireAt].append(k)
 
                     debug.logger & debug.flagMP and debug.logger(
-                        'prepareDataElements: cache securityEngineId {!r} for {!r} {!r}'.format(
-                            securityEngineId, transportDomain, transportAddress
-                        )
+                        f"prepareDataElements: cache securityEngineId {securityEngineId!r} for {transportDomain!r} {transportAddress!r}"
                     )
 
         (snmpEngineID,) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            '__SNMP-FRAMEWORK-MIB', 'snmpEngineID'
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
         )
         snmpEngineID = snmpEngineID.syntax
 
@@ -744,12 +734,12 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 smHandler.releaseStateInformation(securityStateReference)
                 raise error.StatusInformation(errorIndication=errind.dataMismatch)
             # 7.2.10b
-            sendPduHandle = cachedReqParams['sendPduHandle']
+            sendPduHandle = cachedReqParams["sendPduHandle"]
         else:
             sendPduHandle = None
 
         debug.logger & debug.flagMP and debug.logger(
-            f'prepareDataElements: using sendPduHandle {sendPduHandle} for msgID {msgID}'
+            f"prepareDataElements: using sendPduHandle {sendPduHandle} for msgID {msgID}"
         )
 
         # 7.2.11
@@ -772,7 +762,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
 
             with execution_context(
                 snmpEngine,
-                'rfc3412.prepareDataElements:internal',
+                "rfc3412.prepareDataElements:internal",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -803,18 +793,18 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             # 7.2.12b
             # noinspection PyUnboundLocalVariable
             if (
-                securityModel != cachedReqParams['securityModel']
-                or securityName != cachedReqParams['securityName']
-                or securityLevel != cachedReqParams['securityLevel']
-                or contextEngineId != cachedReqParams['contextEngineId']
-                or contextName != cachedReqParams['contextName']
+                securityModel != cachedReqParams["securityModel"]
+                or securityName != cachedReqParams["securityName"]
+                or securityLevel != cachedReqParams["securityLevel"]
+                or contextEngineId != cachedReqParams["contextEngineId"]
+                or contextName != cachedReqParams["contextName"]
             ):
                 smHandler.releaseStateInformation(securityStateReference)
                 raise error.StatusInformation(errorIndication=errind.dataMismatch)
 
             with execution_context(
                 snmpEngine,
-                'rfc3412.prepareDataElements:response',
+                "rfc3412.prepareDataElements:response",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -875,12 +865,12 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             )
 
             debug.logger & debug.flagMP and debug.logger(
-                'prepareDataElements: new stateReference %s' % stateReference
+                "prepareDataElements: new stateReference %s" % stateReference
             )
 
             with execution_context(
                 snmpEngine,
-                'rfc3412.prepareDataElements:confirmed',
+                "rfc3412.prepareDataElements:confirmed",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -917,7 +907,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
 
             with execution_context(
                 snmpEngine,
-                'rfc3412.prepareDataElements:unconfirmed',
+                "rfc3412.prepareDataElements:unconfirmed",
                 transportDomain=transportDomain,
                 transportAddress=transportAddress,
                 securityModel=securityModel,
@@ -957,7 +947,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             for engineKey in self.__engineIdCacheExpQueue[self.__expirationTimer]:
                 del self.__engineIdCache[engineKey]
                 debug.logger & debug.flagMP and debug.logger(
-                    f'__expireEnginesInfo: expiring {engineKey!r}'
+                    f"__expireEnginesInfo: expiring {engineKey!r}"
                 )
             del self.__engineIdCacheExpQueue[self.__expirationTimer]
         self.__expirationTimer += 1

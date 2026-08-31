@@ -29,9 +29,9 @@ class TestContextDataRepr:
         ctx = ContextData()
         r = repr(ctx)
         # Pattern: ContextData(contextEngineId=<value>, contextName=<value>)
-        assert re.match(
-            r"ContextData\(contextEngineId=.*, contextName=.*\)", r
-        ), f"Unexpected repr format: {r}"
+        assert re.match(r"ContextData\(contextEngineId=.*, contextName=.*\)", r), (
+            f"Unexpected repr format: {r}"
+        )
 
 
 class TestCommunityDataRepr:

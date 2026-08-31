@@ -8,21 +8,21 @@
 #
 from pyasn1.type import univ
 
+from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi.asyncio import sync
 from pysnmp.hlapi.asyncio.cmdgen import bulkCmd, getCmd, nextCmd, setCmd
 from pysnmp.hlapi.context import ContextData
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
-from pysnmp.entity.engine import SnmpEngine
 from pysnmp.smi.rfc1902 import ObjectIdentity
 
-__all__ = ['AsynCommandGenerator', 'CommandGenerator', 'MibVariable']
+__all__ = ["AsynCommandGenerator", "CommandGenerator", "MibVariable"]
 
 MibVariable = ObjectIdentity
 
 
 class AsynCommandGenerator:
-    _null = univ.Null('')
+    _null = univ.Null("")
 
     vbProcessor = CommandGeneratorVarBinds()
     lcd = CommandGeneratorLcdConfigurator()
@@ -65,7 +65,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=b'',
+        contextName=b"",
     ):
 
         def __cbFun(
@@ -81,7 +81,7 @@ class AsynCommandGenerator:
             cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
 
         # for backward compatibility
-        if contextName == b'' and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
         return getCmd(
@@ -104,7 +104,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=b'',
+        contextName=b"",
     ):
 
         def __cbFun(
@@ -120,7 +120,7 @@ class AsynCommandGenerator:
             cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
 
         # for backward compatibility
-        if contextName == b'' and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
         return setCmd(
@@ -143,7 +143,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=b'',
+        contextName=b"",
     ):
 
         def __cbFun(
@@ -161,7 +161,7 @@ class AsynCommandGenerator:
             )
 
         # for backward compatibility
-        if contextName == b'' and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
         return nextCmd(
@@ -186,7 +186,7 @@ class AsynCommandGenerator:
         lookupNames=False,
         lookupValues=False,
         contextEngineId=None,
-        contextName=b'',
+        contextName=b"",
     ):
 
         def __cbFun(
@@ -204,7 +204,7 @@ class AsynCommandGenerator:
             )
 
         # for backward compatibility
-        if contextName == b'' and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
         return bulkCmd(
@@ -222,23 +222,23 @@ class AsynCommandGenerator:
 
 
 class CommandGenerator:
-    _null = univ.Null('')
+    _null = univ.Null("")
 
     def __init__(self, snmpEngine=None, asynCmdGen=None):
         # compatibility attributes
         self.snmpEngine = snmpEngine or SnmpEngine()
 
     def getCmd(self, authData, transportTarget, *varNames, **kwargs):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
         errorIndication, errorStatus, errorIndex, varBinds = None, 0, 0, []
         for errorIndication, errorStatus, errorIndex, varBinds in sync.getCmd(
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
             *[(x, self._null) for x in varNames],
             **kwargs,
         ):
@@ -246,16 +246,16 @@ class CommandGenerator:
         return errorIndication, errorStatus, errorIndex, varBinds
 
     def setCmd(self, authData, transportTarget, *varBinds, **kwargs):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
         errorIndication, errorStatus, errorIndex, rspVarBinds = None, 0, 0, []
         for errorIndication, errorStatus, errorIndex, rspVarBinds in sync.setCmd(
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
             *varBinds,
             **kwargs,
         ):
@@ -264,19 +264,19 @@ class CommandGenerator:
         return errorIndication, errorStatus, errorIndex, rspVarBinds
 
     def nextCmd(self, authData, transportTarget, *varNames, **kwargs):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
-        if 'lexicographicMode' not in kwargs:
-            kwargs['lexicographicMode'] = False
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
+        if "lexicographicMode" not in kwargs:
+            kwargs["lexicographicMode"] = False
         errorIndication, errorStatus, errorIndex = None, 0, 0
         varBindTable = []
         for errorIndication, errorStatus, errorIndex, varBinds in sync.nextCmd(
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
             *[(x, self._null) for x in varNames],
             **kwargs,
         ):
@@ -290,19 +290,19 @@ class CommandGenerator:
     def bulkCmd(
         self, authData, transportTarget, nonRepeaters, maxRepetitions, *varNames, **kwargs
     ):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
-        if 'lexicographicMode' not in kwargs:
-            kwargs['lexicographicMode'] = False
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
+        if "lexicographicMode" not in kwargs:
+            kwargs["lexicographicMode"] = False
         errorIndication, errorStatus, errorIndex = None, 0, 0
         varBindTable = []
         for errorIndication, errorStatus, errorIndex, varBinds in sync.bulkCmd(
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(kwargs.get('contextEngineId'), kwargs.get('contextName', b'')),
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
             nonRepeaters,
             maxRepetitions,
             *[(x, self._null) for x in varNames],

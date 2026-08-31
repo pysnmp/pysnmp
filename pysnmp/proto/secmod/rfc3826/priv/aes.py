@@ -71,7 +71,7 @@ class Aes(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(f'Unknown auth protocol {authProtocol}')
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         return localkey.hashPassphrase(privKey, hashAlgo)
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
@@ -82,13 +82,13 @@ class Aes(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(f'Unknown auth protocol {authProtocol}')
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
         return localPrivKey[: self.keySize]
 
     # 3.2.4.1
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
-        AES = cipherbackend.getCipher('AES')
+        AES = cipherbackend.getCipher("AES")
         if AES is None:
             raise error.StatusInformation(errorIndication=errind.encryptionError)
 
@@ -112,7 +112,7 @@ class Aes(base.AbstractEncryptionService):
 
     # 3.2.4.2
     def decryptData(self, decryptKey, privParameters, encryptedData):
-        AES = cipherbackend.getCipher('AES')
+        AES = cipherbackend.getCipher("AES")
         if AES is None:
             raise error.StatusInformation(errorIndication=errind.decryptionError)
 

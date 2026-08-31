@@ -10,9 +10,9 @@ import importlib as _importlib
 
 
 def __getattr__(name):
-    if name == 'SnmpUSMSecurityModel':
-        _service = _importlib.import_module('pysnmp.proto.secmod.rfc3414.service')
+    if name == "SnmpUSMSecurityModel":
+        _service = _importlib.import_module("pysnmp.proto.secmod.rfc3414.service")
         return _service.SnmpUSMSecurityModel
-    if name == 'service':
-        return _importlib.import_module('pysnmp.proto.secmod.rfc3414.service')
+    if name == "service":
+        return _importlib.import_module("pysnmp.proto.secmod.rfc3414.service")
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

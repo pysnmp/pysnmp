@@ -36,7 +36,7 @@ class Des3(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(f'Unknown auth protocol {authProtocol}')
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         return localkey.hashPassphrase(privKey, hashAlgo)
 
     # 2.1
@@ -48,7 +48,7 @@ class Des3(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(f'Unknown auth protocol {authProtocol}')
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
 
         # now extend this key if too short by repeating steps that includes the hashPassphrase step
@@ -101,7 +101,7 @@ class Des3(base.AbstractEncryptionService):
 
     # 5.1.1.2
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
-        DES3 = cipherbackend.getCipher('DES3')
+        DES3 = cipherbackend.getCipher("DES3")
         if DES3 is None:
             raise error.StatusInformation(errorIndication=errind.encryptionError)
 
@@ -122,7 +122,7 @@ class Des3(base.AbstractEncryptionService):
 
     # 5.1.1.3
     def decryptData(self, decryptKey, privParameters, encryptedData):
-        DES3 = cipherbackend.getCipher('DES3')
+        DES3 = cipherbackend.getCipher("DES3")
         if DES3 is None:
             raise error.StatusInformation(errorIndication=errind.decryptionError)
         snmpEngineBoots, snmpEngineTime, salt = privParameters

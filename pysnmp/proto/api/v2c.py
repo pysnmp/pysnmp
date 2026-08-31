@@ -10,7 +10,7 @@ from pysnmp.proto.api import v1
 
 # Shortcuts to SNMP types
 Null = univ.Null
-null = Null('')
+null = Null("")
 ObjectIdentifier = univ.ObjectIdentifier
 
 Integer = rfc1902.Integer

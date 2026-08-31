@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-(MibScalarInstance,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+(MibScalarInstance,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
 
 (
     usmStatsUnsupportedSecLevels,
@@ -14,14 +14,14 @@
     usmStatsDecryptionErrors,
     usmUserSpinLock,
 ) = mibBuilder.importSymbols(
-    'SNMP-USER-BASED-SM-MIB',
-    'usmStatsUnsupportedSecLevels',
-    'usmStatsNotInTimeWindows',
-    'usmStatsUnknownUserNames',
-    'usmStatsUnknownEngineIDs',
-    'usmStatsWrongDigests',
-    'usmStatsDecryptionErrors',
-    'usmUserSpinLock',
+    "SNMP-USER-BASED-SM-MIB",
+    "usmStatsUnsupportedSecLevels",
+    "usmStatsNotInTimeWindows",
+    "usmStatsUnknownUserNames",
+    "usmStatsUnknownEngineIDs",
+    "usmStatsWrongDigests",
+    "usmStatsDecryptionErrors",
+    "usmUserSpinLock",
 )
 
 __usmStatsUnsupportedSecLevels = MibScalarInstance(
@@ -45,7 +45,7 @@ __usmStatsDecryptionErrors = MibScalarInstance(
 __usmUserSpinLock = MibScalarInstance(usmUserSpinLock.name, (0,), usmUserSpinLock.syntax.clone(0))
 
 mibBuilder.exportSymbols(
-    '__SNMP-USER-BASED-SM-MIB',
+    "__SNMP-USER-BASED-SM-MIB",
     usmStatsUnsupportedSecLevels=__usmStatsUnsupportedSecLevels,
     usmStatsNotInTimeWindows=__usmStatsNotInTimeWindows,
     usmStatsUnknownUserNames=__usmStatsUnknownUserNames,

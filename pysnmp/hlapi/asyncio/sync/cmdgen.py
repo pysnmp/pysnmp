@@ -1,4 +1,3 @@
-
 import asyncio
 from collections.abc import Iterator
 from typing import Any
@@ -10,7 +9,7 @@ from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 from pysnmp.proto import errind
 from pysnmp.proto.rfc1905 import endOfMibView
 
-__all__ = ['getCmd', 'nextCmd', 'setCmd', 'bulkCmd']
+__all__ = ["getCmd", "nextCmd", "setCmd", "bulkCmd"]
 
 
 def _loop() -> asyncio.AbstractEventLoop:
@@ -19,8 +18,8 @@ def _loop() -> asyncio.AbstractEventLoop:
     except RuntimeError:
         return asyncio.new_event_loop()
     raise RuntimeError(
-        'The synchronous HLAPI cannot run while an asyncio event loop is running; '
-        'use pysnmp.hlapi.asyncio instead'
+        "The synchronous HLAPI cannot run while an asyncio event loop is running; "
+        "use pysnmp.hlapi.asyncio instead"
     )
 
 
@@ -95,10 +94,10 @@ def nextCmd(
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
     loop = _loop()
-    lexicographicMode = options.pop('lexicographicMode', True)
-    ignoreNonIncreasingOid = options.pop('ignoreNonIncreasingOid', False)
-    maxRows = options.pop('maxRows', 0)
-    maxCalls = options.pop('maxCalls', 0)
+    lexicographicMode = options.pop("lexicographicMode", True)
+    ignoreNonIncreasingOid = options.pop("ignoreNonIncreasingOid", False)
+    maxRows = options.pop("maxRows", 0)
+    maxCalls = options.pop("maxCalls", 0)
     vbProcessor = CommandGeneratorVarBinds()
     initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
     totalRows = totalCalls = 0
@@ -113,7 +112,7 @@ def nextCmd(
                     authData,
                     transportTarget,
                     contextData,
-                    *[(x[0], Null('')) for x in varBinds],
+                    *[(x[0], Null("")) for x in varBinds],
                     **options,
                 )
             )
@@ -159,10 +158,10 @@ def bulkCmd(
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
     loop = _loop()
-    lexicographicMode = options.pop('lexicographicMode', True)
-    ignoreNonIncreasingOid = options.pop('ignoreNonIncreasingOid', False)
-    maxRows = options.pop('maxRows', 0)
-    maxCalls = options.pop('maxCalls', 0)
+    lexicographicMode = options.pop("lexicographicMode", True)
+    ignoreNonIncreasingOid = options.pop("ignoreNonIncreasingOid", False)
+    maxRows = options.pop("maxRows", 0)
+    maxCalls = options.pop("maxCalls", 0)
     vbProcessor = CommandGeneratorVarBinds()
     initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
     nullVarBinds = [False] * len(initialVars)
@@ -180,15 +179,18 @@ def bulkCmd(
                     contextData,
                     nonRepeaters,
                     repetitions,
-                    *[(x[0], Null('')) for x in varBinds],
+                    *[(x[0], Null("")) for x in varBinds],
                     **options,
                 )
             )
             if ignoreNonIncreasingOid and isinstance(errorIndication, errind.OidNotIncreasing):
                 errorIndication = None
             if errorIndication or errorStatus:
-                yield errorIndication, errorStatus, errorIndex, (
-                    varBindTable[0] if varBindTable else []
+                yield (
+                    errorIndication,
+                    errorStatus,
+                    errorIndex,
+                    (varBindTable[0] if varBindTable else []),
                 )
                 return
 

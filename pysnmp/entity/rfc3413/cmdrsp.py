@@ -53,9 +53,7 @@ class CommandResponderBase:
         v2c.apiPDU.setVarBinds(PDU, varBinds)
 
         debug.logger & debug.flagApp and debug.logger(
-            'sendVarBinds: stateReference {}, errorStatus {}, errorIndex {}, varBinds {}'.format(
-                stateReference, errorStatus, errorIndex, varBinds
-            )
+            f"sendVarBinds: stateReference {stateReference}, errorStatus {errorStatus}, errorIndex {errorIndex}, varBinds {varBinds}"
         )
 
         self.sendPdu(snmpEngine, stateReference, PDU)
@@ -101,11 +99,11 @@ class CommandResponderBase:
 
         except error.StatusInformation as e:
             debug.logger & debug.flagApp and debug.logger(
-                f'sendPdu: stateReference {stateReference}, statusInformation {e}'
+                f"sendPdu: stateReference {stateReference}, statusInformation {e}"
             )
             (snmpSilentDrops,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                    '__SNMPv2-MIB', 'snmpSilentDrops'
+                    "__SNMPv2-MIB", "snmpSilentDrops"
                 )
             )
             snmpSilentDrops.syntax += 1
@@ -143,7 +141,7 @@ class CommandResponderBase:
 
         # 3.2.1
         if PDU.tagSet not in rfc3411.readClassPDUs and PDU.tagSet not in rfc3411.writeClassPDUs:
-            raise error.ProtocolError('Unexpected PDU class %s' % PDU.tagSet)
+            raise error.ProtocolError("Unexpected PDU class %s" % PDU.tagSet)
 
         # 3.2.2 --> no-op
 
@@ -168,10 +166,10 @@ class CommandResponderBase:
 
         # 3.2.5
         varBinds = v2c.apiPDU.getVarBinds(PDU)
-        errorStatus, errorIndex = 'noError', 0
+        errorStatus, errorIndex = "noError", 0
 
         debug.logger & debug.flagApp and debug.logger(
-            f'processPdu: stateReference {stateReference}, varBinds {varBinds}'
+            f"processPdu: stateReference {stateReference}, varBinds {varBinds}"
         )
 
         try:
@@ -182,76 +180,76 @@ class CommandResponderBase:
         # SNMPv2 SMI exceptions
         except pysnmp.smi.error.GenError as errorIndication:
             debug.logger & debug.flagApp and debug.logger(
-                f'processPdu: stateReference {stateReference}, errorIndication {errorIndication}'
+                f"processPdu: stateReference {stateReference}, errorIndication {errorIndication}"
             )
-            if 'oid' in errorIndication:
+            if "oid" in errorIndication:
                 # Request REPORT generation
-                statusInformation['oid'] = errorIndication['oid']
-                statusInformation['val'] = errorIndication['val']
+                statusInformation["oid"] = errorIndication["oid"]
+                statusInformation["val"] = errorIndication["val"]
             else:
                 errorStatus, errorIndex = (
-                    'genErr',
-                    errorIndication['idx'] + 1 if 'idx' in errorIndication else 0,
+                    "genErr",
+                    errorIndication["idx"] + 1 if "idx" in errorIndication else 0,
                 )
 
         # Handle PDU-level SMI errors
 
         except pysnmp.smi.error.TooBigError:
-            errorStatus, errorIndex = 'tooBig', 0
+            errorStatus, errorIndex = "tooBig", 0
             # rfc1905: 4.2.1.3
             varBinds = []
 
         # this should never bubble up, SNMP exception objects should be passed as values
         except pysnmp.smi.error.NoSuchNameError as e:
-            errorStatus, errorIndex = 'noSuchName', e['idx'] + 1
+            errorStatus, errorIndex = "noSuchName", e["idx"] + 1
 
         except pysnmp.smi.error.BadValueError as e:
-            errorStatus, errorIndex = 'badValue', e['idx'] + 1
+            errorStatus, errorIndex = "badValue", e["idx"] + 1
 
         except pysnmp.smi.error.ReadOnlyError as e:
-            errorStatus, errorIndex = 'readOnly', e['idx'] + 1
+            errorStatus, errorIndex = "readOnly", e["idx"] + 1
 
         except pysnmp.smi.error.NoAccessError as e:
-            errorStatus, errorIndex = 'noAccess', e['idx'] + 1
+            errorStatus, errorIndex = "noAccess", e["idx"] + 1
 
         except pysnmp.smi.error.WrongTypeError as e:
-            errorStatus, errorIndex = 'wrongType', e['idx'] + 1
+            errorStatus, errorIndex = "wrongType", e["idx"] + 1
 
         except pysnmp.smi.error.WrongLengthError as e:
-            errorStatus, errorIndex = 'wrongLength', e['idx'] + 1
+            errorStatus, errorIndex = "wrongLength", e["idx"] + 1
 
         except pysnmp.smi.error.WrongEncodingError as e:
-            errorStatus, errorIndex = 'wrongEncoding', e['idx'] + 1
+            errorStatus, errorIndex = "wrongEncoding", e["idx"] + 1
 
         except pysnmp.smi.error.WrongValueError as e:
-            errorStatus, errorIndex = 'wrongValue', e['idx'] + 1
+            errorStatus, errorIndex = "wrongValue", e["idx"] + 1
 
         except pysnmp.smi.error.NoCreationError as e:
-            errorStatus, errorIndex = 'noCreation', e['idx'] + 1
+            errorStatus, errorIndex = "noCreation", e["idx"] + 1
 
         except pysnmp.smi.error.InconsistentValueError as e:
-            errorStatus, errorIndex = 'inconsistentValue', e['idx'] + 1
+            errorStatus, errorIndex = "inconsistentValue", e["idx"] + 1
 
         except pysnmp.smi.error.ResourceUnavailableError as e:
-            errorStatus, errorIndex = 'resourceUnavailable', e['idx'] + 1
+            errorStatus, errorIndex = "resourceUnavailable", e["idx"] + 1
 
         except pysnmp.smi.error.CommitFailedError as e:
-            errorStatus, errorIndex = 'commitFailed', e['idx'] + 1
+            errorStatus, errorIndex = "commitFailed", e["idx"] + 1
 
         except pysnmp.smi.error.UndoFailedError as e:
-            errorStatus, errorIndex = 'undoFailed', e['idx'] + 1
+            errorStatus, errorIndex = "undoFailed", e["idx"] + 1
 
         except pysnmp.smi.error.AuthorizationError as e:
-            errorStatus, errorIndex = 'authorizationError', e['idx'] + 1
+            errorStatus, errorIndex = "authorizationError", e["idx"] + 1
 
         except pysnmp.smi.error.NotWritableError as e:
-            errorStatus, errorIndex = 'notWritable', e['idx'] + 1
+            errorStatus, errorIndex = "notWritable", e["idx"] + 1
 
         except pysnmp.smi.error.InconsistentNameError as e:
-            errorStatus, errorIndex = 'inconsistentName', e['idx'] + 1
+            errorStatus, errorIndex = "inconsistentName", e["idx"] + 1
 
         except pysnmp.smi.error.SmiError:
-            errorStatus, errorIndex = 'genErr', len(varBinds) and 1
+            errorStatus, errorIndex = "genErr", len(varBinds) and 1
 
         except pysnmp.error.PySnmpError:
             self.releaseStateInformation(stateReference)
@@ -266,13 +264,13 @@ class CommandResponderBase:
 
     def __verifyAccess(self, name, syntax, idx, viewType, acCtx):
         snmpEngine = acCtx
-        execCtx = snmpEngine.observer.getExecutionContext('rfc3412.receiveMessage:request')
+        execCtx = snmpEngine.observer.getExecutionContext("rfc3412.receiveMessage:request")
         (securityModel, securityName, securityLevel, contextName, pduType) = (
-            execCtx['securityModel'],
-            execCtx['securityName'],
-            execCtx['securityLevel'],
-            execCtx['contextName'],
-            execCtx['pdu'].getTagSet(),
+            execCtx["securityModel"],
+            execCtx["securityName"],
+            execCtx["securityLevel"],
+            execCtx["contextName"],
+            execCtx["pdu"].getTagSet(),
         )
         try:
             snmpEngine.accessControlModel[self.acmID].isAccessAllowed(
@@ -281,9 +279,9 @@ class CommandResponderBase:
         # Map ACM errors onto SMI ones
         except error.StatusInformation as statusInformation:
             debug.logger & debug.flagApp and debug.logger(
-                f'__verifyAccess: name {name}, statusInformation {statusInformation}'
+                f"__verifyAccess: name {name}, statusInformation {statusInformation}"
             )
-            errorIndication = statusInformation['errorIndication']
+            errorIndication = statusInformation["errorIndication"]
             # 3.2.5...
             if (
                 errorIndication == errind.noSuchView
@@ -296,7 +294,7 @@ class CommandResponderBase:
             elif errorIndication == errind.noSuchContext:
                 (snmpUnknownContexts,) = (
                     snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                        '__SNMP-TARGET-MIB', 'snmpUnknownContexts'
+                        "__SNMP-TARGET-MIB", "snmpUnknownContexts"
                     )
                 )
                 snmpUnknownContexts.syntax += 1
@@ -310,7 +308,7 @@ class CommandResponderBase:
             elif errorIndication == errind.notInView:
                 return 1
             else:
-                raise error.ProtocolError('Unknown ACM error %s' % errorIndication)
+                raise error.ProtocolError("Unknown ACM error %s" % errorIndication)
         else:
             # rfc2576: 4.1.2.1
             if (
@@ -351,7 +349,7 @@ class NextCommandResponder(CommandResponderBase):
             try:
                 self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
             except error.StatusInformation as e:
-                idx = e['idx']
+                idx = e["idx"]
                 varBinds[idx] = (rspVarBinds[idx][0], varBinds[idx][1])
             else:
                 break
@@ -382,7 +380,7 @@ class BulkCommandResponder(CommandResponderBase):
             M = min(M, self.maxVarBinds // R)
 
         debug.logger & debug.flagApp and debug.logger(
-            'handleMgmtOperation: N %d, M %d, R %d' % (N, M, R)
+            "handleMgmtOperation: N %d, M %d, R %d" % (N, M, R)
         )
 
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readNextVars
