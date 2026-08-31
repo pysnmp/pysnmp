@@ -6,9 +6,9 @@ Quick start
    :maxdepth: 2
 
 Once you downloaded and installed PySNMP library on your Linux/Windows/OS X
-system, you should be able to solve the very basic SNMP task right from 
-your Python prompt - fetch some data from a remote SNMP Agent (you'd need 
-at least version 4.3.0 to run code from this page).
+system, you should be able to solve the very basic SNMP task right from
+your Python prompt - fetch some data from a remote SNMP Agent (the code on
+this page targets PySNMP 6.0 and later on Python 3.10 or later).
 
 Fetch SNMP variable
 -------------------

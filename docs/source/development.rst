@@ -84,7 +84,7 @@ Stand-alone PySNMP-based tools
    **Done:** since `snmpsim-0.2.4 <https://pypi.org/project/snmpsim/>`__
 
 If you need some particular feature - please, 
-`open a feature request <https://github.com/etingof/pysnmp/issues/new>`_ . Once we 
+`open a feature request <https://github.com/pysnmp/pysnmp/issues/new>`_ . Once we
 see a greater demand in particular area, we would re-arrange our 
 development resources to meet it sooner. 
 
@@ -93,6 +93,6 @@ sponsoring it. Please get back to us to discuss details.
 
 Contributions to the PySNMP source code are greatly appreciated as well.
 We require contributed code to run on every supported Python version,
-currently Python 3.10 through 3.13. Contributed code will be redistributed
+currently Python 3.10 through 3.14. Contributed code will be redistributed
 under the terms of the same
 :doc:`license <license>` as PySNMP is.

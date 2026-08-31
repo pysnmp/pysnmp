@@ -2,15 +2,15 @@
 Asynchronous: asyncio
 =====================
 
-The :mod:`asyncio` module first appeared in standard library since
-Python 3.3 (in provisional basis). Its main design feature is that it
-makes asynchronous code looking like synchronous one thus eliminating
-"callback hell".
+PySNMP builds its asynchronous API on the standard library :mod:`asyncio`
+module. Its main design feature is that it makes asynchronous code look
+like synchronous code, thus eliminating "callback hell".
 
 With `asyncio` built-in facilities, you could run many SNMP queries
 in parallel and/or sequentially, interleave SNMP queries with I/O
-operations with other systems. See `asyncio resources <http://asyncio.org>`_
-repository for other `asyncio`-compatible modules.
+operations with other systems. See the
+`asyncio documentation <https://docs.python.org/3/library/asyncio.html>`_
+for the full set of facilities available to you.
 
 In most examples approximate analogues of well known Net-SNMP snmp* tools
 command line options are shown. That may help those readers who, by chance

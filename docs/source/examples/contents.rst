@@ -82,7 +82,7 @@ Using these examples
 Before doing cut&paste of the code below into your Python interpreter, 
 make sure to install pysnmp and its dependencies with pip: ::
 
-    $ python -m pip install pysnmp
+    $ python -m pip install pysnmplib
 
 There's a public, multilingual SNMP Command Responder and Notification
 Receiver configured at

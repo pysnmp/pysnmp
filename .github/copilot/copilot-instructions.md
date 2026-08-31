@@ -15,15 +15,15 @@ When generating code for this repository:
 Before generating code, scan the codebase to identify:
 
 1. **Language Versions**: Detect the exact versions of programming languages in use
-   - Examine `pyproject.toml` for the Python version constraint (`python = "^3.10"`)
+   - Examine `pyproject.toml` for the Python version constraint (`requires-python = ">=3.10"`)
    - Python Support from 3.10 to 3.14 is allowed, but do not use features introduced in versions later than the detected version or earlier than 3.10
    - The codebase uses f-strings (e.g. `pysnmp/error.py`, `pysnmp/entity/engine.py`) — f-strings are permitted
    - The `match` statement (3.10+) is permitted; do not introduce `type` aliases (3.12+) or other post-3.10 syntax
 
 2. **Framework Versions**: Identify the exact versions of all frameworks
    - Build system: uv with hatchling (`hatchling>=1.0.0`, declared in `pyproject.toml` `[build-system]`)
-   - Package metadata lives in `pyproject.toml` under the standard PEP 621 `[project]` table; the distribution name is `pysnmplib` (version `5.0.24`)
-   - The in-package version is duplicated in `pysnmp/__init__.py` as `__version__ = '5.0.24'` — keep both in sync when bumping versions
+   - Package metadata lives in `pyproject.toml` under the standard PEP 621 `[project]` table; the distribution name is `pysnmplib`. Read the current version from `version` in that table rather than assuming one
+   - The in-package version is duplicated in `pysnmp/__init__.py` as `__version__` — keep both in sync when bumping versions
    - Never suggest features not available in the detected framework versions
 
 3. **Library Versions**: Note the exact versions of key libraries and dependencies
