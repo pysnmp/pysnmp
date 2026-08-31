@@ -40,9 +40,10 @@ Python 3 equivalents across the codebase. Code that imported
 ``str2octs``, ``octs2str`` or their siblings from PySNMP modules should
 encode and decode with Latin-1 directly.
 
-``pycryptodomex`` is now an optional dependency
-------------------------------------------------
+``pycryptodomex`` imports are now resolved lazily
+--------------------------------------------------
 
+``pycryptodomex`` remains a declared runtime dependency, but
 ``Cryptodome.Cipher`` imports are resolved lazily. PySNMP imports and
 serves SNMPv1, SNMPv2c and the SNMPv3 noAuthNoPriv and authNoPriv
 security levels without ``pycryptodomex`` installed. Configuring a
@@ -50,7 +51,8 @@ privacy protocol without it now raises ``PySnmpError`` naming the
 missing package at configuration time, rather than failing later during
 packet processing.
 
-Deployments that use SNMPv3 privacy must install the extra explicitly.
+Deployments that strip the dependency can still run everything short of
+SNMPv3 privacy.
 
 Weak-crypto warnings are emitted at configuration time
 -------------------------------------------------------

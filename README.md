@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/pysnmplib.svg?maxAge=2592000)](https://pypi.python.org/pypi/pysnmplib)
 [![Python Versions](https://img.shields.io/pypi/pyversions/pysnmplib.svg)](https://pypi.python.org/pypi/pysnmplib/)
 [![CI](https://github.com/pysnmp/pysnmp/actions/workflows/build-test-release.yml/badge.svg)](https://github.com/pysnmp/pysnmp/actions/workflows/build-test-release.yml)
-[![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/pysnmp/pysnmp/master/LICENSE.rst)
+[![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/pysnmp/pysnmp/main/LICENSE.rst)
 
 This is a pure-Python, open source and free implementation of v1/v2c/v3
 SNMP engine distributed under 2-clause [BSD license](LICENSE.rst).
@@ -21,7 +21,6 @@ This version is a fork of Ilya Etingof deceased's project [etingof/pysnmp](https
 - Complete SNMP entity implementation
 - USM Extended Security Options support (3DES, 192/256-bit AES encryption)
 - Extensible network transports framework (UDP/IPv4, UDP/IPv6)
-- Asynchronous socket-based IO API support
 - [Asyncio](https://docs.python.org/3/library/asyncio.html) integration
 - [PySMI](https://github.com/pysnmp/pysmi) integration for dynamic MIB compilation
 - Built-in instrumentation exposing protocol engine operations
@@ -143,19 +142,13 @@ or local directories. You could configure any MIB source available to you (inclu
 
 For more example scripts please refer to the `examples/` directory in this repository.
 
-## Async API migration
-
-PySNMP requires Python 3.10 or later and uses `asyncio` for asynchronous I/O.
-Because asyncore was removed in Python 3.12, PySNMP uses asyncio.
-
 ## Documentation
 
 Library documentation and examples can be found in the `docs/` directory in this repository.
 
 If something does not work as expected, please
 [open an issue](https://github.com/pysnmp/pysnmp/issues) at GitHub or
-post your question [on Stack Overflow](http://stackoverflow.com/questions/ask) or try browsing pysnmp
-[mailing list archives](https://sourceforge.net/p/pysnmp/mailman/pysnmp-users/).
+post your question [on Stack Overflow](https://stackoverflow.com/questions/tagged/pysnmp).
 
 Bug reports and PRs are appreciated! ;-)
 
