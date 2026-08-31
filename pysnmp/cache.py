@@ -12,7 +12,7 @@ class Cache:
         self.__maxSize = maxSize
         self.__size = 0
         self.__chopSize = maxSize // 10
-        self.__chopSize = self.__chopSize and self.__chopSize or 1
+        self.__chopSize = self.__chopSize or 1
         self.__cache = {}
         self.__usage = {}
 

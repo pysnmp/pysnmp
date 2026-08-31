@@ -29,3 +29,12 @@ def test_notification_restores_event_loop_state():
     finally:
         asyncio.set_event_loop(None)
         existing_loop.close()
+
+
+def test_notification_works_without_an_event_loop():
+    asyncio.set_event_loop(None)
+
+    notification = ntforg.sendNotification(SnmpEngine(), None, None, None, None, [])
+
+    with pytest.raises(StopIteration):
+        next(notification)

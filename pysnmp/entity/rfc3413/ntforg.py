@@ -177,10 +177,10 @@ class NotificationOriginator:
             # User-side API assumes SMIv2
             if messageProcessingModel == 0:
                 reqPDU = rfc2576.v2ToV1(origPdu)
-                pduVersion = 0
+                retryPduVersion = 0
             else:
                 reqPDU = origPdu
-                pduVersion = 1
+                retryPduVersion = 1
 
             # 3.3.6a
             try:
@@ -194,7 +194,7 @@ class NotificationOriginator:
                     origSecurityLevel,
                     origContextEngineId,
                     origContextName,
-                    pduVersion,
+                    retryPduVersion,
                     reqPDU,
                     True,
                     timeoutInTicks,
