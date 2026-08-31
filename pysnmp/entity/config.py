@@ -1107,14 +1107,15 @@ def setInitialVacmParameters(snmpEngine: Any) -> None:
     addVacmGroup(snmpEngine, "initial", 3, "initial")
 
     # rfc3415: A.1.4
+    # securityLevel: 1=noAuthNoPriv, 2=authNoPriv, 3=authPriv (SnmpSecurityLevel)
     addVacmAccess(
-        snmpEngine, "initial", "", 3, "noAuthNoPriv", "exact", "restricted", None, "restricted"
+        snmpEngine, "initial", "", 3, 1, "exact", "restricted", None, "restricted"
     )
     addVacmAccess(
-        snmpEngine, "initial", "", 3, "authNoPriv", "exact", "internet", "internet", "internet"
+        snmpEngine, "initial", "", 3, 2, "exact", "internet", "internet", "internet"
     )
     addVacmAccess(
-        snmpEngine, "initial", "", 3, "authPriv", "exact", "internet", "internet", "internet"
+        snmpEngine, "initial", "", 3, 3, "exact", "internet", "internet", "internet"
     )
 
     # rfc3415: A.1.5 (semi-secure)

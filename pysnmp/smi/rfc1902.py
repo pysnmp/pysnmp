@@ -1003,14 +1003,14 @@ class NotificationType:
 
     stDirty, stClean = 1, 2
 
-    def __init__(self, objectIdentity, instanceIndex=(), objects={}):
+    def __init__(self, objectIdentity, instanceIndex=(), objects=None):
         if not isinstance(objectIdentity, ObjectIdentity):
             raise SmiError(
                 f'initializer should be ObjectIdentity instance, not {objectIdentity!r}'
             )
         self.__objectIdentity = objectIdentity
         self.__instanceIndex = instanceIndex
-        self.__objects = objects
+        self.__objects = {} if objects is None else objects
         self.__varBinds = []
         self.__additionalVarBinds = []
         self.__state = self.stDirty

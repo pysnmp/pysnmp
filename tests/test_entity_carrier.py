@@ -32,6 +32,7 @@ from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds, NotificationOriginat
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.proto import errind, error
 from pysnmp.proto.api import v2c
+from pysnmp.smi.error import SmiError
 from pysnmp.proto.rfc1902 import OctetString, Integer, ObjectIdentifier
 from pysnmp.smi.rfc1902 import ObjectType, ObjectIdentity, NotificationType
 from pysnmp import debug
@@ -392,8 +393,9 @@ class TestUdpTransport:
         loop.close()
 
     def test_packet_information_is_explicitly_unsupported(self):
+        transport = udp.UdpAsyncioTransport()
         with pytest.raises(CarrierError, match='Packet-information'):
-            udp.UdpAsyncioTransport().enablePktInfo()
+            transport.enablePktInfo()
 
 
 @pytest.mark.skipif(not hasattr(__import__('socket'), 'AF_UNIX'),
@@ -558,7 +560,7 @@ class TestSnmpContext:
         engine = SnmpEngine()
         ctx = rfc3413_context.SnmpContext(engine)
         ctx.registerContextName('test')
-        with pytest.raises(Exception):
+        with pytest.raises(error.PySnmpError, match='Duplicate contextName'):
             ctx.registerContextName('test')
 
     def test_unregister_context_name(self):
@@ -566,7 +568,7 @@ class TestSnmpContext:
         ctx = rfc3413_context.SnmpContext(engine)
         ctx.registerContextName('test')
         ctx.unregisterContextName('test')
-        with pytest.raises(Exception):
+        with pytest.raises(error.PySnmpError, match='Missing contextName'):
             ctx.getMibInstrum('test')
 
     def test_get_mib_instrum_default(self):
@@ -577,7 +579,7 @@ class TestSnmpContext:
     def test_get_mib_instrum_missing(self):
         engine = SnmpEngine()
         ctx = rfc3413_context.SnmpContext(engine)
-        with pytest.raises(Exception):
+        with pytest.raises(error.PySnmpError, match='Missing contextName'):
             ctx.getMibInstrum('nonexistent')
 
 
@@ -684,12 +686,12 @@ class TestRfc3413Ntfrcv:
 class TestRfc3413Config:
     def test_get_target_addr_not_configured(self):
         engine = SnmpEngine()
-        with pytest.raises(Exception):
+        with pytest.raises(SmiError, match='not configured'):
             rfc3413_config.getTargetAddr(engine, 'nonexistent')
 
     def test_get_target_params_not_configured(self):
         engine = SnmpEngine()
-        with pytest.raises(Exception):
+        with pytest.raises(SmiError, match='not configured'):
             rfc3413_config.getTargetParams(engine, 'nonexistent')
 
 

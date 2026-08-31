@@ -50,9 +50,6 @@ dev = [
     "isort >=5.13.0,<6.0.0",
 ]
 
-# snmpsim 0.4.7 depends on the legacy pysnmp 4.4.12 distribution. Install it
-# separately with --no-deps so it exercises this checkout instead.
-
 [tool.coverage.run]
 branch = true
 source = ["pysnmp"]
