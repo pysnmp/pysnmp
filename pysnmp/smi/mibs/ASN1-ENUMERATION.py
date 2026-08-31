@@ -5,4 +5,4 @@
 #
 from pyasn1.type import namedval
 
-mibBuilder.exportSymbols('ASN1-ENUMERATION', NamedValues=namedval.NamedValues)
+mibBuilder.exportSymbols("ASN1-ENUMERATION", NamedValues=namedval.NamedValues)

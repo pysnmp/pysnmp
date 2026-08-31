@@ -54,7 +54,7 @@ class AbstractTransportDispatcher:
         if incomingTransport in self.__transportDomainMap:
             transportDomain = self.__transportDomainMap[incomingTransport]
         else:
-            raise error.CarrierError(f'Unregistered transport {incomingTransport}')
+            raise error.CarrierError(f"Unregistered transport {incomingTransport}")
 
         if self.__routingCbFun:
             recvId = self.__routingCbFun(transportDomain, transportAddress, incomingMessage)
@@ -72,7 +72,7 @@ class AbstractTransportDispatcher:
 
     def registerRoutingCbFun(self, routingCbFun):
         if self.__routingCbFun:
-            raise error.CarrierError('Data routing callback already registered')
+            raise error.CarrierError("Data routing callback already registered")
         self.__routingCbFun = routingCbFun
 
     def unregisterRoutingCbFun(self):
@@ -82,8 +82,8 @@ class AbstractTransportDispatcher:
     def registerRecvCbFun(self, recvCb, recvId=None):
         if recvId in self.__recvCallables:
             raise error.CarrierError(
-                'Receive callback {!r} already registered'.format(
-                    recvId is None and '<default>' or recvId
+                "Receive callback {!r} already registered".format(
+                    recvId is None and "<default>" or recvId
                 )
             )
         self.__recvCallables[recvId] = recvCb
@@ -105,14 +105,14 @@ class AbstractTransportDispatcher:
 
     def registerTransport(self, tDomain, transport):
         if tDomain in self.__transports:
-            raise error.CarrierError(f'Transport {tDomain} already registered')
+            raise error.CarrierError(f"Transport {tDomain} already registered")
         transport.registerCbFun(self._cbFun)
         self.__transports[tDomain] = transport
         self.__transportDomainMap[transport] = tDomain
 
     def unregisterTransport(self, tDomain):
         if tDomain not in self.__transports:
-            raise error.CarrierError(f'Transport {tDomain} not registered')
+            raise error.CarrierError(f"Transport {tDomain} not registered")
         self.__transports[tDomain].unregisterCbFun()
         del self.__transportDomainMap[self.__transports[tDomain]]
         del self.__transports[tDomain]
@@ -120,20 +120,20 @@ class AbstractTransportDispatcher:
     def getTransport(self, transportDomain):
         if transportDomain in self.__transports:
             return self.__transports[transportDomain]
-        raise error.CarrierError(f'Transport {transportDomain} not registered')
+        raise error.CarrierError(f"Transport {transportDomain} not registered")
 
     def sendMessage(self, outgoingMessage, transportDomain, transportAddress):
         if transportDomain in self.__transports:
             self.__transports[transportDomain].sendMessage(outgoingMessage, transportAddress)
         else:
-            raise error.CarrierError(f'No suitable transport domain for {transportDomain}')
+            raise error.CarrierError(f"No suitable transport domain for {transportDomain}")
 
     def getTimerResolution(self):
         return self.__timerResolution
 
     def setTimerResolution(self, timerResolution):
         if timerResolution < 0.01 or timerResolution > 10:
-            raise error.CarrierError('Impossible timer resolution')
+            raise error.CarrierError("Impossible timer resolution")
 
         for timerCallable in self.__timerCallables:
             if timerCallable.interval == self.__timerResolution:
@@ -174,7 +174,7 @@ class AbstractTransportDispatcher:
         return bool(self.__jobs)
 
     def runDispatcher(self, timeout=0.0):
-        raise error.CarrierError('Method not implemented')
+        raise error.CarrierError("Method not implemented")
 
     def closeDispatcher(self):
         for tDomain in list(self.__transports):
@@ -213,7 +213,7 @@ class AbstractTransport:
     def registerCbFun(self, cbFun):
         if self._cbFun:
             raise error.CarrierError(
-                f'Callback function {self._cbFun} already registered at {self}'
+                f"Callback function {self._cbFun} already registered at {self}"
             )
         self._cbFun = cbFun
 
@@ -226,10 +226,10 @@ class AbstractTransport:
     # Public API
 
     def openClientMode(self, iface=None):
-        raise error.CarrierError('Method not implemented')
+        raise error.CarrierError("Method not implemented")
 
     def openServerMode(self, iface):
-        raise error.CarrierError('Method not implemented')
+        raise error.CarrierError("Method not implemented")
 
     def sendMessage(self, outgoingMessage, transportAddress):
-        raise error.CarrierError('Method not implemented')
+        raise error.CarrierError("Method not implemented")

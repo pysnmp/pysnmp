@@ -50,11 +50,10 @@ class Vacm:
             views = groups[groupName] = {}
 
         for viewType, viewName in (
-            ('read', readView),
-            ('write', writeView),
-            ('notify', notifyView),
+            ("read", readView),
+            ("write", writeView),
+            ("notify", notifyView),
         ):
-
             try:
                 matches = views[viewType]
 
@@ -110,9 +109,7 @@ class Vacm:
         bestCandidate = None
 
         for match, names in matches.items():
-
             for context, models in names.items():
-
                 if match == 1 and contextName != context:
                     continue
 
@@ -157,20 +154,19 @@ class Vacm:
         mibInstrumController = snmpEngine.msgAndPduDsp.mibInstrumController
 
         debug.logger & debug.flagACL and debug.logger(
-            'isAccessAllowed: securityModel %s, securityName %s, '
-            'securityLevel %s, viewType %s, contextName %s for '
-            'variableName %s'
+            "isAccessAllowed: securityModel %s, securityName %s, "
+            "securityLevel %s, viewType %s, contextName %s for "
+            "variableName %s"
             % (securityModel, securityName, securityLevel, viewType, contextName, variableName)
         )
 
         # Rebuild contextName map if changed
 
         (vacmContextName,) = mibInstrumController.mibBuilder.importSymbols(
-            'SNMP-VIEW-BASED-ACM-MIB', 'vacmContextName'
+            "SNMP-VIEW-BASED-ACM-MIB", "vacmContextName"
         )
 
         if self._contextBranchId != vacmContextName.branchVersionId:
-
             self._contextMap.clear()
 
             nextMibNode = vacmContextName
@@ -193,13 +189,12 @@ class Vacm:
         # Rebuild groupName map if changed
 
         (vacmGroupName,) = mibInstrumController.mibBuilder.importSymbols(
-            'SNMP-VIEW-BASED-ACM-MIB', 'vacmGroupName'
+            "SNMP-VIEW-BASED-ACM-MIB", "vacmGroupName"
         )
 
         if self._groupNameBranchId != vacmGroupName.branchVersionId:
-
             (vacmSecurityToGroupEntry,) = mibInstrumController.mibBuilder.importSymbols(
-                'SNMP-VIEW-BASED-ACM-MIB', 'vacmSecurityToGroupEntry'
+                "SNMP-VIEW-BASED-ACM-MIB", "vacmSecurityToGroupEntry"
             )
 
             self._groupNameMap.clear()
@@ -233,11 +228,10 @@ class Vacm:
         # Rebuild access map if changed
 
         (vacmAccessStatus,) = mibInstrumController.mibBuilder.importSymbols(
-            'SNMP-VIEW-BASED-ACM-MIB', 'vacmAccessStatus'
+            "SNMP-VIEW-BASED-ACM-MIB", "vacmAccessStatus"
         )
 
         if self._accessBranchId != vacmAccessStatus.branchVersionId:
-
             (
                 vacmAccessEntry,
                 vacmAccessContextPrefix,
@@ -248,15 +242,15 @@ class Vacm:
                 vacmAccessWriteViewName,
                 vacmAccessNotifyViewName,
             ) = mibInstrumController.mibBuilder.importSymbols(
-                'SNMP-VIEW-BASED-ACM-MIB',
-                'vacmAccessEntry',
-                'vacmAccessContextPrefix',
-                'vacmAccessSecurityModel',
-                'vacmAccessSecurityLevel',
-                'vacmAccessContextMatch',
-                'vacmAccessReadViewName',
-                'vacmAccessWriteViewName',
-                'vacmAccessNotifyViewName',
+                "SNMP-VIEW-BASED-ACM-MIB",
+                "vacmAccessEntry",
+                "vacmAccessContextPrefix",
+                "vacmAccessSecurityModel",
+                "vacmAccessSecurityLevel",
+                "vacmAccessContextMatch",
+                "vacmAccessReadViewName",
+                "vacmAccessWriteViewName",
+                "vacmAccessNotifyViewName",
             )
 
             self._accessMap.clear()
@@ -301,17 +295,16 @@ class Vacm:
         # Rebuild family subtree map if changed
 
         (vacmViewTreeFamilyViewName,) = mibInstrumController.mibBuilder.importSymbols(
-            'SNMP-VIEW-BASED-ACM-MIB', 'vacmViewTreeFamilyViewName'
+            "SNMP-VIEW-BASED-ACM-MIB", "vacmViewTreeFamilyViewName"
         )
 
         if self._viewTreeBranchId != vacmViewTreeFamilyViewName.branchVersionId:
-
             (vacmViewTreeFamilySubtree, vacmViewTreeFamilyMask, vacmViewTreeFamilyType) = (
                 mibInstrumController.mibBuilder.importSymbols(
-                    'SNMP-VIEW-BASED-ACM-MIB',
-                    'vacmViewTreeFamilySubtree',
-                    'vacmViewTreeFamilyMask',
-                    'vacmViewTreeFamilyType',
+                    "SNMP-VIEW-BASED-ACM-MIB",
+                    "vacmViewTreeFamilySubtree",
+                    "vacmViewTreeFamilyMask",
+                    "vacmViewTreeFamilyType",
                 )
             )
 

@@ -3,10 +3,10 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-(MibScalarInstance,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+(MibScalarInstance,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
 
 (pysnmpUsmDiscoverable, pysnmpUsmDiscovery, pysnmpUsmKeyType) = mibBuilder.importSymbols(
-    'PYSNMP-USM-MIB', 'pysnmpUsmDiscoverable', 'pysnmpUsmDiscovery', 'pysnmpUsmKeyType'
+    "PYSNMP-USM-MIB", "pysnmpUsmDiscoverable", "pysnmpUsmDiscovery", "pysnmpUsmKeyType"
 )
 
 __pysnmpUsmDiscoverable = MibScalarInstance(

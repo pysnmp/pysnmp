@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - "main"
+      - "next"
       - "develop"
   pull_request:
-    branches: [main, develop]
+    branches: [main, next, develop]
 
 jobs:
   pre-commit:
@@ -16,9 +17,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - name: Install actionlint
-        run: |
-          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/v1.6.3/scripts/download-actionlint.bash)
       - uses: pre-commit/action@v3.0.1
 
   semgrep:
@@ -41,7 +39,7 @@ jobs:
       id-token: write
     environment: release    
     needs:
-      #- pre-commit
+      - pre-commit
       - semgrep
       #- run-unit-tests
     runs-on: ubuntu-latest

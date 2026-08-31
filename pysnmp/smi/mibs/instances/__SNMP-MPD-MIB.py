@@ -3,13 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-(MibScalarInstance,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+(MibScalarInstance,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
 
 (snmpUnknownSecurityModels, snmpInvalidMsgs, snmpUnknownPDUHandlers) = mibBuilder.importSymbols(
-    'SNMP-MPD-MIB',
-    'snmpUnknownSecurityModels',
-    'snmpInvalidMsgs',
-    'snmpUnknownPDUHandlers',
+    "SNMP-MPD-MIB",
+    "snmpUnknownSecurityModels",
+    "snmpInvalidMsgs",
+    "snmpUnknownPDUHandlers",
 )
 
 __snmpUnknownSecurityModels = MibScalarInstance(
@@ -21,7 +21,7 @@ __snmpUnknownPDUHandlers = MibScalarInstance(
 )
 
 mibBuilder.exportSymbols(
-    '__SNMP-MPD-MIB',
+    "__SNMP-MPD-MIB",
     snmpUnknownSecurityModels=__snmpUnknownSecurityModels,
     snmpInvalidMsgs=__snmpInvalidMsgs,
     snmpUnknownPDUHandlers=__snmpUnknownPDUHandlers,

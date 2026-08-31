@@ -11,7 +11,7 @@ provide consistent return-type annotations for SNMP command results.
 
 from typing import Any, NamedTuple
 
-__all__ = ['SnmpResponse']
+__all__ = ["SnmpResponse"]
 
 
 class SnmpResponse(NamedTuple):

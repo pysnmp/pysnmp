@@ -8,10 +8,10 @@ from pathlib import Path
 
 defaultSources = ["file:///usr/share/snmp/mibs", "file:///usr/share/mibs"]
 
-if sys.platform[:3] == 'win':
-    defaultDest = str(Path.home() / 'PySNMP Configuration' / 'mibs')
+if sys.platform[:3] == "win":
+    defaultDest = str(Path.home() / "PySNMP Configuration" / "mibs")
 else:
-    defaultDest = str(Path.home() / '.pysnmp' / 'mibs')
+    defaultDest = str(Path.home() / ".pysnmp" / "mibs")
 
 defaultBorrowers = []
 

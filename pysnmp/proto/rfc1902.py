@@ -8,19 +8,19 @@ from pyasn1.type import constraint, namedtype, namedval, tag, univ
 from pysnmp.proto import error, rfc1155
 
 __all__ = [
-    'Opaque',
-    'TimeTicks',
-    'Bits',
-    'Integer',
-    'OctetString',
-    'IpAddress',
-    'Counter64',
-    'Unsigned32',
-    'Gauge32',
-    'Integer32',
-    'ObjectIdentifier',
-    'Counter32',
-    'Null',
+    "Opaque",
+    "TimeTicks",
+    "Bits",
+    "Integer",
+    "OctetString",
+    "IpAddress",
+    "Counter64",
+    "Unsigned32",
+    "Gauge32",
+    "Integer32",
+    "ObjectIdentifier",
+    "Counter32",
+    "Null",
 ]
 
 
@@ -330,19 +330,19 @@ class IpAddress(OctetString):
     def prettyIn(self, value):
         if isinstance(value, str) and len(value) != 4:
             try:
-                value = [int(x) for x in value.split('.')]
+                value = [int(x) for x in value.split(".")]
             except Exception:
-                raise error.ProtocolError('Bad IP address syntax %s' % value)
+                raise error.ProtocolError("Bad IP address syntax %s" % value)
         value = OctetString.prettyIn(self, value)
         if len(value) != 4:
-            raise error.ProtocolError('Bad IP address syntax')
+            raise error.ProtocolError("Bad IP address syntax")
         return value
 
     def prettyOut(self, value):
         if value:
-            return '.'.join(['%d' % x for x in self.__class__(value).asNumbers()])
+            return ".".join(["%d" % x for x in self.__class__(value).asNumbers()])
         else:
-            return ''
+            return ""
 
 
 class Counter32(univ.Integer):
@@ -634,8 +634,8 @@ class Bits(OctetString):
     namedValues = namedval.NamedValues()
 
     def __new__(cls, *args, **kwargs):
-        if 'namedValues' in kwargs:
-            Bits = cls.withNamedBits(**dict(kwargs.pop('namedValues')))
+        if "namedValues" in kwargs:
+            Bits = cls.withNamedBits(**dict(kwargs.pop("namedValues")))
             return Bits(*args, **kwargs)
 
         return OctetString.__new__(cls)
@@ -647,7 +647,7 @@ class Bits(OctetString):
         for bit in bits:  # tuple of named bits
             v = self.namedValues.getValue(bit)
             if v is None:
-                raise error.ProtocolError('Unknown named bit %s' % bit)
+                raise error.ProtocolError("Unknown named bit %s" % bit)
             d, m = divmod(v, 8)
             if d >= len(octets):
                 octets.extend([0] * (d - len(octets) + 1))
@@ -664,10 +664,10 @@ class Bits(OctetString):
                 if v & (0x01 << j):
                     name = self.namedValues.getName(i * 8 + 7 - j)
                     if name is None:
-                        name = f'UnknownBit-{i * 8 + 7 - j}'
+                        name = f"UnknownBit-{i * 8 + 7 - j}"
                     names.append(name)
                 j -= 1
-        return ', '.join([str(x) for x in names])
+        return ", ".join([str(x) for x in names])
 
     @classmethod
     def withNamedBits(cls, **values):
@@ -691,27 +691,27 @@ class ObjectName(univ.ObjectIdentifier):
 
 class SimpleSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('integer-value', Integer()),
-        namedtype.NamedType('string-value', OctetString()),
-        namedtype.NamedType('objectID-value', univ.ObjectIdentifier()),
+        namedtype.NamedType("integer-value", Integer()),
+        namedtype.NamedType("string-value", OctetString()),
+        namedtype.NamedType("objectID-value", univ.ObjectIdentifier()),
     )
 
 
 class ApplicationSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('ipAddress-value', IpAddress()),
-        namedtype.NamedType('counter-value', Counter32()),
-        namedtype.NamedType('timeticks-value', TimeTicks()),
-        namedtype.NamedType('arbitrary-value', Opaque()),
-        namedtype.NamedType('big-counter-value', Counter64()),
+        namedtype.NamedType("ipAddress-value", IpAddress()),
+        namedtype.NamedType("counter-value", Counter32()),
+        namedtype.NamedType("timeticks-value", TimeTicks()),
+        namedtype.NamedType("arbitrary-value", Opaque()),
+        namedtype.NamedType("big-counter-value", Counter64()),
         # This conflicts with Counter32
         # namedtype.NamedType('unsigned-integer-value', Unsigned32()),
-        namedtype.NamedType('gauge32-value', Gauge32()),
+        namedtype.NamedType("gauge32-value", Gauge32()),
     )  # BITS misplaced?
 
 
 class ObjectSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('simple', SimpleSyntax()),
-        namedtype.NamedType('application-wide', ApplicationSyntax()),
+        namedtype.NamedType("simple", SimpleSyntax()),
+        namedtype.NamedType("application-wide", ApplicationSyntax()),
     )

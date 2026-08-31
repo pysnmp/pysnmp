@@ -42,7 +42,6 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     """Base Asyncio datagram Transport, to be used with AsyncioDispatcher"""
 
     sockFamily = None
-    addressType = lambda x: x
 
     def __init__(self, sock=None, sockMap=None, loop=None):
         self._writeQ = []
@@ -58,33 +57,33 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
 
     def datagram_received(self, datagram, transportAddress):
         if self._cbFun is None:
-            raise error.CarrierError('Unable to call cbFun')
+            raise error.CarrierError("Unable to call cbFun")
         else:
             self.loop.call_soon(self._cbFun, self, transportAddress, datagram)
 
     def connection_made(self, transport):
         self.transport = transport
-        sock = transport.get_extra_info('socket')
+        sock = transport.get_extra_info("socket")
         for configureSocket in self._pendingSocketOptions:
             configureSocket(sock)
         self._pendingSocketOptions = []
-        debug.logger & debug.flagIO and debug.logger('connection_made: invoked')
+        debug.logger & debug.flagIO and debug.logger("connection_made: invoked")
         while self._writeQ:
             outgoingMessage, transportAddress = self._writeQ.pop(0)
             debug.logger & debug.flagIO and debug.logger(
-                'connection_made: transportAddress %r outgoingMessage %s'
+                "connection_made: transportAddress %r outgoingMessage %s"
                 % (transportAddress, debug.hexdump(outgoingMessage))
             )
             try:
                 self.transport.sendto(outgoingMessage, self.normalizeAddress(transportAddress))
             except Exception as e:
                 raise error.CarrierError(
-                    ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+                    ";".join(traceback.format_exception(type(e), e, e.__traceback__))
                 )
 
     def connection_lost(self, exc):
         self.transport = None
-        debug.logger & debug.flagIO and debug.logger('connection_lost: invoked')
+        debug.logger & debug.flagIO and debug.logger("connection_lost: invoked")
 
     # AbstractAsyncioTransport API
 
@@ -99,7 +98,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 self.loop.run_until_complete(c)
         except Exception as e:
             raise error.CarrierError(
-                ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+                ";".join(traceback.format_exception(type(e), e, e.__traceback__))
             )
         return self
 
@@ -114,7 +113,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 self.loop.run_until_complete(c)
         except Exception as e:
             raise error.CarrierError(
-                ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+                ";".join(traceback.format_exception(type(e), e, e.__traceback__))
             )
         return self
 
@@ -130,7 +129,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
 
     def sendMessage(self, outgoingMessage, transportAddress):
         debug.logger & debug.flagIO and debug.logger(
-            'sendMessage: {} transportAddress {!r} outgoingMessage {}'.format(
+            "sendMessage: {} transportAddress {!r} outgoingMessage {}".format(
                 (self.transport is None and "queuing" or "sending"),
                 transportAddress,
                 debug.hexdump(outgoingMessage),
@@ -143,13 +142,13 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 self.transport.sendto(outgoingMessage, self.normalizeAddress(transportAddress))
             except Exception as e:
                 raise error.CarrierError(
-                    ';'.join(traceback.format_exception(type(e), e, e.__traceback__))
+                    ";".join(traceback.format_exception(type(e), e, e.__traceback__))
                 )
 
     def getLocalAddress(self):
         if self.transport is None:
             return None
-        return self.transport.get_extra_info('sockname')
+        return self.transport.get_extra_info("sockname")
 
     def normalizeAddress(self, transportAddress):
         if not isinstance(transportAddress, self.addressType):
@@ -162,7 +161,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         if self.transport is None:
             self._pendingSocketOptions.append(configureSocket)
             return
-        configureSocket(self.transport.get_extra_info('socket'))
+        configureSocket(self.transport.get_extra_info("socket"))
 
     def enableBroadcast(self, flag=1):
         def configureSocket(sock):
@@ -171,13 +170,13 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         try:
             self._configureSocket(configureSocket)
         except OSError as e:
-            raise error.CarrierError(f'setsockopt() for SO_BROADCAST failed: {e}')
+            raise error.CarrierError(f"setsockopt() for SO_BROADCAST failed: {e}")
         return self
 
     def enablePktInfo(self, flag=1):
         raise error.CarrierError(
-            'Packet-information source-address handling is unavailable with '
-            'asyncio datagram transports; use a raw asyncio socket for this use case'
+            "Packet-information source-address handling is unavailable with "
+            "asyncio datagram transports; use a raw asyncio socket for this use case"
         )
 
     def enableTransparent(self, flag=1):
@@ -186,7 +185,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         elif self.sockFamily == socket.AF_INET6:
             option = socket.SOL_IPV6, socket.IPV6_TRANSPARENT
         else:
-            raise error.CarrierError('IP_TRANSPARENT is only supported by IP datagram transports')
+            raise error.CarrierError("IP_TRANSPARENT is only supported by IP datagram transports")
 
         def configureSocket(sock):
             sock.setsockopt(option[0], option[1], flag)
@@ -194,5 +193,5 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         try:
             self._configureSocket(configureSocket)
         except (AttributeError, OSError) as e:
-            raise error.CarrierError(f'setsockopt() for IP_TRANSPARENT failed: {e}')
+            raise error.CarrierError(f"setsockopt() for IP_TRANSPARENT failed: {e}")
         return self

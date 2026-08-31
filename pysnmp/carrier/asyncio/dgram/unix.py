@@ -32,7 +32,7 @@ class UnixAsyncioTransport(DgramAsyncioProtocol):
 
     def openClientMode(self, iface=None):
         if iface is None:
-            fd, iface = tempfile.mkstemp(prefix='pysnmp-', dir=tempfile.gettempdir())
+            fd, iface = tempfile.mkstemp(prefix="pysnmp-", dir=tempfile.gettempdir())
             os.close(fd)
         if Path(iface).exists():
             Path(iface).unlink()

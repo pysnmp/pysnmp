@@ -10,23 +10,23 @@ from pysnmp import error
 from pysnmp.entity import config
 
 __all__ = [
-    'CommunityData',
-    'UsmUserData',
-    'usm3DESEDEPrivProtocol',
-    'usmAesCfb128Protocol',
-    'usmAesCfb192Protocol',
-    'usmAesCfb256Protocol',
-    'usmAesBlumenthalCfb192Protocol',
-    'usmAesBlumenthalCfb256Protocol',
-    'usmDESPrivProtocol',
-    'usmHMACMD5AuthProtocol',
-    'usmHMACSHAAuthProtocol',
-    'usmHMAC128SHA224AuthProtocol',
-    'usmHMAC192SHA256AuthProtocol',
-    'usmHMAC256SHA384AuthProtocol',
-    'usmHMAC384SHA512AuthProtocol',
-    'usmNoAuthProtocol',
-    'usmNoPrivProtocol',
+    "CommunityData",
+    "UsmUserData",
+    "usm3DESEDEPrivProtocol",
+    "usmAesCfb128Protocol",
+    "usmAesCfb192Protocol",
+    "usmAesCfb256Protocol",
+    "usmAesBlumenthalCfb192Protocol",
+    "usmAesBlumenthalCfb256Protocol",
+    "usmDESPrivProtocol",
+    "usmHMACMD5AuthProtocol",
+    "usmHMACSHAAuthProtocol",
+    "usmHMAC128SHA224AuthProtocol",
+    "usmHMAC192SHA256AuthProtocol",
+    "usmHMAC256SHA384AuthProtocol",
+    "usmHMAC384SHA512AuthProtocol",
+    "usmNoAuthProtocol",
+    "usmNoPrivProtocol",
 ]
 
 
@@ -113,9 +113,9 @@ class CommunityData:
 
     mpModel: int = 1  # Default is SMIv2
     securityModel: int = mpModel + 1
-    securityLevel: str = 'noAuthNoPriv'
-    contextName: Any = b''
-    tag: Any = b''
+    securityLevel: str = "noAuthNoPriv"
+    contextName: Any = b""
+    tag: Any = b""
 
     def __init__(
         self,
@@ -141,7 +141,7 @@ class CommunityData:
         self.communityName = communityName
         # Autogenerate communityIndex if not specified
         if communityIndex is None:
-            self.communityIndex = self.securityName = 's%s' % hash(
+            self.communityIndex = self.securityName = "s%s" % hash(
                 (
                     self.communityName,
                     self.mpModel,
@@ -155,18 +155,10 @@ class CommunityData:
             self.securityName = securityName if securityName is not None else communityIndex
 
     def __hash__(self) -> NoReturn:
-        raise TypeError('%s is not hashable' % self.__class__.__name__)
+        raise TypeError("%s is not hashable" % self.__class__.__name__)
 
     def __repr__(self) -> str:
-        return '{}(communityIndex={!r}, communityName=<COMMUNITY>, mpModel={!r}, contextEngineId={!r}, contextName={!r}, tag={!r}, securityName={!r})'.format(
-            self.__class__.__name__,
-            self.communityIndex,
-            self.mpModel,
-            self.contextEngineId,
-            self.contextName,
-            self.tag,
-            self.securityName,
-        )
+        return f"{self.__class__.__name__}(communityIndex={self.communityIndex!r}, communityName=<COMMUNITY>, mpModel={self.mpModel!r}, contextEngineId={self.contextEngineId!r}, contextName={self.contextName!r}, tag={self.tag!r}, securityName={self.securityName!r})"
 
     def clone(
         self,
@@ -378,10 +370,10 @@ class UsmUserData:
     privKey: Any = None
     authProtocol: Any = config.usmNoAuthProtocol
     privProtocol: Any = config.usmNoPrivProtocol
-    securityLevel: str = 'noAuthNoPriv'
+    securityLevel: str = "noAuthNoPriv"
     securityModel: int = 3
     mpModel: int = 3
-    contextName: Any = b''
+    contextName: Any = b""
 
     def __init__(
         self,
@@ -407,14 +399,14 @@ class UsmUserData:
                 self.authProtocol = config.usmHMACMD5AuthProtocol
             else:
                 self.authProtocol = authProtocol
-            if self.securityLevel != 'authPriv':
-                self.securityLevel = 'authNoPriv'
+            if self.securityLevel != "authPriv":
+                self.securityLevel = "authNoPriv"
 
         if privKey is not None:
             self.privKey = privKey
             if self.authProtocol == config.usmNoAuthProtocol:
-                raise error.PySnmpError('Privacy implies authenticity')
-            self.securityLevel = 'authPriv'
+                raise error.PySnmpError("Privacy implies authenticity")
+            self.securityLevel = "authPriv"
             if privProtocol is None:
                 self.privProtocol = config.usmDESPrivProtocol
             else:
@@ -425,15 +417,15 @@ class UsmUserData:
         self.privKeyType = privKeyType
 
     def __hash__(self) -> NoReturn:
-        raise TypeError('%s is not hashable' % self.__class__.__name__)
+        raise TypeError("%s is not hashable" % self.__class__.__name__)
 
     def __repr__(self) -> str:
-        return '{}(userName={!r}, authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol={!r}, privProtocol={!r}, securityEngineId={!r}, securityName={!r}, authKeyType={!r}, privKeyType={!r})'.format(
+        return "{}(userName={!r}, authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol={!r}, privProtocol={!r}, securityEngineId={!r}, securityName={!r}, authKeyType={!r}, privKeyType={!r})".format(
             self.__class__.__name__,
             self.userName,
             self.authProtocol,
             self.privProtocol,
-            self.securityEngineId if self.securityEngineId is not None else '<DEFAULT>',
+            self.securityEngineId if self.securityEngineId is not None else "<DEFAULT>",
             self.securityName,
             self.authKeyType,
             self.privKeyType,

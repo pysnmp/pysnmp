@@ -16,21 +16,23 @@ class NotificationReceiver:
 
     def __init__(self, snmpEngine, cbFun, cbCtx=None):
         snmpEngine.msgAndPduDsp.registerContextEngineId(
-            b'', self.pduTypes, self.processPdu  # '' is a wildcard
+            b"",
+            self.pduTypes,
+            self.processPdu,  # '' is a wildcard
         )
 
-        self.__snmpTrapCommunity = ''
+        self.__snmpTrapCommunity = ""
         self.__cbFunVer = 0
         self.__cbFun = cbFun
         self.__cbCtx = cbCtx
 
         def storeSnmpTrapCommunity(snmpEngine, execpoint, variables, cbCtx):
-            self.__snmpTrapCommunity = variables.get('communityName', '')
+            self.__snmpTrapCommunity = variables.get("communityName", "")
 
-        snmpEngine.observer.registerObserver(storeSnmpTrapCommunity, 'rfc2576.processIncomingMsg')
+        snmpEngine.observer.registerObserver(storeSnmpTrapCommunity, "rfc2576.processIncomingMsg")
 
     def close(self, snmpEngine):
-        snmpEngine.msgAndPduDsp.unregisterContextEngineId(b'', self.pduTypes)
+        snmpEngine.msgAndPduDsp.unregisterContextEngineId(b"", self.pduTypes)
         self.__cbFun = self.__cbCtx = None
 
     def processPdu(
@@ -55,12 +57,12 @@ class NotificationReceiver:
         else:
             origPdu = None
 
-        errorStatus = 'noError'
+        errorStatus = "noError"
         errorIndex = 0
         varBinds = v2c.apiPDU.getVarBinds(PDU)
 
         debug.logger & debug.flagApp and debug.logger(
-            f'processPdu: stateReference {stateReference}, varBinds {varBinds}'
+            f"processPdu: stateReference {stateReference}, varBinds {varBinds}"
         )
 
         # 3.4
@@ -75,7 +77,7 @@ class NotificationReceiver:
             v2c.apiPDU.setVarBinds(rspPDU, varBinds)
 
             debug.logger & debug.flagApp and debug.logger(
-                f'processPdu: stateReference {stateReference}, confirm PDU {rspPDU.prettyPrint()}'
+                f"processPdu: stateReference {stateReference}, confirm PDU {rspPDU.prettyPrint()}"
             )
 
             # Agent-side API complies with SMIv2
@@ -103,11 +105,11 @@ class NotificationReceiver:
 
             except error.StatusInformation as e:
                 debug.logger & debug.flagApp and debug.logger(
-                    f'processPdu: stateReference {stateReference}, statusInformation {e}'
+                    f"processPdu: stateReference {stateReference}, statusInformation {e}"
                 )
                 (snmpSilentDrops,) = (
                     snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                        '__SNMPv2-MIB', 'snmpSilentDrops'
+                        "__SNMPv2-MIB", "snmpSilentDrops"
                     )
                 )
                 snmpSilentDrops.syntax += 1
@@ -115,12 +117,10 @@ class NotificationReceiver:
         elif PDU.tagSet in rfc3411.unconfirmedClassPDUs:
             pass
         else:
-            raise error.ProtocolError('Unexpected PDU class %s' % PDU.tagSet)
+            raise error.ProtocolError("Unexpected PDU class %s" % PDU.tagSet)
 
         debug.logger & debug.flagApp and debug.logger(
-            'processPdu: stateReference {}, user cbFun {}, cbCtx {}, varBinds {}'.format(
-                stateReference, self.__cbFun, self.__cbCtx, varBinds
-            )
+            f"processPdu: stateReference {stateReference}, user cbFun {self.__cbFun}, cbCtx {self.__cbCtx}, varBinds {varBinds}"
         )
 
         if self.__cbFunVer:

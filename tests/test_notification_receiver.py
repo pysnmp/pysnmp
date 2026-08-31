@@ -1,16 +1,12 @@
 """Local notification-receiver tests for trap and inform behavior."""
 
 import socket
-import time
-
-import pytest
 
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.entity.rfc3413 import ntfrcv
-from pysnmp.entity import config
-from pysnmp.proto.api import v2c, v1
-from pysnmp.proto.rfc1905 import SNMPv2TrapPDU
+from pysnmp.proto.api import v1, v2c
 from pysnmp.proto.rfc1157 import TrapPDU
+from pysnmp.proto.rfc1905 import SNMPv2TrapPDU
 
 
 def _get_free_port():
@@ -66,11 +62,16 @@ class TestTrapPDUConstruction:
     def test_v2c_trap_pdu(self):
         pdu = SNMPv2TrapPDU()
         v2c.apiPDU.setDefaults(pdu)
-        v2c.apiPDU.setVarBinds(pdu, [
-            ((1, 3, 6, 1, 2, 1, 1, 3, 0), v2c.TimeTicks(12345)),
-            ((1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0),
-             v2c.ObjectIdentifier((1, 3, 6, 1, 6, 3, 1, 1, 5, 1))),
-        ])
+        v2c.apiPDU.setVarBinds(
+            pdu,
+            [
+                ((1, 3, 6, 1, 2, 1, 1, 3, 0), v2c.TimeTicks(12345)),
+                (
+                    (1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0),
+                    v2c.ObjectIdentifier((1, 3, 6, 1, 6, 3, 1, 1, 5, 1)),
+                ),
+            ],
+        )
         var_binds = v2c.apiPDU.getVarBinds(pdu)
         assert len(var_binds) == 2
 
@@ -86,13 +87,16 @@ class TestNotificationOriginator:
 
     def test_creation(self):
         from pysnmp.entity.rfc3413 import ntforg
+
         no = ntforg.NotificationOriginator()
         assert no is not None
 
     def test_send_var_binds_method_exists(self):
         from pysnmp.entity.rfc3413 import ntforg
+
         assert hasattr(ntforg.NotificationOriginator, "sendVarBinds")
 
     def test_send_pdu_method_exists(self):
         from pysnmp.entity.rfc3413 import ntforg
+
         assert hasattr(ntforg.NotificationOriginator, "sendPdu")

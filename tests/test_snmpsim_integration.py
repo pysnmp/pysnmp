@@ -12,7 +12,6 @@ from pysnmp.hlapi import (
     usmHMACMD5AuthProtocol,
 )
 
-
 SYS_DESCR = "1.3.6.1.2.1.1.1.0"
 
 

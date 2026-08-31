@@ -41,7 +41,7 @@ class HmacSha2(base.AbstractAuthenticationService):
 
     def __init__(self, oid):
         if oid not in self.hashAlgorithms:
-            raise error.ProtocolError(f'No SHA-2 authentication algorithm {oid} available')
+            raise error.ProtocolError(f"No SHA-2 authentication algorithm {oid} available")
         self.__hashAlgo = self.hashAlgorithms[oid]
         self.__digestLength = self.digestLengths[oid]
         self.__placeHolder = univ.OctetString((0,) * self.__digestLength).asOctets()
@@ -61,7 +61,7 @@ class HmacSha2(base.AbstractAuthenticationService):
         # 7.3.1.1
         location = wholeMsg.find(self.__placeHolder)
         if location == -1:
-            raise error.ProtocolError('Can\'t locate digest placeholder')
+            raise error.ProtocolError("Can't locate digest placeholder")
         wholeHead = wholeMsg[:location]
         wholeTail = wholeMsg[location + self.__digestLength :]
 
@@ -87,7 +87,7 @@ class HmacSha2(base.AbstractAuthenticationService):
         # 7.3.2.3
         location = wholeMsg.find(authParameters.asOctets())
         if location == -1:
-            raise error.ProtocolError('Can\'t locate digest in wholeMsg')
+            raise error.ProtocolError("Can't locate digest in wholeMsg")
         wholeHead = wholeMsg[:location]
         wholeTail = wholeMsg[location + self.__digestLength :]
         authenticatedWholeMsg = wholeHead + self.__placeHolder + wholeTail

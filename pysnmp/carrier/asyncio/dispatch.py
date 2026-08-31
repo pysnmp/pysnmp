@@ -42,11 +42,11 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
     def __init__(self, *args, **kwargs):
         AbstractTransportDispatcher.__init__(self)
         self.__transportCount = 0
-        if 'timeout' in kwargs:
-            self.setTimerResolution(kwargs['timeout'])
+        if "timeout" in kwargs:
+            self.setTimerResolution(kwargs["timeout"])
         self.loopingcall = None
         self._timerStartHandle = None
-        self.loop = kwargs.pop('loop', None)
+        self.loop = kwargs.pop("loop", None)
         if self.loop is None:
             try:
                 self.loop = asyncio.get_running_loop()
@@ -81,11 +81,11 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            raise PySnmpError(';'.join(traceback.format_exception(type(e), e, e.__traceback__)))
+            raise PySnmpError(";".join(traceback.format_exception(type(e), e, e.__traceback__)))
 
     def transportsAreWorking(self):
         for transport in self._AbstractTransportDispatcher__transports.values():
-            if getattr(transport, '_writeQ', None):
+            if getattr(transport, "_writeQ", None):
                 return True
         return False
 
@@ -93,7 +93,7 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         # If the transport already has an event loop (e.g. server-mode
         # transport created before the dispatcher), adopt its loop so
         # that datagram reception works on the same loop.
-        transportLoop = getattr(transport, 'loop', None)
+        transportLoop = getattr(transport, "loop", None)
         if transportLoop is not None and not self.loop.is_running():
             if transportLoop is not self.loop:
                 self.loop = transportLoop

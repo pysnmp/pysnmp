@@ -3,10 +3,10 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-(MibScalarInstance,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalarInstance')
+(MibScalarInstance,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
 
 (snmpTargetSpinLock, snmpUnavailableContexts, snmpUnknownContexts) = mibBuilder.importSymbols(
-    'SNMP-TARGET-MIB', 'snmpTargetSpinLock', 'snmpUnavailableContexts', 'snmpUnknownContexts'
+    "SNMP-TARGET-MIB", "snmpTargetSpinLock", "snmpUnavailableContexts", "snmpUnknownContexts"
 )
 
 __snmpTargetSpinLock = MibScalarInstance(
@@ -20,7 +20,7 @@ __snmpUnknownContexts = MibScalarInstance(
 )
 
 mibBuilder.exportSymbols(
-    '__SNMP-TARGET-MIB',
+    "__SNMP-TARGET-MIB",
     snmpTargetSpinLock=__snmpTargetSpinLock,
     snmpUnavailableContexts=__snmpUnavailableContexts,
     snmpUnknownContexts=__snmpUnknownContexts,

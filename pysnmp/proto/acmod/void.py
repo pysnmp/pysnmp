@@ -25,7 +25,7 @@ class Vacm:
         variableName,
     ):
         debug.logger & debug.flagACL and debug.logger(
-            f'isAccessAllowed: viewType {viewType} for variableName {variableName} - OK'
+            f"isAccessAllowed: viewType {viewType} for variableName {variableName} - OK"
         )
 
         # rfc3415 3.2.5c

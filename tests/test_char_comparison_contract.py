@@ -6,10 +6,11 @@ delegates to > instead of >= (existing bug that total_ordering will fix).
 """
 
 import pytest
-from pysnmp.proto.errind import ErrorIndication, SerializationError
+
 from pysnmp.carrier.base import TimerCallable
-from pysnmp.smi.rfc1902 import ObjectIdentity
+from pysnmp.proto.errind import SerializationError
 from pysnmp.smi import builder, view
+from pysnmp.smi.rfc1902 import ObjectIdentity
 
 
 class TestErrorIndicationComparison:

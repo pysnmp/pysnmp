@@ -5,16 +5,15 @@ and verify fixes for issue #54.
 """
 
 import os
-from pathlib import Path
 import socket
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import pytest
 
 from pysnmp.hlapi import (
-    CommunityData,
     ContextData,
     ObjectIdentity,
     ObjectType,
@@ -22,23 +21,20 @@ from pysnmp.hlapi import (
     UdpTransportTarget,
     UsmUserData,
     getCmd,
-    usmHMACMD5AuthProtocol,
-    usmHMACSHAAuthProtocol,
+    usmAesBlumenthalCfb192Protocol,
+    usmAesBlumenthalCfb256Protocol,
+    usmAesCfb128Protocol,
+    usmAesCfb192Protocol,
+    usmAesCfb256Protocol,
+    usmDESPrivProtocol,
     usmHMAC128SHA224AuthProtocol,
     usmHMAC192SHA256AuthProtocol,
     usmHMAC256SHA384AuthProtocol,
     usmHMAC384SHA512AuthProtocol,
-    usmNoAuthProtocol,
-    usmDESPrivProtocol,
-    usm3DESEDEPrivProtocol,
-    usmAesCfb128Protocol,
-    usmAesCfb192Protocol,
-    usmAesCfb256Protocol,
-    usmAesBlumenthalCfb192Protocol,
-    usmAesBlumenthalCfb256Protocol,
+    usmHMACMD5AuthProtocol,
+    usmHMACSHAAuthProtocol,
     usmNoPrivProtocol,
 )
-
 
 SYS_DESCR = "1.3.6.1.2.1.1.1.0"
 
@@ -88,17 +84,17 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
     cmd = [
         sys.executable,
         str(simulator),
-        "--data-dir={}".format(data_dir),
+        f"--data-dir={data_dir}",
         "--cache-dir={}".format(work_dir / "cache"),
         "--v3-user=testuser",
-        "--agent-udpv4-endpoint=127.0.0.1:{}".format(port),
+        f"--agent-udpv4-endpoint=127.0.0.1:{port}",
         "--log-level=info",
     ]
 
     if auth_proto:
-        cmd += ["--v3-auth-key={}".format(auth_key), "--v3-auth-proto={}".format(auth_proto)]
+        cmd += [f"--v3-auth-key={auth_key}", f"--v3-auth-proto={auth_proto}"]
     if priv_proto:
-        cmd += ["--v3-priv-key={}".format(priv_key), "--v3-priv-proto={}".format(priv_proto)]
+        cmd += [f"--v3-priv-key={priv_key}", f"--v3-priv-proto={priv_proto}"]
 
     with log_path.open("w") as log_file:
         process = subprocess.Popen(
@@ -112,7 +108,7 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
         while time.monotonic() < deadline:
             if process.poll() is not None:
                 log_content = log_path.read_text()
-                pytest.fail("snmpsim exited early:\n{}".format(log_content))
+                pytest.fail(f"snmpsim exited early:\n{log_content}")
             if "Listening at UDP/IPv4 endpoint" in log_path.read_text():
                 break
             time.sleep(0.05)
@@ -123,7 +119,7 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
             except subprocess.TimeoutExpired:
                 process.kill()
             log_content = log_path.read_text()
-            pytest.fail("snmpsim did not become ready:\n{}".format(log_content))
+            pytest.fail(f"snmpsim did not become ready:\n{log_content}")
 
     return ("127.0.0.1", port), process, log_path
 
@@ -155,6 +151,7 @@ def _get_value(result):
 
 
 # --- Individual combination tests ---
+
 
 class TestAuthPrivMatrix:
     """Test every auth/priv combination against a local snmpsim instance."""
@@ -203,8 +200,12 @@ class TestAuthPrivMatrix:
     def test_get(self):
         host, port = self._endpoint
         result = _do_get(
-            host, port, self._auth_oid, self._auth_key,
-            self._priv_oid, self._priv_key,
+            host,
+            port,
+            self._auth_oid,
+            self._auth_key,
+            self._priv_oid,
+            self._priv_key,
         )
         value = _get_value(result)
         assert "pysnmp integration" in value.lower(), (

@@ -25,7 +25,7 @@ class MibOperationError(SmiError):
         self.__outArgs = kwargs
 
     def __str__(self):
-        return f'{self.__class__.__name__}({self.__outArgs})'
+        return f"{self.__class__.__name__}({self.__outArgs})"
 
     def __getitem__(self, key):
         return self.__outArgs[key]

@@ -24,7 +24,7 @@ class Cache:
 
     def update(self, index, **kwargs):
         if index not in self.__cacheRepository:
-            raise error.ProtocolError('Cache miss on update for %s' % kwargs)
+            raise error.ProtocolError("Cache miss on update for %s" % kwargs)
         self.__cacheRepository[index].update(kwargs)
 
     def expire(self, cbFun, cbCtx):

@@ -40,11 +40,11 @@ class HmacSha(base.AbstractAuthenticationService):
         # should be in the substrate. Also, it pre-sets digest placeholder
         # so we hash wholeMsg out of the box.
         # Yes, that's ugly but that's rfc...
-        l = wholeMsg.find(_twelveZeros)
-        if l == -1:
-            raise error.ProtocolError('Cant locate digest placeholder')
-        wholeHead = wholeMsg[:l]
-        wholeTail = wholeMsg[l + 12 :]
+        idx = wholeMsg.find(_twelveZeros)
+        if idx == -1:
+            raise error.ProtocolError("Cant locate digest placeholder")
+        wholeHead = wholeMsg[:idx]
+        wholeTail = wholeMsg[idx + 12 :]
 
         # 7.3.1.2a
         extendedAuthKey = authKey.asNumbers() + _fortyFourZeros
@@ -76,11 +76,11 @@ class HmacSha(base.AbstractAuthenticationService):
             raise error.StatusInformation(errorIndication=errind.authenticationError)
 
         # 7.3.2.3
-        l = wholeMsg.find(authParameters.asOctets())
-        if l == -1:
-            raise error.ProtocolError('Cant locate digest in wholeMsg')
-        wholeHead = wholeMsg[:l]
-        wholeTail = wholeMsg[l + 12 :]
+        idx = wholeMsg.find(authParameters.asOctets())
+        if idx == -1:
+            raise error.ProtocolError("Cant locate digest in wholeMsg")
+        wholeHead = wholeMsg[:idx]
+        wholeTail = wholeMsg[idx + 12 :]
         authenticatedWholeMsg = wholeHead + _twelveZeros + wholeTail
 
         # 7.3.2.4a

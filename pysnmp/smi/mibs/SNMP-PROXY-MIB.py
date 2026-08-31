@@ -81,21 +81,21 @@ snmpProxyMIB = ModuleIdentity((1, 3, 6, 1, 6, 3, 14))
 if mibBuilder.loadTexts:
     snmpProxyMIB.setRevisions(
         (
-            '1998-08-04 00:00',
-            '1997-07-14 00:00',
+            "1998-08-04 00:00",
+            "1997-07-14 00:00",
         )
     )
 if mibBuilder.loadTexts:
-    snmpProxyMIB.setLastUpdated('9808040000Z')
+    snmpProxyMIB.setLastUpdated("9808040000Z")
 if mibBuilder.loadTexts:
-    snmpProxyMIB.setOrganization('IETF SNMPv3 Working Group')
+    snmpProxyMIB.setOrganization("IETF SNMPv3 Working Group")
 if mibBuilder.loadTexts:
     snmpProxyMIB.setContactInfo(
-        'WG-email: snmpv3@lists.tislabs.com Subscribe: majordomo@lists.tislabs.com In message body: subscribe snmpv3 Chair: Russ Mundy Trusted Information Systems Postal: 3060 Washington Rd Glenwood MD 21738 USA EMail: mundy@tislabs.com Phone: +1-301-854-6889 Co-editor: David B. Levi SNMP Research, Inc. Postal: 3001 Kimberlin Heights Road Knoxville, TN 37920-9716 EMail: levi@snmp.com Phone: +1 423 573 1434 Co-editor: Paul Meyer Secure Computing Corporation Postal: 2675 Long Lake Road Roseville, MN 55113 EMail: paul_meyer@securecomputing.com Phone: +1 651 628 1592 Co-editor: Bob Stewart Cisco Systems, Inc. Postal: 170 West Tasman Drive San Jose, CA 95134-1706 EMail: bstewart@cisco.com Phone: +1 603 654 2686'
+        "WG-email: snmpv3@lists.tislabs.com Subscribe: majordomo@lists.tislabs.com In message body: subscribe snmpv3 Chair: Russ Mundy Trusted Information Systems Postal: 3060 Washington Rd Glenwood MD 21738 USA EMail: mundy@tislabs.com Phone: +1-301-854-6889 Co-editor: David B. Levi SNMP Research, Inc. Postal: 3001 Kimberlin Heights Road Knoxville, TN 37920-9716 EMail: levi@snmp.com Phone: +1 423 573 1434 Co-editor: Paul Meyer Secure Computing Corporation Postal: 2675 Long Lake Road Roseville, MN 55113 EMail: paul_meyer@securecomputing.com Phone: +1 651 628 1592 Co-editor: Bob Stewart Cisco Systems, Inc. Postal: 170 West Tasman Drive San Jose, CA 95134-1706 EMail: bstewart@cisco.com Phone: +1 603 654 2686"
     )
 if mibBuilder.loadTexts:
     snmpProxyMIB.setDescription(
-        'This MIB module defines MIB objects which provide mechanisms to remotely configure the parameters used by a proxy forwarding application.'
+        "This MIB module defines MIB objects which provide mechanisms to remotely configure the parameters used by a proxy forwarding application."
     )
 snmpProxyObjects = MibIdentifier((1, 3, 6, 1, 6, 3, 14, 1))
 snmpProxyConformance = MibIdentifier((1, 3, 6, 1, 6, 3, 14, 3))
@@ -103,29 +103,29 @@ snmpProxyTable = MibTable(
     (1, 3, 6, 1, 6, 3, 14, 1, 2),
 )
 if mibBuilder.loadTexts:
-    snmpProxyTable.setStatus('current')
+    snmpProxyTable.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyTable.setDescription(
-        'The table of translation parameters used by proxy forwarder applications for forwarding SNMP messages.'
+        "The table of translation parameters used by proxy forwarder applications for forwarding SNMP messages."
     )
 snmpProxyEntry = MibTableRow(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1),
 ).setIndexNames((1, "SNMP-PROXY-MIB", "snmpProxyName"))
 if mibBuilder.loadTexts:
-    snmpProxyEntry.setStatus('current')
+    snmpProxyEntry.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyEntry.setDescription(
-        'A set of translation parameters used by a proxy forwarder application for forwarding SNMP messages. Entries in the snmpProxyTable are created and deleted using the snmpProxyRowStatus object.'
+        "A set of translation parameters used by a proxy forwarder application for forwarding SNMP messages. Entries in the snmpProxyTable are created and deleted using the snmpProxyRowStatus object."
     )
 snmpProxyName = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 1),
     SnmpAdminString().subtype(subtypeSpec=ValueSizeConstraint(1, 32)),
 )
 if mibBuilder.loadTexts:
-    snmpProxyName.setStatus('current')
+    snmpProxyName.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyName.setDescription(
-        'The locally arbitrary, but unique identifier associated with this snmpProxyEntry.'
+        "The locally arbitrary, but unique identifier associated with this snmpProxyEntry."
     )
 snmpProxyType = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 2),
@@ -134,71 +134,71 @@ snmpProxyType = MibTableColumn(
     .clone(namedValues=NamedValues(("read", 1), ("write", 2), ("trap", 3), ("inform", 4))),
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
-    snmpProxyType.setStatus('current')
+    snmpProxyType.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyType.setDescription(
-        'The type of message that may be forwarded using the translation parameters defined by this entry.'
+        "The type of message that may be forwarded using the translation parameters defined by this entry."
     )
 snmpProxyContextEngineID = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 3), SnmpEngineID()
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
-    snmpProxyContextEngineID.setStatus('current')
+    snmpProxyContextEngineID.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyContextEngineID.setDescription(
-        'The contextEngineID contained in messages that may be forwarded using the translation parameters defined by this entry.'
+        "The contextEngineID contained in messages that may be forwarded using the translation parameters defined by this entry."
     )
 snmpProxyContextName = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 4), SnmpAdminString()
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
-    snmpProxyContextName.setStatus('current')
+    snmpProxyContextName.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyContextName.setDescription(
-        'The contextName contained in messages that may be forwarded using the translation parameters defined by this entry. This object is optional, and if not supported, the contextName contained in a message is ignored when selecting an entry in the snmpProxyTable.'
+        "The contextName contained in messages that may be forwarded using the translation parameters defined by this entry. This object is optional, and if not supported, the contextName contained in a message is ignored when selecting an entry in the snmpProxyTable."
     )
 snmpProxyTargetParamsIn = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 5), SnmpAdminString()
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
-    snmpProxyTargetParamsIn.setStatus('current')
+    snmpProxyTargetParamsIn.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyTargetParamsIn.setDescription(
-        'This object selects an entry in the snmpTargetParamsTable. The selected entry is used to determine which row of the snmpProxyTable to use for forwarding received messages.'
+        "This object selects an entry in the snmpTargetParamsTable. The selected entry is used to determine which row of the snmpProxyTable to use for forwarding received messages."
     )
 snmpProxySingleTargetOut = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 6), SnmpAdminString()
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
-    snmpProxySingleTargetOut.setStatus('current')
+    snmpProxySingleTargetOut.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxySingleTargetOut.setDescription(
-        'This object selects a management target defined in the snmpTargetAddrTable (in the SNMP-TARGET-MIB). The selected target is defined by an entry in the snmpTargetAddrTable whose index value (snmpTargetAddrName) is equal to this object. This object is only used when selection of a single target is required (i.e. when forwarding an incoming read or write request).'
+        "This object selects a management target defined in the snmpTargetAddrTable (in the SNMP-TARGET-MIB). The selected target is defined by an entry in the snmpTargetAddrTable whose index value (snmpTargetAddrName) is equal to this object. This object is only used when selection of a single target is required (i.e. when forwarding an incoming read or write request)."
     )
 snmpProxyMultipleTargetOut = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 7), SnmpTagValue()
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
-    snmpProxyMultipleTargetOut.setStatus('current')
+    snmpProxyMultipleTargetOut.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyMultipleTargetOut.setDescription(
-        'This object selects a set of management targets defined in the snmpTargetAddrTable (in the SNMP-TARGET-MIB). This object is only used when selection of multiple targets is required (i.e. when forwarding an incoming notification).'
+        "This object selects a set of management targets defined in the snmpTargetAddrTable (in the SNMP-TARGET-MIB). This object is only used when selection of multiple targets is required (i.e. when forwarding an incoming notification)."
     )
 snmpProxyStorageType = MibTableColumn(
-    (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 8), StorageType().clone('nonVolatile')
+    (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 8), StorageType().clone("nonVolatile")
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
-    snmpProxyStorageType.setStatus('current')
+    snmpProxyStorageType.setStatus("current")
 if mibBuilder.loadTexts:
-    snmpProxyStorageType.setDescription('The storage type of this conceptual row.')
+    snmpProxyStorageType.setDescription("The storage type of this conceptual row.")
 snmpProxyRowStatus = MibTableColumn((1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 9), RowStatus()).setMaxAccess(
     "readcreate"
 )
 if mibBuilder.loadTexts:
-    snmpProxyRowStatus.setStatus('current')
+    snmpProxyRowStatus.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyRowStatus.setDescription(
-        'The status of this conceptual row. To create a row in this table, a manager must set this object to either createAndGo(4) or createAndWait(5). The following objects may not be modified while the value of this object is active(1): - snmpProxyType - snmpProxyContextEngineID - snmpProxyContextName - snmpProxyTargetParamsIn - snmpProxySingleTargetOut - snmpProxyMultipleTargetOut'
+        "The status of this conceptual row. To create a row in this table, a manager must set this object to either createAndGo(4) or createAndWait(5). The following objects may not be modified while the value of this object is active(1): - snmpProxyType - snmpProxyContextEngineID - snmpProxyContextName - snmpProxyTargetParamsIn - snmpProxySingleTargetOut - snmpProxyMultipleTargetOut"
     )
 snmpProxyCompliances = MibIdentifier((1, 3, 6, 1, 6, 3, 14, 3, 1))
 snmpProxyGroups = MibIdentifier((1, 3, 6, 1, 6, 3, 14, 3, 2))
@@ -209,7 +209,7 @@ snmpProxyCompliance = ModuleCompliance((1, 3, 6, 1, 6, 3, 14, 3, 1, 1)).setObjec
 )
 if mibBuilder.loadTexts:
     snmpProxyCompliance.setDescription(
-        'The compliance statement for SNMP entities which include a proxy forwarding application.'
+        "The compliance statement for SNMP entities which include a proxy forwarding application."
     )
 snmpProxyGroup = ObjectGroup((1, 3, 6, 1, 6, 3, 14, 3, 2, 3)).setObjects(
     ("SNMP-PROXY-MIB", "snmpProxyType"),
@@ -223,7 +223,7 @@ snmpProxyGroup = ObjectGroup((1, 3, 6, 1, 6, 3, 14, 3, 2, 3)).setObjects(
 )
 if mibBuilder.loadTexts:
     snmpProxyGroup.setDescription(
-        'A collection of objects providing remote configuration of management target translation parameters for use by proxy forwarder applications.'
+        "A collection of objects providing remote configuration of management target translation parameters for use by proxy forwarder applications."
     )
 mibBuilder.exportSymbols(
     "SNMP-PROXY-MIB",

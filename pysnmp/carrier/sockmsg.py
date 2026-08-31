@@ -25,35 +25,35 @@ in_addr_t = uint32_t
 
 
 class in_addr(ctypes.Structure):
-    _fields_ = [('s_addr', in_addr_t)]
+    _fields_ = [("s_addr", in_addr_t)]
 
 
 class in6_addr_U(ctypes.Union):
     _fields_ = [
-        ('__u6_addr8', ctypes.c_uint8 * 16),
-        ('__u6_addr16', ctypes.c_uint16 * 8),
-        ('__u6_addr32', ctypes.c_uint32 * 4),
+        ("__u6_addr8", ctypes.c_uint8 * 16),
+        ("__u6_addr16", ctypes.c_uint16 * 8),
+        ("__u6_addr32", ctypes.c_uint32 * 4),
     ]
 
 
 class in6_addr(ctypes.Structure):
     _fields_ = [
-        ('__in6_u', in6_addr_U),
+        ("__in6_u", in6_addr_U),
     ]
 
 
 class in_pktinfo(ctypes.Structure):
     _fields_ = [
-        ('ipi_ifindex', ctypes.c_int),
-        ('ipi_spec_dst', in_addr),
-        ('ipi_addr', in_addr),
+        ("ipi_ifindex", ctypes.c_int),
+        ("ipi_spec_dst", in_addr),
+        ("ipi_addr", in_addr),
     ]
 
 
 class in6_pktinfo(ctypes.Structure):
     _fields_ = [
-        ('ipi6_addr', in6_addr),
-        ('ipi6_ifindex', ctypes.c_uint),
+        ("ipi6_addr", in6_addr),
+        ("ipi6_ifindex", ctypes.c_uint),
     ]
 
 
@@ -78,8 +78,8 @@ def getRecvFrom(addressType):
                 break
 
         debug.logger & debug.flagIO and debug.logger(
-            'recvfrom: received %d octets from %s to %s; '
-            'iov blob %r' % (len(data), _from, _to, ancdata)
+            "recvfrom: received %d octets from %s to %s; "
+            "iov blob %r" % (len(data), _from, _to, ancdata)
         )
 
         return data, addressType(_from).setLocalAddress(_to)
@@ -91,25 +91,25 @@ def getSendTo(addressType):
 
     def sendto(s, _data, _to):
         ancdata = []
-        if type(_to) == addressType:
+        if type(_to) is addressType:
             addr = ipaddress.ip_address(_to.getLocalAddress()[0])
 
         else:
             addr = ipaddress.ip_address(s.getsockname()[0])
 
-        if type(addr) == ipaddress.IPv4Address:
+        if type(addr) is ipaddress.IPv4Address:
             _f = in_pktinfo()
             _f.ipi_spec_dst = in_addr.from_buffer_copy(addr.packed)
             ancdata = [(socket.SOL_IP, socket.IP_PKTINFO, memoryview(_f).tobytes())]
 
-        elif s.family == socket.AF_INET6 and type(addr) == ipaddress.IPv6Address:
+        elif s.family == socket.AF_INET6 and type(addr) is ipaddress.IPv6Address:
             _f = in6_pktinfo()
             _f.ipi6_addr = in6_addr.from_buffer_copy(addr.packed)
             ancdata = [(socket.SOL_IPV6, socket.IPV6_PKTINFO, memoryview(_f).tobytes())]
 
         debug.logger & debug.flagIO and debug.logger(
-            'sendto: sending %d octets to %s; address %r; '
-            'iov blob %r' % (len(_data), _to, addr, ancdata)
+            "sendto: sending %d octets to %s; address %r; "
+            "iov blob %r" % (len(_data), _to, addr, ancdata)
         )
 
         return s.sendmsg([_data], ancdata, 0, _to)

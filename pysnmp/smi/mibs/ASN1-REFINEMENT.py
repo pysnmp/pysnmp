@@ -6,7 +6,7 @@
 from pyasn1.type import constraint
 
 mibBuilder.exportSymbols(
-    'ASN1-REFINEMENT',
+    "ASN1-REFINEMENT",
     ConstraintsUnion=constraint.ConstraintsUnion,
     ConstraintsIntersection=constraint.ConstraintsIntersection,
     SingleValueConstraint=constraint.SingleValueConstraint,

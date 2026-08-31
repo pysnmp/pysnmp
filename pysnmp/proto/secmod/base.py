@@ -24,7 +24,7 @@ class AbstractSecurityModel:
         wholeMsg,
         msg,
     ):
-        raise error.ProtocolError('Security model %s not implemented' % self)
+        raise error.ProtocolError("Security model %s not implemented" % self)
 
     def generateRequestMsg(
         self,
@@ -38,7 +38,7 @@ class AbstractSecurityModel:
         securityLevel,
         scopedPDU,
     ):
-        raise error.ProtocolError('Security model %s not implemented' % self)
+        raise error.ProtocolError("Security model %s not implemented" % self)
 
     def generateResponseMsg(
         self,
@@ -53,7 +53,7 @@ class AbstractSecurityModel:
         scopedPDU,
         securityStateReference,
     ):
-        raise error.ProtocolError('Security model %s not implemented' % self)
+        raise error.ProtocolError("Security model %s not implemented" % self)
 
     def releaseStateInformation(self, stateReference):
         self._cache.pop(stateReference)

@@ -77,20 +77,20 @@ pysnmp = ModuleIdentity((1, 3, 6, 1, 4, 1, 20408))
 if mibBuilder.loadTexts:
     pysnmp.setRevisions(
         (
-            '2017-04-14 00:00',
-            '2005-05-14 00:00',
+            "2017-04-14 00:00",
+            "2005-05-14 00:00",
         )
     )
 if mibBuilder.loadTexts:
-    pysnmp.setLastUpdated('201704140000Z')
+    pysnmp.setLastUpdated("201704140000Z")
 if mibBuilder.loadTexts:
-    pysnmp.setOrganization('The PySNMP Project')
+    pysnmp.setOrganization("The PySNMP Project")
 if mibBuilder.loadTexts:
     pysnmp.setContactInfo(
-        'E-mail: Ilya Etingof deceased  GitHub: https://github.com/etingof/pysnmp'
+        "E-mail: Ilya Etingof deceased  GitHub: https://github.com/etingof/pysnmp"
     )
 if mibBuilder.loadTexts:
-    pysnmp.setDescription('PySNMP top-level MIB tree infrastructure')
+    pysnmp.setDescription("PySNMP top-level MIB tree infrastructure")
 pysnmpObjects = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 1))
 pysnmpExamples = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 2))
 pysnmpEnumerations = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 3))

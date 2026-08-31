@@ -24,31 +24,31 @@ def mib_view_controller(mib_builder):
 
 class TestSmiError:
     def test_smi_error(self):
-        err = error.SmiError('test')
-        assert 'test' in str(err)
+        err = error.SmiError("test")
+        assert "test" in str(err)
 
     def test_mib_load_error(self):
-        err = error.MibLoadError('test')
+        err = error.MibLoadError("test")
         assert isinstance(err, error.SmiError)
 
     def test_mib_not_found_error(self):
-        err = error.MibNotFoundError('test')
+        err = error.MibNotFoundError("test")
         assert isinstance(err, error.MibLoadError)
 
     def test_mib_operation_error(self):
         err = error.MibOperationError(idx=0)
-        assert err['idx'] == 0
-        assert 'idx' in err
-        assert err.get('idx') == 0
+        assert err["idx"] == 0
+        assert "idx" in err
+        assert err.get("idx") == 0
 
     def test_mib_operation_error_keys(self):
         err = error.MibOperationError(idx=0, oid=(1, 3))
-        assert 'idx' in err.keys()
+        assert "idx" in err.keys()
 
     def test_mib_operation_error_update(self):
         err = error.MibOperationError(idx=0)
-        err.update({'oid': (1, 3)})
-        assert err['oid'] == (1, 3)
+        err.update({"oid": (1, 3)})
+        assert err["oid"] == (1, 3)
 
     def test_error_subclasses(self):
         assert issubclass(error.TooBigError, error.MibOperationError)
@@ -82,89 +82,89 @@ class TestExval:
 class TestOrderedDict:
     def test_set_get(self):
         d = indices.OrderedDict()
-        d['a'] = 1
-        d['b'] = 2
-        assert d['a'] == 1
-        assert d['b'] == 2
+        d["a"] = 1
+        d["b"] = 2
+        assert d["a"] == 1
+        assert d["b"] == 2
 
     def test_keys_ordered(self):
         d = indices.OrderedDict()
-        d['b'] = 2
-        d['a'] = 1
-        d['c'] = 3
+        d["b"] = 2
+        d["a"] = 1
+        d["c"] = 3
         keys = d.keys()
-        assert keys == ['a', 'b', 'c']
+        assert keys == ["a", "b", "c"]
 
     def test_values(self):
         d = indices.OrderedDict()
-        d['b'] = 2
-        d['a'] = 1
+        d["b"] = 2
+        d["a"] = 1
         vals = d.values()
         assert vals == [1, 2]
 
     def test_items(self):
         d = indices.OrderedDict()
-        d['b'] = 2
-        d['a'] = 1
+        d["b"] = 2
+        d["a"] = 1
         items = d.items()
-        assert items == [('a', 1), ('b', 2)]
+        assert items == [("a", 1), ("b", 2)]
 
     def test_delete(self):
         d = indices.OrderedDict()
-        d['a'] = 1
-        d['b'] = 2
-        del d['a']
-        assert 'a' not in d
-        assert d.keys() == ['b']
+        d["a"] = 1
+        d["b"] = 2
+        del d["a"]
+        assert "a" not in d
+        assert d.keys() == ["b"]
 
     def test_clear(self):
         d = indices.OrderedDict()
-        d['a'] = 1
+        d["a"] = 1
         d.clear()
         assert len(d) == 0
 
     def test_next_key(self):
         d = indices.OrderedDict()
-        d['a'] = 1
-        d['b'] = 2
-        d['c'] = 3
-        assert d.nextKey('a') == 'b'
-        assert d.nextKey('b') == 'c'
+        d["a"] = 1
+        d["b"] = 2
+        d["c"] = 3
+        assert d.nextKey("a") == "b"
+        assert d.nextKey("b") == "c"
 
     def test_next_key_not_found(self):
         d = indices.OrderedDict()
-        d['a'] = 1
+        d["a"] = 1
         with pytest.raises(KeyError):
-            d.nextKey('a')
+            d.nextKey("a")
 
     def test_next_key_bisect(self):
         d = indices.OrderedDict()
-        d['a'] = 1
-        d['c'] = 3
+        d["a"] = 1
+        d["c"] = 3
         # 'b' is not in dict, bisect should find 'c'
-        assert d.nextKey('b') == 'c'
+        assert d.nextKey("b") == "c"
 
     def test_update_from_dict(self):
         d = indices.OrderedDict()
-        d.update({'a': 1, 'b': 2})
-        assert d['a'] == 1
-        assert d['b'] == 2
+        d.update({"a": 1, "b": 2})
+        assert d["a"] == 1
+        assert d["b"] == 2
 
     def test_update_from_iterable(self):
         d = indices.OrderedDict()
-        d.update([('a', 1), ('b', 2)])
-        assert d['a'] == 1
-        assert d['b'] == 2
+        d.update([("a", 1), ("b", 2)])
+        assert d["a"] == 1
+        assert d["b"] == 2
 
     def test_update_kwargs(self):
         d = indices.OrderedDict()
         d.update(a=1, b=2)
-        assert d['a'] == 1
+        assert d["a"] == 1
 
     def test_get_keys_lens(self):
         d = indices.OrderedDict()
-        d['a'] = 1
-        d['bb'] = 2
+        d["a"] = 1
+        d["bb"] = 2
         lens = d.getKeysLens()
         assert sorted(lens) == [1, 2]
 
@@ -172,48 +172,48 @@ class TestOrderedDict:
 class TestOidOrderedDict:
     def test_set_get(self):
         d = indices.OidOrderedDict()
-        d[(1, 3, 6)] = 'a'
-        d[(1, 3, 7)] = 'b'
-        assert d[(1, 3, 6)] == 'a'
+        d[(1, 3, 6)] = "a"
+        d[(1, 3, 7)] = "b"
+        assert d[(1, 3, 6)] == "a"
 
     def test_string_key(self):
         d = indices.OidOrderedDict()
-        d['1.3.6'] = 'a'
-        assert d['1.3.6'] == 'a'
+        d["1.3.6"] = "a"
+        assert d["1.3.6"] == "a"
 
     def test_oid_sorting(self):
         d = indices.OidOrderedDict()
-        d[(1, 3, 6, 2)] = 'b'
-        d[(1, 3, 6, 1)] = 'a'
-        d[(1, 3, 6, 3)] = 'c'
+        d[(1, 3, 6, 2)] = "b"
+        d[(1, 3, 6, 1)] = "a"
+        d[(1, 3, 6, 3)] = "c"
         keys = d.keys()
         assert keys == [(1, 3, 6, 1), (1, 3, 6, 2), (1, 3, 6, 3)]
 
     def test_delete(self):
         d = indices.OidOrderedDict()
-        d[(1, 3, 6)] = 'a'
+        d[(1, 3, 6)] = "a"
         del d[(1, 3, 6)]
         assert (1, 3, 6) not in d
 
 
 class TestMibBuilder:
     def test_load_modules(self, mib_builder):
-        mib_builder.loadModules('SNMPv2-MIB')
-        assert 'SNMPv2-MIB' in mib_builder.mibSymbols
+        mib_builder.loadModules("SNMPv2-MIB")
+        assert "SNMPv2-MIB" in mib_builder.mibSymbols
 
     def test_import_symbols(self, mib_builder):
-        sysDescr = mib_builder.importSymbols('SNMPv2-MIB', 'sysDescr')
+        sysDescr = mib_builder.importSymbols("SNMPv2-MIB", "sysDescr")
         assert sysDescr is not None
         assert sysDescr[0].name == (1, 3, 6, 1, 2, 1, 1, 1)
 
     def test_import_multiple_symbols(self, mib_builder):
-        result = mib_builder.importSymbols('SNMPv2-MIB', 'sysDescr', 'sysObjectID', 'sysUpTime')
+        result = mib_builder.importSymbols("SNMPv2-MIB", "sysDescr", "sysObjectID", "sysUpTime")
         assert len(result) == 3
 
     def test_load_multiple_modules(self, mib_builder):
-        mib_builder.loadModules('SNMP-FRAMEWORK-MIB', 'SNMP-TARGET-MIB')
-        assert 'SNMP-FRAMEWORK-MIB' in mib_builder.mibSymbols
-        assert 'SNMP-TARGET-MIB' in mib_builder.mibSymbols
+        mib_builder.loadModules("SNMP-FRAMEWORK-MIB", "SNMP-TARGET-MIB")
+        assert "SNMP-FRAMEWORK-MIB" in mib_builder.mibSymbols
+        assert "SNMP-TARGET-MIB" in mib_builder.mibSymbols
 
     def test_get_mib_sources(self, mib_builder):
         sources = mib_builder.getMibSources()
@@ -260,163 +260,161 @@ class TestObjectIdentity:
         assert oi is not None
 
     def test_from_oid_string(self):
-        oi = ObjectIdentity('1.3.6.1.2.1.1.1.0')
+        oi = ObjectIdentity("1.3.6.1.2.1.1.1.0")
         assert oi is not None
 
     def test_from_mib_name_and_symbol(self):
-        oi = ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
+        oi = ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)
         assert oi is not None
 
     def test_get_mib_symbol_unresolved(self):
-        oi = ObjectIdentity('1.3.6.1.2.1.1.1.0')
+        oi = ObjectIdentity("1.3.6.1.2.1.1.1.0")
         with pytest.raises(error.SmiError):
             oi.getMibSymbol()
 
     def test_get_oid_unresolved(self):
-        oi = ObjectIdentity('1.3.6.1.2.1.1.1.0')
+        oi = ObjectIdentity("1.3.6.1.2.1.1.1.0")
         with pytest.raises(error.SmiError):
             oi.getOid()
 
     def test_is_fully_resolved(self):
-        oi = ObjectIdentity('1.3.6.1.2.1.1.1.0')
+        oi = ObjectIdentity("1.3.6.1.2.1.1.1.0")
         assert not oi.isFullyResolved()
 
     def test_resolve_with_mib(self, mib_view_controller):
-        oi = ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
+        oi = ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)
         oi.resolveWithMib(mib_view_controller)
         assert oi.isFullyResolved()
         modName, symName, indices = oi.getMibSymbol()
-        assert modName == 'SNMPv2-MIB'
-        assert symName == 'sysDescr'
+        assert modName == "SNMPv2-MIB"
+        assert symName == "sysDescr"
 
     def test_resolve_oid_to_mib_symbol(self, mib_view_controller):
-        oi = ObjectIdentity('1.3.6.1.2.1.1.1.0')
+        oi = ObjectIdentity("1.3.6.1.2.1.1.1.0")
         oi.resolveWithMib(mib_view_controller)
         assert oi.isFullyResolved()
         modName, symName, indices = oi.getMibSymbol()
-        assert modName == 'SNMPv2-MIB'
-        assert symName == 'sysDescr'
+        assert modName == "SNMPv2-MIB"
+        assert symName == "sysDescr"
 
     def test_get_oid_resolved(self, mib_view_controller):
-        oi = ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
+        oi = ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)
         oi.resolveWithMib(mib_view_controller)
         oid = oi.getOid()
         assert tuple(oid) == (1, 3, 6, 1, 2, 1, 1, 1, 0)
 
     def test_get_label(self, mib_view_controller):
-        oi = ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
+        oi = ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)
         oi.resolveWithMib(mib_view_controller)
         label = oi.getLabel()
-        assert 'sysDescr' in label
+        assert "sysDescr" in label
 
     def test_get_first_by_node_type_scalar(self, mib_view_controller):
         """getFirstNodeName with nodeType='scalar' returns only scalar nodes."""
-        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
-        oid, label, suffix = mib_view_controller.getFirstNodeName('SNMPv2-MIB', 'scalar')
+        mib_view_controller.mibBuilder.loadModules("SNMPv2-MIB")
+        oid, label, suffix = mib_view_controller.getFirstNodeName("SNMPv2-MIB", "scalar")
         symName = label[-1]
-        symObj = mib_view_controller.mibBuilder.mibSymbols['SNMPv2-MIB'][symName]
-        assert symObj.__class__.__name__ == 'MibScalar'
+        symObj = mib_view_controller.mibBuilder.mibSymbols["SNMPv2-MIB"][symName]
+        assert symObj.__class__.__name__ == "MibScalar"
 
     def test_get_last_by_node_type_scalar(self, mib_view_controller):
         """getLastNodeName with nodeType='scalar' returns only scalar nodes."""
-        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
-        oid, label, suffix = mib_view_controller.getLastNodeName('SNMPv2-MIB', 'scalar')
+        mib_view_controller.mibBuilder.loadModules("SNMPv2-MIB")
+        oid, label, suffix = mib_view_controller.getLastNodeName("SNMPv2-MIB", "scalar")
         symName = label[-1]
-        symObj = mib_view_controller.mibBuilder.mibSymbols['SNMPv2-MIB'][symName]
-        assert symObj.__class__.__name__ == 'MibScalar'
+        symObj = mib_view_controller.mibBuilder.mibSymbols["SNMPv2-MIB"][symName]
+        assert symObj.__class__.__name__ == "MibScalar"
 
     def test_get_first_by_node_type_table(self, mib_view_controller):
         """getFirstNodeName with nodeType='table' returns only table nodes."""
-        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
-        oid, label, suffix = mib_view_controller.getFirstNodeName('SNMPv2-MIB', 'table')
+        mib_view_controller.mibBuilder.loadModules("SNMPv2-MIB")
+        oid, label, suffix = mib_view_controller.getFirstNodeName("SNMPv2-MIB", "table")
         symName = label[-1]
-        symObj = mib_view_controller.mibBuilder.mibSymbols['SNMPv2-MIB'][symName]
-        assert symObj.__class__.__name__ == 'MibTable'
+        symObj = mib_view_controller.mibBuilder.mibSymbols["SNMPv2-MIB"][symName]
+        assert symObj.__class__.__name__ == "MibTable"
 
     def test_get_first_by_node_type_includes_scalar_subclass(self, mib_view_controller):
         """Typed lookup recognizes MIB extensions derived from MibScalar."""
         mibBuilder = mib_view_controller.mibBuilder
-        MibScalar, = mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalar')
+        (MibScalar,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalar")
 
         class CustomMibScalar(MibScalar):
             pass
 
         mibBuilder.exportSymbols(
-            'TEST-CUSTOM-SMI',
+            "TEST-CUSTOM-SMI",
             customScalar=CustomMibScalar((1, 3, 6, 1, 4, 1, 20408, 1), Integer(0)),
         )
 
-        oid, label, suffix = mib_view_controller.getFirstNodeName(
-            'TEST-CUSTOM-SMI', 'scalar'
-        )
+        oid, label, suffix = mib_view_controller.getFirstNodeName("TEST-CUSTOM-SMI", "scalar")
         assert oid == (1, 3, 6, 1, 4, 1, 20408, 1)
-        assert label[-1] == 'customScalar'
+        assert label[-1] == "customScalar"
 
     def test_get_first_by_node_type_unknown_raises(self, mib_view_controller):
         """getFirstNodeName with unknown nodeType raises SmiError."""
-        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        mib_view_controller.mibBuilder.loadModules("SNMPv2-MIB")
         with pytest.raises(error.SmiError):
-            mib_view_controller.getFirstNodeName('SNMPv2-MIB', 'unknown')
+            mib_view_controller.getFirstNodeName("SNMPv2-MIB", "unknown")
 
     def test_get_first_by_node_type_no_match_raises(self, mib_view_controller):
         """getFirstNodeName with nodeType that has no matches raises NoSuchObjectError."""
-        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
+        mib_view_controller.mibBuilder.loadModules("SNMPv2-MIB")
         with pytest.raises(error.SmiError):
-            mib_view_controller.getFirstNodeName('NON-EXISTENT-MIB', 'scalar')
+            mib_view_controller.getFirstNodeName("NON-EXISTENT-MIB", "scalar")
 
     def test_object_identity_last_with_node_type(self, mib_view_controller):
         """ObjectIdentity with last=True and nodeType='scalar' resolves to a scalar."""
-        mib_view_controller.mibBuilder.loadModules('SNMPv2-MIB')
-        oi = ObjectIdentity('SNMPv2-MIB', last=True, nodeType='scalar')
+        mib_view_controller.mibBuilder.loadModules("SNMPv2-MIB")
+        oi = ObjectIdentity("SNMPv2-MIB", last=True, nodeType="scalar")
         oi.resolveWithMib(mib_view_controller)
         mibNode = oi.getMibNode()
-        assert mibNode.__class__.__name__ == 'MibScalar'
+        assert mibNode.__class__.__name__ == "MibScalar"
 
 
 class TestObjectType:
     def test_creation(self):
-        ot = ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), OctetString('test'))
+        ot = ObjectType(ObjectIdentity("1.3.6.1.2.1.1.1.0"), OctetString("test"))
         assert ot is not None
 
     def test_resolve_with_mib(self, mib_view_controller):
-        ot = ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), OctetString('test'))
+        ot = ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0), OctetString("test"))
         ot.resolveWithMib(mib_view_controller)
         assert ot.isFullyResolved()
 
     def test_unresolved_raises(self):
-        ot = ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), OctetString('test'))
+        ot = ObjectType(ObjectIdentity("1.3.6.1.2.1.1.1.0"), OctetString("test"))
         assert not ot.isFullyResolved()
 
     def test_is_fully_resolved(self):
-        ot = ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), OctetString('test'))
+        ot = ObjectType(ObjectIdentity("1.3.6.1.2.1.1.1.0"), OctetString("test"))
         assert not ot.isFullyResolved()
 
     def test_get_units_unresolved_raises(self):
-        ot = ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), OctetString('test'))
+        ot = ObjectType(ObjectIdentity("1.3.6.1.2.1.1.1.0"), OctetString("test"))
         with pytest.raises(error.SmiError):
             ot.getUnits()
 
     def test_get_units_no_units(self, mib_view_controller):
-        ot = ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), OctetString('test'))
+        ot = ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0), OctetString("test"))
         ot.resolveWithMib(mib_view_controller)
-        assert ot.getUnits() == ''
+        assert ot.getUnits() == ""
 
     def test_get_units_propagated(self, mib_view_controller):
         """Verify getUnits() returns the UNITS clause value after resolution."""
-        mib_view_controller.mibBuilder.loadModules('SNMP-FRAMEWORK-MIB')
+        mib_view_controller.mibBuilder.loadModules("SNMP-FRAMEWORK-MIB")
         ot = ObjectType(
-            ObjectIdentity('SNMP-FRAMEWORK-MIB', 'snmpEngineTime', 0),
+            ObjectIdentity("SNMP-FRAMEWORK-MIB", "snmpEngineTime", 0),
             Integer(42),
         )
         ot.resolveWithMib(mib_view_controller)
-        assert ot.getUnits() == 'seconds'
+        assert ot.getUnits() == "seconds"
 
     def test_get_units_propagated_table_column(self, mib_view_controller):
         """Verify getUnits() works for table columns with UNITS clause."""
-        mib_view_controller.mibBuilder.loadModules('SNMP-TARGET-MIB')
+        mib_view_controller.mibBuilder.loadModules("SNMP-TARGET-MIB")
         try:
             ot = ObjectType(
-                ObjectIdentity('SNMP-TARGET-MIB', 'snmpTargetAddrTimeout', 0),
+                ObjectIdentity("SNMP-TARGET-MIB", "snmpTargetAddrTimeout", 0),
                 Integer(0),
             )
             ot.resolveWithMib(mib_view_controller)
@@ -429,29 +427,29 @@ class TestBundledMibs:
     """Test that each bundled MIB loads through the public MibBuilder."""
 
     BUNDLED_MIBS = [
-        'SNMPv2-MIB',
-        'SNMPv2-SMI',
-        'SNMPv2-TC',
-        'SNMPv2-CONF',
-        'SNMPv2-TM',
-        'SNMP-FRAMEWORK-MIB',
-        'SNMP-MPD-MIB',
-        'SNMP-COMMUNITY-MIB',
-        'SNMP-TARGET-MIB',
-        'SNMP-NOTIFICATION-MIB',
-        'SNMP-PROXY-MIB',
-        'SNMP-USER-BASED-SM-MIB',
-        'SNMP-USER-BASED-SM-3DES-MIB',
-        'SNMP-USM-AES-MIB',
-        'SNMP-USM-HMAC-SHA2-MIB',
-        'SNMP-VIEW-BASED-ACM-MIB',
-        'PYSNMP-MIB',
-        'PYSNMP-SOURCE-MIB',
-        'PYSNMP-USM-MIB',
-        'RFC1213-MIB',
-        'RFC1158-MIB',
-        'INET-ADDRESS-MIB',
-        'TRANSPORT-ADDRESS-MIB',
+        "SNMPv2-MIB",
+        "SNMPv2-SMI",
+        "SNMPv2-TC",
+        "SNMPv2-CONF",
+        "SNMPv2-TM",
+        "SNMP-FRAMEWORK-MIB",
+        "SNMP-MPD-MIB",
+        "SNMP-COMMUNITY-MIB",
+        "SNMP-TARGET-MIB",
+        "SNMP-NOTIFICATION-MIB",
+        "SNMP-PROXY-MIB",
+        "SNMP-USER-BASED-SM-MIB",
+        "SNMP-USER-BASED-SM-3DES-MIB",
+        "SNMP-USM-AES-MIB",
+        "SNMP-USM-HMAC-SHA2-MIB",
+        "SNMP-VIEW-BASED-ACM-MIB",
+        "PYSNMP-MIB",
+        "PYSNMP-SOURCE-MIB",
+        "PYSNMP-USM-MIB",
+        "RFC1213-MIB",
+        "RFC1158-MIB",
+        "INET-ADDRESS-MIB",
+        "TRANSPORT-ADDRESS-MIB",
     ]
 
     def test_load_all_bundled_mibs(self, mib_builder):
@@ -460,39 +458,43 @@ class TestBundledMibs:
             assert mib_name in mib_builder.mibSymbols, f"Failed to load {mib_name}"
 
     def test_snmpv2_mib_symbols(self, mib_builder):
-        mib_builder.loadModules('SNMPv2-MIB')
-        sysDescr, = mib_builder.importSymbols('SNMPv2-MIB', 'sysDescr')
+        mib_builder.loadModules("SNMPv2-MIB")
+        (sysDescr,) = mib_builder.importSymbols("SNMPv2-MIB", "sysDescr")
         assert sysDescr.name == (1, 3, 6, 1, 2, 1, 1, 1)
 
     def test_snmpv2_smi_symbols(self, mib_builder):
-        mib_builder.loadModules('SNMPv2-SMI')
-        iso, = mib_builder.importSymbols('SNMPv2-SMI', 'iso')
+        mib_builder.loadModules("SNMPv2-SMI")
+        (iso,) = mib_builder.importSymbols("SNMPv2-SMI", "iso")
         assert tuple(iso.name) == (1,)
 
     def test_snmp_framework_mib_symbols(self, mib_builder):
-        mib_builder.loadModules('SNMP-FRAMEWORK-MIB')
-        snmpEngineID, = mib_builder.importSymbols('SNMP-FRAMEWORK-MIB', 'snmpEngineID')
+        mib_builder.loadModules("SNMP-FRAMEWORK-MIB")
+        (snmpEngineID,) = mib_builder.importSymbols("SNMP-FRAMEWORK-MIB", "snmpEngineID")
         assert snmpEngineID is not None
 
     def test_snmp_target_mib_symbols(self, mib_builder):
-        mib_builder.loadModules('SNMP-TARGET-MIB')
-        snmpTargetAddrEntry, = mib_builder.importSymbols('SNMP-TARGET-MIB', 'snmpTargetAddrEntry')
+        mib_builder.loadModules("SNMP-TARGET-MIB")
+        (snmpTargetAddrEntry,) = mib_builder.importSymbols(
+            "SNMP-TARGET-MIB", "snmpTargetAddrEntry"
+        )
         assert snmpTargetAddrEntry is not None
 
     def test_snmp_view_acm_mib_symbols(self, mib_builder):
-        mib_builder.loadModules('SNMP-VIEW-BASED-ACM-MIB')
-        vacmContextName, = mib_builder.importSymbols('SNMP-VIEW-BASED-ACM-MIB', 'vacmContextName')
+        mib_builder.loadModules("SNMP-VIEW-BASED-ACM-MIB")
+        (vacmContextName,) = mib_builder.importSymbols(
+            "SNMP-VIEW-BASED-ACM-MIB", "vacmContextName"
+        )
         assert vacmContextName is not None
 
     def test_rfc1213_mib_symbols(self, mib_builder):
-        mib_builder.loadModules('RFC1213-MIB')
+        mib_builder.loadModules("RFC1213-MIB")
         # RFC1213-MIB defines many MIB objects
-        assert 'RFC1213-MIB' in mib_builder.mibSymbols
-        assert len(mib_builder.mibSymbols['RFC1213-MIB']) > 0
+        assert "RFC1213-MIB" in mib_builder.mibSymbols
+        assert len(mib_builder.mibSymbols["RFC1213-MIB"]) > 0
 
     def test_inet_address_mib_symbols(self, mib_builder):
-        mib_builder.loadModules('INET-ADDRESS-MIB')
-        InetAddress, = mib_builder.importSymbols('INET-ADDRESS-MIB', 'InetAddress')
+        mib_builder.loadModules("INET-ADDRESS-MIB")
+        (InetAddress,) = mib_builder.importSymbols("INET-ADDRESS-MIB", "InetAddress")
         assert InetAddress is not None
 
 
@@ -503,6 +505,7 @@ class TestMibInstrumController:
 
     def test_read_vars_returns_result(self, fresh_builder):
         from pysnmp.smi.instrum import MibInstrumController
+
         ctrl = MibInstrumController(fresh_builder)
         # Reading a valid OID should return var binds
         result = ctrl.readVars([((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))])
@@ -510,6 +513,7 @@ class TestMibInstrumController:
 
     def test_read_next_vars_returns_result(self, fresh_builder):
         from pysnmp.smi.instrum import MibInstrumController
+
         ctrl = MibInstrumController(fresh_builder)
         # readNextVars should return a result (possibly with endOfMibView)
         result = ctrl.readNextVars([((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))])
@@ -518,23 +522,27 @@ class TestMibInstrumController:
 
     def test_get_mib_builder(self, fresh_builder):
         from pysnmp.smi.instrum import MibInstrumController
+
         ctrl = MibInstrumController(fresh_builder)
         assert ctrl.getMibBuilder() is fresh_builder
 
     def test_abstract_controller_read_vars(self):
         from pysnmp.smi.instrum import AbstractMibInstrumController
+
         ctrl = AbstractMibInstrumController()
         with pytest.raises(error.NoSuchInstanceError):
             ctrl.readVars([])
 
     def test_abstract_controller_read_next_vars(self):
         from pysnmp.smi.instrum import AbstractMibInstrumController
+
         ctrl = AbstractMibInstrumController()
         with pytest.raises(error.EndOfMibViewError):
             ctrl.readNextVars([])
 
     def test_abstract_controller_write_vars(self):
         from pysnmp.smi.instrum import AbstractMibInstrumController
+
         ctrl = AbstractMibInstrumController()
         with pytest.raises(error.NoSuchObjectError):
             ctrl.writeVars([])
@@ -550,6 +558,7 @@ class TestMibWalk:
     def test_walk_shadowed_oids_correct(self, fresh_builder):
         """Walk over VACM shadowed OIDs returns correct results."""
         from pysnmp.smi.instrum import MibInstrumController
+
         ctrl = MibInstrumController(fresh_builder)
         result = ctrl.readNextVars([((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))])
         assert isinstance(result, list)
@@ -576,6 +585,7 @@ class TestMibWalk:
     def test_get_next_branch_optimization(self, fresh_builder):
         """Test that getNextBranch uses iterator instead of list creation."""
         from pysnmp.smi.instrum import MibInstrumController
+
         ctrl = MibInstrumController(fresh_builder)
         result = ctrl.readNextVars([((1, 3, 6, 1, 2, 1, 1, 1, 0), Integer(0))])
         assert isinstance(result, list)
@@ -585,28 +595,26 @@ def _build_optional_row(optional):
     """Build an active-row consistency check with one unset column."""
     mibBuilder = builder.MibBuilder()
     MibScalarInstance, MibTableColumn, MibTableRow = mibBuilder.importSymbols(
-        'SNMPv2-SMI', 'MibScalarInstance', 'MibTableColumn', 'MibTableRow'
+        "SNMPv2-SMI", "MibScalarInstance", "MibTableColumn", "MibTableRow"
     )
 
     baseOid = (1, 3, 6, 1, 4, 1, 20408, 999, 1)
-    row = MibTableRow(baseOid).setIndexNames((0, 'TEST-OPTIONAL-MIB', 'testIndex'))
-    testIndex = MibTableColumn(baseOid + (1,), Integer32()).setMaxAccess('not-accessible')
-    optionalValue = MibTableColumn(baseOid + (2,), Integer32()).setMaxAccess('read-create')
-    rowStatus = MibTableColumn(baseOid + (3,), Integer32(1)).setMaxAccess('read-create')
+    row = MibTableRow(baseOid).setIndexNames((0, "TEST-OPTIONAL-MIB", "testIndex"))
+    testIndex = MibTableColumn(baseOid + (1,), Integer32()).setMaxAccess("not-accessible")
+    optionalValue = MibTableColumn(baseOid + (2,), Integer32()).setMaxAccess("read-create")
+    rowStatus = MibTableColumn(baseOid + (3,), Integer32(1)).setMaxAccess("read-create")
 
     if optional:
         optionalValue.setOptional()
 
     suffix = (1,)
     testIndex.registerSubtrees(MibScalarInstance(testIndex.name, suffix, Integer32(1)))
-    optionalValue.registerSubtrees(
-        MibScalarInstance(optionalValue.name, suffix, Integer32())
-    )
+    optionalValue.registerSubtrees(MibScalarInstance(optionalValue.name, suffix, Integer32()))
     rowStatus.registerSubtrees(MibScalarInstance(rowStatus.name, suffix, Integer32(1)))
     row.registerSubtrees(testIndex, optionalValue, rowStatus)
 
     mibBuilder.exportSymbols(
-        'TEST-OPTIONAL-MIB',
+        "TEST-OPTIONAL-MIB",
         testEntry=row,
         testIndex=testIndex,
         optionalValue=optionalValue,
@@ -625,7 +633,7 @@ class TestOptionalTableColumns:
 
     def test_optional_flag_defaults_to_false_and_has_aliases(self):
         mibBuilder = builder.MibBuilder()
-        (MibTableColumn,) = mibBuilder.importSymbols('SNMPv2-SMI', 'MibTableColumn')
+        (MibTableColumn,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibTableColumn")
         column = MibTableColumn((1, 3, 6, 1, 4, 1, 20408, 1), Integer32())
 
         assert not column.isOptional()
@@ -654,7 +662,7 @@ class TestOptionalTableColumns:
 def table_view():
     """Build a MIB view without an instrumentation controller."""
     mibBuilder = builder.MibBuilder()
-    mibBuilder.loadModules('SNMPv2-MIB')
+    mibBuilder.loadModules("SNMPv2-MIB")
     return mibBuilder, view.MibViewController(mibBuilder)
 
 
@@ -663,61 +671,59 @@ class TestTableCellApi:
 
     def test_columns_do_not_require_instrumentation(self, table_view):
         mibBuilder, mibView = table_view
-        (row,) = mibBuilder.importSymbols('SNMPv2-MIB', 'sysOREntry')
+        (row,) = mibBuilder.importSymbols("SNMPv2-MIB", "sysOREntry")
 
         assert [columnId for columnId, _, _ in row.getColumns()] == [1, 2, 3, 4]
         assert row.get_columns() == row.getColumns()
-        assert len(mibView.getTableColumns('SNMPv2-MIB', 'sysOREntry')) == 4
-        assert mibView.get_table_columns('SNMPv2-MIB', 'sysOREntry') == row.getColumns()
+        assert len(mibView.getTableColumns("SNMPv2-MIB", "sysOREntry")) == 4
+        assert mibView.get_table_columns("SNMPv2-MIB", "sysOREntry") == row.getColumns()
 
     def test_resolves_numeric_and_symbolic_columns(self, table_view):
         _, mibView = table_view
         expected = (1, 3, 6, 1, 2, 1, 1, 9, 1, 2, 1)
 
-        assert mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 2, 1) == expected
-        assert mibView.resolve_cell_oid('SNMPv2-MIB', 'sysOREntry', 'sysORID', 1) == expected
+        assert mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", 2, 1) == expected
+        assert mibView.resolve_cell_oid("SNMPv2-MIB", "sysOREntry", "sysORID", 1) == expected
 
     def test_rejects_unknown_column(self, table_view):
         _, mibView = table_view
 
-        with pytest.raises(error.SmiError, match='Unknown column ID'):
-            mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 99, 1)
+        with pytest.raises(error.SmiError, match="Unknown column ID"):
+            mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", 99, 1)
 
-        with pytest.raises(error.SmiError, match='not a column'):
-            mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 'sysDescr', 1)
+        with pytest.raises(error.SmiError, match="not a column"):
+            mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysDescr", 1)
 
-    @pytest.mark.parametrize('indices', [(), (1, 2)])
+    @pytest.mark.parametrize("indices", [(), (1, 2)])
     def test_rejects_wrong_index_count(self, table_view, indices):
         _, mibView = table_view
 
-        with pytest.raises(error.SmiError, match='expects 1 indices'):
-            mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 'sysORID', *indices)
+        with pytest.raises(error.SmiError, match="expects 1 indices"):
+            mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysORID", *indices)
 
     def test_builds_all_row_oids_without_instrumentation(self, table_view):
         mibBuilder, _ = table_view
-        (row,) = mibBuilder.importSymbols('SNMPv2-MIB', 'sysOREntry')
+        (row,) = mibBuilder.importSymbols("SNMPv2-MIB", "sysOREntry")
 
-        assert row.getRowOids(1) == tuple(
-            row.name + (columnId, 1) for columnId in (1, 2, 3, 4)
-        )
+        assert row.getRowOids(1) == tuple(row.name + (columnId, 1) for columnId in (1, 2, 3, 4))
         assert row.get_row_oids(1) == row.getRowOids(1)
 
     def test_decodes_cell_indices(self, table_view):
         mibBuilder, _ = table_view
-        (row,) = mibBuilder.importSymbols('SNMPv2-MIB', 'sysOREntry')
+        (row,) = mibBuilder.importSymbols("SNMPv2-MIB", "sysOREntry")
 
         assert tuple(int(value) for value in row.get_cell_indices((7,))) == (7,)
 
     def test_decomposes_complete_cell_oid(self, table_view):
         _, mibView = table_view
-        cellOid = mibView.resolveCellOid('SNMPv2-MIB', 'sysOREntry', 'sysORID', 7)
+        cellOid = mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysORID", 7)
 
         moduleName, rowName, columnName, cellIndices = mibView.getTableCellInfo(cellOid)
 
         assert (moduleName, rowName, columnName) == (
-            'SNMPv2-MIB',
-            'sysOREntry',
-            'sysORID',
+            "SNMPv2-MIB",
+            "sysOREntry",
+            "sysORID",
         )
         assert tuple(int(value) for value in cellIndices) == (7,)
         assert mibView.get_table_cell_info(cellOid) == mibView.getTableCellInfo(cellOid)
@@ -725,11 +731,11 @@ class TestTableCellApi:
     def test_rejects_non_table_objects(self, table_view):
         _, mibView = table_view
 
-        with pytest.raises(error.SmiError, match='not a MibTableRow'):
-            mibView.getTableColumns('SNMPv2-MIB', 'sysDescr')
-        with pytest.raises(error.SmiError, match='not a MibTableRow'):
-            mibView.resolveCellOid('SNMPv2-MIB', 'sysDescr', 0, 0)
-        with pytest.raises(error.SmiError, match='not a table cell'):
+        with pytest.raises(error.SmiError, match="not a MibTableRow"):
+            mibView.getTableColumns("SNMPv2-MIB", "sysDescr")
+        with pytest.raises(error.SmiError, match="not a MibTableRow"):
+            mibView.resolveCellOid("SNMPv2-MIB", "sysDescr", 0, 0)
+        with pytest.raises(error.SmiError, match="not a table cell"):
             mibView.getTableCellInfo((1, 3, 6, 1, 2, 1, 1, 1, 0))
 
 
@@ -737,10 +743,10 @@ class TestCloneSubtypeSemantics:
     """Verify the documented pyasn1 clone and subtype distinction."""
 
     def test_clone_replaces_named_values(self):
-        original = Integer32().clone(namedValues=NamedValues(('a', 1), ('b', 2)))
-        replaced = original.clone(namedValues=NamedValues(('c', 3)))
+        original = Integer32().clone(namedValues=NamedValues(("a", 1), ("b", 2)))
+        replaced = original.clone(namedValues=NamedValues(("c", 3)))
 
-        assert replaced.namedValues[3] == 'c'
+        assert replaced.namedValues[3] == "c"
         assert 1 not in replaced.namedValues
         assert 2 not in replaced.namedValues
 
@@ -763,10 +769,10 @@ class TestCloneSubtypeSemantics:
         value = (
             Integer32()
             .subtype(subtypeSpec=SingleValueConstraint(1, 2))
-            .clone(namedValues=NamedValues(('up', 1), ('down', 2)))
+            .clone(namedValues=NamedValues(("up", 1), ("down", 2)))
             .clone(1)
         )
 
         assert int(value) == 1
-        assert value.namedValues[1] == 'up'
-        assert value.namedValues[2] == 'down'
+        assert value.namedValues[1] == "up"
+        assert value.namedValues[2] == "down"

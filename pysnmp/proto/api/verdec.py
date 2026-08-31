@@ -25,7 +25,7 @@ def decodeMessageVersion(wholeMsg):
             substrateFun=lambda a, b, c: (a, b[:c]),
         )
         if eoo.endOfOctets.isSameTypeWith(ver):
-            raise ProtocolError('EOO at SNMP version component')
+            raise ProtocolError("EOO at SNMP version component")
         return ver
     except PyAsn1Error:
-        raise ProtocolError('Invalid BER at SNMP version component')
+        raise ProtocolError("Invalid BER at SNMP version component")

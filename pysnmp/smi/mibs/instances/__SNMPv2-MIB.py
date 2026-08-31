@@ -9,7 +9,7 @@ from time import time
 from pysnmp import __version__
 
 (MibScalarInstance, TimeTicks) = mibBuilder.importSymbols(
-    'SNMPv2-SMI', 'MibScalarInstance', 'TimeTicks'
+    "SNMPv2-SMI", "MibScalarInstance", "TimeTicks"
 )
 
 (
@@ -53,46 +53,46 @@ from pysnmp import __version__
     coldStart,
     snmpSetSerialNo,
 ) = mibBuilder.importSymbols(
-    'SNMPv2-MIB',
-    'sysDescr',
-    'sysObjectID',
-    'sysUpTime',
-    'sysContact',
-    'sysName',
-    'sysLocation',
-    'sysServices',
-    'sysORLastChange',
-    'snmpInPkts',
-    'snmpOutPkts',
-    'snmpInBadVersions',
-    'snmpInBadCommunityNames',
-    'snmpInBadCommunityUses',
-    'snmpInASNParseErrs',
-    'snmpInTooBigs',
-    'snmpInNoSuchNames',
-    'snmpInBadValues',
-    'snmpInReadOnlys',
-    'snmpInGenErrs',
-    'snmpInTotalReqVars',
-    'snmpInTotalSetVars',
-    'snmpInGetRequests',
-    'snmpInGetNexts',
-    'snmpInSetRequests',
-    'snmpInGetResponses',
-    'snmpInTraps',
-    'snmpOutTooBigs',
-    'snmpOutNoSuchNames',
-    'snmpOutBadValues',
-    'snmpOutGenErrs',
-    'snmpOutSetRequests',
-    'snmpOutGetResponses',
-    'snmpOutTraps',
-    'snmpEnableAuthenTraps',
-    'snmpSilentDrops',
-    'snmpProxyDrops',
-    'snmpTrapOID',
-    'coldStart',
-    'snmpSetSerialNo',
+    "SNMPv2-MIB",
+    "sysDescr",
+    "sysObjectID",
+    "sysUpTime",
+    "sysContact",
+    "sysName",
+    "sysLocation",
+    "sysServices",
+    "sysORLastChange",
+    "snmpInPkts",
+    "snmpOutPkts",
+    "snmpInBadVersions",
+    "snmpInBadCommunityNames",
+    "snmpInBadCommunityUses",
+    "snmpInASNParseErrs",
+    "snmpInTooBigs",
+    "snmpInNoSuchNames",
+    "snmpInBadValues",
+    "snmpInReadOnlys",
+    "snmpInGenErrs",
+    "snmpInTotalReqVars",
+    "snmpInTotalSetVars",
+    "snmpInGetRequests",
+    "snmpInGetNexts",
+    "snmpInSetRequests",
+    "snmpInGetResponses",
+    "snmpInTraps",
+    "snmpOutTooBigs",
+    "snmpOutNoSuchNames",
+    "snmpOutBadValues",
+    "snmpOutGenErrs",
+    "snmpOutSetRequests",
+    "snmpOutGetResponses",
+    "snmpOutTraps",
+    "snmpEnableAuthenTraps",
+    "snmpSilentDrops",
+    "snmpProxyDrops",
+    "snmpTrapOID",
+    "coldStart",
+    "snmpSetSerialNo",
 )
 
 __sysDescr = MibScalarInstance(
@@ -100,7 +100,7 @@ __sysDescr = MibScalarInstance(
     (0,),
     sysDescr.syntax.clone(
         "PySNMP engine version {}, Python {}".format(
-            __version__, version.replace('\n', ' ').replace('\r', ' ')
+            __version__, version.replace("\n", " ").replace("\r", " ")
         )
     ),
 )
@@ -113,15 +113,15 @@ class SysUpTime(TimeTicks):
     createdAt = time()
 
     def clone(self, **kwargs):
-        if 'value' not in kwargs:
-            kwargs['value'] = int((time() - self.createdAt) * 100)
+        if "value" not in kwargs:
+            kwargs["value"] = int((time() - self.createdAt) * 100)
         return TimeTicks.clone(self, **kwargs)
 
 
 __sysUpTime = MibScalarInstance(sysUpTime.name, (0,), SysUpTime(0))
-__sysContact = MibScalarInstance(sysContact.name, (0,), sysContact.syntax.clone(''))
-__sysName = MibScalarInstance(sysName.name, (0,), sysName.syntax.clone(''))
-__sysLocation = MibScalarInstance(sysLocation.name, (0,), sysLocation.syntax.clone(''))
+__sysContact = MibScalarInstance(sysContact.name, (0,), sysContact.syntax.clone(""))
+__sysName = MibScalarInstance(sysName.name, (0,), sysName.syntax.clone(""))
+__sysLocation = MibScalarInstance(sysLocation.name, (0,), sysLocation.syntax.clone(""))
 __sysServices = MibScalarInstance(sysServices.name, (0,), sysServices.syntax.clone(0))
 __sysORLastChange = MibScalarInstance(sysORLastChange.name, (0,), sysORLastChange.syntax.clone(0))
 __snmpInPkts = MibScalarInstance(snmpInPkts.name, (0,), snmpInPkts.syntax.clone(0))

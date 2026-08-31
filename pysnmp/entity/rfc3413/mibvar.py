@@ -15,8 +15,7 @@ from pysnmp.smi.error import NoSuchObjectError
 
 def mibNameToOid(mibView, name):
     if isinstance(name[0], tuple):
-        f = lambda x='', y='': (x, y)
-        modName, symName = f(*name[0])
+        modName, symName = (tuple(name[0]) + ("", ""))[:2]
         if modName:  # load module if needed
             mibView.mibBuilder.loadModules(modName)
         else:
@@ -28,7 +27,7 @@ def mibNameToOid(mibView, name):
         suffix = name[1:]
         modName, symName, _s = mibView.getNodeLocation(oid)
         (mibNode,) = mibView.mibBuilder.importSymbols(modName, symName)
-        if hasattr(mibNode, 'createTest'):  # table column XXX
+        if hasattr(mibNode, "createTest"):  # table column XXX
             modName, symName, _s = mibView.getNodeLocation(oid[:-1])
             (rowNode,) = mibView.mibBuilder.importSymbols(modName, symName)
             return oid, rowNode.getInstIdFromIndices(*suffix)
@@ -51,7 +50,7 @@ def oidToMibName(mibView, oid):
     _oid, label, suffix = mibView.getNodeNameByOid(oid)
     modName, symName, __suffix = mibView.getNodeLocation(_oid)
     (mibNode,) = mibView.mibBuilder.importSymbols(modName, symName)
-    if hasattr(mibNode, 'createTest'):  # table column
+    if hasattr(mibNode, "createTest"):  # table column
         __modName, __symName, __s = mibView.getNodeLocation(_oid[:-1])
         (rowNode,) = mibView.mibBuilder.importSymbols(__modName, __symName)
         return (symName, modName), rowNode.getIndicesFromInstId(suffix)
@@ -61,9 +60,7 @@ def oidToMibName(mibView, oid):
         return (symName, modName), __scalarSuffix
     else:
         raise NoSuchObjectError(
-            str='No MIB registered that defines {} object, closest known parent is {} ({}::{})'.format(
-                univ.ObjectIdentifier(oid), univ.ObjectIdentifier(mibNode.name), modName, symName
-            )
+            str=f"No MIB registered that defines {univ.ObjectIdentifier(oid)} object, closest known parent is {univ.ObjectIdentifier(mibNode.name)} ({modName}::{symName})"
         )
 
 
@@ -72,7 +69,7 @@ def oidToMibName(mibView, oid):
 
 def cloneFromMibValue(mibView, modName, symName, value):
     (mibNode,) = mibView.mibBuilder.importSymbols(modName, symName)
-    if hasattr(mibNode, 'syntax'):  # scalar
+    if hasattr(mibNode, "syntax"):  # scalar
         return mibNode.syntax.clone(value)
     else:
         return  # identifier

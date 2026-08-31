@@ -12,7 +12,7 @@ from pysnmp.proto import error, rfc1155, rfc1157
 Integer = univ.Integer
 OctetString = univ.OctetString
 Null = univ.Null
-null = Null('')
+null = Null("")
 ObjectIdentifier = univ.ObjectIdentifier
 
 IpAddress = rfc1155.IpAddress
@@ -98,7 +98,7 @@ class PDUAPI:
         if errorIndex > len(pdu[3]):
             if muteErrors:
                 return errorIndex.clone(len(pdu[3]))
-            raise error.ProtocolError(f'Error index out of range: {errorIndex} > {len(pdu[3])}')
+            raise error.ProtocolError(f"Error index out of range: {errorIndex} > {len(pdu[3])}")
         return errorIndex
 
     @staticmethod
@@ -157,7 +157,7 @@ apiPDU = PDUAPI()
 class TrapPDUAPI:
     _networkAddress = None
     _entOid = ObjectIdentifier((1, 3, 6, 1, 4, 1, 20408))
-    _genericTrap = rfc1157.genericTrap.clone('coldStart')
+    _genericTrap = rfc1157.genericTrap.clone("coldStart")
     _zeroInt = univ.Integer(0)
     _zeroTime = TimeTicks(0)
 
@@ -168,7 +168,7 @@ class TrapPDUAPI:
 
                 agentAddress = IpAddress(socket.gethostbyname(socket.gethostname()))
             except Exception:
-                agentAddress = IpAddress('0.0.0.0')
+                agentAddress = IpAddress("0.0.0.0")
             self._networkAddress = NetworkAddress().setComponentByPosition(0, agentAddress)
         pdu.setComponentByPosition(
             0, self._entOid, verifyConstraints=False, matchTags=False, matchConstraints=False
@@ -266,7 +266,7 @@ apiTrapPDU = TrapPDUAPI()
 
 class MessageAPI:
     _version = rfc1157.version.clone(0)
-    _community = univ.OctetString('public')
+    _community = univ.OctetString("public")
 
     def setDefaults(self, msg):
         msg.setComponentByPosition(
