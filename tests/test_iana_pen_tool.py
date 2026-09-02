@@ -125,6 +125,6 @@ class TestGenerateMibModule:
         pen_1, pen_20408 = mib_builder.importSymbols(module_name, "pen_1", "pen_20408")
 
         assert pen_1.name == (1, 3, 6, 1, 4, 1, 1)
-        assert str(pen_1.syntax) == "ISO"
+        assert pen_1.syntax.prettyPrint() == "ISO"
         assert pen_20408.name == (1, 3, 6, 1, 4, 1, 20408)
-        assert str(pen_20408.syntax) == "PySNMP Project"
+        assert pen_20408.syntax.prettyPrint() == "PySNMP Project"

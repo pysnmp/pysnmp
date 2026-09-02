@@ -130,7 +130,7 @@ class MsgAndPduDispatcher:
             raise error.StatusInformation(errorIndication=errind.unsupportedMsgProcessingModel)
 
         debug.logger & debug.flagDsp and debug.logger(
-            f"sendPdu: securityName {securityName}, PDU\n{PDU.prettyPrint()}"
+            f"sendPdu: securityName {debug.prettify(securityName)}, PDU\n{PDU.prettyPrint()}"
         )
 
         # 4.1.1.3
