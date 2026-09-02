@@ -153,11 +153,11 @@ class InetAddress(TextualConvention, OctetString):
     subtypeSpec = OctetString.subtypeSpec + ValueSizeConstraint(0, 255)
 
     typeMap = {
-        InetAddressType.namedValues.getValue("ipv4"): InetAddressIPv4(),
-        InetAddressType.namedValues.getValue("ipv6"): InetAddressIPv6(),
-        InetAddressType.namedValues.getValue("ipv4z"): InetAddressIPv4z(),
-        InetAddressType.namedValues.getValue("ipv6z"): InetAddressIPv6z(),
-        InetAddressType.namedValues.getValue("dns"): InetAddressDNS(),
+        InetAddressType.namedValues["ipv4"]: InetAddressIPv4(),
+        InetAddressType.namedValues["ipv6"]: InetAddressIPv6(),
+        InetAddressType.namedValues["ipv4z"]: InetAddressIPv4z(),
+        InetAddressType.namedValues["ipv6z"]: InetAddressIPv6z(),
+        InetAddressType.namedValues["dns"]: InetAddressDNS(),
     }
 
     @classmethod

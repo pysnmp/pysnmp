@@ -52,7 +52,7 @@ class NetworkAddress(univ.Choice):
         and itself as the component value.
 
         :param value: (Optional) the component value.
-        :type value: :py:obj:`pyasn1.type.base.Asn1ItemBase`
+        :type value: :py:obj:`pyasn1.type.base.Asn1Type`
         :return: the cloned instance.
         :rtype: :py:obj:`pysnmp.proto.rfc1155.NetworkAddress`
         :raise: :py:obj:`pysnmp.smi.error.SmiError`:
@@ -131,7 +131,7 @@ class TypeCoercionHackMixIn:  # XXX keep this old-style class till pyasn1 types 
             if idx >= len(componentType):
                 raise PyAsn1Error("Component type error out of range")
             t = componentType[idx].getType()
-            if not t.getTagSet().isSuperTagSetOf(value.getTagSet()):
+            if not t.tagSet.isSuperTagSetOf(value.tagSet):
                 raise PyAsn1Error(f"Component type error {t!r} vs {value!r}")
 
 

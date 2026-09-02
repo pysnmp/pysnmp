@@ -649,7 +649,7 @@ class TestOptionalTableColumns:
         row.writeCommit(rowStatus.name + suffix, 1, 0, (None, None))
 
         optionalInstance = optionalValue.getNode(optionalValue.name + suffix)
-        assert not optionalInstance.syntax.hasValue()
+        assert not optionalInstance.syntax.isValue
 
     def test_mandatory_unset_column_rejects_row_activation(self):
         row, _, rowStatus, suffix = _build_optional_row(False)
