@@ -207,7 +207,7 @@ def test_real_interface_row_is_indexed():
     var_binds = _get_one(IF_DESCR_1, IF_ADMIN_STATUS_1)
     assert str(var_binds[0][0]) == IF_DESCR_1
     assert str(var_binds[1][0]) == IF_ADMIN_STATUS_1
-    assert str(var_binds[0][1]).strip() != "", "ifDescr.1 was empty"
+    assert var_binds[0][1].prettyPrint().strip() != "", "ifDescr.1 was empty"
     assert int(var_binds[1][1]) in (1, 2, 3), (
         f"ifAdminStatus.1 must be up(1)/down(2)/testing(3), got {var_binds[1][1]}"
     )
@@ -224,10 +224,10 @@ def test_system_identity_is_well_formed():
     assert str(var_binds[0][0]) == SYS_DESCR
     assert str(var_binds[1][0]) == SYS_OBJECT_ID
     assert str(var_binds[2][0]) == SYS_NAME
-    assert str(var_binds[0][1]).strip() != "", "sysDescr.0 was empty"
-    assert str(var_binds[1][1]).strip() != "", "sysObjectID.0 was empty"
-    assert str(var_binds[2][1]) == f"pysnmp-ci-{profile()}", (
-        f"sysName.0 mismatch: {var_binds[2][1]}"
+    assert var_binds[0][1].prettyPrint().strip() != "", "sysDescr.0 was empty"
+    assert var_binds[1][1].prettyPrint().strip() != "", "sysObjectID.0 was empty"
+    assert var_binds[2][1].asOctets() == f"pysnmp-ci-{profile()}".encode(), (
+        f"sysName.0 mismatch: {var_binds[2][1].prettyPrint()}"
     )
 
 
@@ -367,10 +367,12 @@ def test_set_syslocation_roundtrip():
     marker = OctetString(f"pysnmp-ci-{profile()}-set-marker")
     try:
         set_location(marker)
-        assert str(get_location()) == str(marker), "sysLocation.0 did not take the SET value"
+        assert get_location().asOctets() == marker.asOctets(), (
+            "sysLocation.0 did not take the SET value"
+        )
     finally:
         set_location(original)
-        assert str(get_location()) == str(original), "sysLocation.0 was not restored"
+        assert get_location().asOctets() == original.asOctets(), "sysLocation.0 was not restored"
 
 
 # --- transport dispatching ------------------------------------------------
