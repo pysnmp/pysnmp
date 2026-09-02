@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any, NamedTuple
 
 from pysnmp.hlapi.asyncio.cmdgen import getCmd, nextCmd
+from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
 from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 
@@ -169,7 +170,7 @@ async def get_device_report(
                     SysOREntry(
                         index=previous_index,
                         or_id=str(values[1]),
-                        or_descr=str(values[2]),
+                        or_descr=values[2].prettyPrint(),
                         or_uptime=int(values[3]),
                     )
                 )
@@ -180,7 +181,11 @@ async def get_device_report(
 
     def as_text(field: str) -> str | None:
         value = results.get(field)
-        return str(value) if value is not None else None
+        if value is None:
+            return None
+        # str() on an OCTET STRING is deprecated by pyasn1; .prettyPrint()
+        # yields the text when it is printable and hexadecimal otherwise.
+        return value.prettyPrint() if isinstance(value, OctetString) else str(value)
 
     def as_integer(field: str) -> int | None:
         value = results.get(field)

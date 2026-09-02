@@ -194,7 +194,10 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                     )
                     targetAddrTAddress = tuple(TransportAddressIPv6(targetAddrTAddress))
                 elif targetAddrTDomain[: len(unix.snmpLocalDomain)] == unix.snmpLocalDomain:
-                    targetAddrTAddress = str(targetAddrTAddress)
+                    # A local-domain TAddress carries a filesystem path
+                    targetAddrTAddress = targetAddrTAddress.asOctets().decode(
+                        targetAddrTAddress.encoding
+                    )
 
                 targetAddr = targetAddrTDomain, targetAddrTAddress
                 targetAddrTagList = snmpTargetAddrTagList.getNode(
@@ -377,12 +380,12 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 candidateSecurityNames.sort(
                     key=lambda x, m=self.__nameToModelMap, v=self.securityModelID: (
                         not int(x[0] in m and v in m[x[0]]),
-                        str(x[0]),
+                        x[0].asOctets(),
                     )
                 )
                 chosenSecurityName = candidateSecurityNames[0]  # min()
                 debug.logger & debug.flagSM and debug.logger(
-                    f"_com2sec: securityName candidates for communityName '{communityName}' are {candidateSecurityNames}; choosing securityName '{chosenSecurityName[0]}'"
+                    f"_com2sec: securityName candidates for communityName '{debug.prettify(communityName)}' are {candidateSecurityNames}; choosing securityName '{debug.prettify(chosenSecurityName[0])}'"
                 )
                 return chosenSecurityName
 

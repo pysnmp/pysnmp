@@ -390,7 +390,7 @@ class NotificationOriginator:
         notificationHandle = getNextHandle()
 
         debug.logger & debug.flagApp and debug.logger(
-            f"sendVarBinds: notificationHandle {notificationHandle}, notifyTag {notifyTag}, notifyType {notifyType}"
+            f"sendVarBinds: notificationHandle {notificationHandle}, notifyTag {debug.prettify(notifyTag)}, notifyType {notifyType}"
         )
 
         varBinds = [(v2c.ObjectIdentifier(x), y) for x, y in varBinds]
@@ -484,7 +484,7 @@ class NotificationOriginator:
                         continue
 
             debug.logger & debug.flagApp and debug.logger(
-                f"sendVarBinds: notificationHandle {notificationHandle}, notifyTag {notifyTag} yields: transportDomain {transportDomain}, transportAddress {transportAddress!r}, securityModel {securityModel}, securityName {securityName}, securityLevel {securityLevel}"
+                f"sendVarBinds: notificationHandle {notificationHandle}, notifyTag {debug.prettify(notifyTag)} yields: transportDomain {transportDomain}, transportAddress {transportAddress!r}, securityModel {securityModel}, securityName {debug.prettify(securityName)}, securityLevel {securityLevel}"
             )
 
             trapOidVal = varBinds[1][1]
@@ -508,12 +508,12 @@ class NotificationOriginator:
                     )
 
                     debug.logger & debug.flagApp and debug.logger(
-                        f"sendVarBinds: ACL succeeded for OID {varName} securityName {securityName}"
+                        f"sendVarBinds: ACL succeeded for OID {varName} securityName {debug.prettify(securityName)}"
                     )
 
                 except error.StatusInformation:
                     debug.logger & debug.flagApp and debug.logger(
-                        f"sendVarBinds: ACL denied access for OID {varName} securityName {securityName}, "
+                        f"sendVarBinds: ACL denied access for OID {varName} securityName {debug.prettify(securityName)}, "
                         f"skipping notification for target {targetAddrName}"
                     )
                     vacmDenied = True
