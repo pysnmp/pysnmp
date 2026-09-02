@@ -378,6 +378,23 @@ class TestVerdec:
         with pytest.raises(proto_error.ProtocolError):
             verdec.decodeMessageVersion(b"\x00\x00\x00")
 
+    @pytest.mark.parametrize(
+        "substrate",
+        [
+            pytest.param(b"\x68\x00\x37\x15", id="constructed-app-tag"),
+            pytest.param(b"", id="empty"),
+            pytest.param(b"\x30", id="tag-only"),
+            pytest.param(b"\x30\x82", id="truncated-length"),
+            pytest.param(b"\x30\x80", id="indefinite-length"),
+            pytest.param(b"\x30\x02\x00\x00", id="eoo-as-version"),
+            pytest.param(b"\x30\x84\xff\xff\xff\xff\x02\x01\x01", id="oversized-length"),
+        ],
+    )
+    def test_hostile_substrate_raises_protocol_error(self, substrate):
+        """Nothing but ProtocolError may escape the first parse of a datagram."""
+        with pytest.raises(proto_error.ProtocolError):
+            verdec.decodeMessageVersion(substrate)
+
 
 class TestProtoError:
     def test_protocol_error(self):
