@@ -789,8 +789,12 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pyasn1"
-version = "1.2.0b9"
-source = { git = "https://github.com/pysnmp/pyasn1?tag=v1.2.0-beta.9#144d7a241cfc23e3a829746e4e74ee84363031b8" }
+version = "1.2.0b12"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/be/eb44e91097e1cffbef9da2ca5f1d2e309d25603e83a58e0afe12e89cc5f7/pysnmp_pyasn1-1.2.0b12.tar.gz", hash = "sha256:3e35eb6fb5d85524e635eda542c8bdc1e92d180d662d70332981e577f65cae17", size = 272847, upload-time = "2026-09-02T14:51:50.136Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/47/01/4e90f30cc9688a6c1aa688be4641fb77c43fb8f79b5fa98928943b9bc7f4/pysnmp_pyasn1-1.2.0b12-py3-none-any.whl", hash = "sha256:fada836418e929078d38c5f76da8da58be98058259bb2688a96ba4bb31c61bcf", size = 96476, upload-time = "2026-09-02T14:51:48.789Z" },
+]
 
 [[package]]
 name = "pysnmp-pysmi"
@@ -832,7 +836,7 @@ requires-dist = [
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.2.0,<8.0.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0,<2.0.0" },
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
-    { name = "pysnmp-pyasn1", git = "https://github.com/pysnmp/pyasn1?tag=v1.2.0-beta.9" },
+    { name = "pysnmp-pyasn1", specifier = ">=1.2.0b12,<2.0.0" },
     { name = "pysnmp-pysmi", specifier = ">=1.0.4,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=6.2.5,<9.0.0" },
     { name = "pytest-codecov", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
