@@ -7,7 +7,7 @@
 import functools
 
 from pyasn1.error import PyAsn1Error
-from pyasn1.type.base import AbstractSimpleAsn1Item
+from pyasn1.type.base import SimpleAsn1Type
 
 from pysnmp import debug
 from pysnmp.proto import rfc1902, rfc1905
@@ -860,7 +860,7 @@ class ObjectType:
         mibNode = self.__args[0].getMibNode()
 
         if not isinstance(mibNode, (MibScalar, MibTableColumn)):
-            if ignoreErrors and not isinstance(self.__args[1], AbstractSimpleAsn1Item):
+            if ignoreErrors and not isinstance(self.__args[1], SimpleAsn1Type):
                 raise SmiError(
                     f"MIB object {self.__args[0]!r} is not OBJECT-TYPE (MIB not loaded?)"
                 )
@@ -893,7 +893,7 @@ class ObjectType:
                 e,
             )
 
-            if not ignoreErrors or not isinstance(self.__args[1], AbstractSimpleAsn1Item):
+            if not ignoreErrors or not isinstance(self.__args[1], SimpleAsn1Type):
                 raise SmiError(err)
 
         if rfc1902.ObjectIdentifier().isSuperTypeOf(self.__args[1], matchConstraints=False):

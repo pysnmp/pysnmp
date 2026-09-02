@@ -40,7 +40,7 @@ class VarBindAPI:
         if val is None:
             val = null
         varBind.setComponentByPosition(1).getComponentByPosition(1).setComponentByType(
-            val.getTagSet(),
+            val.tagSet,
             val,
             verifyConstraints=False,
             matchTags=False,
@@ -300,7 +300,7 @@ class MessageAPI:
     @staticmethod
     def setPDU(msg, value):
         msg.setComponentByPosition(2).getComponentByPosition(2).setComponentByType(
-            value.getTagSet(),
+            value.tagSet,
             value,
             verifyConstraints=False,
             matchTags=False,

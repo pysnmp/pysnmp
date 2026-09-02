@@ -270,7 +270,7 @@ class CommandResponderBase:
             execCtx["securityName"],
             execCtx["securityLevel"],
             execCtx["contextName"],
-            execCtx["pdu"].getTagSet(),
+            execCtx["pdu"].tagSet,
         )
         try:
             snmpEngine.accessControlModel[self.acmID].isAccessAllowed(
@@ -314,7 +314,7 @@ class CommandResponderBase:
             if (
                 securityModel == 1
                 and syntax is not None
-                and self._counter64Type == syntax.getTagSet()
+                and self._counter64Type == syntax.tagSet
                 and self._getNextRequestType == pduType
             ):
                 # This will cause MibTree to skip this OID-value

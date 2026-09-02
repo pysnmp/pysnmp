@@ -37,4 +37,4 @@ class PySnmpError(Exception):
         if msg:
             args = (msg,) + args[1:]
 
-        Exception.__init__(self, *args)
+        super().__init__(*args)

@@ -76,7 +76,7 @@ class TextualConvention:
         """Implements DISPLAY-HINT evaluation"""
         if self.displayHint and (
             self.__integer.isSuperTypeOf(self, matchConstraints=False)
-            and not self.getNamedValues()
+            and not self.namedValues
             or self.__unsigned32.isSuperTypeOf(self, matchConstraints=False)
             or self.__timeticks.isSuperTypeOf(self, matchConstraints=False)
         ):
@@ -219,7 +219,7 @@ class TextualConvention:
 
         if self.displayHint and (
             self.__integer.isSuperTypeOf(self, matchConstraints=False)
-            and self.getNamedValues()
+            and self.namedValues
             or self.__unsigned32.isSuperTypeOf(self, matchConstraints=False)
             or self.__timeticks.isSuperTypeOf(self, matchConstraints=False)
         ):
@@ -515,8 +515,8 @@ class RowStatus(TextualConvention, Integer):
         # resolve new instance value
         excValue, newState = self.stateMatrix.get(
             (
-                value.hasValue() and value or self.stNotExists,
-                self.hasValue() and self or self.stNotExists,
+                value.isValue and value or self.stNotExists,
+                self.isValue and self or self.stNotExists,
             ),
             (MibOperationError, None),
         )

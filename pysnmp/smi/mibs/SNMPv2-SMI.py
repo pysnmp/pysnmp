@@ -1100,11 +1100,11 @@ class MibTableRow(MibTree):
     # some subtypes may be implicitly tagged what renders base tag
     # unavailable.
 
-    __intBaseTag = Integer.tagSet.getBaseTag()
-    __strBaseTag = OctetString.tagSet.getBaseTag()
-    __oidBaseTag = ObjectIdentifier.tagSet.getBaseTag()
+    __intBaseTag = Integer.tagSet.baseTag
+    __strBaseTag = OctetString.tagSet.baseTag
+    __oidBaseTag = ObjectIdentifier.tagSet.baseTag
     __ipaddrTagSet = IpAddress.tagSet
-    __bitsBaseTag = Bits.tagSet.getBaseTag()
+    __bitsBaseTag = Bits.tagSet.baseTag
 
     def setFromName(self, obj, value, impliedFlag=None, parentIndices=None):
         if not value:
@@ -1113,10 +1113,10 @@ class MibTableRow(MibTree):
             return obj.cloneFromName(
                 value, impliedFlag, parentRow=self, parentIndices=parentIndices
             )
-        baseTag = obj.getTagSet().getBaseTag()
+        baseTag = obj.tagSet.baseTag
         if baseTag == self.__intBaseTag:
             return obj.clone(value[0]), value[1:]
-        elif self.__ipaddrTagSet.isSuperTagSetOf(obj.getTagSet()):
+        elif self.__ipaddrTagSet.isSuperTagSetOf(obj.tagSet):
             return obj.clone(".".join([str(x) for x in value[:4]])), value[4:]
         elif baseTag == self.__strBaseTag:
             # rfc1902, 7.7
@@ -1141,11 +1141,11 @@ class MibTableRow(MibTree):
     def getAsName(self, obj, impliedFlag=None, parentIndices=None):
         if hasattr(obj, "cloneAsName"):
             return obj.cloneAsName(impliedFlag, parentRow=self, parentIndices=parentIndices)
-        baseTag = obj.getTagSet().getBaseTag()
+        baseTag = obj.tagSet.baseTag
         if baseTag == self.__intBaseTag:
             # noinspection PyRedundantParentheses
             return (int(obj),)
-        elif self.__ipaddrTagSet.isSuperTagSetOf(obj.getTagSet()):
+        elif self.__ipaddrTagSet.isSuperTagSetOf(obj.tagSet):
             return obj.asNumbers()
         elif baseTag == self.__strBaseTag:
             if impliedFlag or obj.isFixedLength():
@@ -1306,7 +1306,7 @@ class MibTableRow(MibTree):
                 if mibNode.isOptional():
                     continue
                 colNode = mibNode.getNode(mibNode.name + name[len(self.name) + 1 :])
-                if not colNode.syntax.hasValue():
+                if not colNode.syntax.isValue:
                     raise error.InconsistentValueError(
                         msg="Row consistency check failed for %r" % colNode
                     )
