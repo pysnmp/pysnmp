@@ -263,19 +263,6 @@ wheels = [
 ]
 
 [[package]]
-name = "codecov"
-version = "2.1.13"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "coverage" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/2c/bb/594b26d2c85616be6195a64289c578662678afa4910cef2d3ce8417cf73e/codecov-2.1.13.tar.gz", hash = "sha256:2362b685633caeaf45b9951a9b76ce359cd3581dd515b430c6c3f5dfb4d92a8c", size = 21416, upload-time = "2023-04-17T23:11:39.779Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/02/18785edcdf6266cdd6c6dc7635f1cbeefd9a5b4c3bb8aff8bd681e9dd095/codecov-2.1.13-py2.py3-none-any.whl", hash = "sha256:c2ca5e51bba9ebb43644c43d0690148a55086f7f5e6fd36170858fa4206744d5", size = 16512, upload-time = "2023-04-17T23:11:37.344Z" },
-]
-
-[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -882,11 +869,9 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
-    { name = "codecov" },
     { name = "coverage", extra = ["toml"] },
     { name = "mypy" },
     { name = "pytest" },
-    { name = "pytest-codecov" },
     { name = "ruff" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "8.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -894,14 +879,12 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "codecov", marker = "extra == 'dev'", specifier = ">=2.1.12,<3.0.0" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.2.0,<8.0.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0,<3.0.0" },
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=1.2.0b14,<2.0.0" },
     { name = "pysnmp-pysmi", specifier = ">=2.0.0b2,<3.0.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0,<10.0.0" },
-    { name = "pytest-codecov", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", marker = "extra == 'dev'", specifier = ">=7.0.0,<9.0.0" },
 ]
@@ -923,35 +906,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e4/47/b9efed96c114afcfa3c9d3fe98a76a1d14c74a9e266d397cf6eb64be5e01/pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313", size = 1636369, upload-time = "2026-06-19T10:58:32.857Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/24/25/1de2678b631f5a49215c6c96fff41ba892b0a34df68d6d80292b1b48aa7f/pytest-9.1.1-py3-none-any.whl", hash = "sha256:37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c", size = 386536, upload-time = "2026-06-19T10:58:31.347Z" },
-]
-
-[[package]]
-name = "pytest-codecov"
-version = "0.7.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "coverage", extra = ["toml"] },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/30/df/8ea9f05b554ce0938d14716972eef2a6515fb5a6c06c5ccb0a5ca21cdf77/pytest_codecov-0.7.0.tar.gz", hash = "sha256:2fc60c9dbaa986f39517cd811f3094376dff82b048fae13a1eed51bace1da83a", size = 11601, upload-time = "2025-03-25T16:29:39.53Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/77/13c12db2307134994e6f985e32c202b44602b6eb9033c7ad485043c40824/pytest_codecov-0.7.0-py3-none-any.whl", hash = "sha256:213be0b112a4c0065c1601e12d3959352ac239be2a9b8e93edf814d6e7ac37b6", size = 8599, upload-time = "2025-03-25T16:29:38.213Z" },
-]
-
-[[package]]
-name = "pytest-cov"
-version = "7.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "coverage", extra = ["toml"] },
-    { name = "pluggy" },
-    { name = "pytest" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/b1/51/a849f96e117386044471c8ec2bd6cfebacda285da9525c9106aeb28da671/pytest_cov-7.1.0.tar.gz", hash = "sha256:30674f2b5f6351aa09702a9c8c364f6a01c27aae0c1366ae8016160d1efc56b2", size = 55592, upload-time = "2026-03-21T20:11:16.284Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/7a/d968e294073affff457b041c2be9868a40c1c71f4a35fcc1e45e5493067b/pytest_cov-7.1.0-py3-none-any.whl", hash = "sha256:a0461110b7865f9a271aa1b51e516c9a95de9d696734a2f71e3e78f46e1d4678", size = 22876, upload-time = "2026-03-21T20:11:14.438Z" },
 ]
 
 [[package]]
