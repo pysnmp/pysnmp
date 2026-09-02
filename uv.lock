@@ -789,11 +789,11 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pyasn1"
-version = "1.2.0b12"
+version = "1.2.0b14"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/cc/be/eb44e91097e1cffbef9da2ca5f1d2e309d25603e83a58e0afe12e89cc5f7/pysnmp_pyasn1-1.2.0b12.tar.gz", hash = "sha256:3e35eb6fb5d85524e635eda542c8bdc1e92d180d662d70332981e577f65cae17", size = 272847, upload-time = "2026-09-02T14:51:50.136Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ca/a3/39d3024262c4a48bc7cb52b637da897cd9a3a03c34f1aa10e213a59945a3/pysnmp_pyasn1-1.2.0b14.tar.gz", hash = "sha256:dece37e12d30021027ca2c2683ba50339aae46a1c7be5a3c57efcd969e39009e", size = 285030, upload-time = "2026-09-02T16:16:28.877Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/01/4e90f30cc9688a6c1aa688be4641fb77c43fb8f79b5fa98928943b9bc7f4/pysnmp_pyasn1-1.2.0b12-py3-none-any.whl", hash = "sha256:fada836418e929078d38c5f76da8da58be98058259bb2688a96ba4bb31c61bcf", size = 96476, upload-time = "2026-09-02T14:51:48.789Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/1b/95f92221d33355997e3a95681728204846ae3c0f81363d2f6c5019c7a262/pysnmp_pyasn1-1.2.0b14-py3-none-any.whl", hash = "sha256:417df3132f30a58795ba33c16475b9a753e0e816863880bfe7577ed01f9abead", size = 102236, upload-time = "2026-09-02T16:16:27.67Z" },
 ]
 
 [[package]]
@@ -836,7 +836,7 @@ requires-dist = [
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.2.0,<8.0.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0,<2.0.0" },
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
-    { name = "pysnmp-pyasn1", specifier = ">=1.2.0b12,<2.0.0" },
+    { name = "pysnmp-pyasn1", specifier = ">=1.2.0b14,<2.0.0" },
     { name = "pysnmp-pysmi", specifier = ">=1.0.4,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=6.2.5,<9.0.0" },
     { name = "pytest-codecov", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
