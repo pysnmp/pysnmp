@@ -1030,22 +1030,25 @@ class MibTableColumn(MibScalar):
 
     def writeTest(self, name, val, idx, acInfo):
         # Besides common checks, request row creation on no-instance
+        rowOpException = None
         try:
             # First try the instance
             MibScalar.writeTest(self, name, val, idx, acInfo)
         # ...otherwise proceed with creating new column
         except (error.NoSuchInstanceError, error.RowCreationWanted) as excValue:
+            rowOpException = excValue
             if isinstance(excValue, error.RowCreationWanted):
                 self.__rowOpWanted[name] = excValue
             else:
                 self.__rowOpWanted[name] = error.RowCreationWanted()
             self.createTest(name, val, idx, acInfo)
-        except error.RowDestructionWanted:
+        except error.RowDestructionWanted as excValue:
+            rowOpException = excValue
             self.__rowOpWanted[name] = error.RowDestructionWanted()
             self.destroyTest(name, val, idx, acInfo)
         if name in self.__rowOpWanted:
             debug.logger & debug.flagIns and debug.logger(
-                f"{self.__rowOpWanted[name]} flagged by {name}={val!r}, exception {excValue}"
+                f"{self.__rowOpWanted[name]} flagged by {name}={val!r}, exception {rowOpException}"
             )
             raise self.__rowOpWanted[name]
 

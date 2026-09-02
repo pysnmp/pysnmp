@@ -115,6 +115,19 @@ def setLogger(newLogger):
     logger = newLogger
 
 
+def prettify(value):
+    """Render a value for debug output.
+
+    ASN.1 objects are rendered with .prettyPrint() -- str() on an OCTET
+    STRING decodes the payload as text, which pyasn1 deprecates. Anything
+    else falls back to str().
+    """
+    prettyPrint = getattr(value, "prettyPrint", None)
+    if callable(prettyPrint):
+        return prettyPrint()
+    return str(value)
+
+
 def hexdump(octets):
     return " ".join(
         [

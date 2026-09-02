@@ -41,7 +41,7 @@ class TestRfc1902Types:
 
     def test_octet_string_creation(self):
         val = rfc1902.OctetString("hello")
-        assert str(val) == "hello"
+        assert val.asOctets() == b"hello"
 
     def test_octet_string_hexvalue(self):
         val = rfc1902.OctetString(hexValue="deadbeef")
@@ -49,7 +49,7 @@ class TestRfc1902Types:
 
     def test_octet_string_concat(self):
         val = rfc1902.OctetString("hello") + " world"
-        assert str(val) == "hello world"
+        assert val.asOctets() == b"hello world"
 
     def test_object_identifier(self):
         oid = rfc1902.ObjectIdentifier((1, 3, 6, 1))
@@ -85,7 +85,7 @@ class TestRfc1902Types:
 
     def test_null(self):
         val = rfc1902.Null("")
-        assert str(val) == ""
+        assert val.asOctets() == b""
 
     def test_bits(self):
         val = rfc1902.Bits()
@@ -438,14 +438,14 @@ class TestProxyRfc2576:
         assert v2Pdu is not None
         v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
         assert len(v2VarBinds) == 2
-        assert str(v2VarBinds[0][1]) == "test value"
+        assert v2VarBinds[0][1].asOctets() == b"test value"
         assert tuple(v2VarBinds[1][1]) == (1, 3, 6)
 
         v1Pdu2 = rfc2576.v2ToV1(v2Pdu, v1Pdu)
         assert v1Pdu2 is not None
         v1VarBinds2 = v1.apiPDU.getVarBinds(v1Pdu2)
         assert len(v1VarBinds2) == 2
-        assert str(v1VarBinds2[0][1]) == "test value"
+        assert v1VarBinds2[0][1].asOctets() == b"test value"
         assert tuple(v1VarBinds2[1][1]) == (1, 3, 6)
 
     def test_v1_to_v2_counter(self):
@@ -493,7 +493,7 @@ class TestProxyRfc2576:
         v2Pdu = rfc2576.v1ToV2(v1Pdu)
         v2VarBinds = v2c.apiPDU.getVarBinds(v2Pdu)
 
-        assert str(v2VarBinds[0][1]) == "hello"
+        assert v2VarBinds[0][1].asOctets() == b"hello"
         assert type(v2VarBinds[0][1]) is v2c.OctetString
 
     def test_v1_to_v2_rejects_integer_outside_integer32_range(self):
@@ -604,7 +604,7 @@ class TestV2cMessageAPI:
         msg = rfc1901.Message()
         v2c.apiMessage.setDefaults(msg)
         v2c.apiMessage.setCommunity(msg, "public")
-        assert str(v2c.apiMessage.getCommunity(msg)) == "public"
+        assert v2c.apiMessage.getCommunity(msg).asOctets() == b"public"
 
     def test_message_get_set_pdu(self):
         msg = rfc1901.Message()
@@ -635,7 +635,7 @@ class TestV1MessageAPI:
         msg = rfc1157.Message()
         v1.apiMessage.setDefaults(msg)
         v1.apiMessage.setCommunity(msg, "public")
-        assert str(v1.apiMessage.getCommunity(msg)) == "public"
+        assert v1.apiMessage.getCommunity(msg).asOctets() == b"public"
 
 
 class TestProxyRfc2576PduMapping:

@@ -147,7 +147,7 @@ def _get_value(result):
     error_indication, error_status, error_index, var_binds = result
     assert error_indication is None, f"errorIndication: {error_indication}"
     assert not error_status, f"errorStatus: {error_status} at index {error_index}"
-    return str(var_binds[0][1])
+    return var_binds[0][1].prettyPrint()
 
 
 # --- Individual combination tests ---

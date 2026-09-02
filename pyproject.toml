@@ -47,6 +47,13 @@ dev = [
     "ruff >=0.4.0,<1.0.0",
 ]
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    # str() on an OCTET STRING decodes it as text; pyasn1 deprecates that and
+    # will return the hexadecimal representation instead. Keep pysnmp off it.
+    "error:str\\(\\) on .* decodes the payload as text:DeprecationWarning",
+]
+
 [tool.coverage.run]
 branch = true
 source = ["pysnmp"]

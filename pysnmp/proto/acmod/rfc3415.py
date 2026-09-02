@@ -157,7 +157,14 @@ class Vacm:
             "isAccessAllowed: securityModel %s, securityName %s, "
             "securityLevel %s, viewType %s, contextName %s for "
             "variableName %s"
-            % (securityModel, securityName, securityLevel, viewType, contextName, variableName)
+            % (
+                securityModel,
+                debug.prettify(securityName),
+                securityLevel,
+                viewType,
+                debug.prettify(contextName),
+                variableName,
+            )
         )
 
         # Rebuild contextName map if changed

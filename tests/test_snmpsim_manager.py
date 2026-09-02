@@ -29,6 +29,17 @@ from pysnmp.hlapi.asyncio import (
 from pysnmp.hlapi.asyncio import (
     nextCmd as asyncio_nextCmd,
 )
+from pysnmp.proto.rfc1902 import OctetString
+
+
+def as_text(value):
+    """Render a var-bind value as text.
+
+    str() on an OCTET STRING is deprecated by pyasn1; .prettyPrint() gives
+    the text when it is printable and hexadecimal otherwise.
+    """
+    return value.prettyPrint() if isinstance(value, OctetString) else str(value)
+
 
 SYS_DESCR = "1.3.6.1.2.1.1.1.0"
 SYS_OBJECTID = "1.3.6.1.2.1.1.2.0"
@@ -46,8 +57,8 @@ def get_value(result):
     assert error_indication is None
     assert not error_status
     assert not error_index
-    print(f"  SNMP response: OID={var_binds[0][0]} value={var_binds[0][1]}")
-    return str(var_binds[0][1])
+    print(f"  SNMP response: OID={var_binds[0][0]} value={as_text(var_binds[0][1])}")
+    return as_text(var_binds[0][1])
 
 
 def get_all_values(result):
@@ -56,8 +67,8 @@ def get_all_values(result):
     assert not error_status
     assert not error_index
     for vb in var_binds:
-        print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
-    return [str(vb[1]) for vb in var_binds]
+        print(f"  SNMP response: OID={vb[0]} value={as_text(vb[1])}")
+    return [as_text(vb[1]) for vb in var_binds]
 
 
 # ---- Versioned GET tests (synchronous asyncio facade) ----
@@ -108,7 +119,7 @@ class TestSyncGetV1:
         elif error_status:
             print(f"  SNMP PDU error: {error_status} at index {error_index}")
         else:
-            print(f"  SNMP response: OID={var_binds[0][0]} value={var_binds[0][1]}")
+            print(f"  SNMP response: OID={var_binds[0][0]} value={as_text(var_binds[0][1])}")
         assert error_indication is None
 
     def test_get_multiple(self, snmpsim_endpoint):
@@ -218,8 +229,8 @@ class TestSyncNextV2c:
                 print(f"  SNMP error: {error_indication}")
                 break
             for vb in var_binds:
-                print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
-                results.append(str(vb[1]))
+                print(f"  SNMP response: OID={vb[0]} value={as_text(vb[1])}")
+                results.append(as_text(vb[1]))
             if len(results) >= 5:
                 break
         assert len(results) > 0
@@ -259,8 +270,8 @@ class TestSyncBulkV2c:
                 print(f"  SNMP error: {error_indication}")
                 break
             for vb in var_binds:
-                print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
-                results.append(str(vb[1]))
+                print(f"  SNMP response: OID={vb[0]} value={as_text(vb[1])}")
+                results.append(as_text(vb[1]))
             if len(results) >= 10:
                 break
         assert len(results) > 0
@@ -375,7 +386,7 @@ class TestAsyncioNextV2c:
         assert len(var_binds) > 0
         for row in var_binds:
             for vb in row:
-                print(f"  SNMP response: OID={vb[0]} value={vb[1]}")
+                print(f"  SNMP response: OID={vb[0]} value={as_text(vb[1])}")
 
 
 class TestAsyncioBulkV2c:
@@ -399,7 +410,7 @@ class TestAsyncioBulkV2c:
         assert error_indication is None
         for vb in var_binds:
             for row in vb:
-                print(f"  SNMP response: OID={row[0]} value={row[1]}")
+                print(f"  SNMP response: OID={row[0]} value={as_text(row[1])}")
         assert len(var_binds) > 0
 
 

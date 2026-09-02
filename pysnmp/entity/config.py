@@ -189,7 +189,14 @@ def addV1System(
         'communityIndex "%s" communityName "%s" securityName "%s" '
         'contextEngineId "%s" contextName "%s" transportTag '
         '"%s"'
-        % (communityIndex, communityName, securityName, contextEngineId, contextName, transportTag)
+        % (
+            communityIndex,
+            debug.prettify(communityName),
+            debug.prettify(securityName),
+            debug.prettify(contextEngineId),
+            debug.prettify(contextName),
+            debug.prettify(transportTag),
+        )
     )
 
 
@@ -405,7 +412,7 @@ def delV3User(
     debug.logger & debug.flagSM and debug.logger(
         "delV3User: deleted table entries by index "
         'userName "%s" securityEngineId '
-        '"%s"' % (userName, securityEngineId.prettyPrint())
+        '"%s"' % (debug.prettify(userName), securityEngineId.prettyPrint())
     )
 
     # Drop all derived rows

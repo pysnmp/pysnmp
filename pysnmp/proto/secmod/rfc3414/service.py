@@ -329,14 +329,14 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 'securityEngineID "%s" and  securityName "%s" found by '
                 'securityStateReference "%s" '
                 % (
-                    usmUserName,
-                    usmUserSecurityName,
+                    debug.prettify(usmUserName),
+                    debug.prettify(usmUserSecurityName),
                     usmUserAuthProtocol,
                     usmUserAuthKeyLocalized and usmUserAuthKeyLocalized.prettyPrint(),
                     usmUserPrivProtocol,
                     usmUserPrivKeyLocalized and usmUserPrivKeyLocalized.prettyPrint(),
                     securityEngineID.prettyPrint(),
-                    securityName,
+                    debug.prettify(securityName),
                     securityStateReference,
                 )
             )
@@ -382,14 +382,14 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     'usmUserPrivKeyLocalized "%s" by '
                     'securityEngineID "%s" and  securityName "%s"'
                     % (
-                        usmUserName,
-                        usmUserSecurityName,
+                        debug.prettify(usmUserName),
+                        debug.prettify(usmUserSecurityName),
                         usmUserAuthProtocol,
                         usmUserAuthKeyLocalized and usmUserAuthKeyLocalized.prettyPrint(),
                         usmUserPrivProtocol,
                         usmUserPrivKeyLocalized and usmUserPrivKeyLocalized.prettyPrint(),
                         securityEngineID.prettyPrint(),
-                        securityName,
+                        debug.prettify(securityName),
                     )
                 )
 
@@ -423,14 +423,14 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                             'usmUserPrivKeyLocalized "%s" for '
                             'securityEngineID "%s" and  securityName "%s"'
                             % (
-                                usmUserName,
-                                usmUserSecurityName,
+                                debug.prettify(usmUserName),
+                                debug.prettify(usmUserSecurityName),
                                 usmUserAuthProtocol,
                                 usmUserAuthKeyLocalized and usmUserAuthKeyLocalized.prettyPrint(),
                                 usmUserPrivProtocol,
                                 usmUserPrivKeyLocalized and usmUserPrivKeyLocalized.prettyPrint(),
                                 securityEngineID.prettyPrint(),
-                                securityName,
+                                debug.prettify(securityName),
                             )
                         )
 
@@ -438,7 +438,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                         debug.logger & debug.flagSM and debug.logger(
                             "__generateRequestOrResponseMsg: failed to clone "
                             'USM user for securityEngineID "%s" securityName '
-                            '"%s"' % (securityEngineID, securityName)
+                            '"%s"'
+                            % (
+                                debug.prettify(securityEngineID),
+                                debug.prettify(securityName),
+                            )
                         )
 
                         reportUnknownName = True
@@ -805,7 +809,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         )
 
         debug.logger & debug.flagSM and debug.logger(
-            f"processIncomingMsg: cache write securityStateReference {securityStateReference} by msgUserName {securityParameters.getComponentByPosition(3)}"
+            f"processIncomingMsg: cache write securityStateReference {securityStateReference} by msgUserName {debug.prettify(securityParameters.getComponentByPosition(3))}"
         )
 
         scopedPduData = msg.getComponentByPosition(3)
@@ -1017,7 +1021,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
                 usmStatsUnsupportedSecLevels.syntax += 1
                 debug.logger & debug.flagSM and debug.logger(
-                    f"processIncomingMsg: reporting inappropriate security level for user {msgUserName}: {badSecIndication}"
+                    f"processIncomingMsg: reporting inappropriate security level for user {debug.prettify(msgUserName)}: {badSecIndication}"
                 )
                 _raise_usm_error(
                     errind.unsupportedSecurityLevel,
@@ -1255,7 +1259,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         securityName = usmUserSecurityName
 
         debug.logger & debug.flagSM and debug.logger(
-            f"processIncomingMsg: cached msgUserName {msgUserName} info by securityStateReference {securityStateReference}"
+            f"processIncomingMsg: cached msgUserName {debug.prettify(msgUserName)} info by securityStateReference {securityStateReference}"
         )
 
         # Delayed to include details
