@@ -7,7 +7,7 @@ from pyasn1.type.constraint import SingleValueConstraint, ValueRangeConstraint
 from pyasn1.type.namedval import NamedValues
 
 from pysnmp.entity.engine import SnmpEngine
-from pysnmp.proto.rfc1902 import Integer, Integer32, OctetString
+from pysnmp.proto.rfc1902 import Integer, Integer32, ObjectIdentifier, OctetString
 from pysnmp.smi import builder, error, exval, indices, view
 from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 
@@ -421,6 +421,50 @@ class TestObjectType:
             assert isinstance(ot.getUnits(), str)
         except error.SmiError:
             pytest.skip("SNMP-TARGET-MIB snmpTargetAddrTimeout not available")
+
+
+@pytest.fixture(scope="module")
+def usm_view():
+    mibBuilder = builder.MibBuilder()
+    mibBuilder.loadModules("SNMP-USER-BASED-SM-MIB", "SNMPv2-MIB")
+    return view.MibViewController(mibBuilder)
+
+
+class TestObjectTypeRowPointerValues:
+    """An OBJECT IDENTIFIER *value* is resolved only to render it by MIB name.
+
+    A peer is free to return a RowPointer whose index this MIB view cannot decode;
+    that must not fail the varbind and abort the surrounding walk.
+    """
+
+    # usmUserEntry INDEX is { usmUserEngineID, usmUserName }, both variable-length
+    # OCTET STRINGs and therefore length-prefixed in the instance OID.
+    USM_USER_STATUS = "1.3.6.1.6.3.15.1.2.2.1.13"
+    # engineID length octet says 5 but 8 sub-ids follow, leaving excess sub-ids
+    UNDECODABLE = USM_USER_STATUS + ".5.128.0.0.0.1.2.3.4.3.97.98.99"
+    DECODABLE = USM_USER_STATUS + ".5.128.0.0.0.1.3.97.98.99"
+
+    def test_undecodable_row_pointer_resolves_standalone_raises(self, usm_view):
+        """Guard the premise: resolving it as an ObjectIdentity does raise."""
+        with pytest.raises(error.SmiError):
+            ObjectIdentity(self.UNDECODABLE).resolveWithMib(usm_view)
+
+    @pytest.mark.parametrize("ignore_errors", [True, False])
+    def test_undecodable_row_pointer_value_is_tolerated(self, usm_view, ignore_errors):
+        ot = ObjectType(
+            ObjectIdentity("SNMPv2-MIB", "sysObjectID", 0),
+            ObjectIdentifier(self.UNDECODABLE),
+        )
+        ot.resolveWithMib(usm_view, ignoreErrors=ignore_errors)
+        assert ot[1].prettyPrint() == self.UNDECODABLE
+
+    def test_decodable_row_pointer_value_still_resolves(self, usm_view):
+        ot = ObjectType(
+            ObjectIdentity("SNMPv2-MIB", "sysObjectID", 0),
+            ObjectIdentifier(self.DECODABLE),
+        )
+        ot.resolveWithMib(usm_view, ignoreErrors=False)
+        assert ot[1].prettyPrint() == 'SNMP-USER-BASED-SM-MIB::usmUserStatus."0x8000000001"."abc"'
 
 
 class TestBundledMibs:

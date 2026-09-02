@@ -897,7 +897,16 @@ class ObjectType:
                 raise SmiError(err)
 
         if rfc1902.ObjectIdentifier().isSuperTypeOf(self.__args[1], matchConstraints=False):
-            self.__args[1] = ObjectIdentity(self.__args[1]).resolveWithMib(mibViewController)
+            # An OBJECT IDENTIFIER value is resolved purely to render it by MIB
+            # name. The value is opaque payload chosen by the peer, so a RowPointer
+            # whose index this MIB view cannot decode must not fail the varbind --
+            # it stays an unresolved ObjectIdentifier.
+            try:
+                self.__args[1] = ObjectIdentity(self.__args[1]).resolveWithMib(mibViewController)
+            except SmiError as e:
+                debug.logger & debug.flagMIB and debug.logger(
+                    f"resolveWithMib: value {self.__args[1]!r} of {self.__args[0]!r} left unresolved: {e}"
+                )
 
         self.__state |= self.stClean
 
