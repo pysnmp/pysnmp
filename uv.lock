@@ -798,15 +798,15 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "1.1.12"
+version = "2.0.0b2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ply" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ca/93/f4cd53bf793f025b0d63f239f76e60101d084bda4ec014924c252c5e274e/pysnmp_pysmi-1.1.12.tar.gz", hash = "sha256:7d12ee12fb99c08449318430ce1b1633f6eee5d938e880215f41cc9976ecdcbb", size = 102180, upload-time = "2024-04-03T12:20:37.409Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e6/8c/757d77ee77add0901b213c08306fff895a4afecc211711cfa14b22d7c555/pysnmp_pysmi-2.0.0b2.tar.gz", hash = "sha256:ec6063b40a2462d5f7e46b5b71d665d546173f006f982ff385a9fabb3085af7c", size = 232612, upload-time = "2026-09-02T15:58:44.943Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/73/3542d7ae81856c7f2c2cb43c31515a65313611cfc34d983be5c4c36480c8/pysnmp_pysmi-1.1.12-py3-none-any.whl", hash = "sha256:a868be988f6578323a8b7eb7c8be7a8a539b061de90b8c2b5ddfdc8f9d376ba2", size = 79960, upload-time = "2024-04-03T12:20:35.525Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/89/762b5d3b43d4e74ad2052aefbb7d18af66aa6957d36a5639ab3f9d31a487/pysnmp_pysmi-2.0.0b2-py3-none-any.whl", hash = "sha256:7f57521678a3effd54aaf9d74a1d3868dfe81f920468b278f6c68151d344d2cd", size = 113089, upload-time = "2026-09-02T15:58:43.547Z" },
 ]
 
 [[package]]
@@ -837,7 +837,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0,<2.0.0" },
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=1.2.0b14,<2.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=1.0.4,<3.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=2.0.0b2,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=6.2.5,<9.0.0" },
     { name = "pytest-codecov", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
