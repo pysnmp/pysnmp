@@ -8,6 +8,13 @@ on:
       - "develop"
   pull_request:
     branches: [main, next, develop]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Release to cut (main only)"
+        type: choice
+        options: [prerelease, ga]
+        default: prerelease
 
 jobs:
   pre-commit:
@@ -37,7 +44,9 @@ jobs:
       contents: write
       issues: write
       id-token: write
-    environment: release    
+    environment: release
+    env:
+      DRY: ${{ github.event_name != 'workflow_dispatch' && github.ref_name == 'main' }}
     needs:
       - pre-commit
       - semgrep
@@ -59,11 +68,16 @@ jobs:
           version: "latest"
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"          
+          node-version: "20"
+      - name: Cut prerelease from main
+        if: github.ref_name == 'main' && github.event.inputs.release_type == 'prerelease'
+        run: |
+          sed -i 's/^    "main",$/    { name: "main", prerelease: "rc" },/' .releaserc
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4.0.0
         id: semantic   # Need an `id` for output variables
         with:
+          dry_run: ${{ env.DRY }}
           #semantic_version: 19.0.5
           extra_plugins: |
             semantic-release-replace-plugin
@@ -73,11 +87,16 @@ jobs:
             @semantic-release/exec@6.0.3               
         env:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
+      - name: Build dev preview
+        if: env.DRY == 'true' && steps.semantic.outputs.new_release_version != ''
+        run: |
+          sed -i "s/^version *=.*/version = \"${{ steps.semantic.outputs.new_release_version }}.dev${{ github.run_number }}\"/" pyproject.toml
+          uv build
       - name: Publish package distributions to PyPI
-        if: steps.semantic.outputs.new_release_published == 'true'
-        uses: pypa/gh-action-pypi-publish@release/v1          
+        if: env.DRY != 'true' && steps.semantic.outputs.new_release_published == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
       - uses: actions/upload-artifact@v4
-        if: steps.semantic.outputs.new_release_published == 'true'
+        if: hashFiles('dist/*') != ''
         with:
           name: dist
           path: dist
