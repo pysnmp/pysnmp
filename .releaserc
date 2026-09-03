@@ -85,7 +85,7 @@
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "poetry build",
+        "publishCmd": "uv build",
         "shell": "bash"
       },
     ],
