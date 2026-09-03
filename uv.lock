@@ -846,15 +846,15 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "2.0.0b2"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ply" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/8c/757d77ee77add0901b213c08306fff895a4afecc211711cfa14b22d7c555/pysnmp_pysmi-2.0.0b2.tar.gz", hash = "sha256:ec6063b40a2462d5f7e46b5b71d665d546173f006f982ff385a9fabb3085af7c", size = 232612, upload-time = "2026-09-02T15:58:44.943Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/af/24/fd287d29784081079bad18b6e61fd42cf719776709707f2489f3b000fdea/pysnmp_pysmi-2.0.1.tar.gz", hash = "sha256:95862000ea63b373fe5e960d3f8e3604e0694184f5f0d59e9de6c5b57462b6ca", size = 388136, upload-time = "2026-09-03T21:42:41.755Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/89/762b5d3b43d4e74ad2052aefbb7d18af66aa6957d36a5639ab3f9d31a487/pysnmp_pysmi-2.0.0b2-py3-none-any.whl", hash = "sha256:7f57521678a3effd54aaf9d74a1d3868dfe81f920468b278f6c68151d344d2cd", size = 113089, upload-time = "2026-09-02T15:58:43.547Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/66/c37d323185e30d96d7d27e365a7049aad030eae7f597d753ab5ff7fc9c9c/pysnmp_pysmi-2.0.1-py3-none-any.whl", hash = "sha256:360886465b9e93970de597d33a4d656eeec7bf77fb1872120792ff02e8dba305", size = 171913, upload-time = "2026-09-03T21:42:40.125Z" },
 ]
 
 [[package]]
@@ -883,7 +883,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0,<3.0.0" },
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=1.2.0,<2.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=2.0.0b2,<3.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=2.0.1,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", marker = "extra == 'dev'", specifier = ">=7.0.0,<9.0.0" },

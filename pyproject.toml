@@ -28,7 +28,7 @@ classifiers = [
 ]
 readme = "README.md"
 dependencies = [
-    "pysnmp-pysmi >=2.0.0b2,<3.0.0",
+    "pysnmp-pysmi >=2.0.1,<3.0.0",
     "pycryptodomex >=3.11.0,<4.0.0",
     "pysnmp-pyasn1 >=1.2.0,<2.0.0",
 ]
