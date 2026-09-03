@@ -19,19 +19,9 @@ try:
     from pysmi.borrower.pyfile import PyFileBorrower
     from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
     from pysmi.compiler import MibCompiler
-
-    try:
-        from pysmi.parser.dialect import smi_v1_relaxed
-    except ImportError:  # pysmi < 2.0
-        from pysmi.parser.dialect import smiV1Relaxed as smi_v1_relaxed
-    try:
-        from pysmi.parser.smi import parser_factory
-    except ImportError:  # pysmi < 2.0
-        from pysmi.parser.smi import parserFactory as parser_factory
-    try:
-        from pysmi.reader.url import get_readers_from_urls
-    except ImportError:  # pysmi < 2.0
-        from pysmi.reader.url import getReadersFromUrls as get_readers_from_urls
+    from pysmi.parser.dialect import smiV1Relaxed
+    from pysmi.parser.smi import parserFactory
+    from pysmi.reader.url import getReadersFromUrls
     from pysmi.searcher.pypackage import PyPackageSearcher
     from pysmi.searcher.stub import StubSearcher
     from pysmi.writer.pyfile import PyFileWriter
@@ -55,23 +45,21 @@ else:
             return
 
         compiler = MibCompiler(
-            parser_factory(**smi_v1_relaxed)(),
+            parserFactory(**smiV1Relaxed)(),
             PySnmpCodeGen(),
             PyFileWriter(kwargs.get("destination") or defaultDest),
         )
 
-        add_sources = getattr(compiler, "add_sources", None) or compiler.addSources
-        add_searchers = getattr(compiler, "add_searchers", None) or compiler.addSearchers
-        add_borrowers = getattr(compiler, "add_borrowers", None) or compiler.addBorrowers
+        compiler.add_sources(*getReadersFromUrls(*kwargs.get("sources") or defaultSources))
 
-        add_sources(*get_readers_from_urls(*kwargs.get("sources") or defaultSources))
-
-        add_searchers(StubSearcher(*baseMibs))
-        add_searchers(*[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()])
-        add_borrowers(
+        compiler.add_searchers(StubSearcher(*baseMibs))
+        compiler.add_searchers(
+            *[PyPackageSearcher(x.fullPath()) for x in mibBuilder.getMibSources()]
+        )
+        compiler.add_borrowers(
             *[
                 PyFileBorrower(x, genTexts=mibBuilder.loadTexts)
-                for x in get_readers_from_urls(
+                for x in getReadersFromUrls(
                     *kwargs.get("borrowers") or defaultBorrowers, **dict(lowcaseMatching=False)
                 )
             ]
