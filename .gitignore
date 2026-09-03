@@ -29,3 +29,6 @@ venv*
 .env
 openspec/
 sonar_plan.md
+
+# macOS
+.DS_Store
