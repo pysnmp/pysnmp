@@ -27,7 +27,7 @@ Before generating code, scan the codebase to identify:
    - Never suggest features not available in the detected framework versions
 
 3. **Library Versions**: Note the exact versions of key libraries and dependencies
-   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=2.0.0b2,<3.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.2.0b14,<2.0.0`
+   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=2.0.0b2,<3.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.2.0rc1,<2.0.0`
    - Dev dependencies (from `pyproject.toml` `[project.optional-dependencies]`): `sphinx >=7.0.0,<9.0.0`, `pytest >=9.0.3,<10.0.0`, `coverage[toml] >=7.2.0,<8.0.0`, `mypy >=1.15.0,<3.0.0`, `ruff >=0.4.0,<1.0.0`
    - Generate code compatible with these specific versions
    - The project depends on the **pysnmp-pyasn1** fork, not upstream pyasn1. Import from `pyasn1.type`, `pyasn1.codec.ber`, `pyasn1.error`, and `pyasn1.compat.octets` as seen throughout `pysnmp/proto/` and `pysnmp/smi/`

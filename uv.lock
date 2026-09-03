@@ -837,11 +837,11 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pyasn1"
-version = "1.2.0b14"
+version = "1.2.0rc1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ca/a3/39d3024262c4a48bc7cb52b637da897cd9a3a03c34f1aa10e213a59945a3/pysnmp_pyasn1-1.2.0b14.tar.gz", hash = "sha256:dece37e12d30021027ca2c2683ba50339aae46a1c7be5a3c57efcd969e39009e", size = 285030, upload-time = "2026-09-02T16:16:28.877Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/33/c21d34e9ffcfa6fdecac2cf560082e47ba3b5517a8161666396656047d9e/pysnmp_pyasn1-1.2.0rc1.tar.gz", hash = "sha256:7ebf143a1c1da7014789484bfcaafddd133a44bdec5309d5313f215cae0ef46a", size = 285269, upload-time = "2026-09-03T01:03:39.995Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/1b/95f92221d33355997e3a95681728204846ae3c0f81363d2f6c5019c7a262/pysnmp_pyasn1-1.2.0b14-py3-none-any.whl", hash = "sha256:417df3132f30a58795ba33c16475b9a753e0e816863880bfe7577ed01f9abead", size = 102236, upload-time = "2026-09-02T16:16:27.67Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/8c/2ca5f0ce827f41e4cb83f0011d5a0683d073d843c26a13206859ebde48ed/pysnmp_pyasn1-1.2.0rc1-py3-none-any.whl", hash = "sha256:7fd1b5c45b876c64713e0a0506b379a09e63a5db00c15d071e3a56bb53bfb1ab", size = 102233, upload-time = "2026-09-03T01:03:38.74Z" },
 ]
 
 [[package]]
@@ -859,7 +859,7 @@ wheels = [
 
 [[package]]
 name = "pysnmplib"
-version = "6.0.0rc1"
+version = "6.0.0rc2"
 source = { editable = "." }
 dependencies = [
     { name = "pycryptodomex" },
@@ -882,7 +882,7 @@ requires-dist = [
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.2.0,<8.0.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0,<3.0.0" },
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
-    { name = "pysnmp-pyasn1", specifier = ">=1.2.0b14,<2.0.0" },
+    { name = "pysnmp-pyasn1", specifier = ">=1.2.0rc1,<2.0.0" },
     { name = "pysnmp-pysmi", specifier = ">=2.0.0b2,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0,<1.0.0" },
