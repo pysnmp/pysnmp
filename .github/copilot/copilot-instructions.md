@@ -185,6 +185,19 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 - Match existing patterns for documenting breaking changes in `CHANGELOG.md` (Revision-header sections with bulleted notes)
 - Follow the same approach for deprecation notices
 
+### Commit message conventions
+
+Releases are cut by semantic-release with the Angular preset: only `feat`, `fix`, `perf` and `BREAKING CHANGE` produce a
+version. `chore`, `ci`, `docs`, `refactor`, `style` and `test` never do.
+
+- Runtime dependency changes are **`fix(deps):`**, not `chore(deps):`. Raising a floor in `[project].dependencies`
+  changes what users resolve and install, so it must ship as a release.
+  Example: `fix(deps): require pysnmp-pyasn1 >=1.2.0`
+- Development-only dependency changes (`[dependency-groups]`, pre-commit hooks, CI actions) stay `chore(deps):` or `ci:`
+  — they are invisible to installers.
+- A `chore(deps):` runtime bump merged to `next` or `main` will sit unreleased until an unrelated releasable commit
+  lands. Use the correct type up front rather than fixing it after the fact.
+
 ## General Best Practices
 
 - Follow naming conventions exactly as they appear in existing code:
