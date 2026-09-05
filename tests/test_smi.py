@@ -920,3 +920,36 @@ class TestTextualConventionPrettyIn:
 
         assert int(EnumTC("up")) == 1
         assert int(EnumTC(2)) == 2
+
+
+class TestTransportAddressPrettyIn:
+    """SnmpUDPAddress and TransportAddressIPv4 delegate to TextualConvention.
+
+    Both overrode prettyIn to coerce a Python socket-address tuple and then
+    called OctetString.prettyIn directly, shadowing the TEXTUAL-CONVENTION
+    machinery entirely — so the DISPLAY-HINT text form these types render was
+    not accepted back. See #155.
+    """
+
+    OCTETS = b"\x01\x02\x03\x04\x00\xa1"
+
+    @pytest.fixture(
+        params=[("SNMPv2-TM", "SnmpUDPAddress"), ("TRANSPORT-ADDRESS-MIB", "TransportAddressIPv4")]
+    )
+    def address_type(self, request, mib_builder):
+        (cls,) = mib_builder.importSymbols(*request.param)
+        return cls
+
+    def test_socket_tuple(self, address_type):
+        assert address_type(("1.2.3.4", 161)).asOctets() == self.OCTETS
+
+    def test_raw_octets(self, address_type):
+        assert address_type(self.OCTETS).asOctets() == self.OCTETS
+
+    def test_display_hint_text(self, address_type):
+        rendered = address_type(self.OCTETS).prettyPrint()
+        assert rendered.startswith("1.2.3.4")
+        assert address_type(rendered).asOctets() == self.OCTETS
+
+    def test_socket_address_coercion_survives(self, address_type):
+        assert tuple(address_type(("1.2.3.4", 161))) == ("1.2.3.4", 161)
