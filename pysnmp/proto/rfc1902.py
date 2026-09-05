@@ -179,7 +179,7 @@ class Integer(Integer32):
 
 
 class OctetString(univ.OctetString):
-    """Creates an instance of SNMP OCTET STRING class.
+    r"""Creates an instance of SNMP OCTET STRING class.
 
     The :py:class:`~pysnmp.proto.rfc1902.OctetString` type represents
     arbitrary binary or text data (:RFC:`1902#section-7.1.2`).
@@ -209,11 +209,15 @@ class OctetString(univ.OctetString):
         OctetString('some apples')
         >>> OctetString('some apples') + ' and oranges'
         OctetString('some apples and oranges')
-        >>> str(OctetString('some apples'))
+        >>> OctetString('some apples').asOctets()
+        b'some apples'
+        >>> OctetString('some apples').prettyPrint()
         'some apples'
         >>> SomeString = OctetString.withSize(3, 12)
-        >>> str(SomeString(hexValue='deadbeef'))
-        '\xde\xad\xbe\xef'
+        >>> SomeString(hexValue='deadbeef').asOctets()
+        b'\xde\xad\xbe\xef'
+        >>> SomeString(hexValue='deadbeef').prettyPrint()
+        '0xdeadbeef'
         >>>
 
     """
@@ -291,7 +295,7 @@ class ObjectIdentifier(univ.ObjectIdentifier):
 
 
 class IpAddress(OctetString):
-    """Creates an instance of SNMP IpAddress class.
+    r"""Creates an instance of SNMP IpAddress class.
 
     The :py:class:`~pysnmp.proto.rfc1902.IpAddress` class represents
     a 32-bit internet address as an OCTET STRING of length 4, in network
@@ -313,8 +317,10 @@ class IpAddress(OctetString):
         >>> from pysnmp.proto.rfc1902 import *
         >>> IpAddress('127.0.0.1')
         IpAddress(hexValue='7f000001')
-        >>> str(IpAddress(hexValue='7f000001'))
-        '\x7f\x00\x00\x01'
+        >>> IpAddress(hexValue='7f000001').prettyPrint()
+        '127.0.0.1'
+        >>> IpAddress(hexValue='7f000001').asOctets()
+        b'\x7f\x00\x00\x01'
         >>> IpAddress('\x7f\x00\x00\x01')
         IpAddress(hexValue='7f000001')
         >>>
@@ -496,7 +502,7 @@ class TimeTicks(univ.Integer):
 
 
 class Opaque(univ.OctetString):
-    """Creates an instance of SNMP Opaque class.
+    r"""Creates an instance of SNMP Opaque class.
 
     The :py:class:`~pysnmp.proto.rfc1902.Opaque` type supports the
     capability to pass arbitrary ASN.1 syntax.  A value is encoded
@@ -528,10 +534,14 @@ class Opaque(univ.OctetString):
         Opaque('some apples')
         >>> Opaque('some apples') + ' and oranges'
         Opaque('some apples and oranges')
-        >>> str(Opaque('some apples'))
+        >>> Opaque('some apples').asOctets()
+        b'some apples'
+        >>> Opaque('some apples').prettyPrint()
         'some apples'
-        >>> str(Opaque(hexValue='deadbeef'))
-        '\xde\xad\xbe\xef'
+        >>> Opaque(hexValue='deadbeef').asOctets()
+        b'\xde\xad\xbe\xef'
+        >>> Opaque(hexValue='deadbeef').prettyPrint()
+        '0xdeadbeef'
         >>>
 
     """
