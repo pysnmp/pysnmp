@@ -165,7 +165,7 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 
 ## Error Handling Patterns
 
-- The base exception is `pysnmp.error.PySnmpError` (`pysnmp/error.py`); it captures `sys.exc_info()` as `.cause` and appends `caused by ...` to the message. Let this base class carry cause context rather than reimplementing it.
+- The base exception is `pysnmp.error.PySnmpError` (`pysnmp/error.py`); it exposes the chained exception as `.cause` (a `sys.exc_info()`-shaped triple, derived from `__cause__`/`__context__`) and appends `caused by ...` to `str()`. Let this base class carry cause context rather than reimplementing it, and use plain `raise ... from exc` or a bare `raise` inside an `except` block to set it.
 - SNMP v3 protocol errors derive from `ProtocolError(PySnmpError, PyAsn1Error)` in `proto/error.py`; SMI errors derive from `SmiError(PySnmpError, PyAsn1Error)` in `smi/error.py`; transport errors derive from `CarrierError(PySnmpError)` in `carrier/error.py`.
 - `ErrorIndication` (`proto/errind.py`) is a separate `Exception` hierarchy for SNMP error-indication values; instances are compared by string value and carry a `.prettyPrint()`-style description.
 - Abstract base classes raise `error.ProtocolError('method not implemented')` for unimplemented methods (see `proto/mpmod/base.py`, `proto/secmod/base.py`). Follow this when adding new abstract methods.

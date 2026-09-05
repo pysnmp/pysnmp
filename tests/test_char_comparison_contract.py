@@ -148,11 +148,6 @@ class TestObjectIdentityComparison:
     def test_lt(self, resolved_oid, resolved_oid2):
         assert resolved_oid < resolved_oid2
 
-    @pytest.mark.xfail(
-        reason="BUG: ObjectIdentity.__le__ delegates to < instead of <=. "
-        "For equal OIDs, < returns False but <= should return True. "
-        "Fixed by total_ordering in Phase 5."
-    )
     def test_le_equal(self, resolved_oid):
         oid2 = ObjectIdentity("1.3.6.1.2.1.1.1.0")
         mibBuilder = builder.MibBuilder()
@@ -169,25 +164,10 @@ class TestObjectIdentityComparison:
     def test_ge_greater(self, resolved_oid, resolved_oid2):
         assert resolved_oid2 >= resolved_oid
 
-    @pytest.mark.xfail(
-        reason="BUG: ObjectIdentity.__ge__ delegates to > instead of >=. "
-        "For equal OIDs, > returns False but >= should return True. "
-        "Fixed by total_ordering in Phase 5."
-    )
     def test_ge_equal(self, resolved_oid):
-        """__ge__ should use >=, not >. With equal OIDs, >= is True but > is False.
-
-        This is the KNOWN BUG: ObjectIdentity.__ge__ currently delegates to
-        > instead of >=. This test documents the bug and will pass AFTER
-        total_ordering is applied (which synthesizes correct __ge__).
-        """
+        """__ge__ must use >=, not >: for equal OIDs it is True where > is False."""
         oid2 = ObjectIdentity("1.3.6.1.2.1.1.1.0")
         mibBuilder = builder.MibBuilder()
         mibView = view.MibViewController(mibBuilder)
         oid2.resolveWithMib(mibView)
-        result = resolved_oid >= oid2
-        assert result, (
-            "ObjectIdentity.__ge__ returns False for equal OIDs. "
-            "This is the known bug — __ge__ delegates to > instead of >=. "
-            "total_ordering will fix this."
-        )
+        assert resolved_oid >= oid2
