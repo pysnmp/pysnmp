@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import socket
 import tempfile
 
 import pytest
@@ -400,7 +401,8 @@ class TestUdpTransport:
         transport = udp.UdpAsyncioTransport(loop=loop).enableBroadcast()
         transport.openClientMode()
         loop.run_until_complete(asyncio.sleep(0))
-        assert transport.getLocalAddress() is not None
+        sock = transport.transport.get_extra_info("socket")
+        assert sock.getsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST)
         transport.closeTransport()
         loop.run_until_complete(asyncio.sleep(0))
         loop.close()
