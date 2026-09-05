@@ -122,6 +122,7 @@ class ModuleIdentity(MibNode):
     organization = ""
     contactInfo = ""
     description = ""
+    reference = ""
     revisions = ()
     revisionsDescriptions = ()
 
@@ -172,6 +173,13 @@ class ModuleIdentity(MibNode):
 
     def setRevisionsDescriptions(self, args):
         self.revisionsDescriptions = args
+        return self
+
+    def getReference(self):
+        return self.reference
+
+    def setReference(self, v):
+        self.reference = v
         return self
 
     def asn1Print(self):

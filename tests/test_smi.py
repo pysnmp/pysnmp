@@ -820,3 +820,31 @@ class TestCloneSubtypeSemantics:
         assert int(value) == 1
         assert value.namedValues[1] == "up"
         assert value.namedValues[2] == "down"
+
+
+class TestSmiReference:
+    """Every SMI/CONF macro class that RFC 2578/2580 allows a REFERENCE clause on."""
+
+    @pytest.mark.parametrize(
+        ("module", "symbol"),
+        [
+            ("SNMPv2-SMI", "ModuleIdentity"),
+            ("SNMPv2-SMI", "ObjectIdentity"),
+            ("SNMPv2-SMI", "NotificationType"),
+            ("SNMPv2-SMI", "MibScalar"),
+            ("SNMPv2-SMI", "MibTableColumn"),
+            ("SNMPv2-SMI", "MibTableRow"),
+            ("SNMPv2-CONF", "ObjectGroup"),
+            ("SNMPv2-CONF", "NotificationGroup"),
+            ("SNMPv2-CONF", "ModuleCompliance"),
+            ("SNMPv2-CONF", "AgentCapabilities"),
+        ],
+    )
+    def test_set_and_get_reference(self, mib_builder, module, symbol):
+        (cls,) = mib_builder.importSymbols(module, symbol)
+        oid = (1, 3, 6, 1, 4, 1, 99)
+        node = cls(oid, None) if symbol == "MibTableColumn" else cls(oid)
+
+        assert node.getReference() == ""
+        assert node.setReference("RFC 2580 section 3") is node
+        assert node.getReference() == "RFC 2580 section 3"

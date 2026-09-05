@@ -16,6 +16,7 @@ class ObjectGroup(MibNode):
     status = "current"
     objects = ()
     description = ""
+    reference = ""
 
     def getStatus(self):
         return self.status
@@ -39,6 +40,13 @@ class ObjectGroup(MibNode):
 
     def setDescription(self, v):
         self.description = v
+        return self
+
+    def getReference(self):
+        return self.reference
+
+    def setReference(self, v):
+        self.reference = v
         return self
 
     def asn1Print(self):
@@ -53,6 +61,7 @@ class NotificationGroup(MibNode):
     status = "current"
     objects = ()
     description = ""
+    reference = ""
 
     def getStatus(self):
         return self.status
@@ -76,6 +85,13 @@ class NotificationGroup(MibNode):
 
     def setDescription(self, v):
         self.description = v
+        return self
+
+    def getReference(self):
+        return self.reference
+
+    def setReference(self, v):
+        self.reference = v
         return self
 
     def asn1Print(self):
@@ -90,6 +106,7 @@ class ModuleCompliance(MibNode):
     status = "current"
     objects = ()
     description = ""
+    reference = ""
 
     def getStatus(self):
         return self.status
@@ -113,6 +130,13 @@ class ModuleCompliance(MibNode):
 
     def setDescription(self, v):
         self.description = v
+        return self
+
+    def getReference(self):
+        return self.reference
+
+    def setReference(self, v):
+        self.reference = v
         return self
 
     def asn1Print(self):
