@@ -1,6 +1,6 @@
 [project]
 name = "pysnmplib"
-version = "6.0.0-rc.4"
+version = "6.0.0-rc.5"
 description = "Pure-Python SNMP v1/v2c/v3 engine"
 authors = [
     { name = "omrozowicz", email = "omrozowicz@splunk.com" },
