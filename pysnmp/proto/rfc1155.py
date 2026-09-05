@@ -122,20 +122,7 @@ class ObjectName(univ.ObjectIdentifier):
     pass
 
 
-class TypeCoercionHackMixIn:  # XXX keep this old-style class till pyasn1 types becomes new-style
-    # Reduce ASN1 type check to simple tag check as SMIv2 objects may
-    # not be constraints-compatible with those used in SNMP PDU.
-    def _verifyComponent(self, idx, value, **kwargs):
-        componentType = self._componentType
-        if componentType:
-            if idx >= len(componentType):
-                raise PyAsn1Error("Component type error out of range")
-            t = componentType[idx].getType()
-            if not t.tagSet.isSuperTagSetOf(value.tagSet):
-                raise PyAsn1Error(f"Component type error {t!r} vs {value!r}")
-
-
-class SimpleSyntax(TypeCoercionHackMixIn, univ.Choice):
+class SimpleSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("number", univ.Integer()),
         namedtype.NamedType("string", univ.OctetString()),
@@ -144,7 +131,7 @@ class SimpleSyntax(TypeCoercionHackMixIn, univ.Choice):
     )
 
 
-class ApplicationSyntax(TypeCoercionHackMixIn, univ.Choice):
+class ApplicationSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("address", NetworkAddress()),
         namedtype.NamedType("counter", Counter()),
