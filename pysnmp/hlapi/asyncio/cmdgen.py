@@ -122,9 +122,8 @@ async def getCmd(
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_get
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.run(run())
-    >>> (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 
@@ -219,9 +218,8 @@ async def setCmd(
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.run(run())
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux i386'))])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 
@@ -320,9 +318,8 @@ async def nextCmd(
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.run(run())
-    (None, 0, 0, [[ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux i386'))]])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 
@@ -453,9 +450,8 @@ async def bulkCmd(
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_bulk
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.run(run())
-    (None, 0, 0, [[ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux localhost 5.15.0'))], [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.2.0')), ObjectIdentifier('1.3.6.1.4.1.424242.1.1'))]])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 

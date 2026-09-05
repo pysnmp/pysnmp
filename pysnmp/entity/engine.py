@@ -49,8 +49,11 @@ class SnmpEngine:
 
     Examples
     --------
-    >>> SnmpEngine()
-    SnmpEngine(snmpEngineID=OctetString(hexValue='0x80004fb80567726f6d6d69742'))
+    >>> engine = SnmpEngine()
+    >>> type(engine.snmpEngineID).__name__
+    'SnmpEngineID'
+    >>> repr(engine).startswith('SnmpEngine(snmpEngineID=<SnmpEngineID value object')
+    True
     >>>
 
     """

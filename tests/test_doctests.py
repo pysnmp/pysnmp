@@ -15,6 +15,14 @@ import pytest
 
 DOCTESTED_MODULES = [
     "pysnmp.proto.rfc1902",
+    "pysnmp.smi.rfc1902",
+    "pysnmp.hlapi.asyncio.transport",
+    "pysnmp.hlapi.asyncio.cmdgen",
+    "pysnmp.hlapi.auth",
+    "pysnmp.smi.view",
+    "pysnmp.hlapi.context",
+    "pysnmp.hlapi.asyncio.ntforg",
+    "pysnmp.entity.engine",
 ]
 
 

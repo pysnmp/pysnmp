@@ -360,10 +360,12 @@ class MibViewController:
 
         Examples
         --------
+        >>> from pysnmp.smi import builder
+        >>> mibBuilder = builder.MibBuilder()
         >>> mibView = MibViewController(mibBuilder)
         >>> cols = mibView.getTableColumns('SNMPv2-MIB', 'sysOREntry')
-        >>> for colId, colName, colNode in cols:
-        ...     print(colId, colNode.getMaxAccess())
+        >>> [(colId, colNode.getMaxAccess()) for colId, colName, colNode in cols]
+        [(1, 'readonly'), (2, 'readonly'), (3, 'readonly'), (4, 'readonly')]
         """
         (MibTableRow,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "MibTableRow")
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
@@ -382,8 +384,13 @@ class MibViewController:
 
         Examples
         --------
+        >>> from pysnmp.smi import builder
+        >>> mibBuilder = builder.MibBuilder()
+        >>> mibView = MibViewController(mibBuilder)
         >>> oid = mibView.resolveCellOid('SNMP-COMMUNITY-MIB',
         ...                              'snmpCommunityEntry', 2, 'my-router')
+        >>> oid
+        (1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 2, 109, 121, 45, 114, 111, 117, 116, 101, 114)
         """
         MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
             "SNMPv2-SMI", "MibTableColumn", "MibTableRow"

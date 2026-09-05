@@ -42,8 +42,8 @@ class UdpTransportTarget(AbstractTransportTarget):
     Examples
     --------
     >>> from pysnmp.hlapi.asyncio import UdpTransportTarget
-    >>> UdpTransportTarget(('localhost', 161))
-    UdpTransportTarget(('195.218.195.228', 161), timeout=1, retries=5, tagList='')
+    >>> UdpTransportTarget(('127.0.0.1', 161))
+    UdpTransportTarget(('127.0.0.1', 161), timeout=1, retries=5, tagList=b'')
     >>>
 
     """
@@ -101,16 +101,16 @@ class Udp6TransportTarget(AbstractTransportTarget):
     Examples
     --------
     >>> from pysnmp.hlapi.asyncio import Udp6TransportTarget
-    >>> Udp6TransportTarget(('google.com', 161))
-    Udp6TransportTarget(('2a00:1450:4014:80a::100e', 161), timeout=1, retries=5, tagList='')
+    >>> Udp6TransportTarget(('::1', 161))
+    Udp6TransportTarget(('::1', 161), timeout=1, retries=5, tagList=b'')
     >>> Udp6TransportTarget(('FEDC:BA98:7654:3210:FEDC:BA98:7654:3210', 161))
-    Udp6TransportTarget(('fedc:ba98:7654:3210:fedc:ba98:7654:3210', 161), timeout=1, retries=5, tagList='')
+    Udp6TransportTarget(('fedc:ba98:7654:3210:fedc:ba98:7654:3210', 161), timeout=1, retries=5, tagList=b'')
     >>> Udp6TransportTarget(('1080:0:0:0:8:800:200C:417A', 161))
-    Udp6TransportTarget(('1080::8:800:200c:417a', 161), timeout=1, retries=5, tagList='')
+    Udp6TransportTarget(('1080::8:800:200c:417a', 161), timeout=1, retries=5, tagList=b'')
     >>> Udp6TransportTarget(('::0', 161))
-    Udp6TransportTarget(('::', 161), timeout=1, retries=5, tagList='')
+    Udp6TransportTarget(('::', 161), timeout=1, retries=5, tagList=b'')
     >>> Udp6TransportTarget(('::', 161))
-    Udp6TransportTarget(('::', 161), timeout=1, retries=5, tagList='')
+    Udp6TransportTarget(('::', 161), timeout=1, retries=5, tagList=b'')
     >>>
 
     """

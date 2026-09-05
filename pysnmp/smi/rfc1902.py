@@ -114,10 +114,15 @@ class ObjectIdentity:
 
         Examples
         --------
-        >>> objectIdentity = ObjectIdentity('1.3.6.1.2.1.1.1.0')
+        >>> from pysnmp.smi import builder, view
+        >>> mibViewController = view.MibViewController(builder.MibBuilder())
+        >>> objectIdentity = ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
         >>> objectIdentity.resolveWithMib(mibViewController)
-        >>> objectIdentity.getMibSymbol()
-        ('SNMPv2-MIB', 'sysDescr', (0,))
+        ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
+        >>> objectIdentity.getMibSymbol()[:2]
+        ('SNMPv2-MIB', 'sysDescr')
+        >>> objectIdentity.getMibSymbol()[2][0].prettyPrint()
+        '0'
         >>>
 
         """
@@ -141,10 +146,13 @@ class ObjectIdentity:
 
         Examples
         --------
+        >>> from pysnmp.smi import builder, view
+        >>> mibViewController = view.MibViewController(builder.MibBuilder())
         >>> objectIdentity = ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
         >>> objectIdentity.resolveWithMib(mibViewController)
-        >>> objectIdentity.getOid()
-        ObjectName('1.3.6.1.2.1.1.1.0')
+        ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
+        >>> objectIdentity.getOid().prettyPrint()
+        '1.3.6.1.2.1.1.1.0'
         >>>
 
         """
@@ -177,9 +185,12 @@ class ObjectIdentity:
 
         Examples
         --------
+        >>> from pysnmp.smi import builder, view
+        >>> mibViewController = view.MibViewController(builder.MibBuilder())
         >>> objectIdentity = ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
         >>> objectIdentity.resolveWithMib(mibViewController)
-        >>> objectIdentity.getOid()
+        ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)
+        >>> objectIdentity.getLabel()
         ('iso', 'org', 'dod', 'internet', 'mgmt', 'mib-2', 'system', 'sysDescr')
         >>>
 
@@ -227,7 +238,7 @@ class ObjectIdentity:
 
         Examples
         --------
-        >>> ObjectIdentity('SNMPv2-MIB', 'sysDescr').addAsn1Source('https://pysnmp.github.io:443/mibs/asn1/@mib@')
+        >>> ObjectIdentity('SNMPv2-MIB', 'sysDescr').addAsn1MibSource('https://pysnmp.github.io:443/mibs/asn1/@mib@')
         ObjectIdentity('SNMPv2-MIB', 'sysDescr')
         >>>
 
@@ -343,9 +354,11 @@ class ObjectIdentity:
 
         Examples
         --------
+        >>> from pysnmp.smi import builder, view
+        >>> mibViewController = view.MibViewController(builder.MibBuilder())
         >>> objectIdentity = ObjectIdentity('SNMPv2-MIB', 'sysDescr')
-        >>> objectIdentity.resolveWithMib(mibViewController)
-        ObjectIdentity('SNMPv2-MIB', 'sysDescr')
+        >>> str(objectIdentity.resolveWithMib(mibViewController))
+        '1.3.6.1.2.1.1.1'
         >>>
 
         """
@@ -684,8 +697,8 @@ class ObjectType:
     Examples
     --------
     >>> from pysnmp.smi.rfc1902 import *
-    >>> ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'))
-    ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), Null(''))
+    >>> repr(ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'))).startswith("ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), <Null value object")
+    True
     >>> ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386')
     ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386')
 
@@ -742,8 +755,8 @@ class ObjectType:
 
         Examples
         --------
-        >>> ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addAsn1Source('https://pysnmp.github.io:443/mibs/asn1/@mib@')
-        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'))
+        >>> repr(ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addAsn1MibSource('https://pysnmp.github.io:443/mibs/asn1/@mib@')).startswith("ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), <Null value object")
+        True
         >>>
 
         """
@@ -774,8 +787,8 @@ class ObjectType:
 
         Examples
         --------
-        >>> ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addMibSource('/opt/pysnmp/mibs', 'pysnmp_mibs')
-        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'))
+        >>> repr(ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addMibSource('/opt/pysnmp/mibs', 'pysnmp_mibs')).startswith("ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), <Null value object")
+        True
         >>>
 
         """
@@ -798,8 +811,8 @@ class ObjectType:
 
         Examples
         --------
-        >>> ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).loadMibs('IF-MIB', 'TCP-MIB')
-        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'))
+        >>> repr(ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).loadMibs('IF-MIB', 'TCP-MIB')).startswith("ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), <Null value object")
+        True
         >>>
 
         """
@@ -838,13 +851,13 @@ class ObjectType:
 
         Examples
         --------
-        >>> from pysmi.hlapi import varbinds
-        >>> mibViewController = varbinds.AbstractVarBinds.getMibViewController( engine )
+        >>> from pysnmp.smi import builder, view
+        >>> mibViewController = view.MibViewController(builder.MibBuilder())
         >>> objectType = ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), 'Linux i386')
-        >>> objectType.resolveWithMib(mibViewController)
-        ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), DisplayString('Linux i386'))
+        >>> str(objectType.resolveWithMib(mibViewController))
+        'SNMPv2-MIB::sysDescr = Linux i386'
         >>> str(objectType)
-        'SNMPv2-MIB::sysDescr."0" = Linux i386'
+        'SNMPv2-MIB::sysDescr = Linux i386'
         >>>
 
         """
@@ -1000,11 +1013,12 @@ class NotificationType:
 
     Examples
     --------
+    >>> from pysnmp.proto.rfc1902 import ObjectName
     >>> from pysnmp.smi.rfc1902 import *
     >>> NotificationType(ObjectIdentity('1.3.6.1.6.3.1.1.5.3'))
     NotificationType(ObjectIdentity('1.3.6.1.6.3.1.1.5.3'), (), {})
-    >>> NotificationType(ObjectIdentity('IP-MIB', 'linkDown'), ObjectName('3.5'))
-    NotificationType(ObjectIdentity('1.3.6.1.6.3.1.1.5.3'), ObjectName('3.5'), {})
+    >>> repr(NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), ObjectName('3.5'))).startswith("NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), <ObjectName value object")
+    True
 
     """
 
@@ -1091,8 +1105,8 @@ class NotificationType:
 
         Examples
         --------
-        >>> NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {}).addAsn1Source('https://pysnmp.github.io:443/mibs/asn1/@mib@')
-        NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {})
+        >>> NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {}).addAsn1MibSource('https://pysnmp.github.io:443/mibs/asn1/@mib@')
+        NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {})
         >>>
 
         """
@@ -1123,8 +1137,8 @@ class NotificationType:
 
         Examples
         --------
-        >>> NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {}).addMibSource('/opt/pysnmp/mibs', 'pysnmp_mibs')
-        NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {})
+        >>> NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {}).addMibSource('/opt/pysnmp/mibs', 'pysnmp_mibs')
+        NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {})
         >>>
 
         """
@@ -1147,8 +1161,8 @@ class NotificationType:
 
         Examples
         --------
-        >>> NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {}).loadMibs('IF-MIB', 'TCP-MIB')
-        NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {})
+        >>> NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {}).loadMibs('SNMPv2-MIB')
+        NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {})
         >>>
 
         """
@@ -1196,9 +1210,11 @@ class NotificationType:
 
         Examples
         --------
-        >>> notificationType = NotificationType(ObjectIdentity('IF-MIB', 'linkDown'))
+        >>> from pysnmp.smi import builder, view
+        >>> mibViewController = view.MibViewController(builder.MibBuilder())
+        >>> notificationType = NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'))
         >>> notificationType.resolveWithMib(mibViewController)
-        NotificationType(ObjectIdentity('IF-MIB', 'linkDown'), (), {})
+        NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {})
         >>>
 
         """
