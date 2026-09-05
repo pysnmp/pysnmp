@@ -71,12 +71,19 @@ build-backend = "hatchling.build"
 packages = ["pysnmp"]
 
 [tool.hatch.build.targets.sdist]
+# An explicit include is an allowlist: anything not named here is left out,
+# whatever else is in the tree. semantic-release generates CHANGELOG.md during
+# prepare, before this builds, so the release being cut is described by the
+# changelog shipped beside it -- which is where a downstream packager looks.
+# CHANGES.md is the narrative history through 5.x that CHANGELOG.md refers to.
 include = [
     "pysnmp",
     "docs",
     "tests",
     "examples",
     "tools",
+    "CHANGELOG.md",
+    "CHANGES.md",
 ]
 
 # ---------------------------------------------------------------------------
