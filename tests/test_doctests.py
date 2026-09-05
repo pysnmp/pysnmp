@@ -12,25 +12,24 @@ import importlib
 
 import pytest
 
-
 DOCTESTED_MODULES = [
     "pysnmp.proto.rfc1902",
     "pysnmp.smi.rfc1902",
     "pysnmp.hlapi.asyncio.transport",
     "pysnmp.hlapi.asyncio.cmdgen",
     "pysnmp.hlapi.auth",
-   "pysnmp.smi.view",
-   "pysnmp.hlapi.context",
-   "pysnmp.hlapi.asyncio.ntforg",
-   "pysnmp.entity.engine",
+    "pysnmp.smi.view",
+    "pysnmp.hlapi.context",
+    "pysnmp.hlapi.asyncio.ntforg",
+    "pysnmp.entity.engine",
 ]
 
 
 @pytest.mark.parametrize("module_name", DOCTESTED_MODULES)
 def test_module_doctests(module_name):
-   module = importlib.import_module(module_name)
-   results = doctest.testmod(module, verbose=False, report=True)
-   assert results.attempted, f"{module_name} has no doctests to run"
-   assert results.failed == 0, (
-       f"{results.failed} of {results.attempted} doctests failed in {module_name}"
-   )
+    module = importlib.import_module(module_name)
+    results = doctest.testmod(module, verbose=False, report=True)
+    assert results.attempted, f"{module_name} has no doctests to run"
+    assert results.failed == 0, (
+        f"{results.failed} of {results.attempted} doctests failed in {module_name}"
+    )

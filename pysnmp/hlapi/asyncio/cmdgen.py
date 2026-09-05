@@ -122,8 +122,8 @@ async def getCmd(
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_get
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
->>> # Run the coroutine against a live agent, for example:
->>> # asyncio.run(run())
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 
@@ -218,8 +218,8 @@ async def setCmd(
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
->>> # Run the coroutine against a live agent, for example:
->>> # asyncio.run(run())
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 
@@ -318,8 +318,8 @@ async def nextCmd(
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
->>> # Run the coroutine against a live agent, for example:
->>> # asyncio.run(run())
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 
@@ -450,8 +450,8 @@ async def bulkCmd(
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_bulk
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
->>> # Run the coroutine against a live agent, for example:
->>> # asyncio.run(run())
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 
