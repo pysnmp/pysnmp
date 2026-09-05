@@ -154,7 +154,14 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         )
 
         # 7.1.7c
-        # XXX need to coerce MIB value as it has incompatible constraints set
+        # The three flags are load-bearing, not an optimisation. The MIB scalar
+        # is an Integer32 carrying its own base range intersected with (484,
+        # 2147483647); msgMaxSize is a plain Integer constrained to the same
+        # (484, 2147483647). pyasn1 compares ConstraintsIntersection objects
+        # structurally rather than by range, so isSuperTypeOf() is False for
+        # this pair despite the bounds agreeing, and a strict set raises
+        # "Component value is tag-incompatible" on every outgoing message.
+        # See #154. Remove these only once pyasn1 compares ranges semantically.
         headerData.setComponentByPosition(
             1,
             snmpEngineMaxMessageSize.syntax,

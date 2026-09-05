@@ -633,6 +633,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         securityParameters.setComponentByPosition(
             0, securityEngineID, verifyConstraints=False, matchTags=False, matchConstraints=False
         )
+        # As in rfc3412, the flags on the next two are load-bearing rather than
+        # an optimisation: when these come from the LCD they are an Integer32
+        # and a SnmpEngineTime, whose ConstraintsIntersection differs
+        # structurally from the plain Integer these slots declare even though
+        # the ranges agree, so a strict set is rejected outright. See #154.
         securityParameters.setComponentByPosition(
             1, snmpEngineBoots, verifyConstraints=False, matchTags=False, matchConstraints=False
         )
