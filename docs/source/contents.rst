@@ -105,14 +105,14 @@ FAQ
 Further development
 -------------------
 
-We fanatically document all fixes, changes and new features in changelog.
-There you could also download the latest unreleased pysnmp tarball
-containing the latest fixes and improvements.
+The changelog is generated from the commit history at release time. The
+narrative history of the project through 5.x is kept separately.
 
 .. toctree::
    :maxdepth: 1
 
    /changelog
+   /changelog-history
 
 How changes reach a released version — the branches, the commit-message
 conventions, what CI runs and how a release is cut — is documented here.

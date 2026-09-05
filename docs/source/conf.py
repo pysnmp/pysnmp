@@ -29,7 +29,14 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
+    # The changelog is generated as Markdown and rendered from that one file,
+    # rather than transcribed into a second copy that would go stale.
+    "myst_parser",
 ]
+
+# semantic-release writes the changelog with its own title and then one H2 per
+# release, so the page starts a level below where myst expects it to.
+suppress_warnings = ["myst.header"]
 
 # Define substitutions used by autodoc'd pyasn1 docstrings.
 rst_prolog = """
