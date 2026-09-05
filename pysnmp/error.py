@@ -4,8 +4,6 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-import sys
-
 
 class PySnmpCryptoWarning(UserWarning):
     """Base class for warnings about SNMPv3 cryptographic protocol selection.
@@ -26,15 +24,33 @@ class PySnmpNonStandardCryptoWarning(PySnmpCryptoWarning):
 
 
 class PySnmpError(Exception):
-    def __init__(self, *args):
-        msg = args and str(args[0]) or ""
+    """Base class for pysnmp exceptions.
 
-        self.cause = sys.exc_info()
+    Carries the exception it was raised from, if any, into its own string
+    form, so a caller that only logs `str(exc)` still sees the underlying
+    failure.
+    """
 
-        if self.cause[0]:
-            msg += f"caused by {self.cause[0]}: {self.cause[1]}"
+    @property
+    def _chained(self) -> BaseException | None:
+        return self.__cause__ or self.__context__
 
-        if msg:
-            args = (msg,) + args[1:]
+    @property
+    def cause(self) -> tuple:
+        """The chained exception as a `sys.exc_info()`-shaped triple.
 
-        super().__init__(*args)
+        Empty triple when this exception was not raised while another was
+        being handled.
+        """
+        cause = self._chained
+        if cause is None:
+            return (None, None, None)
+        return (type(cause), cause, cause.__traceback__)
+
+    def __str__(self) -> str:
+        msg = super().__str__()
+        cause = self._chained
+        if cause is None:
+            return msg
+        suffix = f"caused by {type(cause).__name__}: {cause}"
+        return f"{msg}, {suffix}" if msg else suffix
