@@ -7,6 +7,7 @@ against a pyasn1 repr that changed years ago. See #161.
 Modules are added to ``DOCTESTED_MODULES`` as their examples are corrected.
 The remaining modules carrying stale examples are tracked in #168.
 """
+
 import doctest
 import importlib
 
