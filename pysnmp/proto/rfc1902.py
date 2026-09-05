@@ -5,7 +5,7 @@
 #
 from pyasn1.type import constraint, namedtype, namedval, tag, univ
 
-from pysnmp.proto import error, rfc1155
+from pysnmp.proto import error
 
 __all__ = [
     "Opaque",
@@ -689,7 +689,7 @@ class ObjectName(univ.ObjectIdentifier):
     pass
 
 
-class SimpleSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
+class SimpleSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("integer-value", Integer()),
         namedtype.NamedType("string-value", OctetString()),
@@ -697,7 +697,7 @@ class SimpleSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
     )
 
 
-class ApplicationSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
+class ApplicationSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("ipAddress-value", IpAddress()),
         namedtype.NamedType("counter-value", Counter32()),

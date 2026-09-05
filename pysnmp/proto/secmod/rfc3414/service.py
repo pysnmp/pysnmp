@@ -13,7 +13,7 @@ from pyasn1.type import constraint, namedtype, univ
 
 from pysnmp import debug
 from pysnmp.entity.observer import execution_context
-from pysnmp.proto import api, errind, error, rfc1155, rfc3411
+from pysnmp.proto import api, errind, error, rfc3411
 from pysnmp.proto.secmod.base import AbstractSecurityModel
 from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha, noauth
 from pysnmp.proto.secmod.rfc3414.priv import des, nopriv
@@ -55,7 +55,7 @@ def _run_or_raise_serialization_error(operation: Callable[[], _T], logLabel: str
 # USM security params
 
 
-class UsmSecurityParameters(rfc1155.TypeCoercionHackMixIn, univ.Sequence):
+class UsmSecurityParameters(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("msgAuthoritativeEngineId", univ.OctetString()),
         namedtype.NamedType(
