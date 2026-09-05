@@ -953,3 +953,40 @@ class TestTransportAddressPrettyIn:
 
     def test_socket_address_coercion_survives(self, address_type):
         assert tuple(address_type(("1.2.3.4", 161))) == ("1.2.3.4", 161)
+
+
+class TestTransportAddressIPv6PrettyIn:
+    def test_accepts_bracketed_ipv6_text(self, mib_builder):
+        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TransportAddressIPv6,) = mib_builder.importSymbols(
+            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
+        )
+
+        expected = b"\x00" * 15 + b"\x01\x00\xa1"
+
+        assert TextualConvention.prettyIn(TransportAddressIPv6(), "[::1]:161") == expected
+        assert TransportAddressIPv6("[::1]:161").asOctets() == expected
+
+    def test_round_trips_display_hint_text(self, mib_builder):
+        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TransportAddressIPv6,) = mib_builder.importSymbols(
+            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
+        )
+
+        expected = b"\x00" * 15 + b"\x01\x00\xa1"
+        rendered = TransportAddressIPv6(expected).prettyPrint()
+
+        assert rendered == "[00:00:00:00:00:00:00:01]:161"
+        assert TextualConvention.prettyIn(TransportAddressIPv6(), rendered) == expected
+
+    def test_ipv6z_round_trips_display_hint_text(self, mib_builder):
+        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TransportAddressIPv6z,) = mib_builder.importSymbols(
+            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6z"
+        )
+
+        expected = b"\x00" * 15 + b"\x01" + b"\x00\x00\x00\x02" + b"\x00\xa1"
+        rendered = TransportAddressIPv6z(expected).prettyPrint()
+
+        assert rendered == "[00:00:00:00:00:00:00:01%2]:161"
+        assert TextualConvention.prettyIn(TransportAddressIPv6z(), rendered) == expected

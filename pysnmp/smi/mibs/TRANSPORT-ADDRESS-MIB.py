@@ -399,7 +399,7 @@ class TransportAddressIPv6(TextualConvention, OctetString):
                 + bytes(((value[1] >> 8) & 0xFF,))
                 + bytes((value[1] & 0xFF,))
             )
-        return OctetString.prettyIn(self, value)
+        return super().prettyIn(value)
 
     # Socket address syntax coercion
     def __asSocketAddress(self):

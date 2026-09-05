@@ -4,6 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import inspect
+import ipaddress
 import string
 
 from pyasn1.type import univ
@@ -275,6 +276,56 @@ class TextualConvention:
             # formatted text? based on "text" input maybe?
             # That boils down to `str` object.
             if isinstance(value, str) and not isinstance(value, bytes):
+                if self.displayHint == "2x:2x:2x:2x:2x:2x:2x:2x":
+                    try:
+                        return base.prettyIn(self, ipaddress.IPv6Address(value).packed)
+                    except ValueError:
+                        pass
+
+                elif self.displayHint == "2x:2x:2x:2x:2x:2x:2x:2x%4d":
+                    try:
+                        address, zone = value.rsplit("%", 1)
+                        zone = int(zone, 10)
+                        if 0 <= zone <= 0xFFFFFFFF:
+                            return base.prettyIn(
+                                self,
+                                ipaddress.IPv6Address(address).packed + zone.to_bytes(4, "big"),
+                            )
+                    except (ValueError, OverflowError):
+                        pass
+
+                elif self.displayHint == "0a[2x:2x:2x:2x:2x:2x:2x:2x]0a:2d":
+                    try:
+                        address, port = value[1:].rsplit("]:", 1)
+                        port = int(port, 10)
+                        if value.startswith("[") and 0 <= port <= 0xFFFF:
+                            return base.prettyIn(
+                                self,
+                                ipaddress.IPv6Address(address).packed + port.to_bytes(2, "big"),
+                            )
+                    except (ValueError, OverflowError):
+                        pass
+
+                elif self.displayHint == "0a[2x:2x:2x:2x:2x:2x:2x:2x%4d]0a:2d":
+                    try:
+                        address, port = value[1:].rsplit("]:", 1)
+                        address, zone = address.rsplit("%", 1)
+                        port = int(port, 10)
+                        zone = int(zone, 10)
+                        if (
+                            value.startswith("[")
+                            and 0 <= port <= 0xFFFF
+                            and 0 <= zone <= 0xFFFFFFFF
+                        ):
+                            return base.prettyIn(
+                                self,
+                                ipaddress.IPv6Address(address).packed
+                                + zone.to_bytes(4, "big")
+                                + port.to_bytes(2, "big"),
+                            )
+                    except (ValueError, OverflowError):
+                        pass
+
                 value = base.prettyIn(self, value)
             else:
                 return base.prettyIn(self, value)
@@ -322,6 +373,18 @@ class TextualConvention:
                 # 5 is probably impossible to support
 
                 if displayFormat in ("a", "t"):
+                    if not octetLength and displaySep:
+                        literal = displaySep.encode("iso-8859-1")
+                        if not runningValue.startswith(literal):
+                            raise SmiError(
+                                "Display format eval failure: %s: expected %s"
+                                % (runningValue[: len(literal)], literal)
+                            )
+                        runningValue = runningValue[len(literal) :]
+                        if not displayHint:
+                            displayHint = self.displayHint
+                        continue
+
                     outputValue += runningValue[:octetLength]
                 elif displayFormat in numBase:
                     if displaySep:
