@@ -1,12 +1,9 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import random
-
-random.seed()
+import secrets
 
 
 class Integer:
@@ -18,15 +15,11 @@ class Integer:
             increment = maximum
         self.__increment = increment
         self.__threshold = increment // 2
-        e = random.randrange(self.__maximum - self.__increment)
+        e = secrets.randbelow(self.__maximum - self.__increment)
         self.__bank = list(range(e, e + self.__increment))
 
     def __repr__(self):
-        return '%s(%d, %d)' % (
-            self.__class__.__name__,
-            self.__maximum,
-            self.__increment
-        )
+        return "%s(%d, %d)" % (self.__class__.__name__, self.__maximum, self.__increment)
 
     def __call__(self):
         v = self.__bank.pop(0)

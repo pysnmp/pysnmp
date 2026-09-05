@@ -1,15 +1,14 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 from pysnmp import nextid
 from pysnmp.proto import error
 
 
 class Cache:
-    __stateReference = nextid.Integer(0xffffff)
+    __stateReference = nextid.Integer(0xFFFFFF)
 
     def __init__(self):
         self.__cacheEntries = {}
@@ -23,8 +22,6 @@ class Cache:
         if stateReference in self.__cacheEntries:
             securityData = self.__cacheEntries[stateReference]
         else:
-            raise error.ProtocolError(
-                f'Cache miss for stateReference={stateReference} at {self}'
-            )
+            raise error.ProtocolError(f"Cache miss for stateReference={stateReference} at {self}")
         del self.__cacheEntries[stateReference]
         return securityData

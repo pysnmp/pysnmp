@@ -1,18 +1,9 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-try:
-    from hashlib import md5, sha1
-
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
+from hashlib import md5, sha1
 
 from pyasn1.type import univ
 
@@ -32,9 +23,7 @@ def hashPassphrase(passphrase, hashFunc):
             hasher.update(ringBuffer[mark:e])
             mark = e
         else:
-            hasher.update(
-                ringBuffer[mark:ringBufferLen] + ringBuffer[0:e - ringBufferLen]
-            )
+            hasher.update(ringBuffer[mark:ringBufferLen] + ringBuffer[0 : e - ringBufferLen])
             mark = e - ringBufferLen
         count += 1
     digest = hasher.digest()

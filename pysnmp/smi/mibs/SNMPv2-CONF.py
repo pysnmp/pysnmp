@@ -1,22 +1,22 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-# PySNMP MIB module SNMPv2-CONF (http://snmplabs.com/pysnmp)
-# ASN.1 source http://mibs.snmplabs.com:80/asn1/SNMPv2-CONF
+# PySNMP MIB module SNMPv2-CONF
+# ASN.1 source: bundled
 # Produced by pysmi-0.1.3 at Tue Apr 18 00:51:39 2017
 # On host grommit.local platform Darwin version 16.4.0 by user ilya
 # Using Python version 3.4.2 (v3.4.2:ab2c023a9432, Oct  5 2014, 20:42:22)
 #
-MibNode, = mibBuilder.importSymbols('SNMPv2-SMI', 'MibNode')
+(MibNode,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibNode")
 
 
 class ObjectGroup(MibNode):
-    status = 'current'
+    status = "current"
     objects = ()
-    description = ''
+    description = ""
+    reference = ""
 
     def getStatus(self):
         return self.status
@@ -26,20 +26,27 @@ class ObjectGroup(MibNode):
         return self
 
     def getObjects(self):
-        return getattr(self, 'objects', ())
+        return getattr(self, "objects", ())
 
     def setObjects(self, *args, **kwargs):
-        if kwargs.get('append'):
+        if kwargs.get("append"):
             self.objects += args
         else:
             self.objects = args
         return self
 
     def getDescription(self):
-        return getattr(self, 'description', '')
+        return getattr(self, "description", "")
 
     def setDescription(self, v):
         self.description = v
+        return self
+
+    def getReference(self):
+        return self.reference
+
+    def setReference(self, v):
+        self.reference = v
         return self
 
     def asn1Print(self):
@@ -47,13 +54,14 @@ class ObjectGroup(MibNode):
 OBJECT-GROUP
   OBJECTS {{ {} }}
   DESCRIPTION "{}"
-""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
+""".format(", ".join([x for x in self.getObjects()]), self.getDescription())
 
 
 class NotificationGroup(MibNode):
-    status = 'current'
+    status = "current"
     objects = ()
-    description = ''
+    description = ""
+    reference = ""
 
     def getStatus(self):
         return self.status
@@ -63,20 +71,27 @@ class NotificationGroup(MibNode):
         return self
 
     def getObjects(self):
-        return getattr(self, 'objects', ())
+        return getattr(self, "objects", ())
 
     def setObjects(self, *args, **kwargs):
-        if kwargs.get('append'):
+        if kwargs.get("append"):
             self.objects += args
         else:
             self.objects = args
         return self
 
     def getDescription(self):
-        return getattr(self, 'description', '')
+        return getattr(self, "description", "")
 
     def setDescription(self, v):
         self.description = v
+        return self
+
+    def getReference(self):
+        return self.reference
+
+    def setReference(self, v):
+        self.reference = v
         return self
 
     def asn1Print(self):
@@ -84,13 +99,14 @@ class NotificationGroup(MibNode):
 NOTIFICATION-GROUP
   NOTIFICATIONS {{ {} }}
   DESCRIPTION "{}"
-""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
+""".format(", ".join([x for x in self.getObjects()]), self.getDescription())
 
 
 class ModuleCompliance(MibNode):
-    status = 'current'
+    status = "current"
     objects = ()
-    description = ''
+    description = ""
+    reference = ""
 
     def getStatus(self):
         return self.status
@@ -100,20 +116,27 @@ class ModuleCompliance(MibNode):
         return self
 
     def getObjects(self):
-        return getattr(self, 'objects', ())
+        return getattr(self, "objects", ())
 
     def setObjects(self, *args, **kwargs):
-        if kwargs.get('append'):
+        if kwargs.get("append"):
             self.objects += args
         else:
             self.objects = args
         return self
 
     def getDescription(self):
-        return getattr(self, 'description', '')
+        return getattr(self, "description", "")
 
     def setDescription(self, v):
         self.description = v
+        return self
+
+    def getReference(self):
+        return self.reference
+
+    def setReference(self, v):
+        self.reference = v
         return self
 
     def asn1Print(self):
@@ -121,14 +144,14 @@ class ModuleCompliance(MibNode):
 MODULE-COMPLIANCE
   OBJECT {{ {} }}
   DESCRIPTION "{}"
-""".format(', '.join([x for x in self.getObjects()]), self.getDescription())
+""".format(", ".join([x for x in self.getObjects()]), self.getDescription())
 
 
 class AgentCapabilities(MibNode):
-    status = 'current'
-    description = ''
-    reference = ''
-    productRelease = ''
+    status = "current"
+    description = ""
+    reference = ""
+    productRelease = ""
 
     def getStatus(self):
         return self.status
@@ -138,7 +161,7 @@ class AgentCapabilities(MibNode):
         return self
 
     def getDescription(self):
-        return getattr(self, 'description', '')
+        return getattr(self, "description", "")
 
     def setDescription(self, v):
         self.description = v
@@ -161,12 +184,18 @@ class AgentCapabilities(MibNode):
     # TODO: implement the rest of properties
 
     def asn1Print(self):
-        return """\
+        return f"""\
 AGENT-CAPABILITIES
-  STATUS "{}"
-  PRODUCT-RELEASE "{}"
-  DESCRIPTION "{}"
-""".format(self.getStatus(), self.getProductRelease(), self.getDescription())
+  STATUS "{self.getStatus()}"
+  PRODUCT-RELEASE "{self.getProductRelease()}"
+  DESCRIPTION "{self.getDescription()}"
+"""
 
 
-mibBuilder.exportSymbols('SNMPv2-CONF', ObjectGroup=ObjectGroup, NotificationGroup=NotificationGroup, ModuleCompliance=ModuleCompliance, AgentCapabilities=AgentCapabilities)
+mibBuilder.exportSymbols(
+    "SNMPv2-CONF",
+    ObjectGroup=ObjectGroup,
+    NotificationGroup=NotificationGroup,
+    ModuleCompliance=ModuleCompliance,
+    AgentCapabilities=AgentCapabilities,
+)

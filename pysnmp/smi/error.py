@@ -1,10 +1,10 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 from pyasn1.error import PyAsn1Error
+
 from pysnmp.error import PySnmpError
 
 
@@ -25,7 +25,7 @@ class MibOperationError(SmiError):
         self.__outArgs = kwargs
 
     def __str__(self):
-        return f'{self.__class__.__name__}({self.__outArgs})'
+        return f"{self.__class__.__name__}({self.__outArgs})"
 
     def __getitem__(self, key):
         return self.__outArgs[key]
@@ -44,6 +44,7 @@ class MibOperationError(SmiError):
 
 
 # Aligned with SNMPv2 PDU error-status values
+
 
 class TooBigError(MibOperationError):
     pass
@@ -119,6 +120,7 @@ class InconsistentNameError(MibOperationError):
 
 # Aligned with SNMPv2 PDU exceptions or error-status values
 
+
 class NoSuchObjectError(NoSuchNameError):
     pass
 
@@ -132,6 +134,7 @@ class EndOfMibViewError(NoSuchNameError):
 
 
 # SNMP table management exceptions
+
 
 class TableRowManagement(MibOperationError):
     pass

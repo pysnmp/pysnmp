@@ -1,22 +1,25 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import sys
+
+import functools
+
+from pyasn1.error import PyAsn1Error
+from pyasn1.type.base import SimpleAsn1Type
+
+from pysnmp import debug
 from pysnmp.proto import rfc1902, rfc1905
 from pysnmp.proto.api import v2c
 from pysnmp.smi.builder import ZipMibSource
 from pysnmp.smi.compiler import addMibCompiler
 from pysnmp.smi.error import SmiError
-from pyasn1.type.base import AbstractSimpleAsn1Item
-from pyasn1.error import PyAsn1Error
-from pysnmp import debug
 
-__all__ = ['ObjectIdentity', 'ObjectType', 'NotificationType']
+__all__ = ["ObjectIdentity", "ObjectType", "NotificationType"]
 
 
+@functools.total_ordering
 class ObjectIdentity:
     """Create an object representing MIB variable ID.
 
@@ -79,6 +82,7 @@ class ObjectIdentity:
     ObjectIdentity('IP-MIB', 'ipAdEntAddr', '127.0.0.1', 123)
 
     """
+
     stDirty, stClean = 1, 2
 
     def __init__(self, *args, **kwargs):
@@ -88,7 +92,7 @@ class ObjectIdentity:
         self.__asn1SourcesToAdd = self.__asn1SourcesOptions = None
         self.__state = self.stDirty
         self.__indices = self.__oid = self.__label = ()
-        self.__modName = self.__symName = ''
+        self.__modName = self.__symName = ""
         self.__mibNode = None
 
     def getMibSymbol(self):
@@ -120,7 +124,7 @@ class ObjectIdentity:
         if self.__state & self.stClean:
             return self.__modName, self.__symName, self.__indices
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
     def getOid(self):
         """Returns OID identifying MIB variable.
@@ -147,7 +151,7 @@ class ObjectIdentity:
         if self.__state & self.stClean:
             return self.__oid
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
     def getLabel(self):
         """Returns symbolic path to this MIB variable.
@@ -183,13 +187,13 @@ class ObjectIdentity:
         if self.__state & self.stClean:
             return self.__label
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
     def getMibNode(self):
         if self.__state & self.stClean:
             return self.__mibNode
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
     def isFullyResolved(self):
         return self.__state & self.stClean
@@ -257,7 +261,7 @@ class ObjectIdentity:
         Normally, ASN.1-to-Python MIB modules conversion is performed
         automatically through PySNMP/PySMI interaction. ASN1 MIB modules
         could also be manually compiled into Python via the
-        `mibdump.py <http://snmplabs.com/pysmi/mibdump.html>`_
+        `mibdump.py`
         tool.
 
         Examples
@@ -346,39 +350,44 @@ class ObjectIdentity:
 
         """
         if self.__mibSourcesToAdd is not None:
-            debug.logger & debug.flagMIB and debug.logger('adding MIB sources %s' % ', '.join(self.__mibSourcesToAdd))
+            debug.logger & debug.flagMIB and debug.logger(
+                "adding MIB sources %s" % ", ".join(self.__mibSourcesToAdd)
+            )
             mibViewController.mibBuilder.addMibSources(
                 *[ZipMibSource(x) for x in self.__mibSourcesToAdd]
             )
             self.__mibSourcesToAdd = None
 
         if self.__asn1SourcesToAdd is None:
-            addMibCompiler(mibViewController.mibBuilder,
-                           ifAvailable=True, ifNotAdded=True)
+            addMibCompiler(mibViewController.mibBuilder, ifAvailable=True, ifNotAdded=True)
         else:
             debug.logger & debug.flagMIB and debug.logger(
-                'adding MIB compiler with source paths %s' % ', '.join(self.__asn1SourcesToAdd))
+                "adding MIB compiler with source paths %s" % ", ".join(self.__asn1SourcesToAdd)
+            )
             addMibCompiler(
                 mibViewController.mibBuilder,
                 sources=self.__asn1SourcesToAdd,
-                searchers=self.__asn1SourcesOptions.get('searchers'),
-                borrowers=self.__asn1SourcesOptions.get('borrowers'),
-                destination=self.__asn1SourcesOptions.get('destination'),
-                ifAvailable=self.__asn1SourcesOptions.get('ifAvailable'),
-                ifNotAdded=self.__asn1SourcesOptions.get('ifNotAdded')
+                searchers=self.__asn1SourcesOptions.get("searchers"),
+                borrowers=self.__asn1SourcesOptions.get("borrowers"),
+                destination=self.__asn1SourcesOptions.get("destination"),
+                ifAvailable=self.__asn1SourcesOptions.get("ifAvailable"),
+                ifNotAdded=self.__asn1SourcesOptions.get("ifNotAdded"),
             )
             self.__asn1SourcesToAdd = self.__asn1SourcesOptions = None
 
         if self.__modNamesToLoad is not None:
-            debug.logger & debug.flagMIB and debug.logger('loading MIB modules %s' % ', '.join(self.__modNamesToLoad))
+            debug.logger & debug.flagMIB and debug.logger(
+                "loading MIB modules %s" % ", ".join(self.__modNamesToLoad)
+            )
             mibViewController.mibBuilder.loadModules(*self.__modNamesToLoad)
             self.__modNamesToLoad = None
 
         if self.__state & self.stClean:
             return self
 
-        MibScalar, MibTableColumn = mibViewController.mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalar',
-                                                                               'MibTableColumn')
+        MibScalar, MibTableColumn = mibViewController.mibBuilder.importSymbols(
+            "SNMPv2-SMI", "MibScalar", "MibTableColumn"
+        )
 
         self.__indices = ()
 
@@ -386,43 +395,46 @@ class ObjectIdentity:
             self.__args[0].resolveWithMib(mibViewController, ignoreErrors)
 
         if len(self.__args) == 1:  # OID or label or MIB module
-            debug.logger & debug.flagMIB and debug.logger('resolving %s as OID or label' % self.__args)
+            debug.logger & debug.flagMIB and debug.logger(
+                "resolving %s as OID or label" % self.__args
+            )
             try:
                 # pyasn1 ObjectIdentifier or sequence of ints or string OID
                 self.__oid = rfc1902.ObjectName(self.__args[0])  # OID
             except PyAsn1Error:
                 # sequence of sub-OIDs and labels
                 if isinstance(self.__args[0], (list, tuple)):
-                    prefix, label, suffix = mibViewController.getNodeName(
-                        self.__args[0]
-                    )
+                    prefix, label, suffix = mibViewController.getNodeName(self.__args[0])
                 # string label
-                elif '.' in self.__args[0]:
+                elif "." in self.__args[0]:
                     prefix, label, suffix = mibViewController.getNodeNameByOid(
-                        tuple(self.__args[0].split('.'))
+                        tuple(self.__args[0].split("."))
                     )
                 # MIB module name
                 else:
                     modName = self.__args[0]
                     mibViewController.mibBuilder.loadModules(modName)
-                    if self.__kwargs.get('last'):
-                        prefix, label, suffix = mibViewController.getLastNodeName(modName)
+                    if self.__kwargs.get("last"):
+                        prefix, label, suffix = mibViewController.getLastNodeName(
+                            modName, self.__kwargs.get("nodeType")
+                        )
                     else:
-                        prefix, label, suffix = mibViewController.getFirstNodeName(modName)
+                        prefix, label, suffix = mibViewController.getFirstNodeName(
+                            modName, self.__kwargs.get("nodeType")
+                        )
 
                 if suffix:
                     try:
                         suffix = tuple(int(x) for x in suffix)
                     except ValueError:
-                        raise SmiError(f'Unknown object name component {suffix!r}')
+                        raise SmiError(f"Unknown object name component {suffix!r}")
                 self.__oid = rfc1902.ObjectName(prefix + suffix)
             else:
-                prefix, label, suffix = mibViewController.getNodeNameByOid(
-                    self.__oid
-                )
+                prefix, label, suffix = mibViewController.getNodeNameByOid(self.__oid)
 
             debug.logger & debug.flagMIB and debug.logger(
-                f'resolved {self.__args!r} into prefix {prefix!r} and suffix {suffix!r}')
+                f"resolved {self.__args!r} into prefix {prefix!r} and suffix {suffix!r}"
+            )
 
             modName, symName, _ = mibViewController.getNodeLocation(prefix)
 
@@ -431,29 +443,29 @@ class ObjectIdentity:
 
             self.__label = label
 
-            mibNode, = mibViewController.mibBuilder.importSymbols(
-                modName, symName
-            )
+            (mibNode,) = mibViewController.mibBuilder.importSymbols(modName, symName)
 
             self.__mibNode = mibNode
 
-            debug.logger & debug.flagMIB and debug.logger(f'resolved prefix {prefix!r} into MIB node {mibNode!r}')
+            debug.logger & debug.flagMIB and debug.logger(
+                f"resolved prefix {prefix!r} into MIB node {mibNode!r}"
+            )
 
             if isinstance(mibNode, MibTableColumn):  # table column
                 if suffix:
                     rowModName, rowSymName, _ = mibViewController.getNodeLocation(
                         mibNode.name[:-1]
                     )
-                    rowNode, = mibViewController.mibBuilder.importSymbols(
-                        rowModName, rowSymName
-                    )
+                    (rowNode,) = mibViewController.mibBuilder.importSymbols(rowModName, rowSymName)
                     self.__indices = rowNode.getIndicesFromInstId(suffix)
             else:
                 if suffix:
                     self.__indices = (rfc1902.ObjectName(suffix),)
             self.__state |= self.stClean
 
-            debug.logger & debug.flagMIB and debug.logger(f'resolved indices are {self.__indices!r}')
+            debug.logger & debug.flagMIB and debug.logger(
+                f"resolved indices are {self.__indices!r}"
+            )
 
             return self
         elif len(self.__args) > 1:  # MIB, symbol[, index, index ...]
@@ -464,75 +476,81 @@ class ObjectIdentity:
             # MIB, ''
             elif self.__args[0]:
                 mibViewController.mibBuilder.loadModules(self.__args[0])
-                if self.__kwargs.get('last'):
-                    prefix, label, suffix = mibViewController.getLastNodeName(self.__args[0])
+                if self.__kwargs.get("last"):
+                    prefix, label, suffix = mibViewController.getLastNodeName(
+                        self.__args[0], self.__kwargs.get("nodeType")
+                    )
                 else:
-                    prefix, label, suffix = mibViewController.getFirstNodeName(self.__args[0])
+                    prefix, label, suffix = mibViewController.getFirstNodeName(
+                        self.__args[0], self.__kwargs.get("nodeType")
+                    )
                 self.__modName, self.__symName, _ = mibViewController.getNodeLocation(prefix)
             # '', symbol, index, index
             else:
                 prefix, label, suffix = mibViewController.getNodeName(self.__args[1:])
                 self.__modName, self.__symName, _ = mibViewController.getNodeLocation(prefix)
 
-            mibNode, = mibViewController.mibBuilder.importSymbols(
-                self.__modName, self.__symName
-            )
+            (mibNode,) = mibViewController.mibBuilder.importSymbols(self.__modName, self.__symName)
 
             self.__mibNode = mibNode
 
             self.__oid = rfc1902.ObjectName(mibNode.getName())
 
-            prefix, label, suffix = mibViewController.getNodeNameByOid(
-                self.__oid
-            )
+            prefix, label, suffix = mibViewController.getNodeNameByOid(self.__oid)
             self.__label = label
 
             debug.logger & debug.flagMIB and debug.logger(
-                f'resolved {self.__args!r} into prefix {prefix!r} and suffix {suffix!r}')
+                f"resolved {self.__args!r} into prefix {prefix!r} and suffix {suffix!r}"
+            )
 
             if isinstance(mibNode, MibTableColumn):  # table
-                rowModName, rowSymName, _ = mibViewController.getNodeLocation(
-                    mibNode.name[:-1]
-                )
-                rowNode, = mibViewController.mibBuilder.importSymbols(
-                    rowModName, rowSymName
-                )
+                rowModName, rowSymName, _ = mibViewController.getNodeLocation(mibNode.name[:-1])
+                (rowNode,) = mibViewController.mibBuilder.importSymbols(rowModName, rowSymName)
                 if self.__args[2:]:
                     try:
                         instIds = rowNode.getInstIdFromIndices(*self.__args[2:])
                         self.__oid += instIds
                         self.__indices = rowNode.getIndicesFromInstId(instIds)
-                    except PyAsn1Error:
-                        raise SmiError('Instance index {!r} to OID conversion failure at object {!r}: {}'.format(
-                            self.__args[2:], mibNode.getLabel(), sys.exc_info()[1]))
+                    except PyAsn1Error as e:
+                        raise SmiError(
+                            f"Instance index {self.__args[2:]!r} to OID conversion failure at object {mibNode.getLabel()!r}: {e}"
+                        )
             elif self.__args[2:]:  # any other kind of MIB node with indices
                 if self.__args[2:]:
-                    instId = rfc1902.ObjectName(
-                        '.'.join([str(x) for x in self.__args[2:]])
-                    )
+                    instId = rfc1902.ObjectName(".".join([str(x) for x in self.__args[2:]]))
                     self.__oid += instId
                     self.__indices = (instId,)
             self.__state |= self.stClean
 
-            debug.logger & debug.flagMIB and debug.logger(f'resolved indices are {self.__indices!r}')
+            debug.logger & debug.flagMIB and debug.logger(
+                f"resolved indices are {self.__indices!r}"
+            )
 
             return self
         else:
-            raise SmiError('Non-OID, label or MIB symbol')
+            raise SmiError("Non-OID, label or MIB symbol")
 
     def prettyPrint(self):
         if self.__state & self.stClean:
             s = rfc1902.OctetString()
-            return '{}::{}{}{}'.format(
-                self.__modName, self.__symName,
-                self.__indices and '.' or '',
-                '.'.join([x.isSuperTypeOf(s, matchConstraints=False) and '"%s"' % x.prettyPrint() or x.prettyPrint() for x in self.__indices])
+            return "{}::{}{}{}".format(
+                self.__modName,
+                self.__symName,
+                self.__indices and "." or "",
+                ".".join(
+                    [
+                        x.isSuperTypeOf(s, matchConstraints=False)
+                        and '"%s"' % x.prettyPrint()
+                        or x.prettyPrint()
+                        for x in self.__indices
+                    ]
+                ),
             )
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, ', '.join([repr(x) for x in self.__args]))
+        return "{}({})".format(self.__class__.__name__, ", ".join([repr(x) for x in self.__args]))
 
     # Redirect some attrs access to the OID object to behave alike
 
@@ -540,95 +558,77 @@ class ObjectIdentity:
         if self.__state & self.stClean:
             return str(self.__oid)
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __eq__(self, other):
         if self.__state & self.stClean:
             return self.__oid == other
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __ne__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid != other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __lt__(self, other):
         if self.__state & self.stClean:
             return self.__oid < other
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __le__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid <= other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __gt__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid > other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __ge__(self, other):
-        if self.__state & self.stClean:
-            return self.__oid > other
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
-
-    def __nonzero__(self):
-        if self.__state & self.stClean:
-            return self.__oid != 0
-        else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __bool__(self):
         if self.__state & self.stClean:
             return bool(self.__oid)
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __getitem__(self, i):
         if self.__state & self.stClean:
             return self.__oid[i]
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __len__(self):
         if self.__state & self.stClean:
             return len(self.__oid)
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __add__(self, other):
         if self.__state & self.stClean:
             return self.__oid + other
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __radd__(self, other):
         if self.__state & self.stClean:
             return other + self.__oid
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __hash__(self):
         if self.__state & self.stClean:
             return hash(self.__oid)
         else:
-            raise SmiError('%s object not properly initialized' % self.__class__.__name__)
+            raise SmiError("%s object not properly initialized" % self.__class__.__name__)
 
     def __getattr__(self, attr):
         if self.__state & self.stClean:
-            if attr in ('asTuple', 'clone', 'subtype', 'isPrefixOf',
-                        'isSameTypeWith', 'isSuperTypeOf', 'getTagSet',
-                        'getEffectiveTagSet', 'getTagMap', 'tagSet', 'index'):
+            if attr in (
+                "asTuple",
+                "clone",
+                "subtype",
+                "isPrefixOf",
+                "isSameTypeWith",
+                "isSuperTypeOf",
+                "getTagSet",
+                "getEffectiveTagSet",
+                "getTagMap",
+                "tagSet",
+                "index",
+            ):
                 return getattr(self.__oid, attr)
             raise AttributeError(attr)
         else:
-            raise SmiError(f'{self.__class__.__name__} object not properly initialized for accessing {attr}')
+            raise SmiError(
+                f"{self.__class__.__name__} object not properly initialized for accessing {attr}"
+            )
 
 
 # A two-element sequence of ObjectIdentity and SNMP data type object
@@ -690,25 +690,29 @@ class ObjectType:
     ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386')
 
     """
+
     stDirty, stClean = 1, 2
 
     def __init__(self, objectIdentity, objectSyntax=rfc1905.unSpecified):
         if not isinstance(objectIdentity, ObjectIdentity):
-            raise SmiError(f'initializer should be ObjectIdentity instance, not {objectIdentity!r}')
+            raise SmiError(
+                f"initializer should be ObjectIdentity instance, not {objectIdentity!r}"
+            )
         self.__args = [objectIdentity, objectSyntax]
         self.__state = self.stDirty
+        self.__units = ""
 
     def __getitem__(self, i):
         if self.__state & self.stClean:
             return self.__args[i]
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
     def __str__(self):
         return self.prettyPrint()
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, ', '.join([repr(x) for x in self.__args]))
+        return "{}({})".format(self.__class__.__name__, ", ".join([repr(x) for x in self.__args]))
 
     def isFullyResolved(self):
         return self.__state & self.stClean
@@ -765,7 +769,7 @@ class ObjectType:
         Normally, ASN.1-to-Python MIB modules conversion is performed
         automatically through PySNMP/PySMI interaction. ASN1 MIB modules
         could also be manually compiled into Python via the
-        `mibdump.py <http://snmplabs.com/pysmi/mibdump.html>`_
+        `mibdump.py`
         tool.
 
         Examples
@@ -849,52 +853,93 @@ class ObjectType:
 
         self.__args[0].resolveWithMib(mibViewController)
 
-        MibScalar, MibTableColumn = mibViewController.mibBuilder.importSymbols('SNMPv2-SMI', 'MibScalar',
-                                                                               'MibTableColumn')
+        MibScalar, MibTableColumn = mibViewController.mibBuilder.importSymbols(
+            "SNMPv2-SMI", "MibScalar", "MibTableColumn"
+        )
 
-        if not isinstance(self.__args[0].getMibNode(),
-                          (MibScalar, MibTableColumn)):
-            if (ignoreErrors and
-                    not isinstance(self.__args[1], AbstractSimpleAsn1Item)):
-                raise SmiError(f'MIB object {self.__args[0]!r} is not OBJECT-TYPE (MIB not loaded?)')
+        mibNode = self.__args[0].getMibNode()
+
+        if not isinstance(mibNode, (MibScalar, MibTableColumn)):
+            if ignoreErrors and not isinstance(self.__args[1], SimpleAsn1Type):
+                raise SmiError(
+                    f"MIB object {self.__args[0]!r} is not OBJECT-TYPE (MIB not loaded?)"
+                )
             self.__state |= self.stClean
             return self
 
-        if isinstance(self.__args[1], (rfc1905.UnSpecified,
-                                       rfc1905.NoSuchObject,
-                                       rfc1905.NoSuchInstance,
-                                       rfc1905.EndOfMibView)):
+        # Propagate UNITS clause from MIB node to response object
+        if hasattr(mibNode, "getUnits"):
+            self.__units = mibNode.getUnits() or ""
+
+        if isinstance(
+            self.__args[1],
+            (
+                rfc1905.UnSpecified,
+                rfc1905.NoSuchObject,
+                rfc1905.NoSuchInstance,
+                rfc1905.EndOfMibView,
+            ),
+        ):
             self.__state |= self.stClean
             return self
 
         try:
-            self.__args[1] = self.__args[0].getMibNode().getSyntax().clone(self.__args[1])
-        except PyAsn1Error:
-            err = ('MIB object %r having type %r failed to cast value '
-                   '%r: %s' % (self.__args[0].prettyPrint(),
-                               self.__args[0].getMibNode().getSyntax().__class__.__name__,
-                               self.__args[1],
-                               sys.exc_info()[1]))
+            self.__args[1] = mibNode.getSyntax().clone(self.__args[1])
+        except PyAsn1Error as e:
+            err = "MIB object %r having type %r failed to cast value %r: %s" % (
+                self.__args[0].prettyPrint(),
+                mibNode.getSyntax().__class__.__name__,
+                self.__args[1],
+                e,
+            )
 
-            if (not ignoreErrors or
-                    not isinstance(self.__args[1], AbstractSimpleAsn1Item)):
+            if not ignoreErrors or not isinstance(self.__args[1], SimpleAsn1Type):
                 raise SmiError(err)
 
         if rfc1902.ObjectIdentifier().isSuperTypeOf(self.__args[1], matchConstraints=False):
-            self.__args[1] = ObjectIdentity(self.__args[1]).resolveWithMib(mibViewController)
+            # An OBJECT IDENTIFIER value is resolved purely to render it by MIB
+            # name. The value is opaque payload chosen by the peer, so a RowPointer
+            # whose index this MIB view cannot decode must not fail the varbind --
+            # it stays an unresolved ObjectIdentifier.
+            try:
+                self.__args[1] = ObjectIdentity(self.__args[1]).resolveWithMib(mibViewController)
+            except SmiError as e:
+                debug.logger & debug.flagMIB and debug.logger(
+                    f"resolveWithMib: value {self.__args[1]!r} of {self.__args[0]!r} left unresolved: {e}"
+                )
 
         self.__state |= self.stClean
 
-        debug.logger & debug.flagMIB and debug.logger(f'resolved {self.__args[0]!r} syntax is {self.__args[1]!r}')
+        debug.logger & debug.flagMIB and debug.logger(
+            f"resolved {self.__args[0]!r} syntax is {self.__args[1]!r}"
+        )
 
         return self
 
+    def getUnits(self):
+        """Returns UNITS clause value from the resolved MIB node.
+
+        Returns
+        -------
+        : :py:class:`str`
+            The UNITS clause value associated with the MIB object, or
+            empty string if no UNITS clause is defined.
+
+        Raises
+        ------
+        SmiError
+           If MIB variable conversion has not been performed.
+        """
+        if self.__state & self.stClean:
+            return self.__units
+        else:
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
+
     def prettyPrint(self):
         if self.__state & self.stClean:
-            return '{} = {}'.format(self.__args[0].prettyPrint(),
-                                self.__args[1].prettyPrint())
+            return f"{self.__args[0].prettyPrint()} = {self.__args[1].prettyPrint()}"
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
 
 class NotificationType:
@@ -962,14 +1007,17 @@ class NotificationType:
     NotificationType(ObjectIdentity('1.3.6.1.6.3.1.1.5.3'), ObjectName('3.5'), {})
 
     """
+
     stDirty, stClean = 1, 2
 
-    def __init__(self, objectIdentity, instanceIndex=(), objects={}):
+    def __init__(self, objectIdentity, instanceIndex=(), objects=None):
         if not isinstance(objectIdentity, ObjectIdentity):
-            raise SmiError(f'initializer should be ObjectIdentity instance, not {objectIdentity!r}')
+            raise SmiError(
+                f"initializer should be ObjectIdentity instance, not {objectIdentity!r}"
+            )
         self.__objectIdentity = objectIdentity
         self.__instanceIndex = instanceIndex
-        self.__objects = objects
+        self.__objects = {} if objects is None else objects
         self.__varBinds = []
         self.__additionalVarBinds = []
         self.__state = self.stDirty
@@ -978,10 +1026,10 @@ class NotificationType:
         if self.__state & self.stClean:
             return self.__varBinds[i]
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.__objectIdentity!r}, {self.__instanceIndex!r}, {self.__objects!r})'
+        return f"{self.__class__.__name__}({self.__objectIdentity!r}, {self.__instanceIndex!r}, {self.__objects!r})"
 
     def addVarBinds(self, *varBinds):
         """Appends variable-binding to notification.
@@ -1011,9 +1059,9 @@ class NotificationType:
         >>>
 
         """
-        debug.logger & debug.flagMIB and debug.logger(f'additional var-binds: {varBinds!r}')
+        debug.logger & debug.flagMIB and debug.logger(f"additional var-binds: {varBinds!r}")
         if self.__state & self.stClean:
-            raise SmiError('%s object is already sealed' % self.__class__.__name__)
+            raise SmiError("%s object is already sealed" % self.__class__.__name__)
         else:
             self.__additionalVarBinds.extend(varBinds)
         return self
@@ -1070,7 +1118,7 @@ class NotificationType:
         Normally, ASN.1-to-Python MIB modules conversion is performed
         automatically through PySNMP/PySMI interaction. ASN1 MIB modules
         could also be manually compiled into Python via the
-        `mibdump.py <http://snmplabs.com/pysmi/mibdump.html>`_
+        `mibdump.py`
         tool.
 
         Examples
@@ -1160,11 +1208,14 @@ class NotificationType:
         self.__objectIdentity.resolveWithMib(mibViewController)
 
         self.__varBinds.append(
-            ObjectType(ObjectIdentity(v2c.apiTrapPDU.snmpTrapOID),
-                       self.__objectIdentity).resolveWithMib(mibViewController, ignoreErrors)
+            ObjectType(
+                ObjectIdentity(v2c.apiTrapPDU.snmpTrapOID), self.__objectIdentity
+            ).resolveWithMib(mibViewController, ignoreErrors)
         )
 
-        SmiNotificationType, = mibViewController.mibBuilder.importSymbols('SNMPv2-SMI', 'NotificationType')
+        (SmiNotificationType,) = mibViewController.mibBuilder.importSymbols(
+            "SNMPv2-SMI", "NotificationType"
+        )
 
         mibNode = self.__objectIdentity.getMibNode()
 
@@ -1172,17 +1223,19 @@ class NotificationType:
 
         if isinstance(mibNode, SmiNotificationType):
             for notificationObject in mibNode.getObjects():
-                objectIdentity = ObjectIdentity(*notificationObject + self.__instanceIndex).resolveWithMib(
-                    mibViewController, ignoreErrors)
+                objectIdentity = ObjectIdentity(
+                    *notificationObject + self.__instanceIndex
+                ).resolveWithMib(mibViewController, ignoreErrors)
                 self.__varBinds.append(
-                    ObjectType(objectIdentity,
-                               self.__objects.get(notificationObject, rfc1905.unSpecified)).resolveWithMib(
-                        mibViewController, ignoreErrors)
+                    ObjectType(
+                        objectIdentity, self.__objects.get(notificationObject, rfc1905.unSpecified)
+                    ).resolveWithMib(mibViewController, ignoreErrors)
                 )
                 varBindsLocation[objectIdentity] = len(self.__varBinds) - 1
         else:
             debug.logger & debug.flagMIB and debug.logger(
-                f'WARNING: MIB object {self.__objectIdentity!r} is not NOTIFICATION-TYPE (MIB not loaded?)')
+                f"WARNING: MIB object {self.__objectIdentity!r} is not NOTIFICATION-TYPE (MIB not loaded?)"
+            )
 
         for varBinds in self.__additionalVarBinds:
             if not isinstance(varBinds, ObjectType):
@@ -1197,12 +1250,16 @@ class NotificationType:
 
         self.__state |= self.stClean
 
-        debug.logger & debug.flagMIB and debug.logger(f'resolved {self.__objectIdentity!r} into {self.__varBinds!r}')
+        debug.logger & debug.flagMIB and debug.logger(
+            f"resolved {self.__objectIdentity!r} into {self.__varBinds!r}"
+        )
 
         return self
 
     def prettyPrint(self):
         if self.__state & self.stClean:
-            return ' '.join([f'{x[0].prettyPrint()} = {x[1].prettyPrint()}' for x in self.__varBinds])
+            return " ".join(
+                [f"{x[0].prettyPrint()} = {x[1].prettyPrint()}" for x in self.__varBinds]
+            )
         else:
-            raise SmiError('%s object not fully initialized' % self.__class__.__name__)
+            raise SmiError("%s object not fully initialized" % self.__class__.__name__)

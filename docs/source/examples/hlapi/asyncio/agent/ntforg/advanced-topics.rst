@@ -6,10 +6,10 @@ Advanced Notification Originator
 
 .. include:: /../../examples/hlapi/asyncio/agent/ntforg/multiple-notifications-at-once.py
    :start-after: """
-   :end-before: """#
+   :end-before: """  #
 
 .. literalinclude:: /../../examples/hlapi/asyncio/agent/ntforg/multiple-notifications-at-once.py
-   :start-after: """#
+   :start-after: """  #
    :language: python
 
 :download:`Download</../../examples/hlapi/asyncio/agent/ntforg/multiple-notifications-at-once.py>` script.
