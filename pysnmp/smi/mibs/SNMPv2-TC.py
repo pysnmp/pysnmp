@@ -219,10 +219,17 @@ class TextualConvention:
 
         if self.displayHint and (
             self.__integer.isSuperTypeOf(self, matchConstraints=False)
-            and self.namedValues
+            and not self.namedValues
             or self.__unsigned32.isSuperTypeOf(self, matchConstraints=False)
             or self.__timeticks.isSuperTypeOf(self, matchConstraints=False)
         ):
+            # A DISPLAY-HINT governs presentation; it does not narrow the set of
+            # values the type accepts. Numeric input is what BER decoding and
+            # clone() hand over, so it goes straight to the base type. Only text
+            # is parsed against the hint below.
+            if isinstance(value, (int, univ.Integer)):
+                return base.prettyIn(self, int(value))
+
             value = str(value)
 
             displayHintType, decimalPrecision = (tuple(self.displayHint.split("-")) + (0,))[:2]
@@ -246,16 +253,11 @@ class TextualConvention:
                     raise SmiError("octal evaluation error: %s" % e)
             elif displayHintType == "b" and (value.startswith("B") or value.startswith("-B")):
                 negative = value.startswith("-")
-                if negative:
-                    value = value[2:]
-                else:
-                    value = value[1:]
-                value = [x != "0" and 1 or 0 for x in value]
-                binValue = 0
-                while value:
-                    binValue <<= value[0]
-                    del value[0]
-                return base.prettyIn(self, binValue)
+                try:
+                    binValue = int(value[2:] if negative else value[1:], 2)
+                except Exception as e:
+                    raise SmiError("binary evaluation error: %s" % e)
+                return base.prettyIn(self, -binValue if negative else binValue)
             else:
                 raise SmiError(
                     f'Unsupported numeric type spec "{displayHintType}" at {self.__class__.__name__}'

@@ -848,3 +848,75 @@ class TestSmiReference:
         assert node.getReference() == ""
         assert node.setReference("RFC 2580 section 3") is node
         assert node.getReference() == "RFC 2580 section 3"
+
+
+class TestTextualConventionPrettyIn:
+    """A DISPLAY-HINT governs presentation; it must not narrow accepted input.
+
+    Regression test for #150: an integer-valued TEXTUAL-CONVENTION carrying
+    DISPLAY-HINT "x", "o" or "b" rejected every numeric input, which broke BER
+    decoding of any object using such a TC.
+    """
+
+    @pytest.fixture
+    def subscriber_label(self, mib_builder):
+        """CISCO-SUBSCRIBER-IDENTITY-TC-MIB's SubscriberLabel, in miniature."""
+        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (Unsigned32,) = mib_builder.importSymbols("SNMPv2-SMI", "Unsigned32")
+
+        class SubscriberLabel(TextualConvention, Unsigned32):
+            displayHint = "x"
+            subtypeSpec = Unsigned32.subtypeSpec + ValueRangeConstraint(0, 4294967295)
+
+        return SubscriberLabel
+
+    @pytest.mark.parametrize("value", [0, 255, 4294967295])
+    def test_accepts_integers(self, subscriber_label, value):
+        assert int(subscriber_label(value)) == value
+
+    def test_accepts_pyasn1_integers(self, subscriber_label):
+        assert int(subscriber_label(Integer32(255))) == 255
+
+    def test_clone_accepts_integers(self, subscriber_label):
+        assert int(subscriber_label("0x5").clone(7)) == 7
+
+    def test_ber_round_trip(self, subscriber_label):
+        from pyasn1.codec.ber import decoder, encoder
+
+        decoded, _ = decoder.decode(
+            encoder.encode(subscriber_label(9)), asn1Spec=subscriber_label()
+        )
+        assert int(decoded) == 9
+
+    def test_hex_text_still_parses(self, subscriber_label):
+        assert int(subscriber_label("0xff")) == 255
+
+    def test_prettyOut_round_trips_through_prettyIn(self, subscriber_label):
+        rendered = subscriber_label(255).prettyPrint()
+        assert rendered == "0xff"
+        assert int(subscriber_label(rendered)) == 255
+
+    def test_binary_hint_accumulates_digits(self, mib_builder):
+        """The "b" branch shifted by each digit instead of by one, so it
+        always evaluated to zero, and dropped the sign it had computed."""
+        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+
+        class BinaryTC(TextualConvention, Integer32):
+            displayHint = "b"
+
+        assert int(BinaryTC("B1011")) == 11
+        assert int(BinaryTC("-B1011")) == -11
+        assert int(BinaryTC(11)) == 11
+
+    def test_enumerated_integer_ignores_display_hint(self, mib_builder):
+        """RFC 2579 forbids DISPLAY-HINT on an enumerated INTEGER. prettyOut
+        already ignored the hint for one; prettyIn did the opposite."""
+        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+
+        class EnumTC(TextualConvention, Integer32):
+            displayHint = "x"
+            namedValues = NamedValues(("up", 1), ("down", 2))
+            subtypeSpec = Integer32.subtypeSpec + SingleValueConstraint(1, 2)
+
+        assert int(EnumTC("up")) == 1
+        assert int(EnumTC(2)) == 2
