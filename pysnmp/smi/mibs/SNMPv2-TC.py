@@ -4,6 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import inspect
+import ipaddress
 import string
 
 from pyasn1.type import univ
