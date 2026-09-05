@@ -141,7 +141,7 @@ class CommunityData:
         self.communityName = communityName
         # Autogenerate communityIndex if not specified
         if communityIndex is None:
-            self.communityIndex = self.securityName = "s%s" % hash(
+            self.communityIndex = "s%s" % hash(
                 (
                     self.communityName,
                     self.mpModel,
@@ -152,7 +152,8 @@ class CommunityData:
             )
         else:
             self.communityIndex = communityIndex
-            self.securityName = securityName if securityName is not None else communityIndex
+        # An explicit securityName wins; otherwise it tracks communityIndex
+        self.securityName = securityName if securityName is not None else self.communityIndex
 
     def __hash__(self) -> NoReturn:
         raise TypeError("%s is not hashable" % self.__class__.__name__)
