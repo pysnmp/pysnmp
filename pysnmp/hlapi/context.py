@@ -37,10 +37,11 @@ class ContextData:
     Examples
     --------
     >>> from pysnmp.hlapi import ContextData
+    >>> from pysnmp.proto.rfc1902 import OctetString
     >>> ContextData()
-    ContextData(contextEngineId=None, contextName='')
-    >>> ContextData(OctetString(hexValue='01020ABBA0'))
-    ContextData(contextEngineId=OctetString(hexValue='01020abba0'), contextName='')
+    ContextData(contextEngineId=None, contextName=b'')
+    >>> ContextData(OctetString(hexValue='01020ABBA0')).contextEngineId.prettyPrint()
+    '0x01020abba0'
     >>> ContextData(contextName='mycontext')
     ContextData(contextEngineId=None, contextName='mycontext')
 

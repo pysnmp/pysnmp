@@ -99,9 +99,8 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
     ...     errorIndication, errorStatus, errorIndex, varBinds = send_result
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     ...
-    >>> asyncio.run(run())
-    (None, 0, 0, [])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
 

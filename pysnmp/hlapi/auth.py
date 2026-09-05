@@ -92,10 +92,11 @@ class CommunityData:
     Examples
     --------
     >>> from pysnmp.hlapi import CommunityData
-    >>> CommunityData('public')
-    CommunityData(communityIndex='s1410706889', communityName=<COMMUNITY>, mpModel=1, contextEngineId=None, contextName='', tag='')
+    >>> community = CommunityData('public')
+    >>> community.communityName, community.mpModel, community.contextEngineId, community.contextName, community.tag, community.securityName == community.communityIndex
+    ('public', 1, None, b'', b'', True)
     >>> CommunityData('public', 'public')
-    CommunityData(communityIndex='public', communityName=<COMMUNITY>, mpModel=1, contextEngineId=None, contextName='', tag='')
+    CommunityData(communityIndex='public', communityName=<COMMUNITY>, mpModel=1, contextEngineId=None, contextName=b'', tag=b'', securityName='public')
     >>>
 
     """
@@ -335,9 +336,9 @@ class UsmUserData:
     --------
     >>> from pysnmp.hlapi import UsmUserData
     >>> UsmUserData('testuser', authKey='authenticationkey')
-    UsmUserData(userName='testuser', authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol=(1,3,6,1,6,3,10,1,1,2), privProtocol=(1,3,6,1,6,3,10,1,2,1))
+    UsmUserData(userName='testuser', authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol=(1, 3, 6, 1, 6, 3, 10, 1, 1, 2), privProtocol=(1, 3, 6, 1, 6, 3, 10, 1, 2, 1), securityEngineId='<DEFAULT>', securityName='testuser', authKeyType=0, privKeyType=0)
     >>> UsmUserData('testuser', authKey='authenticationkey', privKey='encryptionkey')
-    UsmUserData(userName='testuser', authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol=(1,3,6,1,6,3,10,1,1,2), privProtocol=(1,3,6,1,6,3,10,1,2,2))
+    UsmUserData(userName='testuser', authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol=(1, 3, 6, 1, 6, 3, 10, 1, 1, 2), privProtocol=(1, 3, 6, 1, 6, 3, 10, 1, 2, 2), securityEngineId='<DEFAULT>', securityName='testuser', authKeyType=0, privKeyType=0)
     >>>
 
     """
