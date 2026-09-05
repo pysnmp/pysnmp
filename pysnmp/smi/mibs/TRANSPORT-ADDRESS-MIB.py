@@ -246,7 +246,7 @@ class TransportAddressIPv6(TextualConvention, OctetString):
             raise error.PySnmpError('IPv6 not supported by platform')
         if isinstance(value, tuple):
             value = inet_pton(socket.AF_INET6, value[0]) + int2oct((value[1] >> 8) & 0xff) + int2oct(value[1] & 0xff)
-        return OctetString.prettyIn(self, value)
+        return super().prettyIn(value)
 
     # Socket address syntax coercion
     def __asSocketAddress(self):
