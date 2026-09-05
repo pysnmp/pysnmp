@@ -30,8 +30,9 @@ def decodeMessageVersion(wholeMsg):
     except PyAsn1Error:
         raise ProtocolError("Invalid BER at SNMP version component")
     except (TypeError, ValueError) as exc:
-        # Malformed substrate can drive the BER decoder into paths that raise
-        # plain Python exceptions rather than PyAsn1Error. This is the first
-        # thing an untrusted datagram touches, so nothing but ProtocolError may
-        # escape here.
+        # Retained as defence in depth, not because a known input reaches it.
+        # pyasn1 used to let plain Python exceptions escape this substrateFun
+        # path (pyasn1 #140, #142, both fixed in 1.3.0rc2), and this is the
+        # first thing an untrusted datagram touches, so nothing but
+        # ProtocolError may escape here.
         raise ProtocolError(f"Malformed BER at SNMP version component: {exc}")
