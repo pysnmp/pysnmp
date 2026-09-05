@@ -114,6 +114,14 @@ containing the latest fixes and improvements.
 
    /changelog
 
+How changes reach a released version — the branches, the commit-message
+conventions, what CI runs and how a release is cut — is documented here.
+
+.. toctree::
+   :maxdepth: 2
+
+   /ci-and-releases
+
 Our development plans and new features we consider for eventual implementation
 are collected in the following section.
 
