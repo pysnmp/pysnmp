@@ -288,7 +288,8 @@ class TextualConvention:
                         zone = int(zone, 10)
                         if 0 <= zone <= 0xFFFFFFFF:
                             return base.prettyIn(
-                                self, ipaddress.IPv6Address(address).packed + zone.to_bytes(4, "big")
+                                self,
+                                ipaddress.IPv6Address(address).packed + zone.to_bytes(4, "big"),
                             )
                     except (ValueError, OverflowError):
                         pass
@@ -299,7 +300,8 @@ class TextualConvention:
                         port = int(port, 10)
                         if value.startswith("[") and 0 <= port <= 0xFFFF:
                             return base.prettyIn(
-                                self, ipaddress.IPv6Address(address).packed + port.to_bytes(2, "big")
+                                self,
+                                ipaddress.IPv6Address(address).packed + port.to_bytes(2, "big"),
                             )
                     except (ValueError, OverflowError):
                         pass
@@ -310,7 +312,11 @@ class TextualConvention:
                         address, zone = address.rsplit("%", 1)
                         port = int(port, 10)
                         zone = int(zone, 10)
-                        if value.startswith("[") and 0 <= port <= 0xFFFF and 0 <= zone <= 0xFFFFFFFF:
+                        if (
+                            value.startswith("[")
+                            and 0 <= port <= 0xFFFF
+                            and 0 <= zone <= 0xFFFFFFFF
+                        ):
                             return base.prettyIn(
                                 self,
                                 ipaddress.IPv6Address(address).packed
