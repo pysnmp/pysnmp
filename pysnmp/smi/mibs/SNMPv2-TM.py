@@ -76,13 +76,16 @@ class SnmpUDPAddress(TextualConvention, OctetString):
 
     def prettyIn(self, value):
         if isinstance(value, tuple):
-            # Wild hack -- need to implement TextualConvention.prettyIn
+            # A Python socket address, the counterpart of __asSocketAddress
+            # below. Address-family specific, so it stays here; everything
+            # else, the DISPLAY-HINT text form included, belongs to
+            # TextualConvention.prettyIn.
             value = (
                 inet_pton(AF_INET, value[0])
                 + bytes(((value[1] >> 8) & 0xFF,))
                 + bytes((value[1] & 0xFF,))
             )
-        return OctetString.prettyIn(self, value)
+        return super().prettyIn(value)
 
     # Socket address syntax coercion
     def __asSocketAddress(self):
