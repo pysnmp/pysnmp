@@ -44,7 +44,7 @@ class Null(univ.Null):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Null('')
-        Null('')
+        <Null value object, payload []>
         >>>
     """
 
@@ -75,19 +75,19 @@ class Integer32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Integer32(1234)
-        Integer32(1234)
+        <Integer32 value object, payload [1234]>
         >>> Integer32(1) > 2
-        True
+        False
         >>> Integer32(1) + 1
-        Integer32(2)
+        <Integer32 value object, payload [2]>
         >>> int(Integer32(321))
         321
         >>> SmallInteger = Integer32.withRange(1,3)
         >>> SmallInteger(1)
-        Integer32(1)
+        <Integer32 value object, payload [1]>
         >>> DiscreetInteger = Integer32.withValues(4, 8, 1)
         >>> DiscreetInteger(4)
-        Integer32(4)
+        <Integer32 value object, payload [4]>
         >>>
 
     """
@@ -145,16 +145,16 @@ class Integer(Integer32):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Integer(1234)
-        Integer(1234)
+        <Integer value object, payload [1234]>
         >>> Integer(1) > 2
-        True
+        False
         >>> Integer(1) + 1
-        Integer(2)
+        <Integer value object, payload [2]>
         >>> int(Integer(321))
         321
         >>> SomeState = Integer.withNamedValues(enable=1, disable=0)
         >>> SomeState(1)
-        Integer('enable')
+        <Integer value object, payload [enable]>
         >>> int(SomeState('disable'))
         0
         >>>
@@ -206,9 +206,9 @@ class OctetString(univ.OctetString):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> OctetString('some apples')
-        OctetString('some apples')
+        <OctetString value object, payload [some apples]>
         >>> OctetString('some apples') + ' and oranges'
-        OctetString('some apples and oranges')
+        <OctetString value object, payload [some apples and oranges]>
         >>> OctetString('some apples').asOctets()
         b'some apples'
         >>> OctetString('some apples').prettyPrint()
@@ -282,9 +282,9 @@ class ObjectIdentifier(univ.ObjectIdentifier):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> ObjectIdentifier((1, 3, 6))
-        ObjectIdentifier('1.3.6')
+        <ObjectIdentifier value object, payload [1.3.6]>
         >>> ObjectIdentifier('1.3.6')
-        ObjectIdentifier('1.3.6')
+        <ObjectIdentifier value object, payload [1.3.6]>
         >>> tuple(ObjectIdentifier('1.3.6'))
         (1, 3, 6)
         >>> str(ObjectIdentifier('1.3.6'))
@@ -316,13 +316,13 @@ class IpAddress(OctetString):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> IpAddress('127.0.0.1')
-        IpAddress(hexValue='7f000001')
+        <IpAddress value object, payload [127.0.0.1]>
         >>> IpAddress(hexValue='7f000001').prettyPrint()
         '127.0.0.1'
         >>> IpAddress(hexValue='7f000001').asOctets()
         b'\x7f\x00\x00\x01'
         >>> IpAddress('\x7f\x00\x00\x01')
-        IpAddress(hexValue='7f000001')
+        <IpAddress value object, payload [127.0.0.1]>
         >>>
 
     """
@@ -374,9 +374,9 @@ class Counter32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Counter32(1234)
-        Counter32(1234)
+        <Counter32 value object, payload [1234]>
         >>> Counter32(1) + 1
-        Counter32(2)
+        <Counter32 value object, payload [2]>
         >>> int(Counter32(321))
         321
         >>>
@@ -412,9 +412,9 @@ class Gauge32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Gauge32(1234)
-        Gauge32(1234)
+        <Gauge32 value object, payload [1234]>
         >>> Gauge32(1) + 1
-        Gauge32(2)
+        <Gauge32 value object, payload [2]>
         >>> int(Gauge32(321))
         321
         >>>
@@ -449,9 +449,9 @@ class Unsigned32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Unsigned32(1234)
-        Unsigned32(1234)
+        <Unsigned32 value object, payload [1234]>
         >>> Unsigned32(1) + 1
-        Unsigned32(2)
+        <Unsigned32 value object, payload [2]>
         >>> int(Unsigned32(321))
         321
         >>>
@@ -486,9 +486,9 @@ class TimeTicks(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> TimeTicks(1234)
-        TimeTicks(1234)
+        <TimeTicks value object, payload [1234]>
         >>> TimeTicks(1) + 1
-        TimeTicks(2)
+        <TimeTicks value object, payload [2]>
         >>> int(TimeTicks(321))
         321
         >>>
@@ -531,9 +531,9 @@ class Opaque(univ.OctetString):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Opaque('some apples')
-        Opaque('some apples')
+        <Opaque value object, payload [some apples]>
         >>> Opaque('some apples') + ' and oranges'
-        Opaque('some apples and oranges')
+        <Opaque value object, payload [some apples and oranges]>
         >>> Opaque('some apples').asOctets()
         b'some apples'
         >>> Opaque('some apples').prettyPrint()
@@ -574,9 +574,9 @@ class Counter64(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Counter64(1234)
-        Counter64(1234)
+        <Counter64 value object, payload [1234]>
         >>> Counter64(1) + 1
-        Counter64(2)
+        <Counter64 value object, payload [2]>
         >>> int(Counter64(321))
         321
         >>>
@@ -630,11 +630,11 @@ class Bits(OctetString):
         >>> SomeBits(('apple', 'orange')).prettyPrint()
         'apple, orange'
         >>> SomeBits(('apple', 'orange'))
-        Bits(hexValue='c0')
+        <Bits value object, payload [apple, orange]>
         >>> SomeBits('\x80')
-        Bits(hexValue='80')
+        <Bits value object, payload [apple]>
         >>> SomeBits(hexValue='80')
-        Bits(hexValue='80')
+        <Bits value object, payload [apple]>
         >>> SomeBits(hexValue='80').prettyPrint()
         'apple'
         >>>
