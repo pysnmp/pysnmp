@@ -32,3 +32,9 @@ sonar_plan.md
 
 # macOS
 .DS_Store
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
