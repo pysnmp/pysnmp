@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 from pysnmp.proto import error
 
@@ -12,13 +11,13 @@ class AbstractEncryptionService:
     keySize = 0
 
     def hashPassphrase(self, authProtocol, privKey):
-        raise error.ProtocolError('no encryption')
+        raise error.ProtocolError("no encryption")
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
-        raise error.ProtocolError('no encryption')
+        raise error.ProtocolError("no encryption")
 
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
-        raise error.ProtocolError('no encryption')
+        raise error.ProtocolError("no encryption")
 
     def decryptData(self, decryptKey, privParameters, encryptedData):
-        raise error.ProtocolError('no encryption')
+        raise error.ProtocolError("no encryption")

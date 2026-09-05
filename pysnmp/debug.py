@@ -1,13 +1,12 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import logging
-from pyasn1.compat.octets import octs2ints
-from pysnmp import error
-from pysnmp import __version__
+
+# octs2ints replaced with list() (bytes is already iterable of ints in Python 3)
+from pysnmp import __version__, error
 
 flagNone = 0x0000
 flagIO = 0x0001
@@ -20,30 +19,32 @@ flagIns = 0x0040
 flagACL = 0x0080
 flagPrx = 0x0100
 flagApp = 0x0200
-flagAll = 0xffff
+flagAll = 0xFFFF
 
-flagMap = {'io': flagIO,
-           'dsp': flagDsp,
-           'msgproc': flagMP,
-           'secmod': flagSM,
-           'mibbuild': flagBld,
-           'mibview': flagMIB,
-           'mibinstrum': flagIns,
-           'acl': flagACL,
-           'proxy': flagPrx,
-           'app': flagApp,
-           'all': flagAll}
+flagMap = {
+    "io": flagIO,
+    "dsp": flagDsp,
+    "msgproc": flagMP,
+    "secmod": flagSM,
+    "mibbuild": flagBld,
+    "mibview": flagMIB,
+    "mibinstrum": flagIns,
+    "acl": flagACL,
+    "proxy": flagPrx,
+    "app": flagApp,
+    "all": flagAll,
+}
 
 
 class Printer:
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
-            logger = logging.getLogger('pysnmp')
+            logger = logging.getLogger("pysnmp")
         logger.setLevel(logging.DEBUG)
         if handler is None:
             handler = logging.StreamHandler()
         if formatter is None:
-            formatter = logging.Formatter('%(asctime)s %(name)s: %(message)s')
+            formatter = logging.Formatter("%(asctime)s %(name)s: %(message)s")
         handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
         logger.addHandler(handler)
@@ -53,16 +54,10 @@ class Printer:
         self.__logger.debug(msg)
 
     def __str__(self):
-        return '<python built-in logging>'
+        return "<python built-in logging>"
 
 
-if hasattr(logging, 'NullHandler'):
-    NullHandler = logging.NullHandler
-else:
-    # Python 2.6 and older
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
+NullHandler = logging.NullHandler
 
 
 class Debug:
@@ -70,22 +65,21 @@ class Debug:
 
     def __init__(self, *flags, **options):
         self._flags = flagNone
-        if options.get('printer') is not None:
-            self._printer = options.get('printer')
+        if options.get("printer") is not None:
+            self._printer = options.get("printer")
         elif self.defaultPrinter is not None:
             self._printer = self.defaultPrinter
         else:
-            if 'loggerName' in options:
+            if "loggerName" in options:
                 # route our logs to parent logger
                 self._printer = Printer(
-                    logger=logging.getLogger(options['loggerName']),
-                    handler=NullHandler()
+                    logger=logging.getLogger(options["loggerName"]), handler=NullHandler()
                 )
             else:
                 self._printer = Printer()
-        self('running pysnmp version %s' % __version__)
+        self("running pysnmp version %s" % __version__)
         for f in flags:
-            inverse = f and f[0] in ('!', '~')
+            inverse = f and f[0] in ("!", "~")
             if inverse:
                 f = f[1:]
             try:
@@ -94,12 +88,12 @@ class Debug:
                 else:
                     self._flags |= flagMap[f]
             except KeyError:
-                raise error.PySnmpError('bad debug flag %s' % f)
+                raise error.PySnmpError("bad debug flag %s" % f)
 
-            self('debug category \'{}\' {}'.format(f, inverse and 'disabled' or 'enabled'))
+            self("debug category '{}' {}".format(f, inverse and "disabled" or "enabled"))
 
     def __str__(self):
-        return f'logger {self._printer}, flags {self._flags:x}'
+        return f"logger {self._printer}, flags {self._flags:x}"
 
     def __call__(self, msg):
         self._printer(msg)
@@ -116,12 +110,28 @@ class Debug:
 logger = 0
 
 
-def setLogger(l):
+def setLogger(newLogger):
     global logger
-    logger = l
+    logger = newLogger
+
+
+def prettify(value):
+    """Render a value for debug output.
+
+    ASN.1 objects are rendered with .prettyPrint() -- str() on an OCTET
+    STRING decodes the payload as text, which pyasn1 deprecates. Anything
+    else falls back to str().
+    """
+    prettyPrint = getattr(value, "prettyPrint", None)
+    if callable(prettyPrint):
+        return prettyPrint()
+    return str(value)
 
 
 def hexdump(octets):
-    return ' '.join(
-        ['{}{:02X}'.format(n % 16 == 0 and ('\n%.5d: ' % n) or '', x) for n, x in zip(range(len(octets)),
-                                                                                      octs2ints(octets))])
+    return " ".join(
+        [
+            "{}{:02X}".format(n % 16 == 0 and ("\n%.5d: " % n) or "", x)
+            for n, x in zip(range(len(octets)), list(octets))
+        ]
+    )

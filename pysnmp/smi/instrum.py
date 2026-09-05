@@ -1,84 +1,90 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import sys
-import traceback
-from pysnmp.smi import error
-from pysnmp import debug
 
-__all__ = ['AbstractMibInstrumController', 'MibInstrumController']
+import traceback
+from typing import Any
+
+from pysnmp import debug
+from pysnmp.smi import error
+
+__all__ = ["AbstractMibInstrumController", "MibInstrumController"]
 
 
 class AbstractMibInstrumController:
-    def readVars(self, varBinds, acInfo=(None, None)):
+    def readVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         raise error.NoSuchInstanceError(idx=0)
 
-    def readNextVars(self, varBinds, acInfo=(None, None)):
+    def readNextVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         raise error.EndOfMibViewError(idx=0)
 
-    def writeVars(self, varBinds, acInfo=(None, None)):
+    def writeVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         raise error.NoSuchObjectError(idx=0)
 
 
 class MibInstrumController(AbstractMibInstrumController):
-    fsmReadVar = {
+    fsmReadVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
-        ('start', 'ok'): 'readTest',
-        ('readTest', 'ok'): 'readGet',
-        ('readGet', 'ok'): 'stop',
-        ('*', 'err'): 'stop'
+        ("start", "ok"): "readTest",
+        ("readTest", "ok"): "readGet",
+        ("readGet", "ok"): "stop",
+        ("*", "err"): "stop",
     }
-    fsmReadNextVar = {
+    fsmReadNextVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
-        ('start', 'ok'): 'readTestNext',
-        ('readTestNext', 'ok'): 'readGetNext',
-        ('readGetNext', 'ok'): 'stop',
-        ('*', 'err'): 'stop'
+        ("start", "ok"): "readTestNext",
+        ("readTestNext", "ok"): "readGetNext",
+        ("readGetNext", "ok"): "stop",
+        ("*", "err"): "stop",
     }
-    fsmWriteVar = {
+    fsmWriteVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
-        ('start', 'ok'): 'writeTest',
-        ('writeTest', 'ok'): 'writeCommit',
-        ('writeCommit', 'ok'): 'writeCleanup',
-        ('writeCleanup', 'ok'): 'readTest',
+        ("start", "ok"): "writeTest",
+        ("writeTest", "ok"): "writeCommit",
+        ("writeCommit", "ok"): "writeCleanup",
+        ("writeCleanup", "ok"): "readTest",
         # Do read after successful write
-        ('readTest', 'ok'): 'readGet',
-        ('readGet', 'ok'): 'stop',
+        ("readTest", "ok"): "readGet",
+        ("readGet", "ok"): "stop",
         # Error handling
-        ('writeTest', 'err'): 'writeCleanup',
-        ('writeCommit', 'err'): 'writeUndo',
-        ('writeUndo', 'ok'): 'readTest',
+        ("writeTest", "err"): "writeCleanup",
+        ("writeCommit", "err"): "writeUndo",
+        ("writeUndo", "ok"): "readTest",
         # Ignore read errors (removed columns)
-        ('readTest', 'err'): 'stop',
-        ('readGet', 'err'): 'stop',
-        ('*', 'err'): 'stop'
+        ("readTest", "err"): "stop",
+        ("readGet", "err"): "stop",
+        ("*", "err"): "stop",
     }
 
-    def __init__(self, mibBuilder):
+    def __init__(self, mibBuilder: Any) -> None:
         self.mibBuilder = mibBuilder
         self.lastBuildId = -1
         self.lastBuildSyms = {}
 
-    def getMibBuilder(self):
+    def getMibBuilder(self) -> Any:
         return self.mibBuilder
 
     # MIB indexing
 
-    def __indexMib(self):
+    def __indexMib(self) -> None:
         # Build a tree from MIB objects found at currently loaded modules
         if self.lastBuildId == self.mibBuilder.lastBuildId:
             return
 
-        (MibScalarInstance, MibScalar, MibTableColumn, MibTableRow,
-         MibTable) = self.mibBuilder.importSymbols(
-            'SNMPv2-SMI', 'MibScalarInstance', 'MibScalar',
-            'MibTableColumn', 'MibTableRow', 'MibTable'
+        (MibScalarInstance, MibScalar, MibTableColumn, MibTableRow, MibTable) = (
+            self.mibBuilder.importSymbols(
+                "SNMPv2-SMI",
+                "MibScalarInstance",
+                "MibScalar",
+                "MibTableColumn",
+                "MibTableRow",
+                "MibTable",
+            )
         )
 
-        mibTree, = self.mibBuilder.importSymbols('SNMPv2-SMI', 'iso')
+        (mibTree,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "iso")
 
         #
         # Management Instrumentation gets organized as follows:
@@ -144,9 +150,7 @@ class MibInstrumController(AbstractMibInstrumController):
             elif inst.typeName in cols:
                 cols[inst.typeName].registerSubtrees(inst)
             else:
-                raise error.SmiError(
-                    f'Orphan MIB scalar instance {inst!r} at {self!r}'
-                )
+                raise error.SmiError(f"Orphan MIB scalar instance {inst!r} at {self!r}")
             lastBuildSyms[inst.name] = inst.typeName
 
         # Attach Table Columns to Table Rows
@@ -155,9 +159,7 @@ class MibInstrumController(AbstractMibInstrumController):
             if rowName in rows:
                 rows[rowName].registerSubtrees(col)
             else:
-                raise error.SmiError(
-                    f'Orphan MIB table column {col!r} at {self!r}'
-                )
+                raise error.SmiError(f"Orphan MIB table column {col!r} at {self!r}")
             lastBuildSyms[col.name] = rowName
 
         # Attach Table Rows to MIB tree
@@ -179,58 +181,61 @@ class MibInstrumController(AbstractMibInstrumController):
 
         self.lastBuildId = self.mibBuilder.lastBuildId
 
-        debug.logger & debug.flagIns and debug.logger('__indexMib: rebuilt')
+        debug.logger & debug.flagIns and debug.logger("__indexMib: rebuilt")
 
     # MIB instrumentation
 
-    def flipFlopFsm(self, fsmTable, inputVarBinds, acInfo):
+    def flipFlopFsm(
+        self, fsmTable: dict[tuple[str, str], str], inputVarBinds: Any, acInfo: Any
+    ) -> list[Any]:
         self.__indexMib()
-        debug.logger & debug.flagIns and debug.logger(f'flipFlopFsm: input var-binds {inputVarBinds!r}')
-        mibTree, = self.mibBuilder.importSymbols('SNMPv2-SMI', 'iso')
+        debug.logger & debug.flagIns and debug.logger(
+            f"flipFlopFsm: input var-binds {inputVarBinds!r}"
+        )
+        (mibTree,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "iso")
         outputVarBinds = []
-        state, status = 'start', 'ok'
+        state, status = "start", "ok"
         origExc = None
         while True:
             k = (state, status)
             if k in fsmTable:
                 fsmState = fsmTable[k]
             else:
-                k = ('*', status)
+                k = ("*", status)
                 if k in fsmTable:
                     fsmState = fsmTable[k]
                 else:
-                    raise error.SmiError(
-                        f'Unresolved FSM state {state}, {status}'
-                    )
+                    raise error.SmiError(f"Unresolved FSM state {state}, {status}")
             debug.logger & debug.flagIns and debug.logger(
-                f'flipFlopFsm: state {state} status {status} -> fsmState {fsmState}')
+                f"flipFlopFsm: state {state} status {status} -> fsmState {fsmState}"
+            )
             state = fsmState
-            status = 'ok'
-            if state == 'stop':
+            status = "ok"
+            if state == "stop":
                 break
             idx = 0
             for name, val in inputVarBinds:
                 f = getattr(mibTree, state, None)
                 if f is None:
-                    raise error.SmiError(
-                        f'Unsupported state handler {state} at {self}'
-                    )
+                    raise error.SmiError(f"Unsupported state handler {state} at {self}")
                 try:
                     # Convert to tuple to avoid ObjectName instantiation
                     # on subscription
                     rval = f(tuple(name), val, idx, acInfo)
-                except error.SmiError:
-                    exc_t, exc_v, exc_tb = sys.exc_info()
+                except error.SmiError as exc_v:
+                    exc_t = type(exc_v)
+                    exc_tb = exc_v.__traceback__
                     debug.logger & debug.flagIns and debug.logger(
-                        'flipFlopFsm: fun {} exception {} for {}={!r} with traceback: {}'.format(
-                            f, exc_t, name, val, traceback.format_exception(exc_t, exc_v, exc_tb)))
+                        f"flipFlopFsm: fun {f} exception {exc_t} for {name}={val!r} with traceback: {traceback.format_exception(exc_t, exc_v, exc_tb)}"
+                    )
                     if origExc is None:  # Take the first exception
                         origExc, origTraceback = exc_v, exc_tb
-                    status = 'err'
+                    status = "err"
                     break
                 else:
                     debug.logger & debug.flagIns and debug.logger(
-                        f'flipFlopFsm: fun {f} suceeded for {name}={val!r}')
+                        f"flipFlopFsm: fun {f} suceeded for {name}={val!r}"
+                    )
                     if rval is not None:
                         outputVarBinds.append((rval[0], rval[1]))
                 idx += 1
@@ -239,15 +244,14 @@ class MibInstrumController(AbstractMibInstrumController):
                 raise origExc.with_traceback(origTraceback)
             finally:
                 # Break cycle between locals and traceback object
-                # (seems to be irrelevant on Py3 but just in case)
                 del origTraceback
         return outputVarBinds
 
-    def readVars(self, varBinds, acInfo=(None, None)):
+    def readVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         return self.flipFlopFsm(self.fsmReadVar, varBinds, acInfo)
 
-    def readNextVars(self, varBinds, acInfo=(None, None)):
+    def readNextVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         return self.flipFlopFsm(self.fsmReadNextVar, varBinds, acInfo)
 
-    def writeVars(self, varBinds, acInfo=(None, None)):
+    def writeVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
         return self.flipFlopFsm(self.fsmWriteVar, varBinds, acInfo)

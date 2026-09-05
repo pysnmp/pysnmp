@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -30,13 +29,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
-import sys
-import platform
+import asyncio
 import traceback
+
 from pysnmp.carrier.base import AbstractTransportDispatcher
 from pysnmp.error import PySnmpError
-
-import asyncio
 
 
 class AsyncioDispatcher(AbstractTransportDispatcher):
@@ -45,32 +42,84 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
     def __init__(self, *args, **kwargs):
         AbstractTransportDispatcher.__init__(self)
         self.__transportCount = 0
-        if 'timeout' in kwargs:
-            self.setTimerResolution(kwargs['timeout'])
+        if "timeout" in kwargs:
+            self.setTimerResolution(kwargs["timeout"])
         self.loopingcall = None
-        self.loop = kwargs.pop('loop', asyncio.get_event_loop())
+        self._timerStartHandle = None
+        self.loop = kwargs.pop("loop", None)
+        if self.loop is None:
+            try:
+                self.loop = asyncio.get_running_loop()
+            except RuntimeError:
+                self.loop = asyncio.new_event_loop()
 
     async def handle_timeout(self):
         while True:
             await asyncio.sleep(self.getTimerResolution())
             self.handleTimerTick(self.loop.time())
 
+    def _start_timer(self):
+        self._timerStartHandle = None
+        if self.loopingcall is None:
+            self.loopingcall = self.loop.create_task(self.handle_timeout())
+
     def runDispatcher(self, timeout=0.0):
-        if not self.loop.is_running():
-            try:
+        if self.loop.is_running():
+            return
+
+        async def run_pending_jobs():
+            while self.jobsArePending() or self.transportsAreWorking():
+                await asyncio.sleep(timeout or self.getTimerResolution())
+
+        try:
+            if self.jobsArePending() or self.transportsAreWorking():
+                self.loop.run_until_complete(run_pending_jobs())
+            else:
+                # Server mode: run the event loop indefinitely so that
+                # registered transports can receive incoming messages.
                 self.loop.run_forever()
-            except KeyboardInterrupt:
-                raise
-            except Exception:
-                raise PySnmpError(';'.join(traceback.format_exception(*sys.exc_info())))
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            raise PySnmpError(";".join(traceback.format_exception(type(e), e, e.__traceback__)))
+
+    def transportsAreWorking(self):
+        for transport in self._AbstractTransportDispatcher__transports.values():
+            if getattr(transport, "_writeQ", None):
+                return True
+        return False
 
     def registerTransport(self, tDomain, transport):
-        if self.loopingcall is None and self.getTimerResolution() > 0:
-            self.loopingcall = asyncio.ensure_future(self.handle_timeout())
-        AbstractTransportDispatcher.registerTransport(
-            self, tDomain, transport
-        )
+        # If the transport already has an event loop (e.g. server-mode
+        # transport created before the dispatcher), adopt its loop so
+        # that datagram reception works on the same loop.
+        transportLoop = getattr(transport, "loop", None)
+        if transportLoop is not None and not self.loop.is_running():
+            if transportLoop is not self.loop:
+                self.loop = transportLoop
+
+        if (
+            self.loopingcall is None
+            and self._timerStartHandle is None
+            and self.getTimerResolution() > 0
+        ):
+            if self.loop.is_running():
+                self._start_timer()
+            else:
+                self._timerStartHandle = self.loop.call_soon(self._start_timer)
+        AbstractTransportDispatcher.registerTransport(self, tDomain, transport)
         self.__transportCount += 1
+
+    def _cancel_timer(self):
+        if self._timerStartHandle is not None:
+            self._timerStartHandle.cancel()
+            self._timerStartHandle = None
+        if self.loopingcall is None:
+            return
+        self.loopingcall.cancel()
+        if not self.loop.is_running():
+            self.loop.run_until_complete(asyncio.gather(self.loopingcall, return_exceptions=True))
+        self.loopingcall = None
 
     def unregisterTransport(self, tDomain):
         t = AbstractTransportDispatcher.getTransport(self, tDomain)
@@ -79,8 +128,12 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
             self.__transportCount -= 1
 
         # The last transport has been removed, stop the timeout
-        if self.__transportCount == 0 and not self.loopingcall.done():
-            self.loopingcall.cancel()
-            self.loopingcall = None
+        if self.__transportCount == 0 and (
+            self.loopingcall is not None or self._timerStartHandle is not None
+        ):
+            self._cancel_timer()
 
-
+    def closeDispatcher(self):
+        AbstractTransportDispatcher.closeDispatcher(self)
+        self._cancel_timer()
+        self.__transportCount = 0

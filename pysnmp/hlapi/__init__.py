@@ -1,19 +1,44 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pysnmp.proto.rfc1902 import *
-from pysnmp.proto.rfc1905 import NoSuchInstance, NoSuchObject, EndOfMibView
-from pysnmp.smi.rfc1902 import *
+from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi import auth
-from pysnmp.hlapi.context import *
-from pysnmp.entity.engine import *
+from pysnmp.hlapi.asyncio.device import DeviceReport as DeviceReport
+from pysnmp.hlapi.asyncio.device import SysOREntry as SysOREntry
 
-# default is synchronous asyncore-based API
-from pysnmp.hlapi.asyncore.sync import *
-
+# default is a synchronous facade over the asyncio API
+from pysnmp.hlapi.asyncio.sync import (
+    Udp6TransportTarget,
+    UdpTransportTarget,
+    UnixTransportTarget,
+    bulkCmd,
+    get_device_report,
+    getCmd,
+    getDeviceReport,
+    nextCmd,
+    sendNotification,
+    setCmd,
+)
+from pysnmp.hlapi.context import ContextData
+from pysnmp.proto.rfc1902 import (
+    Bits,
+    Counter32,
+    Counter64,
+    Gauge32,
+    Integer,
+    Integer32,
+    IpAddress,
+    Null,
+    ObjectIdentifier,
+    OctetString,
+    Opaque,
+    TimeTicks,
+    Unsigned32,
+)
+from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
+from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
 
 CommunityData = auth.CommunityData
 UsmUserData = auth.UsmUserData
@@ -71,4 +96,3 @@ usmKeyTypeMaster = auth.usmKeyTypeMaster
 
 usmKeyTypeLocalized = auth.usmKeyTypeLocalized
 """USM key material type - hashed pass-phrase hashed with Context SNMP Engine ID (:RFC:`3414#section-2.6`)"""
-

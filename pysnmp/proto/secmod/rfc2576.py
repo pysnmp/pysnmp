@@ -1,17 +1,18 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import sys
+
 from pyasn1.codec.ber import encoder
 from pyasn1.error import PyAsn1Error
-from pysnmp.proto.secmod import base
-from pysnmp.carrier.asyncore.dgram import udp, udp6, unix
-from pysnmp.smi.error import NoSuchInstanceError
-from pysnmp.proto import errind, error
+
 from pysnmp import debug
+from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
+from pysnmp.entity.observer import execution_context
+from pysnmp.proto import errind, error
+from pysnmp.proto.secmod import base
+from pysnmp.smi.error import NoSuchInstanceError
 
 
 class SnmpV1SecurityModel(base.AbstractSecurityModel):
@@ -24,15 +25,23 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
     # in here.
 
     def __init__(self):
-        self.__transportBranchId = self.__paramsBranchId = self.__communityBranchId = self.__securityBranchId = -1
+        self.__transportBranchId = self.__paramsBranchId = self.__communityBranchId = (
+            self.__securityBranchId
+        ) = -1
         base.AbstractSecurityModel.__init__(self)
 
     def _sec2com(self, snmpEngine, securityName, contextEngineId, contextName):
-        snmpTargetParamsSecurityName, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            'SNMP-TARGET-MIB', 'snmpTargetParamsSecurityName')
+        (snmpTargetParamsSecurityName,) = (
+            snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-TARGET-MIB", "snmpTargetParamsSecurityName"
+            )
+        )
         if self.__paramsBranchId != snmpTargetParamsSecurityName.branchVersionId:
-            snmpTargetParamsSecurityModel, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                'SNMP-TARGET-MIB', 'snmpTargetParamsSecurityModel')
+            (snmpTargetParamsSecurityModel,) = (
+                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                    "SNMP-TARGET-MIB", "snmpTargetParamsSecurityModel"
+                )
+            )
 
             self.__nameToModelMap = {}
 
@@ -45,9 +54,11 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 except NoSuchInstanceError:
                     break
 
-                instId = nextMibNode.name[len(snmpTargetParamsSecurityName.name):]
+                instId = nextMibNode.name[len(snmpTargetParamsSecurityName.name) :]
 
-                mibNode = snmpTargetParamsSecurityModel.getNode(snmpTargetParamsSecurityModel.name + instId)
+                mibNode = snmpTargetParamsSecurityModel.getNode(
+                    snmpTargetParamsSecurityModel.name + instId
+                )
 
                 try:
                     if mibNode.syntax not in self.__nameToModelMap:
@@ -57,8 +68,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_sec2com: table entries {!r}/{!r} hashing failed'.format(
-                            nextMibNode.syntax, mibNode.syntax)
+                        f"_sec2com: table entries {nextMibNode.syntax!r}/{mibNode.syntax!r} hashing failed"
                     )
                     continue
 
@@ -67,14 +77,19 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             # invalidate next map as it include this one
             self.__securityBranchId = -1
 
-        snmpCommunityName, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('SNMP-COMMUNITY-MIB',
-                                                                                                   'snmpCommunityName')
+        (snmpCommunityName,) = (
+            snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-COMMUNITY-MIB", "snmpCommunityName"
+            )
+        )
         if self.__securityBranchId != snmpCommunityName.branchVersionId:
-            (snmpCommunitySecurityName,
-             snmpCommunityContextEngineId,
-             snmpCommunityContextName) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                'SNMP-COMMUNITY-MIB', 'snmpCommunitySecurityName',
-                'snmpCommunityContextEngineID', 'snmpCommunityContextName'
+            (snmpCommunitySecurityName, snmpCommunityContextEngineId, snmpCommunityContextName) = (
+                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                    "SNMP-COMMUNITY-MIB",
+                    "snmpCommunitySecurityName",
+                    "snmpCommunityContextEngineID",
+                    "snmpCommunityContextName",
+                )
             )
 
             self.__securityMap = {}
@@ -88,54 +103,60 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 except NoSuchInstanceError:
                     break
 
-                instId = nextMibNode.name[len(snmpCommunityName.name):]
+                instId = nextMibNode.name[len(snmpCommunityName.name) :]
 
-                _securityName = snmpCommunitySecurityName.getNode(snmpCommunitySecurityName.name + instId).syntax
+                _securityName = snmpCommunitySecurityName.getNode(
+                    snmpCommunitySecurityName.name + instId
+                ).syntax
 
                 _contextEngineId = snmpCommunityContextEngineId.getNode(
-                    snmpCommunityContextEngineId.name + instId).syntax
+                    snmpCommunityContextEngineId.name + instId
+                ).syntax
 
-                _contextName = snmpCommunityContextName.getNode(snmpCommunityContextName.name + instId).syntax
+                _contextName = snmpCommunityContextName.getNode(
+                    snmpCommunityContextName.name + instId
+                ).syntax
 
                 try:
-                    self.__securityMap[(_securityName,
-                                        _contextEngineId,
-                                        _contextName)] = nextMibNode.syntax
+                    self.__securityMap[(_securityName, _contextEngineId, _contextName)] = (
+                        nextMibNode.syntax
+                    )
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_sec2com: table entries {!r}/{!r}/{!r} hashing failed'.format(
-                            _securityName, _contextEngineId, _contextName)
+                        f"_sec2com: table entries {_securityName!r}/{_contextEngineId!r}/{_contextName!r} hashing failed"
                     )
                     continue
 
             self.__securityBranchId = snmpCommunityName.branchVersionId
 
             debug.logger & debug.flagSM and debug.logger(
-                '_sec2com: built securityName to communityName map, version {}: {}'.format(
-                    self.__securityBranchId, self.__securityMap))
+                f"_sec2com: built securityName to communityName map, version {self.__securityBranchId}: {self.__securityMap}"
+            )
 
         try:
-            return self.__securityMap[(securityName,
-                                       contextEngineId,
-                                       contextName)]
+            return self.__securityMap[(securityName, contextEngineId, contextName)]
 
         except KeyError:
-            raise error.StatusInformation(
-                errorIndication=errind.unknownCommunityName
-            )
+            raise error.StatusInformation(errorIndication=errind.unknownCommunityName)
 
     def _com2sec(self, snmpEngine, communityName, transportInformation):
-        snmpTargetAddrTAddress, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            'SNMP-TARGET-MIB', 'snmpTargetAddrTAddress')
+        (snmpTargetAddrTAddress,) = (
+            snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-TARGET-MIB", "snmpTargetAddrTAddress"
+            )
+        )
         if self.__transportBranchId != snmpTargetAddrTAddress.branchVersionId:
-            (SnmpTagValue, snmpTargetAddrTDomain,
-             snmpTargetAddrTagList) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                'SNMP-TARGET-MIB', 'SnmpTagValue', 'snmpTargetAddrTDomain',
-                'snmpTargetAddrTagList'
+            (SnmpTagValue, snmpTargetAddrTDomain, snmpTargetAddrTagList) = (
+                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                    "SNMP-TARGET-MIB",
+                    "SnmpTagValue",
+                    "snmpTargetAddrTDomain",
+                    "snmpTargetAddrTagList",
+                )
             )
 
-            self.__emptyTag = SnmpTagValue('')
+            self.__emptyTag = SnmpTagValue("")
 
             self.__transportToTagMap = {}
 
@@ -148,25 +169,40 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 except NoSuchInstanceError:
                     break
 
-                instId = nextMibNode.name[len(snmpTargetAddrTagList.name):]
-                targetAddrTDomain = snmpTargetAddrTDomain.getNode(snmpTargetAddrTDomain.name + instId).syntax
-                targetAddrTAddress = snmpTargetAddrTAddress.getNode(snmpTargetAddrTAddress.name + instId).syntax
+                instId = nextMibNode.name[len(snmpTargetAddrTagList.name) :]
+                targetAddrTDomain = snmpTargetAddrTDomain.getNode(
+                    snmpTargetAddrTDomain.name + instId
+                ).syntax
+                targetAddrTAddress = snmpTargetAddrTAddress.getNode(
+                    snmpTargetAddrTAddress.name + instId
+                ).syntax
 
                 targetAddrTDomain = tuple(targetAddrTDomain)
 
-                if targetAddrTDomain[:len(udp.snmpUDPDomain)] == udp.snmpUDPDomain:
-                    SnmpUDPAddress, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('SNMPv2-TM',
-                                                                                                            'SnmpUDPAddress')
+                if targetAddrTDomain[: len(udp.snmpUDPDomain)] == udp.snmpUDPDomain:
+                    (SnmpUDPAddress,) = (
+                        snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                            "SNMPv2-TM", "SnmpUDPAddress"
+                        )
+                    )
                     targetAddrTAddress = tuple(SnmpUDPAddress(targetAddrTAddress))
-                elif targetAddrTDomain[:len(udp6.snmpUDP6Domain)] == udp6.snmpUDP6Domain:
-                    TransportAddressIPv6, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                        'TRANSPORT-ADDRESS-MIB', 'TransportAddressIPv6')
+                elif targetAddrTDomain[: len(udp6.snmpUDP6Domain)] == udp6.snmpUDP6Domain:
+                    (TransportAddressIPv6,) = (
+                        snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
+                        )
+                    )
                     targetAddrTAddress = tuple(TransportAddressIPv6(targetAddrTAddress))
-                elif targetAddrTDomain[:len(unix.snmpLocalDomain)] == unix.snmpLocalDomain:
-                    targetAddrTAddress = str(targetAddrTAddress)
+                elif targetAddrTDomain[: len(unix.snmpLocalDomain)] == unix.snmpLocalDomain:
+                    # A local-domain TAddress carries a filesystem path
+                    targetAddrTAddress = targetAddrTAddress.asOctets().decode(
+                        targetAddrTAddress.encoding
+                    )
 
                 targetAddr = targetAddrTDomain, targetAddrTAddress
-                targetAddrTagList = snmpTargetAddrTagList.getNode(snmpTargetAddrTagList.name + instId).syntax
+                targetAddrTagList = snmpTargetAddrTagList.getNode(
+                    snmpTargetAddrTagList.name + instId
+                ).syntax
 
                 if targetAddr not in self.__transportToTagMap:
                     self.__transportToTagMap[targetAddr] = set()
@@ -174,8 +210,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 try:
                     if targetAddrTagList:
                         self.__transportToTagMap[targetAddr].update(
-                            [SnmpTagValue(x)
-                             for x in targetAddrTagList.asOctets().split()]
+                            [SnmpTagValue(x) for x in targetAddrTagList.asOctets().split()]
                         )
 
                     else:
@@ -183,22 +218,28 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_com2sec: table entries {!r}/{!r} hashing failed'.format(
-                            targetAddr, targetAddrTagList)
+                        f"_com2sec: table entries {targetAddr!r}/{targetAddrTagList!r} hashing failed"
                     )
                     continue
 
             self.__transportBranchId = snmpTargetAddrTAddress.branchVersionId
 
-            debug.logger & debug.flagSM and debug.logger('_com2sec: built transport-to-tag map version {}: {}'.format(
-                self.__transportBranchId, self.__transportToTagMap))
+            debug.logger & debug.flagSM and debug.logger(
+                f"_com2sec: built transport-to-tag map version {self.__transportBranchId}: {self.__transportToTagMap}"
+            )
 
-        snmpTargetParamsSecurityName, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            'SNMP-TARGET-MIB', 'snmpTargetParamsSecurityName')
+        (snmpTargetParamsSecurityName,) = (
+            snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-TARGET-MIB", "snmpTargetParamsSecurityName"
+            )
+        )
 
         if self.__paramsBranchId != snmpTargetParamsSecurityName.branchVersionId:
-            snmpTargetParamsSecurityModel, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                'SNMP-TARGET-MIB', 'snmpTargetParamsSecurityModel')
+            (snmpTargetParamsSecurityModel,) = (
+                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                    "SNMP-TARGET-MIB", "snmpTargetParamsSecurityModel"
+                )
+            )
 
             self.__nameToModelMap = {}
 
@@ -211,9 +252,11 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 except NoSuchInstanceError:
                     break
 
-                instId = nextMibNode.name[len(snmpTargetParamsSecurityName.name):]
+                instId = nextMibNode.name[len(snmpTargetParamsSecurityName.name) :]
 
-                mibNode = snmpTargetParamsSecurityModel.getNode(snmpTargetParamsSecurityModel.name + instId)
+                mibNode = snmpTargetParamsSecurityModel.getNode(
+                    snmpTargetParamsSecurityModel.name + instId
+                )
 
                 try:
                     if nextMibNode.syntax not in self.__nameToModelMap:
@@ -223,8 +266,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_com2sec: table entries {!r}/{!r} hashing failed'.format(
-                            nextMibNode.syntax, mibNode.syntax)
+                        f"_com2sec: table entries {nextMibNode.syntax!r}/{mibNode.syntax!r} hashing failed"
                     )
                     continue
 
@@ -234,18 +276,26 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             self.__communityBranchId = -1
 
             debug.logger & debug.flagSM and debug.logger(
-                '_com2sec: built securityName to securityModel map, version {}: {}'.format(
-                    self.__paramsBranchId, self.__nameToModelMap))
+                f"_com2sec: built securityName to securityModel map, version {self.__paramsBranchId}: {self.__nameToModelMap}"
+            )
 
-        snmpCommunityName, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('SNMP-COMMUNITY-MIB',
-                                                                                                   'snmpCommunityName')
+        (snmpCommunityName,) = (
+            snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-COMMUNITY-MIB", "snmpCommunityName"
+            )
+        )
         if self.__communityBranchId != snmpCommunityName.branchVersionId:
-            (snmpCommunitySecurityName, snmpCommunityContextEngineId,
-             snmpCommunityContextName,
-             snmpCommunityTransportTag) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                'SNMP-COMMUNITY-MIB', 'snmpCommunitySecurityName',
-                'snmpCommunityContextEngineID', 'snmpCommunityContextName',
-                'snmpCommunityTransportTag'
+            (
+                snmpCommunitySecurityName,
+                snmpCommunityContextEngineId,
+                snmpCommunityContextName,
+                snmpCommunityTransportTag,
+            ) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-COMMUNITY-MIB",
+                "snmpCommunitySecurityName",
+                "snmpCommunityContextEngineID",
+                "snmpCommunityContextName",
+                "snmpCommunityTransportTag",
             )
 
             self.__communityToTagMap = {}
@@ -260,16 +310,23 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 except NoSuchInstanceError:
                     break
 
-                instId = nextMibNode.name[len(snmpCommunityName.name):]
+                instId = nextMibNode.name[len(snmpCommunityName.name) :]
 
-                securityName = snmpCommunitySecurityName.getNode(snmpCommunitySecurityName.name + instId).syntax
+                securityName = snmpCommunitySecurityName.getNode(
+                    snmpCommunitySecurityName.name + instId
+                ).syntax
 
                 contextEngineId = snmpCommunityContextEngineId.getNode(
-                    snmpCommunityContextEngineId.name + instId).syntax
+                    snmpCommunityContextEngineId.name + instId
+                ).syntax
 
-                contextName = snmpCommunityContextName.getNode(snmpCommunityContextName.name + instId).syntax
+                contextName = snmpCommunityContextName.getNode(
+                    snmpCommunityContextName.name + instId
+                ).syntax
 
-                transportTag = snmpCommunityTransportTag.getNode(snmpCommunityTransportTag.name + instId).syntax
+                transportTag = snmpCommunityTransportTag.getNode(
+                    snmpCommunityTransportTag.name + instId
+                ).syntax
 
                 _tagAndCommunity = transportTag, nextMibNode.syntax
 
@@ -288,25 +345,25 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
-                        '_com2sec: table entries {!r}/{!r} hashing failed'.format(
-                            _tagAndCommunity, nextMibNode.syntax)
+                        f"_com2sec: table entries {_tagAndCommunity!r}/{nextMibNode.syntax!r} hashing failed"
                     )
                     continue
 
             self.__communityBranchId = snmpCommunityName.branchVersionId
 
             debug.logger & debug.flagSM and debug.logger(
-                '_com2sec: built communityName to tag map (securityModel {}), version {}: {}'.format(
-                    self.securityModelID, self.__communityBranchId, self.__communityToTagMap))
+                f"_com2sec: built communityName to tag map (securityModel {self.securityModelID}), version {self.__communityBranchId}: {self.__communityToTagMap}"
+            )
 
             debug.logger & debug.flagSM and debug.logger(
-                '_com2sec: built tag & community to securityName map (securityModel {}), version {}: {}'.format(
-                    self.securityModelID, self.__communityBranchId, self.__tagAndCommunityToSecurityMap))
+                f"_com2sec: built tag & community to securityName map (securityModel {self.securityModelID}), version {self.__communityBranchId}: {self.__tagAndCommunityToSecurityMap}"
+            )
 
         if communityName in self.__communityToTagMap:
             if transportInformation in self.__transportToTagMap:
                 tags = self.__transportToTagMap[transportInformation].intersection(
-                    self.__communityToTagMap[communityName])
+                    self.__communityToTagMap[communityName]
+                )
             elif self.__emptyTag in self.__communityToTagMap[communityName]:
                 tags = [self.__emptyTag]
             else:
@@ -322,30 +379,39 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             if candidateSecurityNames:
                 candidateSecurityNames.sort(
                     key=lambda x, m=self.__nameToModelMap, v=self.securityModelID: (
-                        not int(x[0] in m and v in m[x[0]]), str(x[0]))
+                        not int(x[0] in m and v in m[x[0]]),
+                        x[0].asOctets(),
+                    )
                 )
                 chosenSecurityName = candidateSecurityNames[0]  # min()
                 debug.logger & debug.flagSM and debug.logger(
-                    '_com2sec: securityName candidates for communityName \'{}\' are {}; choosing securityName \'{}\''.format(
-                        communityName, candidateSecurityNames, chosenSecurityName[0]))
+                    f"_com2sec: securityName candidates for communityName '{debug.prettify(communityName)}' are {candidateSecurityNames}; choosing securityName '{debug.prettify(chosenSecurityName[0])}'"
+                )
                 return chosenSecurityName
 
         raise error.StatusInformation(errorIndication=errind.unknownCommunityName)
 
-    def generateRequestMsg(self, snmpEngine, messageProcessingModel,
-                           globalData, maxMessageSize, securityModel,
-                           securityEngineId, securityName, securityLevel,
-                           scopedPDU):
-        msg, = globalData
+    def generateRequestMsg(
+        self,
+        snmpEngine,
+        messageProcessingModel,
+        globalData,
+        maxMessageSize,
+        securityModel,
+        securityEngineId,
+        securityName,
+        securityLevel,
+        scopedPDU,
+    ):
+        (msg,) = globalData
         contextEngineId, contextName, pdu = scopedPDU
 
         # rfc2576: 5.2.3
-        communityName = self._sec2com(snmpEngine, securityName,
-                                      contextEngineId, contextName)
+        communityName = self._sec2com(snmpEngine, securityName, contextEngineId, contextName)
 
         debug.logger & debug.flagSM and debug.logger(
-            'generateRequestMsg: using community {!r} for securityModel {!r}, securityName {!r}, contextEngineId {!r} contextName {!r}'.format(
-                communityName, securityModel, securityName, contextEngineId, contextName))
+            f"generateRequestMsg: using community {communityName!r} for securityModel {securityModel!r}, securityName {securityName!r}, contextEngineId {contextEngineId!r} contextName {contextName!r}"
+        )
 
         securityParameters = communityName
 
@@ -355,29 +421,39 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
         )
 
-        debug.logger & debug.flagMP and debug.logger(f'generateRequestMsg: {msg.prettyPrint()}')
+        debug.logger & debug.flagMP and debug.logger(f"generateRequestMsg: {msg.prettyPrint()}")
 
         try:
             return securityParameters, encoder.encode(msg)
 
-        except PyAsn1Error:
+        except PyAsn1Error as e:
             debug.logger & debug.flagMP and debug.logger(
-                'generateRequestMsg: serialization failure: %s' % sys.exc_info()[1])
+                "generateRequestMsg: serialization failure: %s" % e
+            )
             raise error.StatusInformation(errorIndication=errind.serializationError)
 
-    def generateResponseMsg(self, snmpEngine, messageProcessingModel,
-                            globalData, maxMessageSize, securityModel,
-                            securityEngineID, securityName, securityLevel,
-                            scopedPDU, securityStateReference):
+    def generateResponseMsg(
+        self,
+        snmpEngine,
+        messageProcessingModel,
+        globalData,
+        maxMessageSize,
+        securityModel,
+        securityEngineID,
+        securityName,
+        securityLevel,
+        scopedPDU,
+        securityStateReference,
+    ):
         # rfc2576: 5.2.2
-        msg, = globalData
+        (msg,) = globalData
         contextEngineId, contextName, pdu = scopedPDU
         cachedSecurityData = self._cache.pop(securityStateReference)
-        communityName = cachedSecurityData['communityName']
+        communityName = cachedSecurityData["communityName"]
 
         debug.logger & debug.flagSM and debug.logger(
-            'generateResponseMsg: recovered community {!r} by securityStateReference {}'.format(
-                communityName, securityStateReference))
+            f"generateResponseMsg: recovered community {communityName!r} by securityStateReference {securityStateReference}"
+        )
 
         msg.setComponentByPosition(1, communityName)
         msg.setComponentByPosition(2)
@@ -385,86 +461,102 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
         )
 
-        debug.logger & debug.flagMP and debug.logger(f'generateResponseMsg: {msg.prettyPrint()}')
+        debug.logger & debug.flagMP and debug.logger(f"generateResponseMsg: {msg.prettyPrint()}")
 
         try:
             return communityName, encoder.encode(msg)
 
-        except PyAsn1Error:
+        except PyAsn1Error as e:
             debug.logger & debug.flagMP and debug.logger(
-                'generateResponseMsg: serialization failure: %s' % sys.exc_info()[1])
+                "generateResponseMsg: serialization failure: %s" % e
+            )
             raise error.StatusInformation(errorIndication=errind.serializationError)
 
-    def processIncomingMsg(self, snmpEngine, messageProcessingModel,
-                           maxMessageSize, securityParameters, securityModel,
-                           securityLevel, wholeMsg, msg):
+    def processIncomingMsg(
+        self,
+        snmpEngine,
+        messageProcessingModel,
+        maxMessageSize,
+        securityParameters,
+        securityModel,
+        securityLevel,
+        wholeMsg,
+        msg,
+    ):
         # rfc2576: 5.2.1
         communityName, transportInformation = securityParameters
 
-        scope = dict(communityName=communityName,
-                     transportInformation=transportInformation)
+        scope = dict(communityName=communityName, transportInformation=transportInformation)
 
-        snmpEngine.observer.storeExecutionContext(
-            snmpEngine, 'rfc2576.processIncomingMsg:writable', scope
-        )
-        snmpEngine.observer.clearExecutionContext(
-            snmpEngine, 'rfc2576.processIncomingMsg:writable'
-        )
+        with execution_context(
+            snmpEngine,
+            "rfc2576.processIncomingMsg:writable",
+            scope,
+        ):
+            pass
 
         try:
             securityName, contextEngineId, contextName = self._com2sec(
-                snmpEngine, scope.get('communityName', communityName),
-                scope.get('transportInformation', transportInformation)
+                snmpEngine,
+                scope.get("communityName", communityName),
+                scope.get("transportInformation", transportInformation),
             )
 
         except error.StatusInformation:
-            snmpInBadCommunityNames, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                '__SNMPv2-MIB', 'snmpInBadCommunityNames')
+            (snmpInBadCommunityNames,) = (
+                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                    "__SNMPv2-MIB", "snmpInBadCommunityNames"
+                )
+            )
             snmpInBadCommunityNames.syntax += 1
             raise error.StatusInformation(
-                errorIndication=errind.unknownCommunityName,
-                communityName=communityName
+                errorIndication=errind.unknownCommunityName, communityName=communityName
             )
 
-        snmpEngineID, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('__SNMP-FRAMEWORK-MIB',
-                                                                                              'snmpEngineID')
+        (snmpEngineID,) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+        )
 
         securityEngineID = snmpEngineID.syntax
 
-        snmpEngine.observer.storeExecutionContext(
-            snmpEngine, 'rfc2576.processIncomingMsg',
-            dict(transportInformation=transportInformation,
-                 securityEngineId=securityEngineID,
-                 securityName=securityName,
-                 communityName=communityName,
-                 contextEngineId=contextEngineId,
-                 contextName=contextName)
-        )
-        snmpEngine.observer.clearExecutionContext(
-            snmpEngine, 'rfc2576.processIncomingMsg'
-        )
+        with execution_context(
+            snmpEngine,
+            "rfc2576.processIncomingMsg",
+            transportInformation=transportInformation,
+            securityEngineId=securityEngineID,
+            securityName=securityName,
+            communityName=communityName,
+            contextEngineId=contextEngineId,
+            contextName=contextName,
+        ):
+            pass
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: looked up securityName {!r} securityModel {!r} contextEngineId {!r} contextName {!r} by communityName {!r} AND transportInformation {!r}'.format(
-                securityName, self.securityModelID, contextEngineId, contextName, communityName, transportInformation))
+            f"processIncomingMsg: looked up securityName {securityName!r} securityModel {self.securityModelID!r} contextEngineId {contextEngineId!r} contextName {contextName!r} by communityName {communityName!r} AND transportInformation {transportInformation!r}"
+        )
 
         stateReference = self._cache.push(communityName=communityName)
 
-        scopedPDU = (contextEngineId, contextName,
-                     msg.getComponentByPosition(2).getComponent())
+        scopedPDU = (contextEngineId, contextName, msg.getComponentByPosition(2).getComponent())
         maxSizeResponseScopedPDU = maxMessageSize - 128
         securityStateReference = stateReference
 
         debug.logger & debug.flagSM and debug.logger(
-            'processIncomingMsg: generated maxSizeResponseScopedPDU {} securityStateReference {}'.format(
-                maxSizeResponseScopedPDU, securityStateReference))
+            f"processIncomingMsg: generated maxSizeResponseScopedPDU {maxSizeResponseScopedPDU} securityStateReference {securityStateReference}"
+        )
 
-        return (securityEngineID, securityName, scopedPDU,
-                maxSizeResponseScopedPDU, securityStateReference)
+        return (
+            securityEngineID,
+            securityName,
+            scopedPDU,
+            maxSizeResponseScopedPDU,
+            securityStateReference,
+        )
 
 
 class SnmpV2cSecurityModel(SnmpV1SecurityModel):
     securityModelID = 2
+
 
 # XXX
 # contextEngineId/contextName goes to globalData

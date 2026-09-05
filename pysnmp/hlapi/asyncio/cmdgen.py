@@ -1,13 +1,12 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
 #          Zachary Lorusso <zlorusso@gmail.com>
-# Modified by Ilya Etingof <ilya@snmplabs.com>
+# Modified by Ilya Etingof deceased
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,30 +30,34 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
-import sys
-
-from pysnmp.smi.rfc1902 import *
-from pysnmp.hlapi.auth import *
-from pysnmp.hlapi.context import *
-from pysnmp.hlapi.lcd import *
-from pysnmp.hlapi.varbinds import *
-from pysnmp.hlapi.asyncio.transport import *
-from pysnmp.entity.rfc3413 import cmdgen
 
 import asyncio
+from typing import Any
 
+from pysnmp.entity.rfc3413 import cmdgen
+from pysnmp.hlapi.asyncio._callback import make_callback
+from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
+from pysnmp.hlapi.types import SnmpResponse
+from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 
-__all__ = ['getCmd', 'nextCmd', 'setCmd', 'bulkCmd', 'isEndOfMib']
+__all__ = ["getCmd", "nextCmd", "setCmd", "bulkCmd", "isEndOfMib"]
 
 vbProcessor = CommandGeneratorVarBinds()
 lcd = CommandGeneratorLcdConfigurator()
 
-isEndOfMib = lambda x: not cmdgen.getNextVarBinds(x)[1]
+
+def isEndOfMib(x):
+    return not cmdgen.getNextVarBinds(x)[1]
 
 
-
-async def getCmd(snmpEngine, authData, transportTarget, contextData,
-           *varBinds, **options):
+async def getCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GET.
 
     (:RFC:`1905#section-4.2.1`)
@@ -112,52 +115,46 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
     ...     result_get = await getCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0))
     ...     )
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_get
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    Run the coroutine against a live agent, for example:
-
-        asyncio.run(run())
+>>> # Run the coroutine against a live agent, for example:
+>>> # asyncio.run(run())
 
     """
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBinds, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds,
-                                                        lookupMib)
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.GetCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
         contextData.contextName,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (options.get("lookupMib", True), future),
     )
     return await future
 
 
-async def setCmd(snmpEngine, authData, transportTarget, contextData,
-           *varBinds, **options):
+async def setCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP SET.
 
     (:RFC:`1905#section-4.2.5`)
@@ -215,51 +212,45 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
     ...     errorIndication, errorStatus, errorIndex, varBinds = await setCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386')
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    Run the coroutine against a live agent, for example:
-
-        asyncio.run(run())
+>>> # Run the coroutine against a live agent, for example:
+>>> # asyncio.run(run())
 
     """
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBinds, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds,
-                                                        lookupMib)
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.SetCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
         contextData.contextName,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (options.get("lookupMib", True), future),
     )
     return await future
 
 
-async def nextCmd(snmpEngine, authData, transportTarget, contextData,
-            *varBinds, **options):
+async def nextCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GETNEXT.
 
     (:RFC:`1905#section-4.2.2`)
@@ -321,53 +312,47 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
     ...     errorIndication, errorStatus, errorIndex, varBinds = await nextCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system'))
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    Run the coroutine against a live agent, for example:
-
-        asyncio.run(run())
+>>> # Run the coroutine against a live agent, for example:
+>>> # asyncio.run(run())
 
     """
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBindTable, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = [vbProcessor.unmakeVarBinds(snmpEngine,
-                                                         varBindTableRow,
-                                                         lookupMib)
-                              for varBindTableRow in varBindTable]
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.NextCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
         contextData.contextName,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (options.get("lookupMib", True), future),
     )
     return await future
 
 
-async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
-            nonRepeaters, maxRepetitions, *varBinds, **options):
+async def bulkCmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    nonRepeaters: Any,
+    maxRepetitions: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GETBULK.
 
     (:RFC:`1905#section-4.2.3`)
@@ -457,7 +442,7 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     ...     result_bulk = await bulkCmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         0, 2,
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system'))
@@ -465,40 +450,28 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_bulk
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    Run the coroutine against a live agent, for example:
-
-        asyncio.run(run())
+>>> # Run the coroutine against a live agent, for example:
+>>> # asyncio.run(run())
 
     """
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBindTable, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = [vbProcessor.unmakeVarBinds(snmpEngine,
-                                                         varBindTableRow,
-                                                         lookupMib)
-                              for varBindTableRow in varBindTable]
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.BulkCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
-        contextData.contextName, nonRepeaters, maxRepetitions,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
+        contextData.contextName,
+        nonRepeaters,
+        maxRepetitions,
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (options.get("lookupMib", True), future),
     )
     return await future

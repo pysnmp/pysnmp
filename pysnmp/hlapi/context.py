@@ -1,20 +1,22 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.compat.octets import null
 
-__all__ = ['ContextData']
+from dataclasses import dataclass
+from typing import Any
+
+__all__ = ["ContextData"]
 
 
+@dataclass(eq=False, repr=False)
 class ContextData:
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
     This object can be used by
-    :py:class:`~pysnmp.hlapi.asyncore.AsyncCommandGenerator` or
-    :py:class:`~pysnmp.hlapi.asyncore.AsyncNotificationOriginator`
+    :py:class:`~pysnmp.hlapi.asyncio.AsyncCommandGenerator` or
+    :py:class:`~pysnmp.hlapi.asyncio.AsyncNotificationOriginator`
     and their derevatives for forming SNMP PDU and also adding new entries to
     Local Configuration Datastore (LCD) in order to support SNMPv1/v2c with
     SNMPv3 interoperability.
@@ -47,11 +49,8 @@ class ContextData:
 
     """
 
-    def __init__(self, contextEngineId=None, contextName=null):
-        self.contextEngineId = contextEngineId
-        self.contextName = contextName
+    contextEngineId: Any = None
+    contextName: Any = b""
 
-    def __repr__(self):
-        return '{}(contextEngineId={!r}, contextName={!r})'.format(
-            self.__class__.__name__, self.contextEngineId, self.contextName
-        )
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(contextEngineId={self.contextEngineId!r}, contextName={self.contextName!r})"

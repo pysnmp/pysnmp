@@ -8,7 +8,8 @@ variable-bindings into MIB objects or the other way around.
 The code that configures MIB compiler is similar to what
 happens inside the pysnmp.hlapi API.
 """  #
-from pysnmp.smi import builder, view, compiler, rfc1902
+
+from pysnmp.smi import builder, compiler, rfc1902, view
 
 # Assemble MIB browser
 mibBuilder = builder.MibBuilder()
@@ -34,9 +35,7 @@ varBinds = [
 # Run var-binds through MIB resolver
 # You may want to catch and ignore resolution errors here
 varBinds = [
-    rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
-        mibViewController
-    )
+    rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(mibViewController)
     for x in varBinds
 ]
 

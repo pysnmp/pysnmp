@@ -1,15 +1,27 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.type import univ, tag, constraint, namedtype, namedval
-from pysnmp.proto import rfc1155, error
+from pyasn1.type import constraint, namedtype, namedval, tag, univ
 
-__all__ = ['Opaque', 'TimeTicks', 'Bits', 'Integer', 'OctetString',
-           'IpAddress', 'Counter64', 'Unsigned32', 'Gauge32', 'Integer32',
-           'ObjectIdentifier', 'Counter32', 'Null']
+from pysnmp.proto import error
+
+__all__ = [
+    "Opaque",
+    "TimeTicks",
+    "Bits",
+    "Integer",
+    "OctetString",
+    "IpAddress",
+    "Counter64",
+    "Unsigned32",
+    "Gauge32",
+    "Integer32",
+    "ObjectIdentifier",
+    "Counter32",
+    "Null",
+]
 
 
 class Null(univ.Null):
@@ -32,7 +44,7 @@ class Null(univ.Null):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Null('')
-        Null('')
+        <Null value object, payload []>
         >>>
     """
 
@@ -63,30 +75,30 @@ class Integer32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Integer32(1234)
-        Integer32(1234)
+        <Integer32 value object, payload [1234]>
         >>> Integer32(1) > 2
-        True
+        False
         >>> Integer32(1) + 1
-        Integer32(2)
+        <Integer32 value object, payload [2]>
         >>> int(Integer32(321))
         321
         >>> SmallInteger = Integer32.withRange(1,3)
         >>> SmallInteger(1)
-        Integer32(1)
+        <Integer32 value object, payload [1]>
         >>> DiscreetInteger = Integer32.withValues(4, 8, 1)
         >>> DiscreetInteger(4)
-        Integer32(4)
+        <Integer32 value object, payload [4]>
         >>>
 
     """
+
     subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
         -2147483648, 2147483647
     )
 
     @classmethod
     def withValues(cls, *values):
-        """Creates a subclass with discreet values constraint.
-        """
+        """Creates a subclass with discreet values constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(*values)
@@ -96,8 +108,7 @@ class Integer32(univ.Integer):
 
     @classmethod
     def withRange(cls, minimum, maximum):
-        """Creates a subclass with value range constraint.
-        """
+        """Creates a subclass with value range constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.ValueRangeConstraint(minimum, maximum)
@@ -134,16 +145,16 @@ class Integer(Integer32):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Integer(1234)
-        Integer(1234)
+        <Integer value object, payload [1234]>
         >>> Integer(1) > 2
-        True
+        False
         >>> Integer(1) + 1
-        Integer(2)
+        <Integer value object, payload [2]>
         >>> int(Integer(321))
         321
         >>> SomeState = Integer.withNamedValues(enable=1, disable=0)
         >>> SomeState(1)
-        Integer('enable')
+        <Integer value object, payload [enable]>
         >>> int(SomeState('disable'))
         0
         >>>
@@ -161,15 +172,14 @@ class Integer(Integer32):
 
         class X(cls):
             namedValues = namedval.NamedValues(*enums)
-            subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(
-                *values.values())
+            subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(*values.values())
 
         X.__name__ = cls.__name__
         return X
 
 
 class OctetString(univ.OctetString):
-    """Creates an instance of SNMP OCTET STRING class.
+    r"""Creates an instance of SNMP OCTET STRING class.
 
     The :py:class:`~pysnmp.proto.rfc1902.OctetString` type represents
     arbitrary binary or text data (:RFC:`1902#section-7.1.2`).
@@ -196,20 +206,23 @@ class OctetString(univ.OctetString):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> OctetString('some apples')
-        OctetString('some apples')
+        <OctetString value object, payload [some apples]>
         >>> OctetString('some apples') + ' and oranges'
-        OctetString('some apples and oranges')
-        >>> str(OctetString('some apples'))
+        <OctetString value object, payload [some apples and oranges]>
+        >>> OctetString('some apples').asOctets()
+        b'some apples'
+        >>> OctetString('some apples').prettyPrint()
         'some apples'
         >>> SomeString = OctetString.withSize(3, 12)
-        >>> str(SomeString(hexValue='deadbeef'))
-        '\xde\xad\xbe\xef'
+        >>> SomeString(hexValue='deadbeef').asOctets()
+        b'\xde\xad\xbe\xef'
+        >>> SomeString(hexValue='deadbeef').prettyPrint()
+        '0xdeadbeef'
         >>>
 
     """
-    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(
-        0, 65535
-    )
+
+    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(0, 65535)
 
     # rfc1902 uses a notion of "fixed length string" what might mean
     # having zero-range size constraint applied. The following is
@@ -231,12 +244,13 @@ class OctetString(univ.OctetString):
         return univ.OctetString.clone(self, *args, **kwargs).setFixedLength(self.getFixedLength())
 
     def subtype(self, *args, **kwargs):
-        return univ.OctetString.subtype(self, *args, **kwargs).setFixedLength(self.getFixedLength())
+        return univ.OctetString.subtype(self, *args, **kwargs).setFixedLength(
+            self.getFixedLength()
+        )
 
     @classmethod
     def withSize(cls, minimum, maximum):
-        """Creates a subclass with value size constraint.
-        """
+        """Creates a subclass with value size constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.ValueSizeConstraint(minimum, maximum)
@@ -268,9 +282,9 @@ class ObjectIdentifier(univ.ObjectIdentifier):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> ObjectIdentifier((1, 3, 6))
-        ObjectIdentifier('1.3.6')
+        <ObjectIdentifier value object, payload [1.3.6]>
         >>> ObjectIdentifier('1.3.6')
-        ObjectIdentifier('1.3.6')
+        <ObjectIdentifier value object, payload [1.3.6]>
         >>> tuple(ObjectIdentifier('1.3.6'))
         (1, 3, 6)
         >>> str(ObjectIdentifier('1.3.6'))
@@ -281,7 +295,7 @@ class ObjectIdentifier(univ.ObjectIdentifier):
 
 
 class IpAddress(OctetString):
-    """Creates an instance of SNMP IpAddress class.
+    r"""Creates an instance of SNMP IpAddress class.
 
     The :py:class:`~pysnmp.proto.rfc1902.IpAddress` class represents
     a 32-bit internet address as an OCTET STRING of length 4, in network
@@ -302,40 +316,39 @@ class IpAddress(OctetString):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> IpAddress('127.0.0.1')
-        IpAddress(hexValue='7f000001')
-        >>> str(IpAddress(hexValue='7f000001'))
-        '\x7f\x00\x00\x01'
+        <IpAddress value object, payload [127.0.0.1]>
+        >>> IpAddress(hexValue='7f000001').prettyPrint()
+        '127.0.0.1'
+        >>> IpAddress(hexValue='7f000001').asOctets()
+        b'\x7f\x00\x00\x01'
         >>> IpAddress('\x7f\x00\x00\x01')
-        IpAddress(hexValue='7f000001')
+        <IpAddress value object, payload [127.0.0.1]>
         >>>
 
     """
+
     tagSet = OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x00)
     )
-    subtypeSpec = OctetString.subtypeSpec + constraint.ValueSizeConstraint(
-        4, 4
-    )
+    subtypeSpec = OctetString.subtypeSpec + constraint.ValueSizeConstraint(4, 4)
     fixedLength = 4
 
     def prettyIn(self, value):
         if isinstance(value, str) and len(value) != 4:
             try:
-                value = [int(x) for x in value.split('.')]
-            except:
-                raise error.ProtocolError('Bad IP address syntax %s' % value)
+                value = [int(x) for x in value.split(".")]
+            except Exception:
+                raise error.ProtocolError("Bad IP address syntax %s" % value)
         value = OctetString.prettyIn(self, value)
         if len(value) != 4:
-            raise error.ProtocolError('Bad IP address syntax')
+            raise error.ProtocolError("Bad IP address syntax")
         return value
 
     def prettyOut(self, value):
         if value:
-            return '.'.join(
-                ['%d' % x for x in self.__class__(value).asNumbers()]
-            )
+            return ".".join(["%d" % x for x in self.__class__(value).asNumbers()])
         else:
-            return ''
+            return ""
 
 
 class Counter32(univ.Integer):
@@ -361,20 +374,19 @@ class Counter32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Counter32(1234)
-        Counter32(1234)
+        <Counter32 value object, payload [1234]>
         >>> Counter32(1) + 1
-        Counter32(2)
+        <Counter32 value object, payload [2]>
         >>> int(Counter32(321))
         321
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x01)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class Gauge32(univ.Integer):
@@ -400,20 +412,19 @@ class Gauge32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Gauge32(1234)
-        Gauge32(1234)
+        <Gauge32 value object, payload [1234]>
         >>> Gauge32(1) + 1
-        Gauge32(2)
+        <Gauge32 value object, payload [2]>
         >>> int(Gauge32(321))
         321
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class Unsigned32(univ.Integer):
@@ -438,20 +449,19 @@ class Unsigned32(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Unsigned32(1234)
-        Unsigned32(1234)
+        <Unsigned32 value object, payload [1234]>
         >>> Unsigned32(1) + 1
-        Unsigned32(2)
+        <Unsigned32 value object, payload [2]>
         >>> int(Unsigned32(321))
         321
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class TimeTicks(univ.Integer):
@@ -476,24 +486,23 @@ class TimeTicks(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> TimeTicks(1234)
-        TimeTicks(1234)
+        <TimeTicks value object, payload [1234]>
         >>> TimeTicks(1) + 1
-        TimeTicks(2)
+        <TimeTicks value object, payload [2]>
         >>> int(TimeTicks(321))
         321
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x03)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
-        0, 4294967295
-    )
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
 
 
 class Opaque(univ.OctetString):
-    """Creates an instance of SNMP Opaque class.
+    r"""Creates an instance of SNMP Opaque class.
 
     The :py:class:`~pysnmp.proto.rfc1902.Opaque` type supports the
     capability to pass arbitrary ASN.1 syntax.  A value is encoded
@@ -522,16 +531,21 @@ class Opaque(univ.OctetString):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Opaque('some apples')
-        Opaque('some apples')
+        <Opaque value object, payload [some apples]>
         >>> Opaque('some apples') + ' and oranges'
-        Opaque('some apples and oranges')
-        >>> str(Opaque('some apples'))
+        <Opaque value object, payload [some apples and oranges]>
+        >>> Opaque('some apples').asOctets()
+        b'some apples'
+        >>> Opaque('some apples').prettyPrint()
         'some apples'
-        >>> str(Opaque(hexValue='deadbeef'))
-        '\xde\xad\xbe\xef'
+        >>> Opaque(hexValue='deadbeef').asOctets()
+        b'\xde\xad\xbe\xef'
+        >>> Opaque(hexValue='deadbeef').prettyPrint()
+        '0xdeadbeef'
         >>>
 
     """
+
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x04)
     )
@@ -560,14 +574,15 @@ class Counter64(univ.Integer):
     --------
         >>> from pysnmp.proto.rfc1902 import *
         >>> Counter64(1234)
-        Counter64(1234)
+        <Counter64 value object, payload [1234]>
         >>> Counter64(1) + 1
-        Counter64(2)
+        <Counter64 value object, payload [2]>
         >>> int(Counter64(321))
         321
         >>>
 
     """
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x06)
     )
@@ -615,21 +630,22 @@ class Bits(OctetString):
         >>> SomeBits(('apple', 'orange')).prettyPrint()
         'apple, orange'
         >>> SomeBits(('apple', 'orange'))
-        Bits(hexValue='c0')
+        <Bits value object, payload [apple, orange]>
         >>> SomeBits('\x80')
-        Bits(hexValue='80')
+        <Bits value object, payload [apple]>
         >>> SomeBits(hexValue='80')
-        Bits(hexValue='80')
+        <Bits value object, payload [apple]>
         >>> SomeBits(hexValue='80').prettyPrint()
         'apple'
         >>>
 
     """
+
     namedValues = namedval.NamedValues()
 
     def __new__(cls, *args, **kwargs):
-        if 'namedValues' in kwargs:
-            Bits = cls.withNamedBits(**dict(kwargs.pop('namedValues')))
+        if "namedValues" in kwargs:
+            Bits = cls.withNamedBits(**dict(kwargs.pop("namedValues")))
             return Bits(*args, **kwargs)
 
         return OctetString.__new__(cls)
@@ -639,9 +655,9 @@ class Bits(OctetString):
             return OctetString.prettyIn(self, bits)  # raw bitstring
         octets = []
         for bit in bits:  # tuple of named bits
-            v = self.namedValues.getValue(bit)
+            v = self.namedValues[bit]
             if v is None:
-                raise error.ProtocolError('Unknown named bit %s' % bit)
+                raise error.ProtocolError("Unknown named bit %s" % bit)
             d, m = divmod(v, 8)
             if d >= len(octets):
                 octets.extend([0] * (d - len(octets) + 1))
@@ -656,12 +672,12 @@ class Bits(OctetString):
             j = 7
             while j >= 0:
                 if v & (0x01 << j):
-                    name = self.namedValues.getName(i * 8 + 7 - j)
+                    name = self.namedValues[i * 8 + 7 - j]
                     if name is None:
-                        name = f'UnknownBit-{i * 8 + 7 - j}'
+                        name = f"UnknownBit-{i * 8 + 7 - j}"
                     names.append(name)
                 j -= 1
-        return ', '.join([str(x) for x in names])
+        return ", ".join([str(x) for x in names])
 
     @classmethod
     def withNamedBits(cls, **values):
@@ -683,29 +699,29 @@ class ObjectName(univ.ObjectIdentifier):
     pass
 
 
-class SimpleSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
+class SimpleSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('integer-value', Integer()),
-        namedtype.NamedType('string-value', OctetString()),
-        namedtype.NamedType('objectID-value', univ.ObjectIdentifier())
+        namedtype.NamedType("integer-value", Integer()),
+        namedtype.NamedType("string-value", OctetString()),
+        namedtype.NamedType("objectID-value", univ.ObjectIdentifier()),
     )
 
 
-class ApplicationSyntax(rfc1155.TypeCoercionHackMixIn, univ.Choice):
+class ApplicationSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('ipAddress-value', IpAddress()),
-        namedtype.NamedType('counter-value', Counter32()),
-        namedtype.NamedType('timeticks-value', TimeTicks()),
-        namedtype.NamedType('arbitrary-value', Opaque()),
-        namedtype.NamedType('big-counter-value', Counter64()),
+        namedtype.NamedType("ipAddress-value", IpAddress()),
+        namedtype.NamedType("counter-value", Counter32()),
+        namedtype.NamedType("timeticks-value", TimeTicks()),
+        namedtype.NamedType("arbitrary-value", Opaque()),
+        namedtype.NamedType("big-counter-value", Counter64()),
         # This conflicts with Counter32
         # namedtype.NamedType('unsigned-integer-value', Unsigned32()),
-        namedtype.NamedType('gauge32-value', Gauge32())
+        namedtype.NamedType("gauge32-value", Gauge32()),
     )  # BITS misplaced?
 
 
 class ObjectSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('simple', SimpleSyntax()),
-        namedtype.NamedType('application-wide', ApplicationSyntax())
+        namedtype.NamedType("simple", SimpleSyntax()),
+        namedtype.NamedType("application-wide", ApplicationSyntax()),
     )

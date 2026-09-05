@@ -1,13 +1,12 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import socket
-from pysnmp.carrier.base import AbstractTransportAddress
-from pysnmp.carrier.asyncio.dgram.base import DgramAsyncioProtocol
 
+from pysnmp.carrier.asyncio.dgram.base import DgramAsyncioProtocol
+from pysnmp.carrier.base import AbstractTransportAddress
 
 domainName = snmpUDP6Domain = (1, 3, 6, 1, 2, 1, 100, 1, 2)
 
@@ -21,14 +20,12 @@ class Udp6AsyncioTransport(DgramAsyncioProtocol):
     addressType = Udp6TransportAddress
 
     def normalizeAddress(self, transportAddress):
-        if '%' in transportAddress[0]:  # strip zone ID
-            return self.addressType((transportAddress[0].split('%')[0],
-                                     transportAddress[1],
-                                     0,  # flowinfo
-                                     0))  # scopeid
+        if "%" in transportAddress[0]:  # strip zone ID
+            return self.addressType(
+                (transportAddress[0].split("%")[0], transportAddress[1], 0, 0)  # flowinfo
+            )  # scopeid
         else:
-            return self.addressType((transportAddress[0],
-                                     transportAddress[1], 0, 0))
+            return self.addressType((transportAddress[0], transportAddress[1], 0, 0))
 
 
 Udp6Transport = Udp6AsyncioTransport

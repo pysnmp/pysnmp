@@ -1,47 +1,54 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import sys
-from pyasn1.compat.octets import null
-from pysnmp.proto import rfc3411, error
+
+from pysnmp import debug
+from pysnmp.proto import error, rfc3411
 from pysnmp.proto.api import v1, v2c  # backend is always SMIv2 compliant
 from pysnmp.proto.proxy import rfc2576
-from pysnmp import debug
 
 
 # 3.4
 class NotificationReceiver:
-    pduTypes = (v1.TrapPDU.tagSet, v2c.SNMPv2TrapPDU.tagSet,
-                v2c.InformRequestPDU.tagSet)
+    pduTypes = (v1.TrapPDU.tagSet, v2c.SNMPv2TrapPDU.tagSet, v2c.InformRequestPDU.tagSet)
 
     def __init__(self, snmpEngine, cbFun, cbCtx=None):
         snmpEngine.msgAndPduDsp.registerContextEngineId(
-            null, self.pduTypes, self.processPdu  # '' is a wildcard
+            b"",
+            self.pduTypes,
+            self.processPdu,  # '' is a wildcard
         )
 
-        self.__snmpTrapCommunity = ''
+        self.__snmpTrapCommunity = ""
         self.__cbFunVer = 0
         self.__cbFun = cbFun
         self.__cbCtx = cbCtx
 
         def storeSnmpTrapCommunity(snmpEngine, execpoint, variables, cbCtx):
-            self.__snmpTrapCommunity = variables.get('communityName', '')
+            self.__snmpTrapCommunity = variables.get("communityName", "")
 
-        snmpEngine.observer.registerObserver(storeSnmpTrapCommunity, 'rfc2576.processIncomingMsg')
+        snmpEngine.observer.registerObserver(storeSnmpTrapCommunity, "rfc2576.processIncomingMsg")
 
     def close(self, snmpEngine):
-        snmpEngine.msgAndPduDsp.unregisterContextEngineId(
-            null, self.pduTypes
-        )
+        snmpEngine.msgAndPduDsp.unregisterContextEngineId(b"", self.pduTypes)
         self.__cbFun = self.__cbCtx = None
 
-    def processPdu(self, snmpEngine, messageProcessingModel,
-                   securityModel, securityName, securityLevel,
-                   contextEngineId, contextName, pduVersion, PDU,
-                   maxSizeResponseScopedPDU, stateReference):
+    def processPdu(
+        self,
+        snmpEngine,
+        messageProcessingModel,
+        securityModel,
+        securityName,
+        securityLevel,
+        contextEngineId,
+        contextName,
+        pduVersion,
+        PDU,
+        maxSizeResponseScopedPDU,
+        stateReference,
+    ):
 
         # Agent-side API complies with SMIv2
         if messageProcessingModel == 0:
@@ -50,12 +57,13 @@ class NotificationReceiver:
         else:
             origPdu = None
 
-        errorStatus = 'noError'
+        errorStatus = "noError"
         errorIndex = 0
         varBinds = v2c.apiPDU.getVarBinds(PDU)
 
         debug.logger & debug.flagApp and debug.logger(
-            f'processPdu: stateReference {stateReference}, varBinds {varBinds}')
+            f"processPdu: stateReference {stateReference}, varBinds {varBinds}"
+        )
 
         # 3.4
         if PDU.tagSet in rfc3411.confirmedClassPDUs:
@@ -69,7 +77,8 @@ class NotificationReceiver:
             v2c.apiPDU.setVarBinds(rspPDU, varBinds)
 
             debug.logger & debug.flagApp and debug.logger(
-                f'processPdu: stateReference {stateReference}, confirm PDU {rspPDU.prettyPrint()}')
+                f"processPdu: stateReference {stateReference}, confirm PDU {rspPDU.prettyPrint()}"
+            )
 
             # Agent-side API complies with SMIv2
             if messageProcessingModel == 0:
@@ -80,36 +89,55 @@ class NotificationReceiver:
             # 3.4.3
             try:
                 snmpEngine.msgAndPduDsp.returnResponsePdu(
-                    snmpEngine, messageProcessingModel, securityModel,
-                    securityName, securityLevel, contextEngineId,
-                    contextName, pduVersion, rspPDU, maxSizeResponseScopedPDU,
-                    stateReference, statusInformation)
+                    snmpEngine,
+                    messageProcessingModel,
+                    securityModel,
+                    securityName,
+                    securityLevel,
+                    contextEngineId,
+                    contextName,
+                    pduVersion,
+                    rspPDU,
+                    maxSizeResponseScopedPDU,
+                    stateReference,
+                    statusInformation,
+                )
 
-            except error.StatusInformation:
+            except error.StatusInformation as e:
                 debug.logger & debug.flagApp and debug.logger(
-                    f'processPdu: stateReference {stateReference}, statusInformation {sys.exc_info()[1]}')
-                snmpSilentDrops, = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols('__SNMPv2-MIB',
-                                                                                                         'snmpSilentDrops')
+                    f"processPdu: stateReference {stateReference}, statusInformation {e}"
+                )
+                (snmpSilentDrops,) = (
+                    snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                        "__SNMPv2-MIB", "snmpSilentDrops"
+                    )
+                )
                 snmpSilentDrops.syntax += 1
 
         elif PDU.tagSet in rfc3411.unconfirmedClassPDUs:
             pass
         else:
-            raise error.ProtocolError('Unexpected PDU class %s' % PDU.tagSet)
+            raise error.ProtocolError("Unexpected PDU class %s" % PDU.tagSet)
 
         debug.logger & debug.flagApp and debug.logger(
-            'processPdu: stateReference {}, user cbFun {}, cbCtx {}, varBinds {}'.format(
-                stateReference, self.__cbFun, self.__cbCtx, varBinds))
+            f"processPdu: stateReference {stateReference}, user cbFun {self.__cbFun}, cbCtx {self.__cbCtx}, varBinds {varBinds}"
+        )
 
         if self.__cbFunVer:
-            self.__cbFun(snmpEngine, stateReference, contextEngineId,
-                         contextName, varBinds, self.__cbCtx)
+            self.__cbFun(
+                snmpEngine, stateReference, contextEngineId, contextName, varBinds, self.__cbCtx
+            )
         else:
             # Compatibility stub (handle legacy cbFun interface)
             try:
-                self.__cbFun(snmpEngine, contextEngineId, contextName,
-                             varBinds, self.__cbCtx)
+                self.__cbFun(snmpEngine, contextEngineId, contextName, varBinds, self.__cbCtx)
             except TypeError:
                 self.__cbFunVer = 1
-                self.__cbFun(snmpEngine, stateReference, contextEngineId,
-                             contextName, varBinds, self.__cbCtx)
+                self.__cbFun(
+                    snmpEngine,
+                    stateReference,
+                    contextEngineId,
+                    contextName,
+                    varBinds,
+                    self.__cbCtx,
+                )

@@ -6,6 +6,7 @@ This script explains how SNMP Agent application could model
 real-world data as Managed Objects defined in MIB.
 
 """  #
+
 from pysnmp.smi import builder
 
 # MIB Builder is normally pre-created by SNMP engine
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     #
     # This is what is done internally by Agent.
     #
-    from pysnmp.smi import instrum, exval
+    from pysnmp.smi import exval, instrum
 
     mibInstrum = instrum.MibInstrumController(mibBuilder)
 

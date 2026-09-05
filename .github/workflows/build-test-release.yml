@@ -5,23 +5,30 @@ on:
     branches:
       - "main"
       - "next"
-      - "develop"
   pull_request:
-    branches: [main, next, develop]
+    branches: [main, next]
+    # `labeled` so that adding ci:full-matrix re-runs with macOS and Windows.
+    types: [opened, synchronize, reopened, labeled]
+  # No push releases anything (see the publish job's DRY). Both the rc from
+  # next and the GA from main are cut by dispatching this workflow by hand.
   workflow_dispatch:
-    inputs:
-      release_type:
-        description: "Release to cut (main only)"
-        type: choice
-        options: [prerelease, ga]
-        default: prerelease
+
+# One run per ref: a new push supersedes the one still in flight. A dispatch is
+# never cancelled, it is the only thing that can cut a release.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+# Read-only by default; the publish job raises what it needs and nothing else.
+permissions:
+  contents: read
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - uses: pre-commit/action@v3.0.1
@@ -30,73 +37,228 @@ jobs:
     runs-on: ubuntu-latest
     name: security-sast-semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Semgrep
         id: semgrep
         uses: semgrep/semgrep-action@v1
         with:
           publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
 
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      # --keep-going lists every warning instead of stopping at the first, so
+      # one push fixes them all.
+      - name: Build docs
+        run: uv run --locked --extra dev sphinx-build -W --keep-going -b html docs/source docs/build/html
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs-html
+          path: docs/build/html
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.10"
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Build
+        run: uv build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+
+  # Every Python on ubuntu, always. The other platforms only on the edge
+  # versions, and only where they can pay for themselves: on a push to
+  # main/next, on a dispatch, or on a PR labelled ci:full-matrix.
+  #
+  # pysnmp is pure Python, so the interpreter version is where most of the risk
+  # lives. Of the platforms, Windows is the one that can actually diverge —
+  # cp1252 as the default encoding, path handling, and a different asyncio
+  # event loop under the transport layer — and it had never been tested at all.
+  setup-matrix:
+    name: matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.plan.outputs.include }}
+    steps:
+      - id: plan
+        env:
+          BROAD: >-
+            ${{ github.event_name != 'pull_request'
+              || contains(github.event.pull_request.labels.*.name, 'ci:full-matrix') }}
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+
+          pythons = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+          jobs = [{"os": "ubuntu-latest", "python": p} for p in pythons]
+
+          if os.environ["BROAD"] == "true":
+              for platform in ("macos-latest", "windows-latest"):
+                  jobs += [{"os": platform, "python": p}
+                           for p in (pythons[0], pythons[-1])]
+
+          print("include=" + json.dumps(jobs))
+          PY
+
+  run-unit-tests:
+    name: test-unit
+    strategy:
+      matrix:
+        include: ${{ fromJSON(needs.setup-matrix.outputs.include) }}
+      fail-fast: false
+    # Windows has never run here, so it reports without blocking until it has a
+    # track record. Remove this once it does.
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    runs-on: ${{ matrix.os }}
+    needs:
+      - build
+      - setup-matrix
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Run tests
+        # Windows runners default to pwsh; this block is bash on every platform.
+        shell: bash
+        run: >
+          uv run --locked --extra dev --python ${{ matrix.python }}
+          coverage run -m pytest --junitxml=test-results/results.xml tests
+      - name: Coverage report
+        shell: bash
+        run: |
+          uv run --locked --extra dev --python ${{ matrix.python }} coverage report
+          uv run --locked --extra dev --python ${{ matrix.python }} coverage xml
+      - uses: actions/upload-artifact@v7
+        # Results are most wanted when the suite failed.
+        if: always()
+        with:
+          # Artifact names must be unique within a run.
+          name: test-results-${{ matrix.os }}-${{ matrix.python }}
+          path: test-results
+      - uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: ${{ matrix.os }}, ${{ matrix.python }}
+          # A Codecov outage is not a reason to fail a build.
+          fail_ci_if_error: false
+
   publish:
     name: Build Release
+    # Semantic release cuts tags from a branch, so keep this to branch refs and
+    # it can never re-enter on a tag it created itself. The push triggers are
+    # filtered to main and next, but a dispatch can name any branch, so name
+    # them again here: next cuts the rc, main cuts the GA, nothing else runs.
+    if: >-
+      github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next'
     permissions:
       actions: write
       contents: write
       issues: write
       id-token: write
+    # PyPI Trusted Publishing matches the OIDC claim against owner, repository,
+    # workflow filename and environment. All four must agree with the publisher
+    # registered for pysnmplib, so this file cannot be renamed.
     environment: release
     env:
-      DRY: ${{ github.event_name != 'workflow_dispatch' && github.ref_name == 'main' }}
+      # Releasing is a deliberate act on both branches. Every push — to next as
+      # much as to main — rehearses the release and stops; only a dispatch cuts
+      # one. Automatic rcs are what let next drift below a GA already on PyPI.
+      DRY: ${{ github.event_name != 'workflow_dispatch' }}
     needs:
       - pre-commit
       - semgrep
-      #- run-unit-tests
+      - docs
+      - build
+      - run-unit-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: false
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Cut prerelease from main
-        if: github.ref_name == 'main' && github.event.inputs.release_type == 'prerelease'
-        run: |
-          sed -i 's/^    "main",$/    { name: "main", prerelease: "rc" },/' .releaserc
+          enable-cache: true
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4.0.0
+        uses: cycjimmy/semantic-release-action@v6
         id: semantic   # Need an `id` for output variables
         with:
+          semantic_version: 24
           dry_run: ${{ env.DRY }}
-          #semantic_version: 19.0.5
           extra_plugins: |
-            semantic-release-replace-plugin
-            @semantic-release/git@10.0.1
-            @semantic-release/changelog@6.0.3
-            conventional-changelog-conventionalcommits@6.1.0
-            @semantic-release/exec@6.0.3               
+            @semantic-release/changelog
+            @semantic-release/exec
+            @semantic-release/git
+            @google/semantic-release-replace-plugin
+            conventional-changelog-conventionalcommits@8.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
+
+      # Every push is a dry run: semantic-release works out the version that a
+      # dispatch would cut but tags nothing, and its prepare step (which is what
+      # normally builds) never runs. Build that version as a .devN instead and
+      # keep it as an artifact, so what next would release as an rc, and what
+      # main would release as the GA, can be installed and exercised before
+      # anyone dispatches the real thing.
       - name: Build dev preview
-        if: env.DRY == 'true' && steps.semantic.outputs.new_release_version != ''
+        id: preview
+        if: env.DRY == 'true'
+        env:
+          VERSION: ${{ steps.semantic.outputs.new_release_version }}
         run: |
-          sed -i "s/^version *=.*/version = \"${{ steps.semantic.outputs.new_release_version }}.dev${{ github.run_number }}\"/" pyproject.toml
+          set -euo pipefail
+          version="$VERSION"
+          if [ -z "$version" ]; then
+            echo "No release would be cut from this commit; nothing to preview."
+            exit 0
+          fi
+          preview="${version}.dev${{ github.run_number }}"
+          echo "Building preview ${preview}"
+          sed -i -E "s/^version ?=.*/version = \"${preview}\"/" pyproject.toml
+          sed -i -E "s/^__version__ ?=.*/__version__ = \"${preview}\"/" pysnmp/__init__.py
+          rm -rf dist
+          uv lock
           uv build
+          echo "preview=${preview}" >> "$GITHUB_OUTPUT"
+
       - name: Publish package distributions to PyPI
         if: env.DRY != 'true' && steps.semantic.outputs.new_release_published == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
-      - uses: actions/upload-artifact@v4
+
+      - uses: actions/upload-artifact@v7
         if: hashFiles('dist/*') != ''
         with:
-          name: dist
+          name: dist-release
           path: dist

@@ -30,17 +30,17 @@ Command Generator
 .. toctree::
    :maxdepth: 2
 
-   /docs/hlapi/asyncore/sync/manager/cmdgen/getcmd
-   /docs/hlapi/asyncore/sync/manager/cmdgen/setcmd
-   /docs/hlapi/asyncore/sync/manager/cmdgen/nextcmd
-   /docs/hlapi/asyncore/sync/manager/cmdgen/bulkcmd
+   /docs/hlapi/asyncio/manager/cmdgen/getcmd
+   /docs/hlapi/asyncio/manager/cmdgen/setcmd
+   /docs/hlapi/asyncio/manager/cmdgen/nextcmd
+   /docs/hlapi/asyncio/manager/cmdgen/bulkcmd
 
 Notification Originator
 
 .. toctree::
    :maxdepth: 2
 
-   /docs/hlapi/asyncore/sync/agent/ntforg/notification 
+   /docs/hlapi/asyncio/agent/ntforg/notification
 
 Transport configuration
 +++++++++++++++++++++++
@@ -55,33 +55,28 @@ saves its configuration for the lifetime of SNMP engine object.
 
 .. autoclass:: pysnmp.hlapi.UdpTransportTarget
    :members: setLocalAddress
+   :no-index:
 
 .. autoclass:: pysnmp.hlapi.Udp6TransportTarget
    :members: setLocalAddress
-
-Asynchronous: asyncore
-----------------------
-
-The :mod:`asyncore` module is in Python standard library since ancient
-times. Main loop is built around :mod:`select` dispatcher, user
-code is invoked through callback callables.
+   :no-index:
 
 Command Generator
 
 .. toctree::
    :maxdepth: 2
 
-   /docs/hlapi/asyncore/manager/cmdgen/getcmd
-   /docs/hlapi/asyncore/manager/cmdgen/setcmd
-   /docs/hlapi/asyncore/manager/cmdgen/nextcmd
-   /docs/hlapi/asyncore/manager/cmdgen/bulkcmd
+   /docs/hlapi/asyncio/manager/cmdgen/getcmd
+   /docs/hlapi/asyncio/manager/cmdgen/setcmd
+   /docs/hlapi/asyncio/manager/cmdgen/nextcmd
+   /docs/hlapi/asyncio/manager/cmdgen/bulkcmd
 
 Notification Originator
 
 .. toctree::
    :maxdepth: 2
 
-   /docs/hlapi/asyncore/agent/ntforg/notification 
+   /docs/hlapi/asyncio/agent/ntforg/notification
 
 Transport configuration
 +++++++++++++++++++++++
@@ -89,19 +84,19 @@ Transport configuration
 .. toctree::
    :maxdepth: 2
 
-.. autoclass:: pysnmp.hlapi.asyncore.UdpTransportTarget
+.. autoclass:: pysnmp.hlapi.asyncio.UdpTransportTarget
    :members: setLocalAddress
 
-.. autoclass:: pysnmp.hlapi.asyncore.Udp6TransportTarget
+.. autoclass:: pysnmp.hlapi.asyncio.Udp6TransportTarget
    :members: setLocalAddress
 
 Asynchronous: asyncio
 ---------------------
 
-The :mod:`asyncio` module first appeared in standard library since
-Python 3.3 (in provisional basis). Its main design feature is that
-it makes asynchronous code looking like synchronous one. That greately
-simplifies development and maintanence.
+PySNMP builds its asynchronous API on the standard library :mod:`asyncio`
+module. Its main design feature is that it makes asynchronous code look
+like synchronous code, which greatly simplifies development and
+maintenance.
 
 Command Generator
 
@@ -128,9 +123,11 @@ Transport configuration
 
 .. autoclass:: pysnmp.hlapi.asyncio.UdpTransportTarget
    :members: setLocalAddress
+   :no-index:
 
 .. autoclass:: pysnmp.hlapi.asyncio.Udp6TransportTarget
    :members: setLocalAddress
+   :no-index:
 
 
 SNMP Engine
@@ -297,7 +294,7 @@ states in form of values. Those values each belong to one
 of SNMP types (:RFC:`1902#section-2`) which, in turn, are based
 on `ASN.1 <https://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One>`_ 
 data description language. PySNMP types are derived from
-`Python ASN.1 types <http://snmplabs.com/pyasn1/>`_ implementation.
+`Python ASN.1 types <https://github.com/pysnmp/pyasn1>`_ implementation.
 
 .. toctree::
    :maxdepth: 2

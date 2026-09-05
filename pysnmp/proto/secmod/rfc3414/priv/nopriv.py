@@ -1,11 +1,10 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pysnmp.proto.secmod.rfc3414.priv import base
 from pysnmp.proto import errind, error
+from pysnmp.proto.secmod.rfc3414.priv import base
 
 
 class NoPriv(base.AbstractEncryptionService):

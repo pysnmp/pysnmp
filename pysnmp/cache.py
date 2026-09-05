@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Limited-size dictionary-like class to use for caches
 #
@@ -13,7 +12,7 @@ class Cache:
         self.__maxSize = maxSize
         self.__size = 0
         self.__chopSize = maxSize // 10
-        self.__chopSize = self.__chopSize and self.__chopSize or 1
+        self.__chopSize = self.__chopSize or 1
         self.__cache = {}
         self.__usage = {}
 
@@ -30,7 +29,7 @@ class Cache:
     def __setitem__(self, k, v):
         if self.__size >= self.__maxSize:
             usageKeys = sorted(self.__usage, key=lambda x, d=self.__usage: d[x])
-            for _k in usageKeys[:self.__chopSize]:
+            for _k in usageKeys[: self.__chopSize]:
                 del self.__cache[_k]
                 del self.__usage[_k]
             self.__size -= self.__chopSize

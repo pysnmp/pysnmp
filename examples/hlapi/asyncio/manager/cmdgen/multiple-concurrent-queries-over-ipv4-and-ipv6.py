@@ -18,7 +18,9 @@ Functionally similar to:
 | $ snmpget -v2c -c public localhost:163 SNMPv2-MIB::sysDescr.0
 
 """  #
+
 import asyncio
+
 from pysnmp.hlapi.asyncio import *
 
 
@@ -32,7 +34,7 @@ async def getone(snmpEngine, hostname):
     )
 
     if errorIndication:
-        print(f'{hostname}: {errorIndication}')
+        print(f"{hostname}: {errorIndication}")
     elif errorStatus:
         print(
             "{} at {}".format(

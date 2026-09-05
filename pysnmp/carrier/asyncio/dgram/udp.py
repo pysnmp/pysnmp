@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -31,8 +30,9 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
 import socket
-from pysnmp.carrier.base import AbstractTransportAddress
+
 from pysnmp.carrier.asyncio.dgram.base import DgramAsyncioProtocol
+from pysnmp.carrier.base import AbstractTransportAddress
 
 domainName = snmpUDPDomain = (1, 3, 6, 1, 6, 1, 1)
 

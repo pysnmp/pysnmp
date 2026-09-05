@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 from pysnmp.proto import error
 
@@ -25,9 +24,7 @@ class Cache:
 
     def update(self, index, **kwargs):
         if index not in self.__cacheRepository:
-            raise error.ProtocolError(
-                'Cache miss on update for %s' % kwargs
-            )
+            raise error.ProtocolError("Cache miss on update for %s" % kwargs)
         self.__cacheRepository[index].update(kwargs)
 
     def expire(self, cbFun, cbCtx):

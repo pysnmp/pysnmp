@@ -1,34 +1,37 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
 #          Zachary Lorusso <zlorusso@gmail.com>
 #
-import sys
-
-from pysnmp.smi.rfc1902 import *
-from pysnmp.hlapi.auth import *
-from pysnmp.hlapi.context import *
-from pysnmp.hlapi.lcd import *
-from pysnmp.hlapi.varbinds import *
-from pysnmp.hlapi.asyncio.transport import *
-from pysnmp.entity.rfc3413 import ntforg
 
 import asyncio
+from typing import Any
 
+from pysnmp.entity.rfc3413 import ntforg
+from pysnmp.hlapi.asyncio._callback import make_callback
+from pysnmp.hlapi.lcd import NotificationOriginatorLcdConfigurator
+from pysnmp.hlapi.types import SnmpResponse
+from pysnmp.hlapi.varbinds import NotificationOriginatorVarBinds
 
-__all__ = ['sendNotification']
+__all__ = ["sendNotification"]
 
 vbProcessor = NotificationOriginatorVarBinds()
 lcd = NotificationOriginatorLcdConfigurator()
 
 
-async def sendNotification(snmpEngine, authData, transportTarget, contextData,
-                     notifyType, varBinds, **options):
+async def sendNotification(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    notifyType: str,
+    varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Send SNMP notification.
 
     Parameters
@@ -92,7 +95,7 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
     ...     send_result = await sendNotification(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 162)),
+    ...         UdpTransportTarget(('localhost', 162)),
     ...         ContextData(),
     ...         'trap',
     ...         NotificationType(ObjectIdentity('IF-MIB', 'linkDown')))
@@ -104,26 +107,11 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
 
     """
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBinds, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds,
-                                                        lookupMib)
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                    (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     notifyName = lcd.configure(
-        snmpEngine, authData, transportTarget, notifyType,
-        contextData.contextName)
+        snmpEngine, authData, transportTarget, notifyType, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
@@ -134,16 +122,17 @@ async def sendNotification(snmpEngine, authData, transportTarget, contextData,
         contextData.contextName,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get('lookupMib', True), future)
+        (options.get("lookupMib", True), future),
     )
 
-    if notifyType == 'trap':
+    if notifyType == "trap":
+
         def __trapFun(future):
             if future.cancelled():
                 return
             future.set_result((None, 0, 0, []))
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         loop.call_soon(__trapFun, future)
 
     return await future

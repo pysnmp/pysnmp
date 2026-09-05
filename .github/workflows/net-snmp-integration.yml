@@ -1,0 +1,55 @@
+name: Net-SNMP Integration
+
+on:
+  push:
+    branches: [main, next]
+  pull_request:
+    branches: [main, next]
+
+jobs:
+  net-snmp:
+    name: SNMP ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: v1
+            profile: v1
+          - name: v2c
+            profile: v2c
+          - name: v3-noauth
+            profile: v3-noauth
+          - name: v3-auth-no-priv
+            profile: v3-sha
+          - name: v3-auth-priv-des
+            profile: v3-des
+          - name: v3-auth-priv
+            profile: v3-aes
+    env:
+      NETSNMP_PROFILE: ${{ matrix.profile }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Build the Net-SNMP agent image
+        run: docker build --tag pysnmp-ci-net-snmp:local .github/ci/net-snmp
+      - name: Start the Net-SNMP agent
+        run: >-
+          docker run --detach --name pysnmp-ci-net-snmp
+          --publish 127.0.0.1:1161:161/udp
+          --env SNMP_PROFILE=${{ matrix.profile }}
+          pysnmp-ci-net-snmp:local
+      - name: Exercise the selected SNMP version and security profile
+        run: uv run --locked --extra dev pytest tests/test_netsnmp_integration.py -v -s
+      - name: Show agent logs on completion
+        if: always()
+        run: docker logs pysnmp-ci-net-snmp
+      - name: Remove the Net-SNMP agent
+        if: always()
+        run: docker rm --force pysnmp-ci-net-snmp

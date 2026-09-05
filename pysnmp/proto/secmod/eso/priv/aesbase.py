@@ -1,24 +1,16 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pysnmp.proto.secmod.rfc3826.priv import aes
-from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
-from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
-from pysnmp.proto.secmod.rfc3414 import localkey
-from pysnmp.proto import error
+from hashlib import md5, sha1
 from math import ceil
 
-try:
-    from hashlib import md5, sha1
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
+from pysnmp.proto import error
+from pysnmp.proto.secmod.rfc3414 import localkey
+from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
+from pysnmp.proto.secmod.rfc3826.priv import aes
+from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 
 class AbstractAesBlumenthal(aes.Aes):
@@ -34,18 +26,15 @@ class AbstractAesBlumenthal(aes.Aes):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(
-                f'Unknown auth protocol {authProtocol}'
-            )
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
 
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
 
         # now extend this key if too short by repeating steps that includes the hashPassphrase step
         for count in range(1, int(ceil(self.keySize * 1.0 / len(localPrivKey)))):
-            localPrivKey += localPrivKey.clone(
-                hashAlgo(localPrivKey.asOctets()).digest())
+            localPrivKey += localPrivKey.clone(hashAlgo(localPrivKey.asOctets()).digest())
 
-        return localPrivKey[:self.keySize]
+        return localPrivKey[: self.keySize]
 
 
 class AbstractAesReeder(aes.Aes):
@@ -63,6 +52,7 @@ class AbstractAesReeder(aes.Aes):
     The difference between the two is that the Reeder draft does key extension by repeating
     the steps in the password to key algorithm (hash phrase, then localize with SNMPEngine ID).
     """
+
     serviceID = ()
     keySize = 0
 
@@ -75,9 +65,7 @@ class AbstractAesReeder(aes.Aes):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(
-                f'Unknown auth protocol {authProtocol}'
-            )
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
 
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
 
@@ -87,4 +75,4 @@ class AbstractAesReeder(aes.Aes):
             newKey = localkey.hashPassphrase(localPrivKey, hashAlgo)
             localPrivKey += localkey.localizeKey(newKey, snmpEngineID, hashAlgo)
 
-        return localPrivKey[:self.keySize]
+        return localPrivKey[: self.keySize]
