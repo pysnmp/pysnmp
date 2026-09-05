@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, next]
 
+permissions:
+  contents: read
+
 jobs:
   net-snmp:
     name: SNMP ${{ matrix.name }}
