@@ -78,6 +78,22 @@ produces a minor release rather than a major one. All three projects set
 Reference an issue in the body (``Closes #123``) rather than in the
 subject, so the generated notes link it.
 
+The format is checked rather than assumed. `commitlint
+<https://commitlint.js.org/>`_ reads ``commitlint.config.mjs`` at the
+repository root from two places: the ``commit-msg`` hook installed by
+``pre-commit install`` checks a message as it is written, and the
+``Commit conventions`` workflow checks every commit in a pull request.
+Run ``pre-commit install`` once per checkout — a checkout made before
+the hook was added has to run it again, because installing the
+``commit-msg`` hook type is what makes the check run at all.
+
+Merge commits, ``fixup!`` commits and the subjects git writes for a
+revert are ignored. The pull request title is not checked: pull requests
+here are merged rather than squashed, so the title never enters the
+history. What the config changes relative to
+``@commitlint/config-conventional``, and how to lint a range by hand, is
+in ``.github/semantic-release.md``.
+
 What runs on a pull request
 ---------------------------
 
@@ -115,6 +131,11 @@ Two workflows run alongside it and do not gate a release:
 ``net-snmp-integration.yml``, which exercises every SNMP version and USM
 security profile against a real Net-SNMP agent in a container, and
 ``codeql-analysis.yml``.
+
+A third, ``commit-conventions.yml``, lints the commit messages of a pull
+request against the conventions above. It runs on pull requests only, so
+it is not part of the release path, but it does gate a merge wherever
+branch protection names it as a required check.
 
 The test matrix
 ---------------
