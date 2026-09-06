@@ -445,8 +445,10 @@ class ObjectIdentity:
                 if suffix:
                     try:
                         suffix = tuple(int(x) for x in suffix)
-                    except ValueError:
-                        raise SmiError(f"Unknown object name component {suffix!r}")
+                    except ValueError as exc:
+                        raise SmiError(
+                            f"Unknown object name component {suffix!r}"
+                        ) from exc
                 self.__oid = rfc1902.ObjectName(prefix + suffix)
             else:
                 prefix, label, suffix = mibViewController.getNodeNameByOid(self.__oid)
@@ -544,7 +546,7 @@ class ObjectIdentity:
                     except PyAsn1Error as e:
                         raise SmiError(
                             f"Instance index {self.__args[2:]!r} to OID conversion failure at object {mibNode.getLabel()!r}: {e}"
-                        )
+                        ) from e
             elif self.__args[2:]:  # any other kind of MIB node with indices
                 if self.__args[2:]:
                     instId = rfc1902.ObjectName(
@@ -925,7 +927,7 @@ class ObjectType:
             err = f"MIB object {self.__args[0].prettyPrint()!r} having type {mibNode.getSyntax().__class__.__name__!r} failed to cast value {self.__args[1]!r}: {e}"
 
             if not ignoreErrors or not isinstance(self.__args[1], SimpleAsn1Type):
-                raise SmiError(err)
+                raise SmiError(err) from e
 
         if rfc1902.ObjectIdentifier().isSuperTypeOf(
             self.__args[1], matchConstraints=False

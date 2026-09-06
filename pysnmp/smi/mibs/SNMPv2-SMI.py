@@ -450,8 +450,8 @@ class MibTree(ObjectType):
         else:
             try:
                 return self._vars[self._vars.nextKey(name)]
-            except KeyError:
-                raise error.NoSuchObjectError(idx=idx, name=name)
+            except KeyError as exc:
+                raise error.NoSuchObjectError(idx=idx, name=name) from exc
 
     def getNode(self, name, idx=None):
         """Return tree node found by name"""
@@ -472,8 +472,8 @@ class MibTree(ObjectType):
             except (error.NoSuchInstanceError, error.NoSuchObjectError):
                 try:
                     return self._vars[self._vars.nextKey(nextNode.name)]
-                except KeyError:
-                    raise error.NoSuchObjectError(idx=idx, name=name)
+                except KeyError as exc:
+                    raise error.NoSuchObjectError(idx=idx, name=name) from exc
 
     # MIB instrumentation
 
@@ -615,26 +615,26 @@ class MibScalar(MibTree):
     def getBranch(self, name, idx):
         try:
             return MibTree.getBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNextBranch(self, name, idx=None):
         try:
             return MibTree.getNextBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNode(self, name, idx=None):
         try:
             return MibTree.getNode(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNextNode(self, name, idx=None):
         try:
             return MibTree.getNextNode(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     # MIB instrumentation methods
 
@@ -731,7 +731,7 @@ class MibScalarInstance(MibTree):
             if isinstance(exc_v, error.TableRowManagement):
                 raise exc_v
             else:
-                raise error.WrongValueError(idx=idx, name=name, msg=exc_v)
+                raise error.WrongValueError(idx=idx, name=name, msg=exc_v) from exc_v
 
     #
     # Subtree traversal
@@ -742,14 +742,14 @@ class MibScalarInstance(MibTree):
     def getBranch(self, name, idx):
         try:
             return MibTree.getBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNextBranch(self, name, idx=None):
         try:
             return MibTree.getNextBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNode(self, name, idx=None):
         # Recursion terminator
@@ -805,7 +805,7 @@ class MibScalarInstance(MibTree):
                     self.__newSyntax = why["syntax"]
                     raise why
                 else:
-                    raise error.WrongValueError(idx=idx, name=name, msg=why)
+                    raise error.WrongValueError(idx=idx, name=name, msg=why) from why
         else:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
@@ -843,7 +843,7 @@ class MibScalarInstance(MibTree):
                 if "syntax" in why:
                     self.__newSyntax = why["syntax"]
                 else:
-                    raise error.WrongValueError(idx=idx, name=name, msg=why)
+                    raise error.WrongValueError(idx=idx, name=name, msg=why) from why
         else:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 

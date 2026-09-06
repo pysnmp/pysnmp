@@ -86,7 +86,7 @@ class __AbstractMibSource:
                 else:
                     raise error.MibLoadError(
                         f"MIB file {f + pycSfx} access error: {why}"
-                    )
+                    ) from why
 
             else:
                 if pycData[:4] == PY_MAGIC_NUMBER:
@@ -125,7 +125,7 @@ class __AbstractMibSource:
                 else:
                     raise error.MibLoadError(
                         f"MIB file {f + pySfx} access error: {why}"
-                    )
+                    ) from why
 
             else:
                 debug.logger & debug.flagBld and debug.logger(
@@ -223,7 +223,9 @@ class ZipMibSource(__AbstractMibSource):
             return self.__loader.get_data(p), p
 
         except Exception as why:  # ZIP code seems to return all kinds of errors
-            raise OSError(ENOENT, f"File or ZIP archive {p} access error: {why}")
+            raise OSError(
+                ENOENT, f"File or ZIP archive {p} access error: {why}"
+            ) from why
 
 
 #: The MIB source interface, under a name that survives being written inside a
@@ -252,7 +254,7 @@ class DirMibSource(__AbstractMibSource):
         try:
             return os.stat(p)[8]
         except OSError as e:
-            raise OSError(ENOENT, f"No such file: {e}", p)
+            raise OSError(ENOENT, f"No such file: {e}", p) from e
 
     def _getData(self, f: str, mode: str) -> tuple[Any, str]:
         p = os.path.join(self._srcName, "*")
@@ -384,7 +386,7 @@ class MibBuilder:
                 self.__modPathsSeen.remove(modPath)
                 raise error.MibLoadError(
                     f"MIB module '{modPath}' load error: {traceback.format_exception(type(e), e, e.__traceback__)}"
-                )
+                ) from e
 
             self.__modSeen[modName] = modPath
 
@@ -424,7 +426,7 @@ class MibBuilder:
             try:
                 self.loadModule(modName, **userCtx)
 
-            except error.MibNotFoundError:
+            except error.MibNotFoundError as exc:
                 if self.__mibCompiler:
                     debug.logger & debug.flagBld and debug.logger(
                         f"loadModules: calling MIB compiler for {modName}"
@@ -442,7 +444,7 @@ class MibBuilder:
                     if errs:
                         raise error.MibNotFoundError(
                             f"{modName} compilation error(s): {errs}"
-                        )
+                        ) from exc
 
                     # compilation succeeded, MIB might load now
                     self.loadModule(modName, **userCtx)

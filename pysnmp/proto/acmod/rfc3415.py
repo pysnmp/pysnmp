@@ -88,14 +88,14 @@ class Vacm:
         try:
             views = groups[groupName]
 
-        except KeyError:
-            raise error.StatusInformation(errorIndication=errind.noGroupName)
+        except KeyError as exc:
+            raise error.StatusInformation(errorIndication=errind.noGroupName) from exc
 
         try:
             matches = views[viewType]
 
-        except KeyError:
-            raise error.StatusInformation(errorIndication=errind.noAccessEntry)
+        except KeyError as exc:
+            raise error.StatusInformation(errorIndication=errind.noAccessEntry) from exc
 
         try:
             # vacmAccessTable #2: exact match shortcut
@@ -223,8 +223,8 @@ class Vacm:
         try:
             groupName = self._groupNameMap[indices]
 
-        except KeyError:
-            raise error.StatusInformation(errorIndication=errind.noGroupName)
+        except KeyError as exc:
+            raise error.StatusInformation(errorIndication=errind.noGroupName) from exc
 
         # Rebuild access map if changed
 

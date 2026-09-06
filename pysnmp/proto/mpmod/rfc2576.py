@@ -325,10 +325,10 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             try:
                 smHandler = snmpEngine.securityModels[securityModel]
 
-            except KeyError:
+            except KeyError as exc:
                 raise error.StatusInformation(
                     errorIndication=errind.unsupportedSecurityModel
-                )
+                ) from exc
 
             # rfc3412: 7.2.6
             (
@@ -386,9 +386,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             # 7.2.10a
             try:
                 cachedReqParams = self._cache.popByMsgId(int(msgID))
-            except error.ProtocolError:
+            except error.ProtocolError as exc:
                 smHandler.releaseStateInformation(securityStateReference)
-                raise error.StatusInformation(errorIndication=errind.dataMismatch)
+                raise error.StatusInformation(
+                    errorIndication=errind.dataMismatch
+                ) from exc
 
             # recover original PDU request-id to return to app
             pdu.setComponentByPosition(0, cachedReqParams["reqID"])

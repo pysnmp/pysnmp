@@ -74,7 +74,7 @@ class __AbstractMibSource:
             try:
                 pycData, pycPath = self._getData(f + pycSfx, "rb")
 
-            except OSError:
+            except OSError as exc:
                 why = sys.exc_info()[1]
                 if ENOENT == -1 or why.errno == ENOENT:
                     debug.logger & debug.flagBld and debug.logger(
@@ -84,7 +84,7 @@ class __AbstractMibSource:
                 else:
                     raise error.MibLoadError(
                         f"MIB file {f + pycSfx} access error: {why}"
-                    )
+                    ) from exc
 
             else:
                 if pycData[:4] == PY_MAGIC_NUMBER:
@@ -105,7 +105,7 @@ class __AbstractMibSource:
             try:
                 pyTime = self._getTimestamp(f + pySfx)
 
-            except OSError:
+            except OSError as exc:
                 why = sys.exc_info()[1]
                 if ENOENT == -1 or why.errno == ENOENT:
                     debug.logger & debug.flagBld and debug.logger(
@@ -115,7 +115,7 @@ class __AbstractMibSource:
                 else:
                     raise error.MibLoadError(
                         f"MIB file {f + pySfx} access error: {why}"
-                    )
+                    ) from exc
 
             else:
                 debug.logger & debug.flagBld and debug.logger(
@@ -204,9 +204,11 @@ class ZipMibSource(__AbstractMibSource):
         try:
             return self.__loader.get_data(p), p
 
-        except Exception:  # ZIP code seems to return all kinds of errors
+        except Exception as exc:  # ZIP code seems to return all kinds of errors
             why = sys.exc_info()
-            raise OSError(ENOENT, f"File or ZIP archive {p} access error: {why[1]}")
+            raise OSError(
+                ENOENT, f"File or ZIP archive {p} access error: {why[1]}"
+            ) from exc
 
 
 class DirMibSource(__AbstractMibSource):
@@ -228,8 +230,8 @@ class DirMibSource(__AbstractMibSource):
         p = os.path.join(self._srcName, f)
         try:
             return os.stat(p)[8]
-        except OSError:
-            raise OSError(ENOENT, f"No such file: {sys.exc_info()[1]}", p)
+        except OSError as exc:
+            raise OSError(ENOENT, f"No such file: {sys.exc_info()[1]}", p) from exc
 
     def _getData(self, f, mode):
         p = os.path.join(self._srcName, "*")
@@ -358,11 +360,11 @@ class MibBuilder:
             try:
                 exec(codeObj, g)
 
-            except Exception:
+            except Exception as exc:
                 self.__modPathsSeen.remove(modPath)
                 raise error.MibLoadError(
                     f"MIB module '{modPath}' load error: {traceback.format_exception(*sys.exc_info())}"
-                )
+                ) from exc
 
             self.__modSeen[modName] = modPath
 
@@ -399,7 +401,7 @@ class MibBuilder:
             try:
                 self.loadModule(modName, **userCtx)
 
-            except error.MibNotFoundError:
+            except error.MibNotFoundError as exc:
                 if self.__mibCompiler:
                     debug.logger & debug.flagBld and debug.logger(
                         f"loadModules: calling MIB compiler for {modName}"
@@ -417,7 +419,7 @@ class MibBuilder:
                     if errs:
                         raise error.MibNotFoundError(
                             f"{modName} compilation error(s): {errs}"
-                        )
+                        ) from exc
 
                     # compilation succeeded, MIB might load now
                     self.loadModule(modName, **userCtx)

@@ -49,7 +49,7 @@ def _run_or_raise_serialization_error(operation: Callable[[], _T], logLabel: str
             debug.logger(
                 f"__generateRequestOrResponseMsg: {logLabel} serialization error: {e}"
             )
-        raise error.StatusInformation(errorIndication=errind.serializationError)
+        raise error.StatusInformation(errorIndication=errind.serializationError) from e
 
 
 # USM security params
@@ -167,11 +167,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
         try:
             userName = self.__securityToUserMap[(securityEngineID, securityName)]
-        except KeyError:
+        except KeyError as exc:
             debug.logger & debug.flagSM and debug.logger(
                 f"_sec2usr: no entry exists for snmpEngineId {securityEngineID!r}, securityName {securityName!r}"
             )
-            raise NoSuchInstanceError()  # emulate MIB lookup
+            raise NoSuchInstanceError() from exc  # emulate MIB lookup
 
         debug.logger & debug.flagSM and debug.logger(
             f"_sec2usr: using userName {userName!r} for snmpEngineId {securityEngineID!r}, securityName {securityName!r}"
@@ -427,7 +427,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     )
                 )
 
-            except NoSuchInstanceError:
+            except NoSuchInstanceError as exc:
                 (pysnmpUsmDiscovery,) = mibBuilder.importSymbols(
                     "__PYSNMP-USM-MIB", "pysnmpUsmDiscovery"
                 )
@@ -481,7 +481,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 if reportUnknownName:
                     raise error.StatusInformation(
                         errorIndication=errind.unknownSecurityName
-                    )
+                    ) from exc
 
             except PyAsn1Error as e:
                 debug.logger & debug.flagSM and debug.logger(
@@ -491,7 +491,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     "__SNMPv2-MIB", "snmpInGenErrs"
                 )
                 snmpInGenErrs.syntax += 1
-                raise error.StatusInformation(errorIndication=errind.invalidMsg)
+                raise error.StatusInformation(errorIndication=errind.invalidMsg) from e
 
         else:
             # 4. (start SNMP engine ID discovery)
@@ -1029,7 +1029,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     "__SNMPv2-MIB", "snmpInGenErrs"
                 )
                 snmpInGenErrs.syntax += 1
-                raise error.StatusInformation(errorIndication=errind.invalidMsg)
+                raise error.StatusInformation(errorIndication=errind.invalidMsg) from e
         else:
             # empty username used for engineID discovery
             usmUserName = usmUserSecurityName = b""
@@ -1325,7 +1325,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
                 raise error.StatusInformation(
                     errorIndication=errind.decryptionError, msgUserName=msgUserName
-                )
+                ) from e
 
             if eoo.endOfOctets.isSameTypeWith(scopedPDU):
                 raise error.StatusInformation(

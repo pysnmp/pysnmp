@@ -72,7 +72,7 @@ class UdpTransportTarget(AbstractTransportTarget[tuple[str, int]]):
                 "Bad IPv4/UDP transport address {}: {}".format(
                     "@".join([str(x) for x in transportAddr]), e
                 )
-            )
+            ) from e
 
 
 class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
@@ -145,7 +145,7 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
                 "Bad IPv6/UDP transport address {}: {}".format(
                     "@".join([str(x) for x in transportAddr]), e
                 )
-            )
+            ) from e
 
 
 class UnixTransportTarget(AbstractTransportTarget[str]):

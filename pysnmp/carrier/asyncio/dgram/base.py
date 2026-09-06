@@ -83,7 +83,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             except Exception as e:
                 raise error.CarrierError(
                     ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-                )
+                ) from e
 
     def connection_lost(self, exc):
         self.transport = None
@@ -103,7 +103,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         except Exception as e:
             raise error.CarrierError(
                 ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-            )
+            ) from e
         return self
 
     def openServerMode(self, iface):
@@ -118,7 +118,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         except Exception as e:
             raise error.CarrierError(
                 ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-            )
+            ) from e
         return self
 
     def closeTransport(self):
@@ -151,7 +151,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             except Exception as e:
                 raise error.CarrierError(
                     ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-                )
+                ) from e
 
     def getLocalAddress(self):
         if self.transport is None:
@@ -178,7 +178,9 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         try:
             self._configureSocket(configureSocket)
         except OSError as e:
-            raise error.CarrierError(f"setsockopt() for SO_BROADCAST failed: {e}")
+            raise error.CarrierError(
+                f"setsockopt() for SO_BROADCAST failed: {e}"
+            ) from e
         return self
 
     def enablePktInfo(self, flag=1):
@@ -203,5 +205,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         try:
             self._configureSocket(configureSocket)
         except (AttributeError, OSError) as e:
-            raise error.CarrierError(f"setsockopt() for IP_TRANSPARENT failed: {e}")
+            raise error.CarrierError(
+                f"setsockopt() for IP_TRANSPARENT failed: {e}"
+            ) from e
         return self

@@ -91,7 +91,7 @@ class TextualConvention:
                     precision = int(decimalPrecision)
                     return f"{float(value) / pow(10, precision):.{precision}f}"
                 except Exception as e:
-                    raise SmiError(f"float evaluation error: {e}")
+                    raise SmiError(f"float evaluation error: {e}") from e
             elif displayHintType == "o":
                 return f"0{value:o}"
             elif displayHintType == "b":
@@ -135,8 +135,8 @@ class TextualConvention:
 
                 try:
                     octetLength = int(octetLength)
-                except Exception:
-                    raise SmiError(f"Bad octet length: {octetLength}")
+                except Exception as exc:
+                    raise SmiError(f"Bad octet length: {octetLength}") from exc
 
                 if not displayHint:
                     raise SmiError(f"Short octet length: {self.displayHint}")
@@ -187,7 +187,7 @@ class TextualConvention:
                             except Exception as e:
                                 raise SmiError(
                                     f"Display format eval failure: {numberString}: {e}"
-                                )
+                                ) from e
                         if displayFormat == "x":
                             outputValue += f"{number:02x}"
                         elif displayFormat == "o":
@@ -257,21 +257,21 @@ class TextualConvention:
                     else:
                         return base.prettyIn(self, int(value[2:], 16))
                 except Exception as e:
-                    raise SmiError(f"integer evaluation error: {e}")
+                    raise SmiError(f"integer evaluation error: {e}") from e
             elif displayHintType == "d":
                 try:
                     return base.prettyIn(
                         self, int(float(value) * 10 ** int(decimalPrecision))
                     )
                 except Exception as e:
-                    raise SmiError(f"float evaluation error: {e}")
+                    raise SmiError(f"float evaluation error: {e}") from e
             elif displayHintType == "o" and (
                 value.startswith("0") or value.startswith("-0")
             ):
                 try:
                     return base.prettyIn(self, int(value, 8))
                 except Exception as e:
-                    raise SmiError(f"octal evaluation error: {e}")
+                    raise SmiError(f"octal evaluation error: {e}") from e
             elif displayHintType == "b" and (
                 value.startswith("B") or value.startswith("-B")
             ):
@@ -279,7 +279,7 @@ class TextualConvention:
                 try:
                     binValue = int(value[2:] if negative else value[1:], 2)
                 except Exception as e:
-                    raise SmiError(f"binary evaluation error: {e}")
+                    raise SmiError(f"binary evaluation error: {e}") from e
                 return base.prettyIn(self, -binValue if negative else binValue)
             else:
                 raise SmiError(
@@ -379,8 +379,8 @@ class TextualConvention:
 
                 try:
                     octetLength = int(octetLength)
-                except Exception:
-                    raise SmiError(f"Bad octet length: {octetLength}")
+                except Exception as exc:
+                    raise SmiError(f"Bad octet length: {octetLength}") from exc
 
                 if not displayHint:
                     raise SmiError(f"Short octet length: {self.displayHint}")
@@ -438,7 +438,7 @@ class TextualConvention:
                     except Exception as e:
                         raise SmiError(
                             f"Display format eval failure: {runningValue[:guessedOctetLength]}: {e}"
-                        )
+                        ) from e
 
                     num_as_bytes = []
                     if num:

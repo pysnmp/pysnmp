@@ -30,8 +30,8 @@ class IpAddress(univ.OctetString):
         if isinstance(value, str) and len(value) != 4:
             try:
                 value = [int(x) for x in value.split(".")]
-            except Exception:
-                raise error.ProtocolError(f"Bad IP address syntax {value}")
+            except Exception as exc:
+                raise error.ProtocolError(f"Bad IP address syntax {value}") from exc
         if len(value) != 4:
             raise error.ProtocolError("Bad IP address syntax")
         return univ.OctetString.prettyIn(self, value)
@@ -78,8 +78,8 @@ class NetworkAddress(univ.Choice):
                 value = IpAddress(value)
             try:
                 tagSet = value.tagSet
-            except AttributeError:
-                raise PyAsn1Error(f"component value {value!r} has no tag set")
+            except AttributeError as exc:
+                raise PyAsn1Error(f"component value {value!r} has no tag set") from exc
             cloned.setComponentByType(tagSet, value)
         return cloned
 

@@ -308,9 +308,13 @@ class CommandResponderBase:
                 or errorIndication == errind.noAccessEntry
                 or errorIndication == errind.noGroupName
             ):
-                raise pysnmp.smi.error.AuthorizationError(name=name, idx=idx)
+                raise pysnmp.smi.error.AuthorizationError(
+                    name=name, idx=idx
+                ) from statusInformation
             elif errorIndication == errind.otherError:
-                raise pysnmp.smi.error.GenError(name=name, idx=idx)
+                raise pysnmp.smi.error.GenError(
+                    name=name, idx=idx
+                ) from statusInformation
             elif errorIndication == errind.noSuchContext:
                 (snmpUnknownContexts,) = (
                     snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
@@ -324,11 +328,13 @@ class CommandResponderBase:
                     idx=idx,
                     oid=snmpUnknownContexts.name,
                     val=snmpUnknownContexts.syntax,
-                )
+                ) from statusInformation
             elif errorIndication == errind.notInView:
                 return 1
             else:
-                raise error.ProtocolError(f"Unknown ACM error {errorIndication}")
+                raise error.ProtocolError(
+                    f"Unknown ACM error {errorIndication}"
+                ) from statusInformation
         else:
             # rfc2576: 4.1.2.1
             if (
@@ -448,4 +454,4 @@ class SetCommandResponder(CommandResponderBase):
         ) as e:
             err = pysnmp.smi.error.NotWritableError()
             err.update(e)
-            raise err
+            raise err from e

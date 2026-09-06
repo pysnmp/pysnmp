@@ -87,8 +87,8 @@ class Debug:
                     self._flags &= ~flagMap[f]
                 else:
                     self._flags |= flagMap[f]
-            except KeyError:
-                raise error.PySnmpError(f"bad debug flag {f}")
+            except KeyError as exc:
+                raise error.PySnmpError(f"bad debug flag {f}") from exc
 
             self(
                 "debug category '{}' {}".format(f, inverse and "disabled" or "enabled")

@@ -83,7 +83,7 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         except Exception as e:
             raise PySnmpError(
                 ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-            )
+            ) from e
 
     def transportsAreWorking(self):
         for transport in self._AbstractTransportDispatcher__transports.values():

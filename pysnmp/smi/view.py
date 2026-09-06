@@ -159,8 +159,8 @@ class MibViewController:
         self.indexMib()
         try:
             return self.__mibSymbolsIdx.nextKey(modName)
-        except KeyError:
-            raise error.SmiError(f"No module next to {modName} at {self}")
+        except KeyError as exc:
+            raise error.SmiError(f"No module next to {modName} at {self}") from exc
 
     # MIB tree node management
 
@@ -278,17 +278,17 @@ class MibViewController:
                 if index < 0:
                     index += len(filtered)
                 oid, label = filtered[index]
-            except IndexError:
+            except IndexError as exc:
                 raise error.NoSuchObjectError(
                     str=f"No {nodeType} symbol at position {index} in MIB module {modName} at {self}"
-                )
+                ) from exc
             return oid, label, ()
         try:
             oid, label = mibMod["oidToLabelIdx"].items()[index]
-        except KeyError:
+        except KeyError as exc:
             raise error.NoSuchObjectError(
                 str=f"No symbol at position {index} in MIB module {modName} at {self}"
-            )
+            ) from exc
         return oid, label, ()
 
     def getFirstNodeName(self, modName="", nodeType=None):
@@ -304,10 +304,10 @@ class MibViewController:
                 self.__mibSymbolsIdx[modName]["oidToLabelIdx"].nextKey(oid) + suffix,
                 modName,
             )
-        except KeyError:
+        except KeyError as exc:
             raise error.NoSuchObjectError(
                 str=f"No name next to {modName}::{nodeName} at {self}"
-            )
+            ) from exc
 
     def getParentNodeName(self, nodeName, modName=""):
         oid, label, suffix = self.getNodeName(nodeName, modName)
@@ -360,10 +360,10 @@ class MibViewController:
         m, t = self.getTypeName(typeName, modName)
         try:
             return self.__mibSymbolsIdx[m]["typeToModIdx"].nextKey(t)
-        except KeyError:
+        except KeyError as exc:
             raise error.NoSuchObjectError(
                 str=f"No type next to {modName}::{typeName} at {self}"
-            )
+            ) from exc
 
     # ---- Table cell mangling API (TODO #2) ----
     # Convenience methods for table-level introspection that clearly separate

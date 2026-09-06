@@ -64,8 +64,10 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
             snmpSourceAddrTAddress = snmpSourceAddrTAddress.getNode(
                 snmpSourceAddrTAddress.name + tblIdx
             ).syntax
-        except NoSuchInstanceError:
-            raise SmiError(f"Target {snmpTargetAddrName} not configured to LCD")
+        except NoSuchInstanceError as exc:
+            raise SmiError(
+                f"Target {snmpTargetAddrName} not configured to LCD"
+            ) from exc
 
         transport = snmpEngine.transportDispatcher.getTransport(snmpTargetAddrTDomain)
 
@@ -154,8 +156,8 @@ def getTargetParams(snmpEngine, paramsName):
             snmpTargetParamsSecurityLevel = snmpTargetParamsSecurityLevel.getNode(
                 snmpTargetParamsSecurityLevel.name + tblIdx
             ).syntax
-        except NoSuchInstanceError:
-            raise SmiError(f"Parameters {paramsName} not configured at LCD")
+        except NoSuchInstanceError as exc:
+            raise SmiError(f"Parameters {paramsName} not configured at LCD") from exc
 
         nameToParamsMap[paramsName] = (
             snmpTargetParamsMPModel,
@@ -226,8 +228,10 @@ def getNotificationInfo(snmpEngine, notificationTarget):
             snmpNotifyTag = snmpNotifyTag.getNode(snmpNotifyTag.name + tblIdx).syntax
             snmpNotifyType = snmpNotifyType.getNode(snmpNotifyType.name + tblIdx).syntax
 
-        except NoSuchInstanceError:
-            raise SmiError(f"Target {notificationTarget} not configured at LCD")
+        except NoSuchInstanceError as exc:
+            raise SmiError(
+                f"Target {notificationTarget} not configured at LCD"
+            ) from exc
 
         targetToNotifyMap[notificationTarget] = (snmpNotifyTag, snmpNotifyType)
 

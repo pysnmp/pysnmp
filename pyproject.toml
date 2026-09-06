@@ -193,8 +193,9 @@ ignore = [
 # what an agent example is showing you how to do.
 "examples/**" = ["F401", "F403", "F405", "F821", "S104"]
 # Tests assert, exec the code they generate, and check for broad exceptions
-# on purpose.
-"tests/**" = ["S101", "S102", "S104", "B017", "BLE", "PL", "RUF", "TRY"]
+# on purpose. B904: test_error_cause.py raises without `from` deliberately --
+# implicit __context__ chaining is the thing under test.
+"tests/**" = ["S101", "S102", "S104", "B017", "B904", "BLE", "PL", "RUF", "TRY"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pysnmp"]

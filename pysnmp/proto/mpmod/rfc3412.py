@@ -778,9 +778,11 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             # 7.2.10a
             try:
                 cachedReqParams = self._cache.popByMsgId(msgID)
-            except error.ProtocolError:
+            except error.ProtocolError as exc:
                 smHandler.releaseStateInformation(securityStateReference)
-                raise error.StatusInformation(errorIndication=errind.dataMismatch)
+                raise error.StatusInformation(
+                    errorIndication=errind.dataMismatch
+                ) from exc
             # 7.2.10b
             sendPduHandle = cachedReqParams["sendPduHandle"]
         else:

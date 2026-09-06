@@ -141,8 +141,10 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         try:
             return self.__securityMap[(securityName, contextEngineId, contextName)]
 
-        except KeyError:
-            raise error.StatusInformation(errorIndication=errind.unknownCommunityName)
+        except KeyError as exc:
+            raise error.StatusInformation(
+                errorIndication=errind.unknownCommunityName
+            ) from exc
 
     def _com2sec(self, snmpEngine, communityName, transportInformation):
         (snmpTargetAddrTAddress,) = (
@@ -456,7 +458,9 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             debug.logger & debug.flagMP and debug.logger(
                 f"generateRequestMsg: serialization failure: {e}"
             )
-            raise error.StatusInformation(errorIndication=errind.serializationError)
+            raise error.StatusInformation(
+                errorIndication=errind.serializationError
+            ) from e
 
     def generateResponseMsg(
         self,
@@ -502,7 +506,9 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             debug.logger & debug.flagMP and debug.logger(
                 f"generateResponseMsg: serialization failure: {e}"
             )
-            raise error.StatusInformation(errorIndication=errind.serializationError)
+            raise error.StatusInformation(
+                errorIndication=errind.serializationError
+            ) from e
 
     def processIncomingMsg(
         self,
@@ -536,7 +542,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 scope.get("transportInformation", transportInformation),
             )
 
-        except error.StatusInformation:
+        except error.StatusInformation as exc:
             (snmpInBadCommunityNames,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                     "__SNMPv2-MIB", "snmpInBadCommunityNames"
@@ -545,7 +551,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             snmpInBadCommunityNames.syntax += 1
             raise error.StatusInformation(
                 errorIndication=errind.unknownCommunityName, communityName=communityName
-            )
+            ) from exc
 
         (snmpEngineID,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
