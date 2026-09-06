@@ -19,7 +19,18 @@ _fortyFourZeros = (0,) * 44
 
 
 class HmacSha(base.AbstractAuthenticationService):
-    serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 1, 3)  # usmHMACSHAAuthProtocol
+    serviceID: tuple[int, ...] = (
+        1,
+        3,
+        6,
+        1,
+        6,
+        3,
+        10,
+        1,
+        1,
+        3,
+    )  # usmHMACSHAAuthProtocol
     __ipad = [0x36] * 64
     __opad = [0x5C] * 64
 

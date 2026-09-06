@@ -14,7 +14,7 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 
 class AbstractAesBlumenthal(aes.Aes):
-    serviceID = ()
+    serviceID: tuple[int, ...] = ()
     keySize = 0
 
     # 3.1.2.1
@@ -55,7 +55,7 @@ class AbstractAesReeder(aes.Aes):
     the steps in the password to key algorithm (hash phrase, then localize with SNMPEngine ID).
     """
 
-    serviceID = ()
+    serviceID: tuple[int, ...] = ()
     keySize = 0
 
     # 2.1 of https://tools.itef.org/pdf/draft_bluementhal-aes-usm-04.txt

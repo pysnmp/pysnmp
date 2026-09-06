@@ -24,7 +24,18 @@ class Des3(base.AbstractEncryptionService):
     https://tools.ietf.org/html/draft-reeder-snmpv3-usm-3desede-00
     """
 
-    serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 2, 3)  # usm3DESEDEPrivProtocol
+    serviceID: tuple[int, ...] = (
+        1,
+        3,
+        6,
+        1,
+        6,
+        3,
+        10,
+        1,
+        2,
+        3,
+    )  # usm3DESEDEPrivProtocol
     keySize = 32
     _localInt = secrets.randbits(32)
 

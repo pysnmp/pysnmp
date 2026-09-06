@@ -19,7 +19,7 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 
 class Des(base.AbstractEncryptionService):
-    serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 2, 2)  # usmDESPrivProtocol
+    serviceID: tuple[int, ...] = (1, 3, 6, 1, 6, 3, 10, 1, 2, 2)  # usmDESPrivProtocol
     keySize = 16
 
     _localInt = secrets.randbits(32)
