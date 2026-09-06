@@ -57,13 +57,6 @@ jobs:
       - name: Run mypy
         run: uv run mypy
 
-      # Advisory only. ty is pre-1.0 and has no disallow_untyped_defs
-      # equivalent, so mypy above remains the blocking gate. ty catches
-      # things mypy misses, notably Liskov override violations.
-      - name: Run ty (advisory)
-        run: uv run ty check pysnmp
-        continue-on-error: true
-
   docs:
     name: docs
     runs-on: ubuntu-latest
