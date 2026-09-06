@@ -118,6 +118,19 @@ for file in "$DIR"/*.json; do
   fi
 done
 
+# A required check that never reports is indistinguishable, to a pull request,
+# from one that is failing, and GitHub disables a workflow carrying a schedule
+# trigger after sixty days of repository inactivity. Say so before the rules
+# start depending on it.
+inactive="$(api GET "repos/$REPO/actions/workflows?per_page=100" |
+  jq -r '.workflows[] | select(.state != "active") | "  \(.name) (\(.path)): \(.state)"')"
+if [ -n "$inactive" ]; then
+  echo
+  echo "warning: these workflows are not active and report no checks:"
+  echo "$inactive"
+  echo "a required check from one of them would block every pull request."
+fi
+
 settings="$DIR/repo-settings.json"
 if [ -f "$settings" ]; then
   if [ "$DRY_RUN" = 1 ]; then
