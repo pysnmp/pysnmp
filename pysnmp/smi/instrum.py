@@ -67,7 +67,7 @@ class MibInstrumController(AbstractMibInstrumController):
     def __init__(self, mibBuilder: Any) -> None:
         self.mibBuilder = mibBuilder
         self.lastBuildId = -1
-        self.lastBuildSyms = {}
+        self.lastBuildSyms: dict[str, Any] = {}
 
     def getMibBuilder(self) -> Any:
         return self.mibBuilder

@@ -67,7 +67,7 @@ class SnmpEngine:
         maxMessageSize: int = 65507,
         msgAndPduDsp: Any = None,
     ) -> None:
-        self.cache = {}
+        self.cache: dict[Any, Any] = {}
 
         self.observer = observer.MetaObserver()
 

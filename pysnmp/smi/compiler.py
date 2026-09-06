@@ -5,6 +5,7 @@
 #
 import sys
 from pathlib import Path
+from typing import Any
 
 defaultSources = ["file:///usr/share/snmp/mibs", "file:///usr/share/mibs"]
 
@@ -13,7 +14,7 @@ if sys.platform[:3] == "win":
 else:
     defaultDest = str(Path.home() / ".pysnmp" / "mibs")
 
-defaultBorrowers = []
+defaultBorrowers: list[Any] = []
 
 try:
     from pysmi.borrower.pyfile import PyFileBorrower

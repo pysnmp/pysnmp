@@ -396,19 +396,19 @@ class MsgAndPduDispatcher:
 
             debug.logger & debug.flagDsp and debug.logger("receiveMessage: MP succeded")
 
-        except error.StatusInformation as statusInformation:
-            if "sendPduHandle" in statusInformation:
+        except error.StatusInformation as mpError:
+            if "sendPduHandle" in mpError:
                 # Dropped REPORT -- re-run pending reqs queue as some
                 # of them may be waiting for this REPORT
                 debug.logger & debug.flagDsp and debug.logger(
                     "receiveMessage: MP failed, statusInformation %s, forcing a retry"
-                    % statusInformation
+                    % mpError
                 )
                 self.__expireRequest(
-                    statusInformation["sendPduHandle"],
-                    self.__cache.pop(statusInformation["sendPduHandle"]),
+                    mpError["sendPduHandle"],
+                    self.__cache.pop(mpError["sendPduHandle"]),
                     snmpEngine,
-                    statusInformation,
+                    mpError,
                 )
             return restOfWholeMsg
 

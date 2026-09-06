@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from typing import Any
+
 from pysnmp import error, nextid
 from pysnmp.entity import config
 from pysnmp.hlapi.auth import CommunityData, UsmUserData
@@ -12,7 +14,8 @@ __all__ = ["CommandGeneratorLcdConfigurator", "NotificationOriginatorLcdConfigur
 
 class AbstractLcdConfigurator:
     nextID = nextid.Integer(0xFFFFFFFF)
-    cacheKeys = []
+    #: Sections _getCache() lays out in this configurator's user context.
+    cacheKeys: list[str] = []
 
     def _getCache(self, snmpEngine):
         cacheId = self.__class__.__name__
@@ -127,6 +130,8 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
     def unconfigure(self, snmpEngine, authData=None, contextName=b"", **options):
         cache = self._getCache(snmpEngine)
         if authData:
+            # A community index for v1/v2c, a (user, engine id) pair for v3.
+            authDataKey: Any
             if isinstance(authData, CommunityData):
                 authDataKey = authData.communityIndex
             elif isinstance(authData, UsmUserData):
@@ -134,11 +139,11 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             else:
                 raise error.PySnmpError("Unsupported authentication object")
             if authDataKey in cache["auth"]:
-                authDataKeys = (authDataKey,)
+                authDataKeys: tuple[Any, ...] = (authDataKey,)
             else:
                 raise error.PySnmpError(f"Unknown authData {authData}")
         else:
-            authDataKeys = list(cache["auth"].keys())
+            authDataKeys = tuple(cache["auth"])
 
         addrNames, paramsNames = set(), set()
 

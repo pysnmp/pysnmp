@@ -644,12 +644,11 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 "prepareDataElements: SM succeeded"
             )
 
-        except error.StatusInformation as statusInformation:
-            origTraceback = statusInformation.__traceback__
+        except error.StatusInformation as smError:
+            origTraceback = smError.__traceback__
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareDataElements: SM failed, statusInformation %s"
-                % statusInformation
+                "prepareDataElements: SM failed, statusInformation %s" % smError
             )
 
             with execution_context(
@@ -660,25 +659,23 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 securityModel=securityModel,
                 securityLevel=securityLevel,
                 securityParameters=securityParameters,
-                statusInformation=statusInformation,
+                statusInformation=smError,
             ):
                 pass
 
-            if "errorIndication" in statusInformation:
+            if "errorIndication" in smError:
                 # 7.2.6a
-                if "oid" in statusInformation:
+                if "oid" in smError:
                     # 7.2.6a1
-                    securityStateReference = statusInformation["securityStateReference"]
-                    contextEngineId = statusInformation["contextEngineId"]
-                    contextName = statusInformation["contextName"]
-                    if "scopedPDU" in statusInformation:
-                        scopedPDU = statusInformation["scopedPDU"]
+                    securityStateReference = smError["securityStateReference"]
+                    contextEngineId = smError["contextEngineId"]
+                    contextName = smError["contextName"]
+                    if "scopedPDU" in smError:
+                        scopedPDU = smError["scopedPDU"]
                         pdu = scopedPDU.getComponentByPosition(2).getComponent()
                     else:
                         pdu = None
-                    maxSizeResponseScopedPDU = statusInformation[
-                        "maxSizeResponseScopedPDU"
-                    ]
+                    maxSizeResponseScopedPDU = smError["maxSizeResponseScopedPDU"]
                     securityName = None  # XXX secmod cache used
 
                     # 7.2.6a2
@@ -714,7 +711,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                             pdu,
                             maxSizeResponseScopedPDU,
                             stateReference,
-                            statusInformation,
+                            smError,
                         )
                     except error.StatusInformation:
                         pass
@@ -725,7 +722,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
 
             # 7.2.6b
             try:
-                raise statusInformation.with_traceback(origTraceback)
+                raise smError.with_traceback(origTraceback)
             finally:
                 # Break cycle between locals and traceback object
                 del origTraceback

@@ -352,7 +352,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 f"prepareDataElements: SM returned securityEngineId {securityEngineId!r} securityName {securityName!r}"
             )
 
-        except error.StatusInformation as statusInformation:
+        except error.StatusInformation as smError:
             with execution_context(
                 snmpEngine,
                 "rfc2576.prepareDataElements:sm-failure",
@@ -361,7 +361,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 securityModel=securityModel,
                 securityLevel=securityLevel,
                 securityParameters=securityParameters,
-                statusInformation=statusInformation,
+                statusInformation=smError,
             ):
                 pass
 
