@@ -32,7 +32,8 @@ def getNextVarBinds(varBinds, origVarBinds=None):
             nonNulls -= 1
         elif (
             origVarBinds is not None
-            and v2c.ObjectIdentifier(origVarBinds[idx][0]).asTuple() >= varBinds[idx][0].asTuple()
+            and v2c.ObjectIdentifier(origVarBinds[idx][0]).asTuple()
+            >= varBinds[idx][0].asTuple()
         ):
             errorIndication = errind.oidNotIncreasing
 
@@ -106,8 +107,9 @@ class CommandGenerator:
                 origDiscoveryRetries = 0
                 origRetries += 1
 
-            if origRetries > origRetryCount or origDiscoveryRetries > self.__options.get(
-                "discoveryRetries", 4
+            if (
+                origRetries > origRetryCount
+                or origDiscoveryRetries > self.__options.get("discoveryRetries", 4)
             ):
                 debug.logger & debug.flagApp and debug.logger(
                     "processResponsePdu: sendPduHandle %s, retry count %d exceeded"
@@ -209,7 +211,9 @@ class CommandGenerator:
 
         cbFun(snmpEngine, origSendRequestHandle, None, PDU, cbCtx)
 
-    def sendPdu(self, snmpEngine, targetName, contextEngineId, contextName, PDU, cbFun, cbCtx):
+    def sendPdu(
+        self, snmpEngine, targetName, contextEngineId, contextName, PDU, cbFun, cbCtx
+    ):
         (
             transportDomain,
             transportAddress,
@@ -222,7 +226,9 @@ class CommandGenerator:
         ) = config.getTargetInfo(snmpEngine, targetName)
 
         # Convert timeout in seconds into timeout in timer ticks
-        timeoutInTicks = float(timeout) / 100 / snmpEngine.transportDispatcher.getTimerResolution()
+        timeoutInTicks = (
+            float(timeout) / 100 / snmpEngine.transportDispatcher.getTimerResolution()
+        )
 
         SnmpEngineID, SnmpAdminString = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
@@ -297,7 +303,9 @@ CommandGeneratorBase = CommandGenerator
 
 
 class GetCommandGenerator(CommandGenerator):
-    def processResponseVarBinds(self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx):
+    def processResponseVarBinds(
+        self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
+    ):
         cbFun, cbCtx = cbCtx
 
         cbFun(
@@ -311,7 +319,14 @@ class GetCommandGenerator(CommandGenerator):
         )
 
     def sendVarBinds(
-        self, snmpEngine, targetName, contextEngineId, contextName, varBinds, cbFun, cbCtx=None
+        self,
+        snmpEngine,
+        targetName,
+        contextEngineId,
+        contextName,
+        varBinds,
+        cbFun,
+        cbCtx=None,
     ):
         reqPDU = v2c.GetRequestPDU()
         v2c.apiPDU.setDefaults(reqPDU)
@@ -330,7 +345,9 @@ class GetCommandGenerator(CommandGenerator):
 
 
 class SetCommandGenerator(CommandGenerator):
-    def processResponseVarBinds(self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx):
+    def processResponseVarBinds(
+        self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
+    ):
         cbFun, cbCtx = cbCtx
 
         cbFun(
@@ -344,7 +361,14 @@ class SetCommandGenerator(CommandGenerator):
         )
 
     def sendVarBinds(
-        self, snmpEngine, targetName, contextEngineId, contextName, varBinds, cbFun, cbCtx=None
+        self,
+        snmpEngine,
+        targetName,
+        contextEngineId,
+        contextName,
+        varBinds,
+        cbFun,
+        cbCtx=None,
     ):
         reqPDU = v2c.SetRequestPDU()
         v2c.apiPDU.setDefaults(reqPDU)
@@ -363,7 +387,9 @@ class SetCommandGenerator(CommandGenerator):
 
 
 class NextCommandGeneratorSingleRun(CommandGenerator):
-    def processResponseVarBinds(self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx):
+    def processResponseVarBinds(
+        self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
+    ):
         targetName, contextEngineId, contextName, reqPDU, cbFun, cbCtx = cbCtx
 
         cbFun(
@@ -377,7 +403,14 @@ class NextCommandGeneratorSingleRun(CommandGenerator):
         )
 
     def sendVarBinds(
-        self, snmpEngine, targetName, contextEngineId, contextName, varBinds, cbFun, cbCtx=None
+        self,
+        snmpEngine,
+        targetName,
+        contextEngineId,
+        contextName,
+        varBinds,
+        cbFun,
+        cbCtx=None,
     ):
         reqPDU = v2c.GetNextRequestPDU()
         v2c.apiPDU.setDefaults(reqPDU)
@@ -396,7 +429,9 @@ class NextCommandGeneratorSingleRun(CommandGenerator):
 
 
 class NextCommandGenerator(NextCommandGeneratorSingleRun):
-    def processResponseVarBinds(self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx):
+    def processResponseVarBinds(
+        self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
+    ):
         targetName, contextEngineId, contextName, reqPDU, cbFun, cbCtx = cbCtx
 
         if errorIndication:
@@ -462,7 +497,9 @@ class NextCommandGenerator(NextCommandGeneratorSingleRun):
 
 
 class BulkCommandGeneratorSingleRun(CommandGenerator):
-    def processResponseVarBinds(self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx):
+    def processResponseVarBinds(
+        self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
+    ):
         (
             targetName,
             nonRepeaters,
@@ -525,7 +562,9 @@ class BulkCommandGeneratorSingleRun(CommandGenerator):
 
 
 class BulkCommandGenerator(BulkCommandGeneratorSingleRun):
-    def processResponseVarBinds(self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx):
+    def processResponseVarBinds(
+        self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
+    ):
         (
             targetName,
             nonRepeaters,
@@ -620,14 +659,29 @@ class BulkCommandGenerator(BulkCommandGeneratorSingleRun):
 
 
 def __sendReqCbFun(
-    snmpEngine, sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
+    snmpEngine,
+    sendRequestHandle,
+    errorIndication,
+    errorStatus,
+    errorIndex,
+    varBinds,
+    cbCtx,
 ):
     cbFun, cbCtx = cbCtx
-    return cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx)
+    return cbFun(
+        sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
+    )
 
 
 def _sendReq(
-    self, snmpEngine, targetName, varBinds, cbFun, cbCtx=None, contextEngineId=None, contextName=""
+    self,
+    snmpEngine,
+    targetName,
+    varBinds,
+    cbFun,
+    cbCtx=None,
+    contextEngineId=None,
+    contextName="",
 ):
     return self.sendVarBinds(
         snmpEngine,

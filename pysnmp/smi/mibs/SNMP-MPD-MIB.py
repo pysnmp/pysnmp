@@ -96,25 +96,27 @@ snmpMPDAdmin = MibIdentifier((1, 3, 6, 1, 6, 3, 11, 1))
 snmpMPDMIBObjects = MibIdentifier((1, 3, 6, 1, 6, 3, 11, 2))
 snmpMPDMIBConformance = MibIdentifier((1, 3, 6, 1, 6, 3, 11, 3))
 snmpMPDStats = MibIdentifier((1, 3, 6, 1, 6, 3, 11, 2, 1))
-snmpUnknownSecurityModels = MibScalar((1, 3, 6, 1, 6, 3, 11, 2, 1, 1), Counter32()).setMaxAccess(
-    "readonly"
-)
+snmpUnknownSecurityModels = MibScalar(
+    (1, 3, 6, 1, 6, 3, 11, 2, 1, 1), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     snmpUnknownSecurityModels.setStatus("current")
 if mibBuilder.loadTexts:
     snmpUnknownSecurityModels.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because they referenced a securityModel that was not known to or supported by the SNMP engine. "
     )
-snmpInvalidMsgs = MibScalar((1, 3, 6, 1, 6, 3, 11, 2, 1, 2), Counter32()).setMaxAccess("readonly")
+snmpInvalidMsgs = MibScalar((1, 3, 6, 1, 6, 3, 11, 2, 1, 2), Counter32()).setMaxAccess(
+    "readonly"
+)
 if mibBuilder.loadTexts:
     snmpInvalidMsgs.setStatus("current")
 if mibBuilder.loadTexts:
     snmpInvalidMsgs.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because there were invalid or inconsistent components in the SNMP message. "
     )
-snmpUnknownPDUHandlers = MibScalar((1, 3, 6, 1, 6, 3, 11, 2, 1, 3), Counter32()).setMaxAccess(
-    "readonly"
-)
+snmpUnknownPDUHandlers = MibScalar(
+    (1, 3, 6, 1, 6, 3, 11, 2, 1, 3), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     snmpUnknownPDUHandlers.setStatus("current")
 if mibBuilder.loadTexts:

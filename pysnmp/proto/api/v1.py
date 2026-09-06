@@ -65,13 +65,25 @@ class PDUAPI:
 
     def setDefaults(self, pdu):
         pdu.setComponentByPosition(
-            0, getNextRequestID(), verifyConstraints=False, matchTags=False, matchConstraints=False
+            0,
+            getNextRequestID(),
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            1, self._errorStatus, verifyConstraints=False, matchTags=False, matchConstraints=False
+            1,
+            self._errorStatus,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            2, self._errorIndex, verifyConstraints=False, matchTags=False, matchConstraints=False
+            2,
+            self._errorIndex,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         varBindList = pdu.setComponentByPosition(3).getComponentByPosition(3)
         varBindList.clear()
@@ -98,7 +110,9 @@ class PDUAPI:
         if errorIndex > len(pdu[3]):
             if muteErrors:
                 return errorIndex.clone(len(pdu[3]))
-            raise error.ProtocolError(f"Error index out of range: {errorIndex} > {len(pdu[3])}")
+            raise error.ProtocolError(
+                f"Error index out of range: {errorIndex} > {len(pdu[3])}"
+            )
         return errorIndex
 
     @staticmethod
@@ -122,7 +136,9 @@ class PDUAPI:
 
     @staticmethod
     def getVarBinds(pdu):
-        return [apiVarBind.getOIDVal(varBind) for varBind in pdu.getComponentByPosition(3)]
+        return [
+            apiVarBind.getOIDVal(varBind) for varBind in pdu.getComponentByPosition(3)
+        ]
 
     @staticmethod
     def setVarBinds(pdu, varBinds):
@@ -169,9 +185,15 @@ class TrapPDUAPI:
                 agentAddress = IpAddress(socket.gethostbyname(socket.gethostname()))
             except Exception:
                 agentAddress = IpAddress("0.0.0.0")
-            self._networkAddress = NetworkAddress().setComponentByPosition(0, agentAddress)
+            self._networkAddress = NetworkAddress().setComponentByPosition(
+                0, agentAddress
+            )
         pdu.setComponentByPosition(
-            0, self._entOid, verifyConstraints=False, matchTags=False, matchConstraints=False
+            0,
+            self._entOid,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
             1,
@@ -181,13 +203,25 @@ class TrapPDUAPI:
             matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            2, self._genericTrap, verifyConstraints=False, matchTags=False, matchConstraints=False
+            2,
+            self._genericTrap,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            3, self._zeroInt, verifyConstraints=False, matchTags=False, matchConstraints=False
+            3,
+            self._zeroInt,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            4, self._zeroTime, verifyConstraints=False, matchTags=False, matchConstraints=False
+            4,
+            self._zeroTime,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         varBindList = pdu.setComponentByPosition(5).getComponentByPosition(5)
         varBindList.clear()
@@ -206,7 +240,9 @@ class TrapPDUAPI:
 
     @staticmethod
     def setAgentAddr(pdu, value):
-        pdu.setComponentByPosition(1).getComponentByPosition(1).setComponentByPosition(0, value)
+        pdu.setComponentByPosition(1).getComponentByPosition(1).setComponentByPosition(
+            0, value
+        )
 
     @staticmethod
     def getGenericTrap(pdu):
@@ -270,10 +306,18 @@ class MessageAPI:
 
     def setDefaults(self, msg):
         msg.setComponentByPosition(
-            0, self._version, verifyConstraints=False, matchTags=False, matchConstraints=False
+            0,
+            self._version,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         msg.setComponentByPosition(
-            1, self._community, verifyConstraints=False, matchTags=False, matchConstraints=False
+            1,
+            self._community,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         return msg
 

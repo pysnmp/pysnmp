@@ -12,7 +12,11 @@ from pysnmp.proto.proxy import rfc2576
 
 # 3.4
 class NotificationReceiver:
-    pduTypes = (v1.TrapPDU.tagSet, v2c.SNMPv2TrapPDU.tagSet, v2c.InformRequestPDU.tagSet)
+    pduTypes = (
+        v1.TrapPDU.tagSet,
+        v2c.SNMPv2TrapPDU.tagSet,
+        v2c.InformRequestPDU.tagSet,
+    )
 
     def __init__(self, snmpEngine, cbFun, cbCtx=None):
         snmpEngine.msgAndPduDsp.registerContextEngineId(
@@ -29,7 +33,9 @@ class NotificationReceiver:
         def storeSnmpTrapCommunity(snmpEngine, execpoint, variables, cbCtx):
             self.__snmpTrapCommunity = variables.get("communityName", "")
 
-        snmpEngine.observer.registerObserver(storeSnmpTrapCommunity, "rfc2576.processIncomingMsg")
+        snmpEngine.observer.registerObserver(
+            storeSnmpTrapCommunity, "rfc2576.processIncomingMsg"
+        )
 
     def close(self, snmpEngine):
         snmpEngine.msgAndPduDsp.unregisterContextEngineId(b"", self.pduTypes)
@@ -125,12 +131,19 @@ class NotificationReceiver:
 
         if self.__cbFunVer:
             self.__cbFun(
-                snmpEngine, stateReference, contextEngineId, contextName, varBinds, self.__cbCtx
+                snmpEngine,
+                stateReference,
+                contextEngineId,
+                contextName,
+                varBinds,
+                self.__cbCtx,
             )
         else:
             # Compatibility stub (handle legacy cbFun interface)
             try:
-                self.__cbFun(snmpEngine, contextEngineId, contextName, varBinds, self.__cbCtx)
+                self.__cbFun(
+                    snmpEngine, contextEngineId, contextName, varBinds, self.__cbCtx
+                )
             except TypeError:
                 self.__cbFunVer = 1
                 self.__cbFun(

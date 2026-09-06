@@ -79,9 +79,8 @@ def ensure_index(directory: pathlib.Path, project: str) -> None:
 
     for candidate in ("contents.html", "genindex.html"):
         if (directory / candidate).exists():
-            (directory / "index.html").write_text(
-                VERSION_REDIRECT.format(target=candidate, project=project)
-            )
+            redirect = VERSION_REDIRECT.format(target=candidate, project=project)
+            (directory / "index.html").write_text(redirect)
             return
 
 
@@ -109,9 +108,8 @@ def main() -> int:
         shutil.copytree(source, target)
         print(f"{name} -> {source.name}")
 
-    (root / "index.html").write_text(
-        REDIRECT.format(target="stable" if finals else "latest", project=project)
-    )
+    alias = "stable" if finals else "latest"
+    (root / "index.html").write_text(REDIRECT.format(target=alias, project=project))
 
     # Jekyll would otherwise drop Sphinx's _static and _sources directories.
     (root / ".nojekyll").touch()

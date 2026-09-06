@@ -10,7 +10,9 @@ from pysnmp.smi.error import NoSuchInstanceError, SmiError
 def getTargetAddr(snmpEngine, snmpTargetAddrName):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpTargetAddrEntry,) = mibBuilder.importSymbols("SNMP-TARGET-MIB", "snmpTargetAddrEntry")
+    (snmpTargetAddrEntry,) = mibBuilder.importSymbols(
+        "SNMP-TARGET-MIB", "snmpTargetAddrEntry"
+    )
 
     cache = snmpEngine.getUserContext("getTargetAddr")
     if cache is None:
@@ -76,7 +78,9 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
             snmpTargetAddrTAddress = transport.addressType(
                 SnmpUDPAddress(snmpTargetAddrTAddress)
             ).setLocalAddress(SnmpUDPAddress(snmpSourceAddrTAddress))
-        elif snmpTargetAddrTDomain[: len(config.snmpUDP6Domain)] == config.snmpUDP6Domain:
+        elif (
+            snmpTargetAddrTDomain[: len(config.snmpUDP6Domain)] == config.snmpUDP6Domain
+        ):
             (TransportAddressIPv6,) = (
                 snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                     "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
@@ -85,7 +89,10 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
             snmpTargetAddrTAddress = transport.addressType(
                 TransportAddressIPv6(snmpTargetAddrTAddress)
             ).setLocalAddress(TransportAddressIPv6(snmpSourceAddrTAddress))
-        elif snmpTargetAddrTDomain[: len(config.snmpLocalDomain)] == config.snmpLocalDomain:
+        elif (
+            snmpTargetAddrTDomain[: len(config.snmpLocalDomain)]
+            == config.snmpLocalDomain
+        ):
             snmpTargetAddrTAddress = transport.addressType(snmpTargetAddrTAddress)
 
         nameToTargetMap[snmpTargetAddrName] = (
@@ -104,7 +111,9 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
 def getTargetParams(snmpEngine, paramsName):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpTargetParamsEntry,) = mibBuilder.importSymbols("SNMP-TARGET-MIB", "snmpTargetParamsEntry")
+    (snmpTargetParamsEntry,) = mibBuilder.importSymbols(
+        "SNMP-TARGET-MIB", "snmpTargetParamsEntry"
+    )
 
     cache = snmpEngine.getUserContext("getTargetParams")
     if cache is None:
@@ -192,7 +201,9 @@ def getTargetInfo(snmpEngine, snmpTargetAddrName):
 def getNotificationInfo(snmpEngine, notificationTarget):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpNotifyEntry,) = mibBuilder.importSymbols("SNMP-NOTIFICATION-MIB", "snmpNotifyEntry")
+    (snmpNotifyEntry,) = mibBuilder.importSymbols(
+        "SNMP-NOTIFICATION-MIB", "snmpNotifyEntry"
+    )
 
     cache = snmpEngine.getUserContext("getNotificationInfo")
     if cache is None:
@@ -228,7 +239,9 @@ def getNotificationInfo(snmpEngine, notificationTarget):
 def getTargetNames(snmpEngine, tag):
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    (snmpTargetAddrEntry,) = mibBuilder.importSymbols("SNMP-TARGET-MIB", "snmpTargetAddrEntry")
+    (snmpTargetAddrEntry,) = mibBuilder.importSymbols(
+        "SNMP-TARGET-MIB", "snmpTargetAddrEntry"
+    )
 
     cache = snmpEngine.getUserContext("getTargetNames")
     if cache is None:
@@ -242,8 +255,13 @@ def getTargetNames(snmpEngine, tag):
 
         tagToTargetsMap = cache["tagToTargetsMap"]
 
-        (SnmpTagValue, snmpTargetAddrName, snmpTargetAddrTagList) = mibBuilder.importSymbols(
-            "SNMP-TARGET-MIB", "SnmpTagValue", "snmpTargetAddrName", "snmpTargetAddrTagList"
+        (SnmpTagValue, snmpTargetAddrName, snmpTargetAddrTagList) = (
+            mibBuilder.importSymbols(
+                "SNMP-TARGET-MIB",
+                "SnmpTagValue",
+                "snmpTargetAddrName",
+                "snmpTargetAddrTagList",
+            )
         )
         mibNode = snmpTargetAddrTagList
         while True:
@@ -254,7 +272,9 @@ def getTargetNames(snmpEngine, tag):
 
             idx = mibNode.name[len(snmpTargetAddrTagList.name) :]
 
-            _snmpTargetAddrName = snmpTargetAddrName.getNode(snmpTargetAddrName.name + idx).syntax
+            _snmpTargetAddrName = snmpTargetAddrName.getNode(
+                snmpTargetAddrName.name + idx
+            ).syntax
 
             for _tag in mibNode.syntax.asOctets().split():
                 _tag = SnmpTagValue(_tag)
@@ -296,10 +316,12 @@ def getNotifyFilterProfile(snmpEngine, paramsName):
     paramsToProfileMap = cache["paramsToProfileMap"]
 
     if paramsName not in paramsToProfileMap:
-        (snmpNotifyFilterProfileName, snmpNotifyFilterProfileRowStatus) = mibBuilder.importSymbols(
-            "SNMP-NOTIFICATION-MIB",
-            "snmpNotifyFilterProfileName",
-            "snmpNotifyFilterProfileRowStatus",
+        (snmpNotifyFilterProfileName, snmpNotifyFilterProfileRowStatus) = (
+            mibBuilder.importSymbols(
+                "SNMP-NOTIFICATION-MIB",
+                "snmpNotifyFilterProfileName",
+                "snmpNotifyFilterProfileRowStatus",
+            )
         )
 
         tblIdx = snmpNotifyFilterProfileEntry.getInstIdFromIndices(paramsName)
@@ -374,14 +396,18 @@ def getNotifyFilter(snmpEngine, filterProfileName):
                 subtree = snmpNotifyFilterSubtree.getNode(
                     snmpNotifyFilterSubtree.name + instId
                 ).syntax
-                mask = snmpNotifyFilterMask.getNode(snmpNotifyFilterMask.name + instId).syntax
+                mask = snmpNotifyFilterMask.getNode(
+                    snmpNotifyFilterMask.name + instId
+                ).syntax
                 filterType = snmpNotifyFilterType.getNode(
                     snmpNotifyFilterType.name + instId
                 ).syntax
             except NoSuchInstanceError:
                 continue
 
-            profileToFiltersMap.setdefault(profileName, []).append((subtree, mask, filterType))
+            profileToFiltersMap.setdefault(profileName, []).append(
+                (subtree, mask, filterType)
+            )
 
         cache["profileToFiltersMap"] = profileToFiltersMap
         cache["id"] = snmpNotifyFilterEntry.branchVersionId

@@ -49,7 +49,9 @@ class AbstractMessageProcessingModel:
     ):
         raise error.ProtocolError("method not implemented")
 
-    def prepareDataElements(self, snmpEngine, transportDomain, transportAddress, wholeMsg):
+    def prepareDataElements(
+        self, snmpEngine, transportDomain, transportAddress, wholeMsg
+    ):
         raise error.ProtocolError("method not implemented")
 
     def releaseStateInformation(self, sendPduHandle):

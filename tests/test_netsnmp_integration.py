@@ -83,7 +83,9 @@ def credentials():
     if p == "v3-noauth":
         return UsmUserData("ci-noauth")
     if p == "v3-sha":
-        return UsmUserData("ci-sha", "ciAuthPass123", authProtocol=usmHMACSHAAuthProtocol)
+        return UsmUserData(
+            "ci-sha", "ciAuthPass123", authProtocol=usmHMACSHAAuthProtocol
+        )
     if p == "v3-aes":
         return UsmUserData(
             "ci-aes",
@@ -109,7 +111,9 @@ def wrong_credentials():
     if p == "v3-noauth":
         return UsmUserData("ci-nonexistent")
     if p == "v3-sha":
-        return UsmUserData("ci-sha", "WRONG-AUTH-PASS", authProtocol=usmHMACSHAAuthProtocol)
+        return UsmUserData(
+            "ci-sha", "WRONG-AUTH-PASS", authProtocol=usmHMACSHAAuthProtocol
+        )
     if p == "v3-aes":
         return UsmUserData(
             "ci-aes",
@@ -126,7 +130,9 @@ def wrong_credentials():
             authProtocol=usmHMACSHAAuthProtocol,
             privProtocol=usmDESPrivProtocol,
         )
-    raise AssertionError(f"wrong_credentials() is only defined for v3 profiles, got {p}")
+    raise AssertionError(
+        f"wrong_credentials() is only defined for v3 profiles, got {p}"
+    )
 
 
 def target():
@@ -234,7 +240,9 @@ def test_system_identity_is_well_formed():
 # --- GETBULK / GETNEXT differentiation -----------------------------------
 def test_getbulk_returns_multiple_rows_for_v2c_and_v3():
     if is_v1():
-        pytest.skip("GETBULK is not available for SNMPv1; GETNEXT is covered separately")
+        pytest.skip(
+            "GETBULK is not available for SNMPv1; GETNEXT is covered separately"
+        )
 
     async def one_bulk():
         # async bulkCmd is a coroutine returning a single 4-tuple (one GETBULK
@@ -250,7 +258,9 @@ def test_getbulk_returns_multiple_rows_for_v2c_and_v3():
             lookupMib=False,
         )
 
-    error_indication, error_status, _error_index, var_bind_table = asyncio.run(one_bulk())
+    error_indication, error_status, _error_index, var_bind_table = asyncio.run(
+        one_bulk()
+    )
     assert error_indication is None, f"GETBULK failed: {error_indication}"
     assert not error_status, f"GETBULK error status: {error_status}"
     assert len(var_bind_table) >= 2, (
@@ -372,7 +382,9 @@ def test_set_syslocation_roundtrip():
         )
     finally:
         set_location(original)
-        assert get_location().asOctets() == original.asOctets(), "sysLocation.0 was not restored"
+        assert get_location().asOctets() == original.asOctets(), (
+            "sysLocation.0 was not restored"
+        )
 
 
 # --- transport dispatching ------------------------------------------------
@@ -396,4 +408,6 @@ def test_concurrent_requests_all_succeed():
 
     indications = asyncio.run(main())
     failures = [ind for ind in indications if ind is not None]
-    assert not failures, f"{len(failures)}/{len(indications)} concurrent GETs failed: {failures}"
+    assert not failures, (
+        f"{len(failures)}/{len(indications)} concurrent GETs failed: {failures}"
+    )

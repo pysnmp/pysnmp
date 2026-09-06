@@ -87,7 +87,9 @@ class Des3(base.AbstractEncryptionService):
         return (
             des3Key.asOctets(),
             univ.OctetString(salt).asOctets(),
-            univ.OctetString(map(lambda x, y: x ^ y, salt, preIV.asNumbers())).asOctets(),
+            univ.OctetString(
+                map(lambda x, y: x ^ y, salt, preIV.asNumbers())
+            ).asOctets(),
         )
 
     @staticmethod
@@ -114,7 +116,8 @@ class Des3(base.AbstractEncryptionService):
         privParameters = univ.OctetString(salt)
 
         plaintext = (
-            dataToEncrypt + univ.OctetString((0,) * (8 - len(dataToEncrypt) % 8)).asOctets()
+            dataToEncrypt
+            + univ.OctetString((0,) * (8 - len(dataToEncrypt) % 8)).asOctets()
         )
         ciphertext = des3Obj.encrypt(plaintext)
 

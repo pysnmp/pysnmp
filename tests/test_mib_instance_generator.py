@@ -4,7 +4,9 @@ import importlib.util
 import os
 
 # Import the tool module directly
-_tool_path = os.path.join(os.path.dirname(__file__), "..", "tools", "mib_instance_generator.py")
+_tool_path = os.path.join(
+    os.path.dirname(__file__), "..", "tools", "mib_instance_generator.py"
+)
 _spec = importlib.util.spec_from_file_location("mib_instance_generator", _tool_path)
 mib_instance_generator = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mib_instance_generator)
@@ -197,13 +199,17 @@ END
     compiled = tmp_path / "compiled"
     compiled.mkdir()
 
-    mib_builder, module_name = mib_instance_generator.compile_mib(str(mib_source), str(compiled))
+    mib_builder, module_name = mib_instance_generator.compile_mib(
+        str(mib_source), str(compiled)
+    )
     assert module_name == "TEST-INSTANCE-MIB"
     assert (compiled / "TEST-INSTANCE-MIB.py").is_file()
     assert "testScalar" in mib_builder.mibSymbols[module_name]
 
     source = mib_instance_generator.generate_instances(mib_builder, module_name)
     exec(compile(source, "<generated>", "exec"), {"mibBuilder": mib_builder})
-    (instance,) = mib_builder.importSymbols("TEST-INSTANCE-MIB_instances", "testScalar_inst")
+    (instance,) = mib_builder.importSymbols(
+        "TEST-INSTANCE-MIB_instances", "testScalar_inst"
+    )
     assert instance.name == (1, 3, 6, 1, 4, 1, 99999, 1, 0)
     assert int(instance.syntax) == 0

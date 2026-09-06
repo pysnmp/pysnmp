@@ -50,7 +50,9 @@ else:
             PyFileWriter(kwargs.get("destination") or defaultDest),
         )
 
-        compiler.add_sources(*getReadersFromUrls(*kwargs.get("sources") or defaultSources))
+        compiler.add_sources(
+            *getReadersFromUrls(*kwargs.get("sources") or defaultSources)
+        )
 
         compiler.add_searchers(StubSearcher(*baseMibs))
         compiler.add_searchers(
@@ -60,7 +62,8 @@ else:
             *[
                 PyFileBorrower(x, genTexts=mibBuilder.loadTexts)
                 for x in getReadersFromUrls(
-                    *kwargs.get("borrowers") or defaultBorrowers, **dict(lowcaseMatching=False)
+                    *kwargs.get("borrowers") or defaultBorrowers,
+                    **dict(lowcaseMatching=False),
                 )
             ]
         )

@@ -128,9 +128,9 @@ if mibBuilder.loadTexts:
     snmpNotifyName.setDescription(
         "The locally arbitrary, but unique identifier associated with this snmpNotifyEntry."
     )
-snmpNotifyTag = MibTableColumn((1, 3, 6, 1, 6, 3, 13, 1, 1, 1, 2), SnmpTagValue()).setMaxAccess(
-    "readcreate"
-)
+snmpNotifyTag = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 13, 1, 1, 1, 2), SnmpTagValue()
+).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpNotifyTag.setStatus("current")
 if mibBuilder.loadTexts:
@@ -159,9 +159,9 @@ if mibBuilder.loadTexts:
     snmpNotifyStorageType.setDescription(
         "The storage type for this conceptual row. Conceptual rows having the value 'permanent' need not allow write-access to any columnar objects in the row."
     )
-snmpNotifyRowStatus = MibTableColumn((1, 3, 6, 1, 6, 3, 13, 1, 1, 1, 5), RowStatus()).setMaxAccess(
-    "readcreate"
-)
+snmpNotifyRowStatus = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 13, 1, 1, 1, 5), RowStatus()
+).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpNotifyRowStatus.setStatus("current")
 if mibBuilder.loadTexts:
@@ -235,7 +235,9 @@ if mibBuilder.loadTexts:
     snmpNotifyFilterEntry.setDescription(
         "An element of a filter profile. Entries in the snmpNotifyFilterTable are created and deleted using the snmpNotifyFilterRowStatus object."
     )
-snmpNotifyFilterSubtree = MibTableColumn((1, 3, 6, 1, 6, 3, 13, 1, 3, 1, 1), ObjectIdentifier())
+snmpNotifyFilterSubtree = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 13, 1, 3, 1, 1), ObjectIdentifier()
+)
 if mibBuilder.loadTexts:
     snmpNotifyFilterSubtree.setStatus("current")
 if mibBuilder.loadTexts:
@@ -285,14 +287,19 @@ if mibBuilder.loadTexts:
     )
 snmpNotifyCompliances = MibIdentifier((1, 3, 6, 1, 6, 3, 13, 3, 1))
 snmpNotifyGroups = MibIdentifier((1, 3, 6, 1, 6, 3, 13, 3, 2))
-snmpNotifyBasicCompliance = ModuleCompliance((1, 3, 6, 1, 6, 3, 13, 3, 1, 1)).setObjects(
-    ("SNMP-TARGET-MIB", "snmpTargetBasicGroup"), ("SNMP-NOTIFICATION-MIB", "snmpNotifyGroup")
+snmpNotifyBasicCompliance = ModuleCompliance(
+    (1, 3, 6, 1, 6, 3, 13, 3, 1, 1)
+).setObjects(
+    ("SNMP-TARGET-MIB", "snmpTargetBasicGroup"),
+    ("SNMP-NOTIFICATION-MIB", "snmpNotifyGroup"),
 )
 if mibBuilder.loadTexts:
     snmpNotifyBasicCompliance.setDescription(
         "The compliance statement for minimal SNMP entities which implement only SNMP Unconfirmed-Class notifications and read-create operations on only the snmpTargetAddrTable."
     )
-snmpNotifyBasicFiltersCompliance = ModuleCompliance((1, 3, 6, 1, 6, 3, 13, 3, 1, 2)).setObjects(
+snmpNotifyBasicFiltersCompliance = ModuleCompliance(
+    (1, 3, 6, 1, 6, 3, 13, 3, 1, 2)
+).setObjects(
     ("SNMP-TARGET-MIB", "snmpTargetBasicGroup"),
     ("SNMP-NOTIFICATION-MIB", "snmpNotifyGroup"),
     ("SNMP-NOTIFICATION-MIB", "snmpNotifyFilterGroup"),

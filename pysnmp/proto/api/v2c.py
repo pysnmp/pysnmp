@@ -93,10 +93,18 @@ class BulkPDUAPI(PDUAPI):
     def setDefaults(self, pdu):
         PDUAPI.setDefaults(self, pdu)
         pdu.setComponentByPosition(
-            0, getNextRequestID(), verifyConstraints=False, matchTags=False, matchConstraints=False
+            0,
+            getNextRequestID(),
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            1, self._nonRepeaters, verifyConstraints=False, matchTags=False, matchConstraints=False
+            1,
+            self._nonRepeaters,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
             2,
@@ -178,10 +186,18 @@ class MessageAPI(v1.MessageAPI):
 
     def setDefaults(self, msg):
         msg.setComponentByPosition(
-            0, self._version, verifyConstraints=False, matchTags=False, matchConstraints=False
+            0,
+            self._version,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         msg.setComponentByPosition(
-            1, self._community, verifyConstraints=False, matchTags=False, matchConstraints=False
+            1,
+            self._community,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         return msg
 

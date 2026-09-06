@@ -40,6 +40,8 @@ def make_callback(
         except Exception as ex:  # pylint: disable=broad-exception-caught
             future.set_exception(ex)
         else:
-            future.set_result((errorIndication, errorStatus, errorIndex, varBindsUnmade))
+            future.set_result(
+                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
+            )
 
     return _cb_fun

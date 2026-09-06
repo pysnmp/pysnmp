@@ -131,7 +131,9 @@ snmpProxyType = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 2),
     Integer32()
     .subtype(subtypeSpec=ConstraintsUnion(SingleValueConstraint(1, 2, 3, 4)))
-    .clone(namedValues=NamedValues(("read", 1), ("write", 2), ("trap", 3), ("inform", 4))),
+    .clone(
+        namedValues=NamedValues(("read", 1), ("write", 2), ("trap", 3), ("inform", 4))
+    ),
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpProxyType.setStatus("current")
@@ -191,9 +193,9 @@ if mibBuilder.loadTexts:
     snmpProxyStorageType.setStatus("current")
 if mibBuilder.loadTexts:
     snmpProxyStorageType.setDescription("The storage type of this conceptual row.")
-snmpProxyRowStatus = MibTableColumn((1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 9), RowStatus()).setMaxAccess(
-    "readcreate"
-)
+snmpProxyRowStatus = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 14, 1, 2, 1, 9), RowStatus()
+).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpProxyRowStatus.setStatus("current")
 if mibBuilder.loadTexts:

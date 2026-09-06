@@ -41,7 +41,9 @@ class HmacSha2(base.AbstractAuthenticationService):
 
     def __init__(self, oid):
         if oid not in self.hashAlgorithms:
-            raise error.ProtocolError(f"No SHA-2 authentication algorithm {oid} available")
+            raise error.ProtocolError(
+                f"No SHA-2 authentication algorithm {oid} available"
+            )
         self.__hashAlgo = self.hashAlgorithms[oid]
         self.__digestLength = self.digestLengths[oid]
         self.__placeHolder = univ.OctetString((0,) * self.__digestLength).asOctets()

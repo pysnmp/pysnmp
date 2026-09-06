@@ -25,7 +25,9 @@ print(mibBuilder.getMibSources())
 print("done")
 
 (print("Loading MIB modules..."),)
-mibBuilder.loadModules("SNMPv2-MIB", "SNMP-FRAMEWORK-MIB", "SNMP-COMMUNITY-MIB", "IP-MIB")
+mibBuilder.loadModules(
+    "SNMPv2-MIB", "SNMP-FRAMEWORK-MIB", "SNMP-COMMUNITY-MIB", "IP-MIB"
+)
 print("done")
 
 (print("Indexing MIB objects..."),)

@@ -73,7 +73,8 @@ class Debug:
             if "loggerName" in options:
                 # route our logs to parent logger
                 self._printer = Printer(
-                    logger=logging.getLogger(options["loggerName"]), handler=NullHandler()
+                    logger=logging.getLogger(options["loggerName"]),
+                    handler=NullHandler(),
                 )
             else:
                 self._printer = Printer()
@@ -90,7 +91,9 @@ class Debug:
             except KeyError:
                 raise error.PySnmpError("bad debug flag %s" % f)
 
-            self("debug category '{}' {}".format(f, inverse and "disabled" or "enabled"))
+            self(
+                "debug category '{}' {}".format(f, inverse and "disabled" or "enabled")
+            )
 
     def __str__(self):
         return f"logger {self._printer}, flags {self._flags:x}"

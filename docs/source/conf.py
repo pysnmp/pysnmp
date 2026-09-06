@@ -250,7 +250,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "PySNMP.tex", "PySNMP Documentation", "Ilya Etingof deceased", "manual"),
+    (
+        master_doc,
+        "PySNMP.tex",
+        "PySNMP Documentation",
+        "Ilya Etingof deceased",
+        "manual",
+    ),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

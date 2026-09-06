@@ -118,7 +118,9 @@ def generate_instances(
     """Generate a Python MIB instance module for loaded MIB *modName*."""
     symbols = walk_mib_symbols(mibBuilder, modName)
     instance_mod_name = f"{modName}{instance_mod_suffix}"
-    objects = sorted(list(symbols["scalars"].items()) + list(symbols["table_columns"].items()))
+    objects = sorted(
+        list(symbols["scalars"].items()) + list(symbols["table_columns"].items())
+    )
 
     lines = [
         "#",
@@ -141,7 +143,8 @@ def generate_instances(
         lines.append("")
 
     row_suffixes = {
-        row.name: _table_index_suffix(mibBuilder, row) for row in symbols["table_rows"].values()
+        row.name: _table_index_suffix(mibBuilder, row)
+        for row in symbols["table_rows"].values()
     }
     exported_instances = []
 
@@ -239,7 +242,11 @@ def compile_mib(
             compiled_files = list(Path(destination).glob(f"{module_name}.py*"))
 
         module_status = status.get(module_name)
-        if not compiled_files or str(module_status) in ("failed", "missing", "unprocessed"):
+        if not compiled_files or str(module_status) in (
+            "failed",
+            "missing",
+            "unprocessed",
+        ):
             detail = getattr(module_status, "error", None) or module_status
             raise MibNotFoundError(f"{module_name} compilation failed: {detail}")
         # Ensure a same-named bundled MIB can not shadow the file just compiled.
@@ -255,15 +262,27 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Compile an ASN.1 MIB and generate MIB instance stubs."
     )
-    parser.add_argument("--mib", required=True, help="MIB module name or ASN.1 file path.")
-    parser.add_argument("--output", "-o", required=True, help="Output Python module path.")
     parser.add_argument(
-        "--asn1-source", action="append", default=None, help="Additional ASN.1 source URL/path."
+        "--mib", required=True, help="MIB module name or ASN.1 file path."
     )
     parser.add_argument(
-        "--mib-source", action="append", default=None, help="Additional compiled MIB path."
+        "--output", "-o", required=True, help="Output Python module path."
     )
-    parser.add_argument("--suffix", default="_instances", help="Instance module-name suffix.")
+    parser.add_argument(
+        "--asn1-source",
+        action="append",
+        default=None,
+        help="Additional ASN.1 source URL/path.",
+    )
+    parser.add_argument(
+        "--mib-source",
+        action="append",
+        default=None,
+        help="Additional compiled MIB path.",
+    )
+    parser.add_argument(
+        "--suffix", default="_instances", help="Instance module-name suffix."
+    )
     args = parser.parse_args()
 
     output_path = Path(args.output).resolve()
@@ -274,7 +293,9 @@ def main() -> int:
             asn1_sources=args.asn1_source,
             mib_sources=args.mib_source,
         )
-        source = generate_instances(mib_builder, module_name, instance_mod_suffix=args.suffix)
+        source = generate_instances(
+            mib_builder, module_name, instance_mod_suffix=args.suffix
+        )
     except Exception as error:
         print(f"Error processing MIB: {error}", file=sys.stderr)
         return 1

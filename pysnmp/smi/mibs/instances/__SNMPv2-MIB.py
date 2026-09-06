@@ -123,7 +123,9 @@ __sysContact = MibScalarInstance(sysContact.name, (0,), sysContact.syntax.clone(
 __sysName = MibScalarInstance(sysName.name, (0,), sysName.syntax.clone(""))
 __sysLocation = MibScalarInstance(sysLocation.name, (0,), sysLocation.syntax.clone(""))
 __sysServices = MibScalarInstance(sysServices.name, (0,), sysServices.syntax.clone(0))
-__sysORLastChange = MibScalarInstance(sysORLastChange.name, (0,), sysORLastChange.syntax.clone(0))
+__sysORLastChange = MibScalarInstance(
+    sysORLastChange.name, (0,), sysORLastChange.syntax.clone(0)
+)
 __snmpInPkts = MibScalarInstance(snmpInPkts.name, (0,), snmpInPkts.syntax.clone(0))
 __snmpOutPkts = MibScalarInstance(snmpOutPkts.name, (0,), snmpOutPkts.syntax.clone(0))
 __snmpInBadVersions = MibScalarInstance(
@@ -138,13 +140,21 @@ __snmpInBadCommunityUses = MibScalarInstance(
 __snmpInASNParseErrs = MibScalarInstance(
     snmpInASNParseErrs.name, (0,), snmpInASNParseErrs.syntax.clone(0)
 )
-__snmpInTooBigs = MibScalarInstance(snmpInTooBigs.name, (0,), snmpInTooBigs.syntax.clone(0))
+__snmpInTooBigs = MibScalarInstance(
+    snmpInTooBigs.name, (0,), snmpInTooBigs.syntax.clone(0)
+)
 __snmpInNoSuchNames = MibScalarInstance(
     snmpInNoSuchNames.name, (0,), snmpInNoSuchNames.syntax.clone(0)
 )
-__snmpInBadValues = MibScalarInstance(snmpInBadValues.name, (0,), snmpInBadValues.syntax.clone(0))
-__snmpInReadOnlys = MibScalarInstance(snmpInReadOnlys.name, (0,), snmpInReadOnlys.syntax.clone(0))
-__snmpInGenErrs = MibScalarInstance(snmpInGenErrs.name, (0,), snmpInGenErrs.syntax.clone(0))
+__snmpInBadValues = MibScalarInstance(
+    snmpInBadValues.name, (0,), snmpInBadValues.syntax.clone(0)
+)
+__snmpInReadOnlys = MibScalarInstance(
+    snmpInReadOnlys.name, (0,), snmpInReadOnlys.syntax.clone(0)
+)
+__snmpInGenErrs = MibScalarInstance(
+    snmpInGenErrs.name, (0,), snmpInGenErrs.syntax.clone(0)
+)
 __snmpInTotalReqVars = MibScalarInstance(
     snmpInTotalReqVars.name, (0,), snmpInTotalReqVars.syntax.clone(0)
 )
@@ -154,7 +164,9 @@ __snmpInTotalSetVars = MibScalarInstance(
 __snmpInGetRequests = MibScalarInstance(
     snmpInGetRequests.name, (0,), snmpInGetRequests.syntax.clone(0)
 )
-__snmpInGetNexts = MibScalarInstance(snmpInGetNexts.name, (0,), snmpInGetNexts.syntax.clone(0))
+__snmpInGetNexts = MibScalarInstance(
+    snmpInGetNexts.name, (0,), snmpInGetNexts.syntax.clone(0)
+)
 __snmpInSetRequests = MibScalarInstance(
     snmpInSetRequests.name, (0,), snmpInSetRequests.syntax.clone(0)
 )
@@ -162,28 +174,42 @@ __snmpInGetResponses = MibScalarInstance(
     snmpInGetResponses.name, (0,), snmpInGetResponses.syntax.clone(0)
 )
 __snmpInTraps = MibScalarInstance(snmpInTraps.name, (0,), snmpInTraps.syntax.clone(0))
-__snmpOutTooBigs = MibScalarInstance(snmpOutTooBigs.name, (0,), snmpOutTooBigs.syntax.clone(0))
+__snmpOutTooBigs = MibScalarInstance(
+    snmpOutTooBigs.name, (0,), snmpOutTooBigs.syntax.clone(0)
+)
 __snmpOutNoSuchNames = MibScalarInstance(
     snmpOutNoSuchNames.name, (0,), snmpOutNoSuchNames.syntax.clone(0)
 )
 __snmpOutBadValues = MibScalarInstance(
     snmpOutBadValues.name, (0,), snmpOutBadValues.syntax.clone(0)
 )
-__snmpOutGenErrs = MibScalarInstance(snmpOutGenErrs.name, (0,), snmpOutGenErrs.syntax.clone(0))
+__snmpOutGenErrs = MibScalarInstance(
+    snmpOutGenErrs.name, (0,), snmpOutGenErrs.syntax.clone(0)
+)
 __snmpOutSetRequests = MibScalarInstance(
     snmpOutSetRequests.name, (0,), snmpOutSetRequests.syntax.clone(0)
 )
 __snmpOutGetResponses = MibScalarInstance(
     snmpOutGetResponses.name, (0,), snmpOutGetResponses.syntax.clone(0)
 )
-__snmpOutTraps = MibScalarInstance(snmpOutTraps.name, (0,), snmpOutTraps.syntax.clone(0))
+__snmpOutTraps = MibScalarInstance(
+    snmpOutTraps.name, (0,), snmpOutTraps.syntax.clone(0)
+)
 __snmpEnableAuthenTraps = MibScalarInstance(
     snmpEnableAuthenTraps.name, (0,), snmpEnableAuthenTraps.syntax.clone(1)
 )
-__snmpSilentDrops = MibScalarInstance(snmpSilentDrops.name, (0,), snmpSilentDrops.syntax.clone(0))
-__snmpProxyDrops = MibScalarInstance(snmpProxyDrops.name, (0,), snmpProxyDrops.syntax.clone(0))
-__snmpTrapOID = MibScalarInstance(snmpTrapOID.name, (0,), snmpTrapOID.syntax.clone(coldStart.name))
-__snmpSetSerialNo = MibScalarInstance(snmpSetSerialNo.name, (0,), snmpSetSerialNo.syntax.clone(0))
+__snmpSilentDrops = MibScalarInstance(
+    snmpSilentDrops.name, (0,), snmpSilentDrops.syntax.clone(0)
+)
+__snmpProxyDrops = MibScalarInstance(
+    snmpProxyDrops.name, (0,), snmpProxyDrops.syntax.clone(0)
+)
+__snmpTrapOID = MibScalarInstance(
+    snmpTrapOID.name, (0,), snmpTrapOID.syntax.clone(coldStart.name)
+)
+__snmpSetSerialNo = MibScalarInstance(
+    snmpSetSerialNo.name, (0,), snmpSetSerialNo.syntax.clone(0)
+)
 
 mibBuilder.exportSymbols(
     "__SNMPv2-MIB",

@@ -26,7 +26,10 @@ from pysnmp.hlapi.asyncio.transport import UdpTransportTarget
 from pysnmp.hlapi.auth import CommunityData, UsmUserData
 from pysnmp.hlapi.context import ContextData
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
-from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds, NotificationOriginatorVarBinds
+from pysnmp.hlapi.varbinds import (
+    CommandGeneratorVarBinds,
+    NotificationOriginatorVarBinds,
+)
 from pysnmp.proto import error
 from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.smi.error import SmiError
@@ -430,13 +433,17 @@ class TestUnixTransport:
         from pysnmp.carrier.asyncio.dgram import unix
 
         loop = asyncio.new_event_loop()
-        fd, server_path = tempfile.mkstemp(prefix="pysnmp-server-", dir=tempfile.gettempdir())
+        fd, server_path = tempfile.mkstemp(
+            prefix="pysnmp-server-", dir=tempfile.gettempdir()
+        )
         os.close(fd)
         os.unlink(server_path)
         received = []
         server = unix.UnixAsyncioTransport(loop=loop).openServerMode(server_path)
         client = unix.UnixAsyncioTransport(loop=loop).openClientMode()
-        server.registerCbFun(lambda _, address, message: received.append((address, message)))
+        server.registerCbFun(
+            lambda _, address, message: received.append((address, message))
+        )
         try:
             loop.run_until_complete(asyncio.sleep(0))
             client.sendMessage(b"ping", unix.UnixTransportAddress(server_path))
@@ -532,7 +539,9 @@ class TestUsmUserData:
         assert user.userName == "user1"
 
     def test_creation_with_auth(self):
-        user = UsmUserData("user1", "authkey1", authProtocol=config.usmHMACMD5AuthProtocol)
+        user = UsmUserData(
+            "user1", "authkey1", authProtocol=config.usmHMACMD5AuthProtocol
+        )
         assert user.userName == "user1"
 
     def test_creation_with_auth_priv(self):
@@ -617,7 +626,8 @@ class TestCommandGeneratorVarBinds:
         engine = SnmpEngine()
         vb = CommandGeneratorVarBinds()
         result = vb.makeVarBinds(
-            engine, [ObjectType(ObjectIdentity("1.3.6.1.2.1.1.1.0"), OctetString("test"))]
+            engine,
+            [ObjectType(ObjectIdentity("1.3.6.1.2.1.1.1.0"), OctetString("test"))],
         )
         assert len(result) == 1
 
@@ -738,18 +748,25 @@ class TestEntityConfig:
     def test_add_v3_user_with_auth(self):
         engine = SnmpEngine()
         config.addV3User(
-            engine, "test-user2", authProtocol=config.usmHMACMD5AuthProtocol, authKey="authkey1"
+            engine,
+            "test-user2",
+            authProtocol=config.usmHMACMD5AuthProtocol,
+            authKey="authkey1",
         )
 
     def test_add_v3_user_bad_auth_protocol(self):
         engine = SnmpEngine()
         with pytest.raises(error.PySnmpError):
-            config.addV3User(engine, "test-user3", authProtocol=(9, 9, 9), authKey="authkey1")
+            config.addV3User(
+                engine, "test-user3", authProtocol=(9, 9, 9), authKey="authkey1"
+            )
 
     def test_add_v3_user_bad_priv_protocol(self):
         engine = SnmpEngine()
         with pytest.raises(error.PySnmpError):
-            config.addV3User(engine, "test-user4", privProtocol=(9, 9, 9), privKey="privkey1")
+            config.addV3User(
+                engine, "test-user4", privProtocol=(9, 9, 9), privKey="privkey1"
+            )
 
     def test_add_target_params(self):
         engine = SnmpEngine()
@@ -764,5 +781,11 @@ class TestEntityConfig:
             engine, (1, 3, 6, 1, 6, 1, 1), udp.UdpAsyncioTransport().openClientMode()
         )
         config.addTargetAddr(
-            engine, "test-addr", (1, 3, 6, 1, 6, 1, 1), ("127.0.0.1", 161), "test-params2", 100, 3
+            engine,
+            "test-addr",
+            (1, 3, 6, 1, 6, 1, 1),
+            ("127.0.0.1", 161),
+            "test-params2",
+            100,
+            3,
         )

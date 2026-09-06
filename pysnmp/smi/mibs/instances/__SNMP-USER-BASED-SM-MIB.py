@@ -25,7 +25,9 @@
 )
 
 __usmStatsUnsupportedSecLevels = MibScalarInstance(
-    usmStatsUnsupportedSecLevels.name, (0,), usmStatsUnsupportedSecLevels.syntax.clone(0)
+    usmStatsUnsupportedSecLevels.name,
+    (0,),
+    usmStatsUnsupportedSecLevels.syntax.clone(0),
 )
 __usmStatsNotInTimeWindows = MibScalarInstance(
     usmStatsNotInTimeWindows.name, (0,), usmStatsNotInTimeWindows.syntax.clone(0)
@@ -42,7 +44,9 @@ __usmStatsWrongDigests = MibScalarInstance(
 __usmStatsDecryptionErrors = MibScalarInstance(
     usmStatsDecryptionErrors.name, (0,), usmStatsDecryptionErrors.syntax.clone(0)
 )
-__usmUserSpinLock = MibScalarInstance(usmUserSpinLock.name, (0,), usmUserSpinLock.syntax.clone(0))
+__usmUserSpinLock = MibScalarInstance(
+    usmUserSpinLock.name, (0,), usmUserSpinLock.syntax.clone(0)
+)
 
 mibBuilder.exportSymbols(
     "__SNMP-USER-BASED-SM-MIB",
