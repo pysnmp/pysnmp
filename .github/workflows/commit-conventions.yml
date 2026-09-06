@@ -32,9 +32,9 @@ jobs:
           # The default checkout is a single commit and the range below spans
           # the whole pull request, so its history has to be present.
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24"
       # commitlint.config.mjs sits at the repository root, and the preset it
       # extends is resolved from there -- hence an install into the workspace
       # rather than a bare npx, which would resolve from a cache directory and

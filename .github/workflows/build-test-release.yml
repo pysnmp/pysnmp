@@ -31,7 +31,17 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
-      - uses: pre-commit/action@v3.0.1
+      # pre-commit/action is archived at v3.0.1 and pins actions/cache@v4
+      # inside itself, which runs on the deprecated Node 20 runtime. Its steps
+      # are short enough to keep here instead, on a cache action that is not.
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Run pre-commit
+        run: |
+          python -m pip install pre-commit
+          pre-commit run --show-diff-on-failure --color=always --all-files
 
   lint:
     name: lint
@@ -216,18 +226,30 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          # semantic-release 25 needs ^22.14, and @semantic-release/changelog
+          # and /git need ^22.22.2 || >=24.15. Pin the major here rather than
+          # inherit whatever node the runner image happens to ship.
+          node-version: "24"
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v6
         id: semantic   # Need an `id` for output variables
         with:
-          semantic_version: 24
+          semantic_version: 25
           dry_run: ${{ env.DRY }}
+          # Pinned to majors: the action npm-installs these fresh on every
+          # run, so an unpinned name is whatever was published that morning.
+          # The preset stays on 9 deliberately -- 10 renders through
+          # conventional-changelog-writer@9, and semantic-release 25 still
+          # carries writer 8, which fails at note-generation time.
           extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/exec
-            @semantic-release/git
-            @google/semantic-release-replace-plugin
-            conventional-changelog-conventionalcommits@8.0.0
+            @semantic-release/changelog@7
+            @semantic-release/exec@7
+            @semantic-release/git@11
+            @google/semantic-release-replace-plugin@1
+            conventional-changelog-conventionalcommits@9
         env:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
 
