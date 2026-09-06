@@ -11,7 +11,13 @@
     [
       "@semantic-release/commit-analyzer",
       {
-        "preset": "conventionalcommits"
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "breaking": true, "release": "major" },
+          { "scope": "deps-dev", "release": false },
+          { "type": "feat", "scope": "deps", "release": "minor" },
+          { "scope": "deps", "release": "patch" }
+        ]
       }
     ],
     [
