@@ -44,6 +44,9 @@ class UdpTransportAddress(tuple, AbstractTransportAddress):
 class UdpAsyncioTransport(DgramAsyncioProtocol):
     sockFamily = socket.AF_INET
     addressType = UdpTransportAddress
+    # Not a bind: this is the address getsockname() reports for a socket that
+    # was never bound, so S104 does not apply.
+    unboundLocalAddress = ("0.0.0.0", 0)  # noqa: S104
 
 
 UdpTransport = UdpAsyncioTransport

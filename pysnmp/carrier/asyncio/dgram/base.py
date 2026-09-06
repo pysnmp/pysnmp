@@ -46,6 +46,14 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     #: without IPv6 -- in which case the transport cannot be opened at all.
     sockFamily: "socket.AddressFamily | None" = None
 
+    #: Local address to report for a socket the platform declines to name.
+    #: An endpoint opened with no local address is left unbound, and there the
+    #: platforms disagree: POSIX answers getsockname() with the family's
+    #: wildcard, Windows fails it and asyncio turns that into a None sockname.
+    #: Concrete transports name their wildcard here so getLocalAddress() gives
+    #: the same answer everywhere; None where the family has no wildcard.
+    unboundLocalAddress: "tuple | str | None" = None
+
     def __init__(self, sock=None, sockMap=None, loop=None):
         self._writeQ = []
         self._lport = None
@@ -156,7 +164,10 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     def getLocalAddress(self):
         if self.transport is None:
             return None
-        return self.transport.get_extra_info("sockname")
+        localAddress = self.transport.get_extra_info("sockname")
+        if localAddress is None:
+            return self.unboundLocalAddress
+        return localAddress
 
     def normalizeAddress(self, transportAddress):
         if not isinstance(transportAddress, self.addressType):

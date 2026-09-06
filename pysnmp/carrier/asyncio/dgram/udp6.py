@@ -18,19 +18,25 @@ class Udp6TransportAddress(tuple, AbstractTransportAddress):
 class Udp6AsyncioTransport(DgramAsyncioProtocol):
     sockFamily = socket.has_ipv6 and socket.AF_INET6 or None
     addressType = Udp6TransportAddress
+    unboundLocalAddress = ("::", 0, 0, 0)
 
     def normalizeAddress(self, transportAddress):
-        if "%" in transportAddress[0]:  # strip zone ID
-            return self.addressType(
-                (
-                    transportAddress[0].split("%")[0],
-                    transportAddress[1],
-                    0,
-                    0,
-                )  # flowinfo
-            )  # scopeid
-        else:
-            return self.addressType((transportAddress[0], transportAddress[1], 0, 0))
+        localAddress = None
+        if isinstance(transportAddress, AbstractTransportAddress):
+            localAddress = transportAddress.getLocalAddress()
+
+        normalizedAddress = self.addressType(
+            (
+                transportAddress[0].split("%")[0],  # strip zone ID
+                transportAddress[1],
+                0,  # flowinfo
+                0,  # scopeid
+            )
+        )
+        if localAddress:
+            normalizedAddress.setLocalAddress(localAddress)
+
+        return DgramAsyncioProtocol.normalizeAddress(self, normalizedAddress)
 
 
 Udp6Transport = Udp6AsyncioTransport
