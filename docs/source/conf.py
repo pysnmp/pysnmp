@@ -29,7 +29,14 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
+    # The changelog is generated as Markdown and rendered from that one file,
+    # rather than transcribed into a second copy that would go stale.
+    "myst_parser",
 ]
+
+# semantic-release writes the changelog with its own title and then one H2 per
+# release, so the page starts a level below where myst expects it to.
+suppress_warnings = ["myst.header"]
 
 # Define substitutions used by autodoc'd pyasn1 docstrings.
 rst_prolog = """
@@ -308,8 +315,13 @@ texinfo_documents = [
 
 
 # Configuration for Intersphinx
+# Nitpicky mode reports every cross-reference that resolves to nothing, so the
+# projects whose names appear in these docstrings have to be resolvable. Python
+# was pinned at 3.4 here, seven releases below the 3.10 this package requires.
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.4/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "pyasn1": ("https://pyasn1.readthedocs.io/en/latest/", None),
+    "pysmi": ("https://www.pysnmp.com/pysmi/", None),
 }
 
 # this merges constructor docstring with class docstring

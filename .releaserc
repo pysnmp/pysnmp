@@ -4,8 +4,7 @@
     "main",
     {
       "name": "next",
-      "prerelease": "rc",
-      "channel": "next"
+      "prerelease": "rc"
     }
   ],
   "plugins": [

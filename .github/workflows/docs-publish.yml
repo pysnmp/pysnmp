@@ -1,0 +1,96 @@
+name: Publish-Docs
+
+# Publishes one directory of documentation per release tag to the gh-pages
+# branch, keeping every previously published version in place. The stable
+# and latest aliases and the root redirect are rebuilt on each run from the
+# directories present, so a re-run repairs the site.
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish docs for, e.g. v6.0.0-rc.1
+        required: true
+
+concurrency:
+  group: docs-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+
+      - name: Build docs
+        # The same flags the CI docs job uses, so what is published cannot pass
+        # under looser settings than what gates a pull request. Doctrees go
+        # outside the output tree so the build cache is not published.
+        run: >
+          uv run --locked --group dev
+          sphinx-build -W --keep-going -b html
+          -d "${RUNNER_TEMP}/doctrees" docs/source docs/build
+
+      - name: Check out gh-pages
+        run: |
+          git fetch origin gh-pages --depth=1 || true
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git worktree add ../site origin/gh-pages
+          else
+            git worktree add --detach ../site
+            git -C ../site checkout --orphan gh-pages
+            git -C ../site rm -rq --cached . || true
+            find ../site -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          fi
+
+      - name: Stage this version
+        run: |
+          rm -rf "../site/${{ steps.tag.outputs.version }}"
+          mkdir -p "../site/${{ steps.tag.outputs.version }}"
+          cp -R docs/build/. "../site/${{ steps.tag.outputs.version }}/"
+          rm -rf "../site/${{ steps.tag.outputs.version }}/.doctrees" \
+                 "../site/${{ steps.tag.outputs.version }}/.buildinfo"
+
+      - name: Rebuild aliases and version index
+        # The repository name titles the redirect pages, which is the only thing
+        # in this script that differs between the three repositories sharing it.
+        run: >
+          uv run --no-project --with packaging
+          .github/workflows/docs-publish.py ../site ${{ github.event.repository.name }}
+
+      - name: Commit and push
+        working-directory: ../site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "documentation unchanged"
+            exit 0
+          fi
+          git commit -m "docs: publish ${{ steps.tag.outputs.tag }}"
+          git push origin gh-pages

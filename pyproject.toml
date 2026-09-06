@@ -36,9 +36,14 @@ dependencies = [
 [project.urls]
 repository = "https://github.com/pysnmp/pysnmp"
 
-[project.optional-dependencies]
+# PEP 735 rather than an extra: these are needed to develop and test the
+# package, never to install it, so they belong in a group that no published
+# metadata advertises. pyasn1 and pysmi already declare theirs this way, which
+# is what lets all three run `uv run --locked --group dev` unchanged.
+[dependency-groups]
 dev = [
     "sphinx >=7.0.0,<9.0.0",
+    "myst-parser >=4.0.0,<5.0.0",
     "pytest >=9.0.3,<10.0.0",
     "coverage[toml] >=7.2.0,<8.0.0",
     "mypy >=1.15.0,<3.0.0",
