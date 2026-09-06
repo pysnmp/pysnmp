@@ -8,8 +8,12 @@ name: Commit conventions
 # Only pull requests are checked. Both long-lived branches move by merge, so
 # every commit that reaches them passes through here first.
 on:
+  # `edited` as well as the defaults: retargeting a pull request changes the
+  # base, and so changes the range of commits this lints. Without it a check
+  # that ran against the old base stays on the pull request as its verdict.
   pull_request:
     branches: [main, next]
+    types: [opened, synchronize, reopened, edited]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,7 +34,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       # commitlint.config.mjs sits at the repository root, and the preset it
       # extends is resolved from there -- hence an install into the workspace
       # rather than a bare npx, which would resolve from a cache directory and
