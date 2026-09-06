@@ -157,7 +157,9 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
   ```python
   from pysnmp import debug
 
-  debug.logger & debug.flagMP and debug.logger("prepareOutgoingMessage: new msgID %s" % msgID)
+  debug.logger & debug.flagMP and debug.logger(
+      "prepareOutgoingMessage: new msgID %s" % msgID
+  )
   ```
 - The available flags are defined in `pysnmp/debug.py`: `flagIO`, `flagDsp`, `flagMP`, `flagSM`, `flagBld`, `flagMIB`, `flagIns`, `flagACL`, `flagPrx`, `flagApp`, `flagAll`. Choose the flag matching the subsystem you're working in (`flagMP` for message processing, `flagSM` for security, `flagMIB`/`flagBld`/`flagIns` for SMI, `flagACL` for access control, `flagIO` for transport, `flagApp` for SNMP applications).
 - The `debug.logger & flag and debug.logger(...)` short-circuit pattern is mandatory — it avoids formatting cost when the flag is disabled.

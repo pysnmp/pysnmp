@@ -46,7 +46,12 @@ def _single(
             if varBinds:
                 result = loop.run_until_complete(
                     command(
-                        snmpEngine, authData, transportTarget, contextData, *varBinds, **options
+                        snmpEngine,
+                        authData,
+                        transportTarget,
+                        contextData,
+                        *varBinds,
+                        **options,
                     )
                 )
             else:
@@ -68,7 +73,13 @@ def getCmd(
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
     return _single(
-        cmdgen.getCmd, snmpEngine, authData, transportTarget, contextData, varBinds, options
+        cmdgen.getCmd,
+        snmpEngine,
+        authData,
+        transportTarget,
+        contextData,
+        varBinds,
+        options,
     )
 
 
@@ -81,7 +92,13 @@ def setCmd(
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
     return _single(
-        cmdgen.setCmd, snmpEngine, authData, transportTarget, contextData, varBinds, options
+        cmdgen.setCmd,
+        snmpEngine,
+        authData,
+        transportTarget,
+        contextData,
+        varBinds,
+        options,
     )
 
 
@@ -106,17 +123,21 @@ def nextCmd(
         asyncio.set_event_loop(loop)
         while varBinds:
             previousVarBinds = varBinds
-            errorIndication, errorStatus, errorIndex, varBindTable = loop.run_until_complete(
-                cmdgen.nextCmd(
-                    snmpEngine,
-                    authData,
-                    transportTarget,
-                    contextData,
-                    *[(x[0], Null("")) for x in varBinds],
-                    **options,
+            errorIndication, errorStatus, errorIndex, varBindTable = (
+                loop.run_until_complete(
+                    cmdgen.nextCmd(
+                        snmpEngine,
+                        authData,
+                        transportTarget,
+                        contextData,
+                        *[(x[0], Null("")) for x in varBinds],
+                        **options,
+                    )
                 )
             )
-            if ignoreNonIncreasingOid and isinstance(errorIndication, errind.OidNotIncreasing):
+            if ignoreNonIncreasingOid and isinstance(
+                errorIndication, errind.OidNotIncreasing
+            ):
                 errorIndication = None
             if errorIndication or errorStatus:
                 yield errorIndication, errorStatus, errorIndex, varBinds
@@ -139,8 +160,12 @@ def nextCmd(
             nextVarBinds = yield errorIndication, errorStatus, errorIndex, varBinds
             if nextVarBinds:
                 varBinds = nextVarBinds
-                initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
-            if (maxRows and totalRows >= maxRows) or (maxCalls and totalCalls >= maxCalls):
+                initialVars = [
+                    x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)
+                ]
+            if (maxRows and totalRows >= maxRows) or (
+                maxCalls and totalCalls >= maxCalls
+            ):
                 return
     finally:
         _close(loop, snmpEngine)
@@ -170,20 +195,26 @@ def bulkCmd(
     try:
         asyncio.set_event_loop(loop)
         while varBinds:
-            repetitions = min(maxRepetitions, maxRows - totalRows) if maxRows else maxRepetitions
-            errorIndication, errorStatus, errorIndex, varBindTable = loop.run_until_complete(
-                cmdgen.bulkCmd(
-                    snmpEngine,
-                    authData,
-                    transportTarget,
-                    contextData,
-                    nonRepeaters,
-                    repetitions,
-                    *[(x[0], Null("")) for x in varBinds],
-                    **options,
+            repetitions = (
+                min(maxRepetitions, maxRows - totalRows) if maxRows else maxRepetitions
+            )
+            errorIndication, errorStatus, errorIndex, varBindTable = (
+                loop.run_until_complete(
+                    cmdgen.bulkCmd(
+                        snmpEngine,
+                        authData,
+                        transportTarget,
+                        contextData,
+                        nonRepeaters,
+                        repetitions,
+                        *[(x[0], Null("")) for x in varBinds],
+                        **options,
+                    )
                 )
             )
-            if ignoreNonIncreasingOid and isinstance(errorIndication, errind.OidNotIncreasing):
+            if ignoreNonIncreasingOid and isinstance(
+                errorIndication, errind.OidNotIncreasing
+            ):
                 errorIndication = None
             if errorIndication or errorStatus:
                 yield (
@@ -201,7 +232,10 @@ def bulkCmd(
                     if (
                         nullVarBinds[column]
                         or isinstance(value, Null)
-                        or (not lexicographicMode and not initialVars[column].isPrefixOf(name))
+                        or (
+                            not lexicographicMode
+                            and not initialVars[column].isPrefixOf(name)
+                        )
                     ):
                         rowVarBinds[column] = previousVarBinds[column][0], endOfMibView
                         nullVarBinds[column] = True
@@ -213,10 +247,17 @@ def bulkCmd(
             totalRows += len(varBindTable)
             totalCalls += 1
             for rowVarBinds in varBindTable:
-                nextVarBinds = yield errorIndication, errorStatus, errorIndex, rowVarBinds
+                nextVarBinds = yield (
+                    errorIndication,
+                    errorStatus,
+                    errorIndex,
+                    rowVarBinds,
+                )
                 if nextVarBinds:
                     varBinds = nextVarBinds
-                    initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
+                    initialVars = [
+                        x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)
+                    ]
                     nullVarBinds = [False] * len(initialVars)
                     break
             else:

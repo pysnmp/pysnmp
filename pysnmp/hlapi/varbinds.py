@@ -33,16 +33,21 @@ class CommandGeneratorVarBinds(AbstractVarBinds):
                 varBind = ObjectType(*varBind)
             elif isinstance(varBind[0][0], tuple):  # legacy
                 varBind = ObjectType(
-                    ObjectIdentity(varBind[0][0][0], varBind[0][0][1], *varBind[0][1:]), varBind[1]
+                    ObjectIdentity(varBind[0][0][0], varBind[0][0][1], *varBind[0][1:]),
+                    varBind[1],
                 )
             else:
                 varBind = ObjectType(ObjectIdentity(varBind[0]), varBind[1])
 
-            __varBinds.append(varBind.resolveWithMib(mibViewController, ignoreErrors=False))
+            __varBinds.append(
+                varBind.resolveWithMib(mibViewController, ignoreErrors=False)
+            )
 
         return __varBinds
 
-    def unmakeVarBinds(self, snmpEngine: Any, varBinds: Any, lookupMib: bool = True) -> list[Any]:
+    def unmakeVarBinds(
+        self, snmpEngine: Any, varBinds: Any, lookupMib: bool = True
+    ) -> list[Any]:
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [
@@ -66,10 +71,14 @@ class NotificationOriginatorVarBinds(AbstractVarBinds):
                 varBind = ObjectType(*varBind)
             else:
                 varBind = ObjectType(ObjectIdentity(varBind[0]), varBind[1])
-            __varBinds.append(varBind.resolveWithMib(mibViewController, ignoreErrors=False))
+            __varBinds.append(
+                varBind.resolveWithMib(mibViewController, ignoreErrors=False)
+            )
         return __varBinds
 
-    def unmakeVarBinds(self, snmpEngine: Any, varBinds: Any, lookupMib: bool = False) -> list[Any]:
+    def unmakeVarBinds(
+        self, snmpEngine: Any, varBinds: Any, lookupMib: bool = False
+    ) -> list[Any]:
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [

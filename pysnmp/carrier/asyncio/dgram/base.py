@@ -75,7 +75,9 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 % (transportAddress, debug.hexdump(outgoingMessage))
             )
             try:
-                self.transport.sendto(outgoingMessage, self.normalizeAddress(transportAddress))
+                self.transport.sendto(
+                    outgoingMessage, self.normalizeAddress(transportAddress)
+                )
             except Exception as e:
                 raise error.CarrierError(
                     ";".join(traceback.format_exception(type(e), e, e.__traceback__))
@@ -121,7 +123,9 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         if self._lport is not None:
             self._lport.cancel()
             if not self.loop.is_running():
-                self.loop.run_until_complete(asyncio.gather(self._lport, return_exceptions=True))
+                self.loop.run_until_complete(
+                    asyncio.gather(self._lport, return_exceptions=True)
+                )
             self._lport = None
         if self.transport is not None:
             self.transport.close()
@@ -139,7 +143,9 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             self._writeQ.append((outgoingMessage, transportAddress))
         else:
             try:
-                self.transport.sendto(outgoingMessage, self.normalizeAddress(transportAddress))
+                self.transport.sendto(
+                    outgoingMessage, self.normalizeAddress(transportAddress)
+                )
             except Exception as e:
                 raise error.CarrierError(
                     ";".join(traceback.format_exception(type(e), e, e.__traceback__))
@@ -185,7 +191,9 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         elif self.sockFamily == socket.AF_INET6:
             option = socket.SOL_IPV6, socket.IPV6_TRANSPARENT
         else:
-            raise error.CarrierError("IP_TRANSPARENT is only supported by IP datagram transports")
+            raise error.CarrierError(
+                "IP_TRANSPARENT is only supported by IP datagram transports"
+            )
 
         def configureSocket(sock):
             sock.setsockopt(option[0], option[1], flag)

@@ -166,7 +166,9 @@ class DecryptionError(ErrorIndication):
     pass
 
 
-decryptionError = DecryptionError("Ciphering services not available or ciphertext is broken")
+decryptionError = DecryptionError(
+    "Ciphering services not available or ciphertext is broken"
+)
 
 
 class NoAuthentication(ErrorIndication):
@@ -180,7 +182,9 @@ class AuthenticationError(ErrorIndication):
     pass
 
 
-authenticationError = AuthenticationError("Ciphering services not available or bad parameters")
+authenticationError = AuthenticationError(
+    "Ciphering services not available or bad parameters"
+)
 
 
 class AuthenticationFailure(ErrorIndication):
@@ -194,7 +198,9 @@ class UnsupportedAuthProtocol(ErrorIndication):
     pass
 
 
-unsupportedAuthProtocol = UnsupportedAuthProtocol("Authentication protocol is not supprted")
+unsupportedAuthProtocol = UnsupportedAuthProtocol(
+    "Authentication protocol is not supprted"
+)
 
 
 class UnsupportedPrivProtocol(ErrorIndication):
@@ -232,7 +238,9 @@ class NotInTimeWindow(ErrorIndication):
     pass
 
 
-notInTimeWindow = NotInTimeWindow("SNMP message timing parameters not in windows of trust")
+notInTimeWindow = NotInTimeWindow(
+    "SNMP message timing parameters not in windows of trust"
+)
 
 
 class UnknownUserName(ErrorIndication):

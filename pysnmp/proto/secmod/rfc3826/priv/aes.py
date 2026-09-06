@@ -43,12 +43,16 @@ class Aes(base.AbstractEncryptionService):
         else:
             self._localInt += 1
 
-        return self.__getDecryptionKey(privKey, snmpEngineBoots, snmpEngineTime, salt) + (
-            univ.OctetString(salt).asOctets(),
-        )
+        return self.__getDecryptionKey(
+            privKey, snmpEngineBoots, snmpEngineTime, salt
+        ) + (univ.OctetString(salt).asOctets(),)
 
     def __getDecryptionKey(self, privKey, snmpEngineBoots, snmpEngineTime, salt):
-        snmpEngineBoots, snmpEngineTime, salt = (int(snmpEngineBoots), int(snmpEngineTime), salt)
+        snmpEngineBoots, snmpEngineTime, salt = (
+            int(snmpEngineBoots),
+            int(snmpEngineTime),
+            salt,
+        )
 
         iv = [
             snmpEngineBoots >> 24 & 0xFF,
@@ -95,14 +99,17 @@ class Aes(base.AbstractEncryptionService):
         snmpEngineBoots, snmpEngineTime, salt = privParameters
 
         # 3.3.1.1
-        aesKey, iv, salt = self.__getEncryptionKey(encryptKey, snmpEngineBoots, snmpEngineTime)
+        aesKey, iv, salt = self.__getEncryptionKey(
+            encryptKey, snmpEngineBoots, snmpEngineTime
+        )
 
         # 3.3.1.3
         aesObj = AES.new(aesKey, AES.MODE_CFB, iv, segment_size=128)
 
         # PyCrypto seems to require padding
         dataToEncrypt = (
-            dataToEncrypt + univ.OctetString((0,) * (16 - len(dataToEncrypt) % 16)).asOctets()
+            dataToEncrypt
+            + univ.OctetString((0,) * (16 - len(dataToEncrypt) % 16)).asOctets()
         )
 
         ciphertext = aesObj.encrypt(dataToEncrypt)
@@ -123,13 +130,16 @@ class Aes(base.AbstractEncryptionService):
             raise error.StatusInformation(errorIndication=errind.decryptionError)
 
         # 3.3.2.3
-        aesKey, iv = self.__getDecryptionKey(decryptKey, snmpEngineBoots, snmpEngineTime, salt)
+        aesKey, iv = self.__getDecryptionKey(
+            decryptKey, snmpEngineBoots, snmpEngineTime, salt
+        )
 
         aesObj = AES.new(aesKey, AES.MODE_CFB, iv, segment_size=128)
 
         # PyCrypto seems to require padding
         encryptedData = (
-            encryptedData + univ.OctetString((0,) * (16 - len(encryptedData) % 16)).asOctets()
+            encryptedData
+            + univ.OctetString((0,) * (16 - len(encryptedData) % 16)).asOctets()
         )
 
         # 3.3.2.4-6

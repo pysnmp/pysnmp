@@ -23,7 +23,9 @@ def hashPassphrase(passphrase, hashFunc):
             hasher.update(ringBuffer[mark:e])
             mark = e
         else:
-            hasher.update(ringBuffer[mark:ringBufferLen] + ringBuffer[0 : e - ringBufferLen])
+            hasher.update(
+                ringBuffer[mark:ringBufferLen] + ringBuffer[0 : e - ringBufferLen]
+            )
             mark = e - ringBufferLen
         count += 1
     digest = hasher.digest()

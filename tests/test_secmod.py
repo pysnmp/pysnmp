@@ -36,7 +36,9 @@ class TestAbstractSecurityModel:
     def test_generate_response_raises(self):
         sm = AbstractSecurityModel()
         with pytest.raises(error.ProtocolError):
-            sm.generateResponseMsg(None, None, None, None, None, None, None, None, None, None)
+            sm.generateResponseMsg(
+                None, None, None, None, None, None, None, None, None, None
+            )
 
     def test_release_state_information(self):
         sm = AbstractSecurityModel()
@@ -105,7 +107,8 @@ class TestHmacMd5:
     def test_authenticate_outgoing_msg(self):
         svc = hmacmd5.HmacMd5()
         authKey = svc.localizeKey(
-            svc.hashPassphrase("testpassphrase"), univ.OctetString(hexValue="0102030405")
+            svc.hashPassphrase("testpassphrase"),
+            univ.OctetString(hexValue="0102030405"),
         )
         # Build a message with 12 zero bytes as digest placeholder
         wholeMsg = b"\x30\x00" + b"\x00" * 12 + b"\x04\x06public"
@@ -117,7 +120,8 @@ class TestHmacMd5:
     def test_authenticate_incoming_msg(self):
         svc = hmacmd5.HmacMd5()
         authKey = svc.localizeKey(
-            svc.hashPassphrase("testpassphrase"), univ.OctetString(hexValue="0102030405")
+            svc.hashPassphrase("testpassphrase"),
+            univ.OctetString(hexValue="0102030405"),
         )
         wholeMsg = b"\x30\x00" + b"\x00" * 12 + b"\x04\x06public"
         authenticated = svc.authenticateOutgoingMsg(authKey, wholeMsg)
@@ -159,7 +163,8 @@ class TestHmacSha:
     def test_authenticate_outgoing_msg(self):
         svc = hmacsha.HmacSha()
         authKey = svc.localizeKey(
-            svc.hashPassphrase("testpassphrase"), univ.OctetString(hexValue="0102030405")
+            svc.hashPassphrase("testpassphrase"),
+            univ.OctetString(hexValue="0102030405"),
         )
         wholeMsg = b"\x30\x00" + b"\x00" * 12 + b"\x04\x06public"
         result = svc.authenticateOutgoingMsg(authKey, wholeMsg)
@@ -218,7 +223,8 @@ class TestHmacSha2:
     def test_sha224_authenticate_outgoing(self):
         svc = hmacsha2.HmacSha2(hmacsha2.HmacSha2.sha224ServiceID)
         authKey = svc.localizeKey(
-            svc.hashPassphrase("testpassphrase"), univ.OctetString(hexValue="0102030405")
+            svc.hashPassphrase("testpassphrase"),
+            univ.OctetString(hexValue="0102030405"),
         )
         placeholder = b"\x00" * 16
         wholeMsg = b"\x30\x00" + placeholder + b"\x04\x06public"
@@ -380,12 +386,16 @@ class TestLocalkey:
 
     def test_localize_key_md5(self):
         hashed = localkey.hashPassphraseMD5("testpassphrase")
-        result = localkey.localizeKeyMD5(hashed, univ.OctetString(hexValue="0102030405"))
+        result = localkey.localizeKeyMD5(
+            hashed, univ.OctetString(hexValue="0102030405")
+        )
         assert len(result) == 16
 
     def test_localize_key_sha(self):
         hashed = localkey.hashPassphraseSHA("testpassphrase")
-        result = localkey.localizeKeySHA(hashed, univ.OctetString(hexValue="0102030405"))
+        result = localkey.localizeKeySHA(
+            hashed, univ.OctetString(hexValue="0102030405")
+        )
         assert len(result) == 20
 
 
@@ -443,7 +453,19 @@ class TestAbstractMessageProcessingModel:
         mp = AbstractMessageProcessingModel()
         with pytest.raises(error.ProtocolError):
             mp.prepareOutgoingMessage(
-                None, None, None, None, None, None, None, None, None, None, None, None, None
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
             )
 
     def test_prepare_response_raises(self):
@@ -600,7 +622,9 @@ class TestAuthPrivMatrixRoundTrip:
             (snmp_engine_boots, snmp_engine_time, priv_params),
             encrypted,
         )
-        assert decrypted[: len(data)] == data, f"{auth_name}+{priv_name}: round-trip mismatch"
+        assert decrypted[: len(data)] == data, (
+            f"{auth_name}+{priv_name}: round-trip mismatch"
+        )
 
 
 class TestAuthProtocolsRoundTrip:
@@ -637,7 +661,9 @@ class TestVoidVacm:
 
     def test_is_access_allowed(self):
         vacm = VoidVacm()
-        result = vacm.isAccessAllowed(None, 0, "user", "noAuthNoPriv", "read", "", (1, 3, 6))
+        result = vacm.isAccessAllowed(
+            None, 0, "user", "noAuthNoPriv", "read", "", (1, 3, 6)
+        )
         # Void VACM returns a StatusInformation with accessAllowed
         assert result is not None
 
@@ -648,7 +674,9 @@ class TestRfc3415VacmBasics:
 
     def test_add_access_entry(self):
         vacm = Vacm()
-        vacm._addAccessEntry("group1", "context1", 1, 1, 1, "readView", "writeView", "notifyView")
+        vacm._addAccessEntry(
+            "group1", "context1", 1, 1, 1, "readView", "writeView", "notifyView"
+        )
         assert "group1" in vacm._accessMap
 
     def test_get_family_view_name_no_group(self):
@@ -861,7 +889,10 @@ class TestRfc3415Vacm:
             notifyView="notifyView",
         )
 
-        assert vacm._getFamilyViewName("group1", "ctx-value", 3, 1, "read") == "longPrefixView"
+        assert (
+            vacm._getFamilyViewName("group1", "ctx-value", 3, 1, "read")
+            == "longPrefixView"
+        )
 
     def test_get_family_view_name_uses_highest_permitted_security_level(self):
         vacm = Vacm()
@@ -886,8 +917,12 @@ class TestRfc3415Vacm:
             notifyView="notifyView",
         )
 
-        assert vacm._getFamilyViewName("group1", "ctx-value", 3, 3, "read") == "authView"
-        assert vacm._getFamilyViewName("group1", "ctx-value", 3, 1, "read") == "noAuthView"
+        assert (
+            vacm._getFamilyViewName("group1", "ctx-value", 3, 3, "read") == "authView"
+        )
+        assert (
+            vacm._getFamilyViewName("group1", "ctx-value", 3, 1, "read") == "noAuthView"
+        )
 
     def test_get_family_view_name_ignores_unrelated_security_models(self):
         vacm = Vacm()
@@ -972,12 +1007,16 @@ class TestVacmSecurityExclusions:
         usmOid = (1, 3, 6, 1, 6, 3, 15, 1, 1, 0)
 
         assert (
-            vacm.isAccessAllowed(snmpEngine, 3, securityName, 3, "read", contextName, sysDescrOid)
+            vacm.isAccessAllowed(
+                snmpEngine, 3, securityName, 3, "read", contextName, sysDescrOid
+            )
             is None
         )
 
         with pytest.raises(error.StatusInformation) as exc:
-            vacm.isAccessAllowed(snmpEngine, 3, securityName, 3, "read", contextName, usmOid)
+            vacm.isAccessAllowed(
+                snmpEngine, 3, securityName, 3, "read", contextName, usmOid
+            )
         assert exc.value["errorIndication"] is errind.notInView
 
     def test_initial_vacm_excludes_community_mib(self):
@@ -993,7 +1032,13 @@ class TestVacmSecurityExclusions:
         communityOid = (1, 3, 6, 1, 6, 3, 18, 1, 1, 0)
         with pytest.raises(error.StatusInformation) as exc:
             vacm.isAccessAllowed(
-                snmpEngine, 3, OctetString("initial"), 3, "read", OctetString(""), communityOid
+                snmpEngine,
+                3,
+                OctetString("initial"),
+                3,
+                "read",
+                OctetString(""),
+                communityOid,
             )
         assert exc.value["errorIndication"] is errind.notInView
 

@@ -81,7 +81,9 @@ class TextualConvention:
             or self.__unsigned32.isSuperTypeOf(self, matchConstraints=False)
             or self.__timeticks.isSuperTypeOf(self, matchConstraints=False)
         ):
-            displayHintType, decimalPrecision = (tuple(self.displayHint.split("-")) + (0,))[:2]
+            displayHintType, decimalPrecision = (
+                tuple(self.displayHint.split("-")) + (0,)
+            )[:2]
             if displayHintType == "x":
                 return "0x%x" % value
             elif displayHintType == "d":
@@ -105,7 +107,9 @@ class TextualConvention:
                 raise SmiError(
                     f'Unsupported numeric type spec "{displayHintType}" at {self.__class__.__name__}'
                 )
-        elif self.displayHint and self.__octetString.isSuperTypeOf(self, matchConstraints=False):
+        elif self.displayHint and self.__octetString.isSuperTypeOf(
+            self, matchConstraints=False
+        ):
             outputValue = ""
             runningValue = OctetString(value).asOctets()
             displayHint = self.displayHint
@@ -144,7 +148,11 @@ class TextualConvention:
                 displayHint = displayHint[1:]
 
                 # 4
-                if displayHint and displayHint[0] not in string.digits and displayHint[0] != "*":
+                if (
+                    displayHint
+                    and displayHint[0] not in string.digits
+                    and displayHint[0] != "*"
+                ):
                     displaySep = displayHint[0]
                     displayHint = displayHint[1:]
                 else:
@@ -161,9 +169,13 @@ class TextualConvention:
                 while repeatCount:
                     repeatCount -= 1
                     if displayFormat == "a":
-                        outputValue += runningValue[:octetLength].decode("ascii", "ignore")
+                        outputValue += runningValue[:octetLength].decode(
+                            "ascii", "ignore"
+                        )
                     elif displayFormat == "t":
-                        outputValue += runningValue[:octetLength].decode("utf-8", "ignore")
+                        outputValue += runningValue[:octetLength].decode(
+                            "utf-8", "ignore"
+                        )
                     elif displayFormat in ("x", "d", "o"):
                         number = 0
                         numberString = runningValue[:octetLength]
@@ -176,7 +188,8 @@ class TextualConvention:
                                 numberString = numberString[1:]
                             except Exception as e:
                                 raise SmiError(
-                                    "Display format eval failure: %s: %s" % (numberString, e)
+                                    "Display format eval failure: %s: %s"
+                                    % (numberString, e)
                                 )
                         if displayFormat == "x":
                             outputValue += "%02x" % number
@@ -185,7 +198,9 @@ class TextualConvention:
                         else:
                             outputValue += "%d" % number
                     else:
-                        raise SmiError("Unsupported display format char: %s" % displayFormat)
+                        raise SmiError(
+                            "Unsupported display format char: %s" % displayFormat
+                        )
                     if runningValue and repeatTerminator:
                         outputValue += repeatTerminator
                     runningValue = runningValue[octetLength:]
@@ -233,8 +248,12 @@ class TextualConvention:
 
             value = str(value)
 
-            displayHintType, decimalPrecision = (tuple(self.displayHint.split("-")) + (0,))[:2]
-            if displayHintType == "x" and (value.startswith("0x") or value.startswith("-0x")):
+            displayHintType, decimalPrecision = (
+                tuple(self.displayHint.split("-")) + (0,)
+            )[:2]
+            if displayHintType == "x" and (
+                value.startswith("0x") or value.startswith("-0x")
+            ):
                 try:
                     if value.startswith("-"):
                         return base.prettyIn(self, -int(value[3:], 16))
@@ -244,15 +263,21 @@ class TextualConvention:
                     raise SmiError("integer evaluation error: %s" % e)
             elif displayHintType == "d":
                 try:
-                    return base.prettyIn(self, int(float(value) * 10 ** int(decimalPrecision)))
+                    return base.prettyIn(
+                        self, int(float(value) * 10 ** int(decimalPrecision))
+                    )
                 except Exception as e:
                     raise SmiError("float evaluation error: %s" % e)
-            elif displayHintType == "o" and (value.startswith("0") or value.startswith("-0")):
+            elif displayHintType == "o" and (
+                value.startswith("0") or value.startswith("-0")
+            ):
                 try:
                     return base.prettyIn(self, int(value, 8))
                 except Exception as e:
                     raise SmiError("octal evaluation error: %s" % e)
-            elif displayHintType == "b" and (value.startswith("B") or value.startswith("-B")):
+            elif displayHintType == "b" and (
+                value.startswith("B") or value.startswith("-B")
+            ):
                 negative = value.startswith("-")
                 try:
                     binValue = int(value[2:] if negative else value[1:], 2)
@@ -264,7 +289,9 @@ class TextualConvention:
                     f'Unsupported numeric type spec "{displayHintType}" at {self.__class__.__name__}'
                 )
 
-        elif self.displayHint and self.__octetString.isSuperTypeOf(self, matchConstraints=False):
+        elif self.displayHint and self.__octetString.isSuperTypeOf(
+            self, matchConstraints=False
+        ):
             numBase = {"x": 16, "d": 10, "o": 8}
             numDigits = {
                 "x": string.hexdigits.encode("iso-8859-1"),
@@ -289,7 +316,8 @@ class TextualConvention:
                         if 0 <= zone <= 0xFFFFFFFF:
                             return base.prettyIn(
                                 self,
-                                ipaddress.IPv6Address(address).packed + zone.to_bytes(4, "big"),
+                                ipaddress.IPv6Address(address).packed
+                                + zone.to_bytes(4, "big"),
                             )
                     except (ValueError, OverflowError):
                         pass
@@ -301,7 +329,8 @@ class TextualConvention:
                         if value.startswith("[") and 0 <= port <= 0xFFFF:
                             return base.prettyIn(
                                 self,
-                                ipaddress.IPv6Address(address).packed + port.to_bytes(2, "big"),
+                                ipaddress.IPv6Address(address).packed
+                                + port.to_bytes(2, "big"),
                             )
                     except (ValueError, OverflowError):
                         pass
@@ -338,7 +367,8 @@ class TextualConvention:
                 # 1 this information is totally lost, just fail explicitly
                 if displayHint[0] == "*":
                     raise SmiError(
-                        'Can\'t parse "*" in DISPLAY-HINT (%s)' % self.__class__.__name__
+                        'Can\'t parse "*" in DISPLAY-HINT (%s)'
+                        % self.__class__.__name__
                     )
 
                 # 2 this becomes ambiguous when it comes to rendered value
@@ -364,7 +394,11 @@ class TextualConvention:
                 displayHint = displayHint[1:]
 
                 # 4 this is the lifesaver -- we could use it as an anchor
-                if displayHint and displayHint[0] not in string.digits and displayHint[0] != "*":
+                if (
+                    displayHint
+                    and displayHint[0] not in string.digits
+                    and displayHint[0] != "*"
+                ):
                     displaySep = displayHint[0]
                     displayHint = displayHint[1:]
                 else:
@@ -388,7 +422,9 @@ class TextualConvention:
                     outputValue += runningValue[:octetLength]
                 elif displayFormat in numBase:
                     if displaySep:
-                        guessedOctetLength = runningValue.find(displaySep.encode("iso-8859-1"))
+                        guessedOctetLength = runningValue.find(
+                            displaySep.encode("iso-8859-1")
+                        )
                         if guessedOctetLength == -1:
                             guessedOctetLength = len(runningValue)
                     else:
@@ -423,14 +459,18 @@ class TextualConvention:
 
                     num_as_bytes.reverse()
 
-                    outputValue += bytes(num_as_bytes)  # was octets.ints2octs(num_as_bytes)
+                    outputValue += bytes(
+                        num_as_bytes
+                    )  # was octets.ints2octs(num_as_bytes)
 
                     if displaySep:
                         guessedOctetLength += 1
 
                     octetLength = guessedOctetLength
                 else:
-                    raise SmiError("Unsupported display format char: %s" % displayFormat)
+                    raise SmiError(
+                        "Unsupported display format char: %s" % displayFormat
+                    )
 
                 runningValue = runningValue[octetLength:]
 
@@ -500,9 +540,7 @@ class InstancePointer(TextualConvention, ObjectIdentifier):
 
 
 class VariablePointer(TextualConvention, ObjectIdentifier):
-    description = (
-        "A pointer to a specific object instance. For example, sysContact.0 or ifInOctets.3."
-    )
+    description = "A pointer to a specific object instance. For example, sysContact.0 or ifInOctets.3."
     status = "current"
 
 
@@ -628,7 +666,11 @@ class StorageType(TextualConvention, Integer):
     status = "current"
     subtypeSpec = Integer.subtypeSpec + SingleValueConstraint(1, 2, 3, 4, 5)
     namedValues = NamedValues(
-        ("other", 1), ("volatile", 2), ("nonVolatile", 3), ("permanent", 4), ("readOnly", 5)
+        ("other", 1),
+        ("volatile", 2),
+        ("nonVolatile", 3),
+        ("permanent", 4),
+        ("readOnly", 5),
     )
 
 

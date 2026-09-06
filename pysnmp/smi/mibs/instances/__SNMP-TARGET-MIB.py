@@ -5,8 +5,13 @@
 #
 (MibScalarInstance,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
 
-(snmpTargetSpinLock, snmpUnavailableContexts, snmpUnknownContexts) = mibBuilder.importSymbols(
-    "SNMP-TARGET-MIB", "snmpTargetSpinLock", "snmpUnavailableContexts", "snmpUnknownContexts"
+(snmpTargetSpinLock, snmpUnavailableContexts, snmpUnknownContexts) = (
+    mibBuilder.importSymbols(
+        "SNMP-TARGET-MIB",
+        "snmpTargetSpinLock",
+        "snmpUnavailableContexts",
+        "snmpUnknownContexts",
+    )
 )
 
 __snmpTargetSpinLock = MibScalarInstance(

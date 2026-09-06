@@ -207,7 +207,9 @@ class TestMibBuilder:
         assert sysDescr[0].name == (1, 3, 6, 1, 2, 1, 1, 1)
 
     def test_import_multiple_symbols(self, mib_builder):
-        result = mib_builder.importSymbols("SNMPv2-MIB", "sysDescr", "sysObjectID", "sysUpTime")
+        result = mib_builder.importSymbols(
+            "SNMPv2-MIB", "sysDescr", "sysObjectID", "sysUpTime"
+        )
         assert len(result) == 3
 
     def test_load_multiple_modules(self, mib_builder):
@@ -246,7 +248,9 @@ class TestMibViewController:
             pass
 
     def test_get_node_name_by_oid(self, mib_view_controller):
-        oid, label, suffix = mib_view_controller.getNodeNameByOid((1, 3, 6, 1, 2, 1, 1, 1, 0))
+        oid, label, suffix = mib_view_controller.getNodeNameByOid(
+            (1, 3, 6, 1, 2, 1, 1, 1, 0)
+        )
         assert oid is not None
 
     def test_get_node_name_by_oid_unknown(self, mib_view_controller):
@@ -312,7 +316,9 @@ class TestObjectIdentity:
     def test_get_first_by_node_type_scalar(self, mib_view_controller):
         """getFirstNodeName with nodeType='scalar' returns only scalar nodes."""
         mib_view_controller.mibBuilder.loadModules("SNMPv2-MIB")
-        oid, label, suffix = mib_view_controller.getFirstNodeName("SNMPv2-MIB", "scalar")
+        oid, label, suffix = mib_view_controller.getFirstNodeName(
+            "SNMPv2-MIB", "scalar"
+        )
         symName = label[-1]
         symObj = mib_view_controller.mibBuilder.mibSymbols["SNMPv2-MIB"][symName]
         assert symObj.__class__.__name__ == "MibScalar"
@@ -346,7 +352,9 @@ class TestObjectIdentity:
             customScalar=CustomMibScalar((1, 3, 6, 1, 4, 1, 20408, 1), Integer(0)),
         )
 
-        oid, label, suffix = mib_view_controller.getFirstNodeName("TEST-CUSTOM-SMI", "scalar")
+        oid, label, suffix = mib_view_controller.getFirstNodeName(
+            "TEST-CUSTOM-SMI", "scalar"
+        )
         assert oid == (1, 3, 6, 1, 4, 1, 20408, 1)
         assert label[-1] == "customScalar"
 
@@ -377,7 +385,9 @@ class TestObjectType:
         assert ot is not None
 
     def test_resolve_with_mib(self, mib_view_controller):
-        ot = ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0), OctetString("test"))
+        ot = ObjectType(
+            ObjectIdentity("SNMPv2-MIB", "sysDescr", 0), OctetString("test")
+        )
         ot.resolveWithMib(mib_view_controller)
         assert ot.isFullyResolved()
 
@@ -395,7 +405,9 @@ class TestObjectType:
             ot.getUnits()
 
     def test_get_units_no_units(self, mib_view_controller):
-        ot = ObjectType(ObjectIdentity("SNMPv2-MIB", "sysDescr", 0), OctetString("test"))
+        ot = ObjectType(
+            ObjectIdentity("SNMPv2-MIB", "sysDescr", 0), OctetString("test")
+        )
         ot.resolveWithMib(mib_view_controller)
         assert ot.getUnits() == ""
 
@@ -464,7 +476,10 @@ class TestObjectTypeRowPointerValues:
             ObjectIdentifier(self.DECODABLE),
         )
         ot.resolveWithMib(usm_view, ignoreErrors=False)
-        assert ot[1].prettyPrint() == 'SNMP-USER-BASED-SM-MIB::usmUserStatus."0x8000000001"."abc"'
+        assert (
+            ot[1].prettyPrint()
+            == 'SNMP-USER-BASED-SM-MIB::usmUserStatus."0x8000000001"."abc"'
+        )
 
 
 class TestBundledMibs:
@@ -513,7 +528,9 @@ class TestBundledMibs:
 
     def test_snmp_framework_mib_symbols(self, mib_builder):
         mib_builder.loadModules("SNMP-FRAMEWORK-MIB")
-        (snmpEngineID,) = mib_builder.importSymbols("SNMP-FRAMEWORK-MIB", "snmpEngineID")
+        (snmpEngineID,) = mib_builder.importSymbols(
+            "SNMP-FRAMEWORK-MIB", "snmpEngineID"
+        )
         assert snmpEngineID is not None
 
     def test_snmp_target_mib_symbols(self, mib_builder):
@@ -644,8 +661,12 @@ def _build_optional_row(optional):
 
     baseOid = (1, 3, 6, 1, 4, 1, 20408, 999, 1)
     row = MibTableRow(baseOid).setIndexNames((0, "TEST-OPTIONAL-MIB", "testIndex"))
-    testIndex = MibTableColumn(baseOid + (1,), Integer32()).setMaxAccess("not-accessible")
-    optionalValue = MibTableColumn(baseOid + (2,), Integer32()).setMaxAccess("read-create")
+    testIndex = MibTableColumn(baseOid + (1,), Integer32()).setMaxAccess(
+        "not-accessible"
+    )
+    optionalValue = MibTableColumn(baseOid + (2,), Integer32()).setMaxAccess(
+        "read-create"
+    )
     rowStatus = MibTableColumn(baseOid + (3,), Integer32(1)).setMaxAccess("read-create")
 
     if optional:
@@ -653,7 +674,9 @@ def _build_optional_row(optional):
 
     suffix = (1,)
     testIndex.registerSubtrees(MibScalarInstance(testIndex.name, suffix, Integer32(1)))
-    optionalValue.registerSubtrees(MibScalarInstance(optionalValue.name, suffix, Integer32()))
+    optionalValue.registerSubtrees(
+        MibScalarInstance(optionalValue.name, suffix, Integer32())
+    )
     rowStatus.registerSubtrees(MibScalarInstance(rowStatus.name, suffix, Integer32(1)))
     row.registerSubtrees(testIndex, optionalValue, rowStatus)
 
@@ -727,7 +750,10 @@ class TestTableCellApi:
         expected = (1, 3, 6, 1, 2, 1, 1, 9, 1, 2, 1)
 
         assert mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", 2, 1) == expected
-        assert mibView.resolve_cell_oid("SNMPv2-MIB", "sysOREntry", "sysORID", 1) == expected
+        assert (
+            mibView.resolve_cell_oid("SNMPv2-MIB", "sysOREntry", "sysORID", 1)
+            == expected
+        )
 
     def test_rejects_unknown_column(self, table_view):
         _, mibView = table_view
@@ -749,7 +775,9 @@ class TestTableCellApi:
         mibBuilder, _ = table_view
         (row,) = mibBuilder.importSymbols("SNMPv2-MIB", "sysOREntry")
 
-        assert row.getRowOids(1) == tuple(row.name + (columnId, 1) for columnId in (1, 2, 3, 4))
+        assert row.getRowOids(1) == tuple(
+            row.name + (columnId, 1) for columnId in (1, 2, 3, 4)
+        )
         assert row.get_row_oids(1) == row.getRowOids(1)
 
     def test_decodes_cell_indices(self, table_view):
@@ -861,7 +889,9 @@ class TestTextualConventionPrettyIn:
     @pytest.fixture
     def subscriber_label(self, mib_builder):
         """CISCO-SUBSCRIBER-IDENTITY-TC-MIB's SubscriberLabel, in miniature."""
-        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TextualConvention,) = mib_builder.importSymbols(
+            "SNMPv2-TC", "TextualConvention"
+        )
         (Unsigned32,) = mib_builder.importSymbols("SNMPv2-SMI", "Unsigned32")
 
         class SubscriberLabel(TextualConvention, Unsigned32):
@@ -899,7 +929,9 @@ class TestTextualConventionPrettyIn:
     def test_binary_hint_accumulates_digits(self, mib_builder):
         """The "b" branch shifted by each digit instead of by one, so it
         always evaluated to zero, and dropped the sign it had computed."""
-        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TextualConvention,) = mib_builder.importSymbols(
+            "SNMPv2-TC", "TextualConvention"
+        )
 
         class BinaryTC(TextualConvention, Integer32):
             displayHint = "b"
@@ -911,7 +943,9 @@ class TestTextualConventionPrettyIn:
     def test_enumerated_integer_ignores_display_hint(self, mib_builder):
         """RFC 2579 forbids DISPLAY-HINT on an enumerated INTEGER. prettyOut
         already ignored the hint for one; prettyIn did the opposite."""
-        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TextualConvention,) = mib_builder.importSymbols(
+            "SNMPv2-TC", "TextualConvention"
+        )
 
         class EnumTC(TextualConvention, Integer32):
             displayHint = "x"
@@ -934,7 +968,10 @@ class TestTransportAddressPrettyIn:
     OCTETS = b"\x01\x02\x03\x04\x00\xa1"
 
     @pytest.fixture(
-        params=[("SNMPv2-TM", "SnmpUDPAddress"), ("TRANSPORT-ADDRESS-MIB", "TransportAddressIPv4")]
+        params=[
+            ("SNMPv2-TM", "SnmpUDPAddress"),
+            ("TRANSPORT-ADDRESS-MIB", "TransportAddressIPv4"),
+        ]
     )
     def address_type(self, request, mib_builder):
         (cls,) = mib_builder.importSymbols(*request.param)
@@ -957,18 +994,24 @@ class TestTransportAddressPrettyIn:
 
 class TestTransportAddressIPv6PrettyIn:
     def test_accepts_bracketed_ipv6_text(self, mib_builder):
-        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TextualConvention,) = mib_builder.importSymbols(
+            "SNMPv2-TC", "TextualConvention"
+        )
         (TransportAddressIPv6,) = mib_builder.importSymbols(
             "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
         )
 
         expected = b"\x00" * 15 + b"\x01\x00\xa1"
 
-        assert TextualConvention.prettyIn(TransportAddressIPv6(), "[::1]:161") == expected
+        assert (
+            TextualConvention.prettyIn(TransportAddressIPv6(), "[::1]:161") == expected
+        )
         assert TransportAddressIPv6("[::1]:161").asOctets() == expected
 
     def test_round_trips_display_hint_text(self, mib_builder):
-        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TextualConvention,) = mib_builder.importSymbols(
+            "SNMPv2-TC", "TextualConvention"
+        )
         (TransportAddressIPv6,) = mib_builder.importSymbols(
             "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
         )
@@ -980,7 +1023,9 @@ class TestTransportAddressIPv6PrettyIn:
         assert TextualConvention.prettyIn(TransportAddressIPv6(), rendered) == expected
 
     def test_ipv6z_round_trips_display_hint_text(self, mib_builder):
-        (TextualConvention,) = mib_builder.importSymbols("SNMPv2-TC", "TextualConvention")
+        (TextualConvention,) = mib_builder.importSymbols(
+            "SNMPv2-TC", "TextualConvention"
+        )
         (TransportAddressIPv6z,) = mib_builder.importSymbols(
             "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6z"
         )

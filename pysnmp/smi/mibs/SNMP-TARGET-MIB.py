@@ -142,13 +142,16 @@ class SnmpTagList(TextualConvention, OctetString):
             if v in self._delimiters:
                 if inDelim:
                     raise error.SmiError(
-                        "Leading or multiple delimiters not allowed in tag list %r" % value
+                        "Leading or multiple delimiters not allowed in tag list %r"
+                        % value
                     )
                 inDelim = True
             else:
                 inDelim = False
         if value and inDelim:
-            raise error.SmiError("Dangling delimiter not allowed in tag list %r" % value)
+            raise error.SmiError(
+                "Dangling delimiter not allowed in tag list %r" % value
+            )
         return OctetString.prettyIn(self, value)
 
 
@@ -167,9 +170,9 @@ class SnmpTagValue(TextualConvention, OctetString):
         return OctetString.prettyIn(self, value)
 
 
-snmpTargetSpinLock = MibScalar((1, 3, 6, 1, 6, 3, 12, 1, 1), TestAndIncr()).setMaxAccess(
-    "readwrite"
-)
+snmpTargetSpinLock = MibScalar(
+    (1, 3, 6, 1, 6, 3, 12, 1, 1), TestAndIncr()
+).setMaxAccess("readwrite")
 if mibBuilder.loadTexts:
     snmpTargetSpinLock.setStatus("current")
 if mibBuilder.loadTexts:
@@ -204,9 +207,9 @@ if mibBuilder.loadTexts:
     snmpTargetAddrName.setDescription(
         "The locally arbitrary, but unique identifier associated with this snmpTargetAddrEntry."
     )
-snmpTargetAddrTDomain = MibTableColumn((1, 3, 6, 1, 6, 3, 12, 1, 2, 1, 2), TDomain()).setMaxAccess(
-    "readcreate"
-)
+snmpTargetAddrTDomain = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 12, 1, 2, 1, 2), TDomain()
+).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpTargetAddrTDomain.setStatus("current")
 if mibBuilder.loadTexts:
@@ -361,16 +364,18 @@ if mibBuilder.loadTexts:
     snmpTargetParamsRowStatus.setDescription(
         "The status of this conceptual row. To create a row in this table, a manager must set this object to either createAndGo(4) or createAndWait(5). Until instances of all corresponding columns are appropriately configured, the value of the corresponding instance of the snmpTargetParamsRowStatus column is 'notReady'. In particular, a newly created row cannot be made active until the corresponding snmpTargetParamsMPModel, snmpTargetParamsSecurityModel, snmpTargetParamsSecurityName, and snmpTargetParamsSecurityLevel have all been set. The following objects may not be modified while the value of this object is active(1): - snmpTargetParamsMPModel - snmpTargetParamsSecurityModel - snmpTargetParamsSecurityName - snmpTargetParamsSecurityLevel An attempt to set these objects while the value of snmpTargetParamsRowStatus is active(1) will result in an inconsistentValue error."
     )
-snmpUnavailableContexts = MibScalar((1, 3, 6, 1, 6, 3, 12, 1, 4), Counter32()).setMaxAccess(
-    "readonly"
-)
+snmpUnavailableContexts = MibScalar(
+    (1, 3, 6, 1, 6, 3, 12, 1, 4), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     snmpUnavailableContexts.setStatus("current")
 if mibBuilder.loadTexts:
     snmpUnavailableContexts.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because the context contained in the message was unavailable."
     )
-snmpUnknownContexts = MibScalar((1, 3, 6, 1, 6, 3, 12, 1, 5), Counter32()).setMaxAccess("readonly")
+snmpUnknownContexts = MibScalar((1, 3, 6, 1, 6, 3, 12, 1, 5), Counter32()).setMaxAccess(
+    "readonly"
+)
 if mibBuilder.loadTexts:
     snmpUnknownContexts.setStatus("current")
 if mibBuilder.loadTexts:
@@ -406,14 +411,18 @@ if mibBuilder.loadTexts:
         "A collection of objects providing basic remote configuration of management targets."
     )
 snmpTargetResponseGroup = ObjectGroup((1, 3, 6, 1, 6, 3, 12, 3, 2, 2)).setObjects(
-    ("SNMP-TARGET-MIB", "snmpTargetAddrTimeout"), ("SNMP-TARGET-MIB", "snmpTargetAddrRetryCount")
+    ("SNMP-TARGET-MIB", "snmpTargetAddrTimeout"),
+    ("SNMP-TARGET-MIB", "snmpTargetAddrRetryCount"),
 )
 if mibBuilder.loadTexts:
     snmpTargetResponseGroup.setDescription(
         "A collection of objects providing remote configuration of management targets for applications which generate SNMP messages for which a response message would be expected."
     )
-snmpTargetCommandResponderGroup = ObjectGroup((1, 3, 6, 1, 6, 3, 12, 3, 2, 3)).setObjects(
-    ("SNMP-TARGET-MIB", "snmpUnavailableContexts"), ("SNMP-TARGET-MIB", "snmpUnknownContexts")
+snmpTargetCommandResponderGroup = ObjectGroup(
+    (1, 3, 6, 1, 6, 3, 12, 3, 2, 3)
+).setObjects(
+    ("SNMP-TARGET-MIB", "snmpUnavailableContexts"),
+    ("SNMP-TARGET-MIB", "snmpUnknownContexts"),
 )
 if mibBuilder.loadTexts:
     snmpTargetCommandResponderGroup.setDescription(

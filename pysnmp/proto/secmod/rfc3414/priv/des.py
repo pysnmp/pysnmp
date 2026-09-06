@@ -72,7 +72,9 @@ class Des(base.AbstractEncryptionService):
         return (
             desKey.asOctets(),
             univ.OctetString(salt).asOctets(),
-            univ.OctetString(map(lambda x, y: x ^ y, salt, preIV.asNumbers())).asOctets(),
+            univ.OctetString(
+                map(lambda x, y: x ^ y, salt, preIV.asNumbers())
+            ).asOctets(),
         )
 
     @staticmethod
@@ -101,7 +103,8 @@ class Des(base.AbstractEncryptionService):
         # 8.1.1.2
         desObj = DES.new(desKey, DES.MODE_CBC, iv)
         plaintext = (
-            dataToEncrypt + univ.OctetString((0,) * (8 - len(dataToEncrypt) % 8)).asOctets()
+            dataToEncrypt
+            + univ.OctetString((0,) * (8 - len(dataToEncrypt) % 8)).asOctets()
         )
         ciphertext = desObj.encrypt(plaintext)
 

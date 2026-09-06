@@ -119,7 +119,9 @@ class TestSyncGetV1:
         elif error_status:
             print(f"  SNMP PDU error: {error_status} at index {error_index}")
         else:
-            print(f"  SNMP response: OID={var_binds[0][0]} value={as_text(var_binds[0][1])}")
+            print(
+                f"  SNMP response: OID={var_binds[0][0]} value={as_text(var_binds[0][1])}"
+            )
         assert error_indication is None
 
     def test_get_multiple(self, snmpsim_endpoint):
@@ -543,7 +545,9 @@ class TestTableCellApiIntegration:
         # The response should be the next OID after sysORDescr.1
         first_oid = tuple(var_binds[0][0])
         oid_str = str(var_binds[0][0])
-        assert oid_str.startswith("1.3.6.1.2.1.1.9.1."), f"Expected sysORTable OID, got {oid_str}"
+        assert oid_str.startswith("1.3.6.1.2.1.1.9.1."), (
+            f"Expected sysORTable OID, got {oid_str}"
+        )
 
         mod_name, row_name, col_name, indices = mibView.getTableCellInfo(first_oid)
 
@@ -564,7 +568,9 @@ class TestTableCellApiIntegration:
         mibView = MibViewController(mibBuilder)
 
         # Build an OID for sysORDescr.2 via the table cell API
-        original_oid = mibView.resolveCellOid("SNMPv2-MIB", "sysOREntry", "sysORDescr", 2)
+        original_oid = mibView.resolveCellOid(
+            "SNMPv2-MIB", "sysOREntry", "sysORDescr", 2
+        )
 
         # Query snmpsim — should return the fixture value.
         result = next(

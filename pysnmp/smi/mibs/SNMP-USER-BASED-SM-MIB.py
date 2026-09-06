@@ -27,12 +27,14 @@ OctetString, Integer, ObjectIdentifier = mibBuilder.importSymbols(
     "ConstraintsIntersection",
     "ConstraintsUnion",
 )
-SnmpAdminString, snmpAuthProtocols, snmpPrivProtocols, SnmpEngineID = mibBuilder.importSymbols(
-    "SNMP-FRAMEWORK-MIB",
-    "SnmpAdminString",
-    "snmpAuthProtocols",
-    "snmpPrivProtocols",
-    "SnmpEngineID",
+SnmpAdminString, snmpAuthProtocols, snmpPrivProtocols, SnmpEngineID = (
+    mibBuilder.importSymbols(
+        "SNMP-FRAMEWORK-MIB",
+        "SnmpAdminString",
+        "snmpAuthProtocols",
+        "snmpPrivProtocols",
+        "SnmpEngineID",
+    )
 )
 ObjectGroup, ModuleCompliance, NotificationGroup = mibBuilder.importSymbols(
     "SNMPv2-CONF", "ObjectGroup", "ModuleCompliance", "NotificationGroup"
@@ -127,7 +129,9 @@ usmHMACMD5AuthProtocol = ObjectIdentity((1, 3, 6, 1, 6, 3, 10, 1, 1, 2))
 if mibBuilder.loadTexts:
     usmHMACMD5AuthProtocol.setStatus("current")
 if mibBuilder.loadTexts:
-    usmHMACMD5AuthProtocol.setDescription("The HMAC-MD5-96 Digest Authentication Protocol.")
+    usmHMACMD5AuthProtocol.setDescription(
+        "The HMAC-MD5-96 Digest Authentication Protocol."
+    )
 if mibBuilder.loadTexts:
     usmHMACMD5AuthProtocol.setReference(
         "- H. Krawczyk, M. Bellare, R. Canetti HMAC: Keyed-Hashing for Message Authentication, RFC2104, Feb 1997. - Rivest, R., Message Digest Algorithm MD5, RFC1321. "
@@ -136,7 +140,9 @@ usmHMACSHAAuthProtocol = ObjectIdentity((1, 3, 6, 1, 6, 3, 10, 1, 1, 3))
 if mibBuilder.loadTexts:
     usmHMACSHAAuthProtocol.setStatus("current")
 if mibBuilder.loadTexts:
-    usmHMACSHAAuthProtocol.setDescription("The HMAC-SHA-96 Digest Authentication Protocol.")
+    usmHMACSHAAuthProtocol.setDescription(
+        "The HMAC-SHA-96 Digest Authentication Protocol."
+    )
 if mibBuilder.loadTexts:
     usmHMACSHAAuthProtocol.setReference(
         "- H. Krawczyk, M. Bellare, R. Canetti, HMAC: Keyed-Hashing for Message Authentication, RFC2104, Feb 1997. - Secure Hash Algorithm. NIST FIPS 180-1. "
@@ -172,45 +178,45 @@ if mibBuilder.loadTexts:
     usmStatsUnsupportedSecLevels.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because they requested a securityLevel that was unknown to the SNMP engine or otherwise unavailable. "
     )
-usmStatsNotInTimeWindows = MibScalar((1, 3, 6, 1, 6, 3, 15, 1, 1, 2), Counter32()).setMaxAccess(
-    "readonly"
-)
+usmStatsNotInTimeWindows = MibScalar(
+    (1, 3, 6, 1, 6, 3, 15, 1, 1, 2), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     usmStatsNotInTimeWindows.setStatus("current")
 if mibBuilder.loadTexts:
     usmStatsNotInTimeWindows.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because they appeared outside of the authoritative SNMP engine's window. "
     )
-usmStatsUnknownUserNames = MibScalar((1, 3, 6, 1, 6, 3, 15, 1, 1, 3), Counter32()).setMaxAccess(
-    "readonly"
-)
+usmStatsUnknownUserNames = MibScalar(
+    (1, 3, 6, 1, 6, 3, 15, 1, 1, 3), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     usmStatsUnknownUserNames.setStatus("current")
 if mibBuilder.loadTexts:
     usmStatsUnknownUserNames.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because they referenced a user that was not known to the SNMP engine. "
     )
-usmStatsUnknownEngineIDs = MibScalar((1, 3, 6, 1, 6, 3, 15, 1, 1, 4), Counter32()).setMaxAccess(
-    "readonly"
-)
+usmStatsUnknownEngineIDs = MibScalar(
+    (1, 3, 6, 1, 6, 3, 15, 1, 1, 4), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     usmStatsUnknownEngineIDs.setStatus("current")
 if mibBuilder.loadTexts:
     usmStatsUnknownEngineIDs.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because they referenced an snmpEngineID that was not known to the SNMP engine. "
     )
-usmStatsWrongDigests = MibScalar((1, 3, 6, 1, 6, 3, 15, 1, 1, 5), Counter32()).setMaxAccess(
-    "readonly"
-)
+usmStatsWrongDigests = MibScalar(
+    (1, 3, 6, 1, 6, 3, 15, 1, 1, 5), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     usmStatsWrongDigests.setStatus("current")
 if mibBuilder.loadTexts:
     usmStatsWrongDigests.setDescription(
         "The total number of packets received by the SNMP engine which were dropped because they didn't contain the expected digest value. "
     )
-usmStatsDecryptionErrors = MibScalar((1, 3, 6, 1, 6, 3, 15, 1, 1, 6), Counter32()).setMaxAccess(
-    "readonly"
-)
+usmStatsDecryptionErrors = MibScalar(
+    (1, 3, 6, 1, 6, 3, 15, 1, 1, 6), Counter32()
+).setMaxAccess("readonly")
 if mibBuilder.loadTexts:
     usmStatsDecryptionErrors.setStatus("current")
 if mibBuilder.loadTexts:
@@ -218,9 +224,9 @@ if mibBuilder.loadTexts:
         "The total number of packets received by the SNMP engine which were dropped because they could not be decrypted. "
     )
 usmUser = MibIdentifier((1, 3, 6, 1, 6, 3, 15, 1, 2))
-usmUserSpinLock = MibScalar((1, 3, 6, 1, 6, 3, 15, 1, 2, 1), TestAndIncr()).setMaxAccess(
-    "readwrite"
-)
+usmUserSpinLock = MibScalar(
+    (1, 3, 6, 1, 6, 3, 15, 1, 2, 1), TestAndIncr()
+).setMaxAccess("readwrite")
 if mibBuilder.loadTexts:
     usmUserSpinLock.setStatus("current")
 if mibBuilder.loadTexts:
@@ -239,7 +245,8 @@ if mibBuilder.loadTexts:
 usmUserEntry = MibTableRow(
     (1, 3, 6, 1, 6, 3, 15, 1, 2, 2, 1),
 ).setIndexNames(
-    (0, "SNMP-USER-BASED-SM-MIB", "usmUserEngineID"), (0, "SNMP-USER-BASED-SM-MIB", "usmUserName")
+    (0, "SNMP-USER-BASED-SM-MIB", "usmUserEngineID"),
+    (0, "SNMP-USER-BASED-SM-MIB", "usmUserName"),
 )
 if mibBuilder.loadTexts:
     usmUserEntry.setStatus("current")
@@ -283,7 +290,8 @@ if mibBuilder.loadTexts:
         "A pointer to another conceptual row in this usmUserTable. The user in this other conceptual row is called the clone-from user. When a new user is created (i.e., a new conceptual row is instantiated in this table), the privacy and authentication parameters of the new user must be cloned from its clone-from user. These parameters are: - authentication protocol (usmUserAuthProtocol) - privacy protocol (usmUserPrivProtocol) They will be copied regardless of what the current value is. Cloning also causes the initial values of the secret authentication key (authKey) and the secret encryption key (privKey) of the new user to be set to the same values as the corresponding secrets of the clone-from user to allow the KeyChange process to occur as required during user creation. The first time an instance of this object is set by a management operation (either at or after its instantiation), the cloning process is invoked. Subsequent writes are successful but invoke no action to be taken by the receiver. The cloning process fails with an 'inconsistentName' error if the conceptual row representing the clone-from user does not exist or is not in an active state when the cloning process is invoked. When this object is read, the ZeroDotZero OID is returned. "
     )
 usmUserAuthProtocol = MibTableColumn(
-    (1, 3, 6, 1, 6, 3, 15, 1, 2, 2, 1, 5), AutonomousType().clone((1, 3, 6, 1, 6, 3, 10, 1, 1, 1))
+    (1, 3, 6, 1, 6, 3, 15, 1, 2, 2, 1, 5),
+    AutonomousType().clone((1, 3, 6, 1, 6, 3, 10, 1, 1, 1)),
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     usmUserAuthProtocol.setStatus("current")
@@ -310,7 +318,8 @@ if mibBuilder.loadTexts:
         "Behaves exactly as usmUserAuthKeyChange, with one notable difference: in order for the set operation to succeed, the usmUserName of the operation requester must match the usmUserName that indexes the row which is targeted by this operation. In addition, the USM security model must be used for this operation. The idea here is that access to this column can be public, since it will only allow a user to change his own secret authentication key (authKey). Note that this can only be done once the row is active. When a set is received and the usmUserName of the requester is not the same as the umsUserName that indexes the row which is targeted by this operation, then a 'noAccess' error must be returned. When a set is received and the security model in use is not USM, then a 'noAccess' error must be returned. "
     )
 usmUserPrivProtocol = MibTableColumn(
-    (1, 3, 6, 1, 6, 3, 15, 1, 2, 2, 1, 8), AutonomousType().clone((1, 3, 6, 1, 6, 3, 10, 1, 2, 1))
+    (1, 3, 6, 1, 6, 3, 15, 1, 2, 2, 1, 8),
+    AutonomousType().clone((1, 3, 6, 1, 6, 3, 10, 1, 2, 1)),
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     usmUserPrivProtocol.setStatus("current")
@@ -355,9 +364,9 @@ if mibBuilder.loadTexts:
     usmUserStorageType.setDescription(
         "The storage type for this conceptual row. Conceptual rows having the value 'permanent' must allow write-access at a minimum to: - usmUserAuthKeyChange, usmUserOwnAuthKeyChange and usmUserPublic for a user who employs authentication, and - usmUserPrivKeyChange, usmUserOwnPrivKeyChange and usmUserPublic for a user who employs privacy. Note that any user who employs authentication or privacy must allow its secret(s) to be updated and thus cannot be 'readOnly'. If an initial set operation tries to set the value to 'readOnly' for a user who employs authentication or privacy, then an 'inconsistentValue' error must be returned. Note that if the value has been previously set (implicit or explicit) to any value, then the rules as defined in the StorageType Textual Convention apply. It is an implementation issue to decide if a SET for a readOnly or permanent row is accepted at all. In some contexts this may make sense, in others it may not. If a SET for a readOnly or permanent row is not accepted at all, then a 'wrongValue' error must be returned. "
     )
-usmUserStatus = MibTableColumn((1, 3, 6, 1, 6, 3, 15, 1, 2, 2, 1, 13), RowStatus()).setMaxAccess(
-    "readcreate"
-)
+usmUserStatus = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 15, 1, 2, 2, 1, 13), RowStatus()
+).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     usmUserStatus.setStatus("current")
 if mibBuilder.loadTexts:

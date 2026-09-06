@@ -21,7 +21,9 @@ mibInstrum = instrum.MibInstrumController(mibBuilder)
 print("done")
 
 (print("Building table entry index from human-friendly representation..."),)
-(snmpCommunityEntry,) = mibBuilder.importSymbols("SNMP-COMMUNITY-MIB", "snmpCommunityEntry")
+(snmpCommunityEntry,) = mibBuilder.importSymbols(
+    "SNMP-COMMUNITY-MIB", "snmpCommunityEntry"
+)
 instanceId = snmpCommunityEntry.getInstIdFromIndices("my-router")
 print("done")
 

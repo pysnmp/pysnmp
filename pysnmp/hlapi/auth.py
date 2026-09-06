@@ -154,7 +154,9 @@ class CommunityData:
         else:
             self.communityIndex = communityIndex
         # An explicit securityName wins; otherwise it tracks communityIndex
-        self.securityName = securityName if securityName is not None else self.communityIndex
+        self.securityName = (
+            securityName if securityName is not None else self.communityIndex
+        )
 
     def __hash__(self) -> NoReturn:
         raise TypeError("%s is not hashable" % self.__class__.__name__)

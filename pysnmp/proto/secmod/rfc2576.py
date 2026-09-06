@@ -49,7 +49,9 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
             while True:
                 try:
-                    nextMibNode = snmpTargetParamsSecurityName.getNextNode(nextMibNode.name)
+                    nextMibNode = snmpTargetParamsSecurityName.getNextNode(
+                        nextMibNode.name
+                    )
 
                 except NoSuchInstanceError:
                     break
@@ -83,13 +85,15 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             )
         )
         if self.__securityBranchId != snmpCommunityName.branchVersionId:
-            (snmpCommunitySecurityName, snmpCommunityContextEngineId, snmpCommunityContextName) = (
-                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-                    "SNMP-COMMUNITY-MIB",
-                    "snmpCommunitySecurityName",
-                    "snmpCommunityContextEngineID",
-                    "snmpCommunityContextName",
-                )
+            (
+                snmpCommunitySecurityName,
+                snmpCommunityContextEngineId,
+                snmpCommunityContextName,
+            ) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-COMMUNITY-MIB",
+                "snmpCommunitySecurityName",
+                "snmpCommunityContextEngineID",
+                "snmpCommunityContextName",
             )
 
             self.__securityMap = {}
@@ -118,9 +122,9 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 ).syntax
 
                 try:
-                    self.__securityMap[(_securityName, _contextEngineId, _contextName)] = (
-                        nextMibNode.syntax
-                    )
+                    self.__securityMap[
+                        (_securityName, _contextEngineId, _contextName)
+                    ] = nextMibNode.syntax
 
                 except PyAsn1Error:
                     debug.logger & debug.flagSM and debug.logger(
@@ -186,14 +190,19 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                         )
                     )
                     targetAddrTAddress = tuple(SnmpUDPAddress(targetAddrTAddress))
-                elif targetAddrTDomain[: len(udp6.snmpUDP6Domain)] == udp6.snmpUDP6Domain:
+                elif (
+                    targetAddrTDomain[: len(udp6.snmpUDP6Domain)] == udp6.snmpUDP6Domain
+                ):
                     (TransportAddressIPv6,) = (
                         snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                             "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
                         )
                     )
                     targetAddrTAddress = tuple(TransportAddressIPv6(targetAddrTAddress))
-                elif targetAddrTDomain[: len(unix.snmpLocalDomain)] == unix.snmpLocalDomain:
+                elif (
+                    targetAddrTDomain[: len(unix.snmpLocalDomain)]
+                    == unix.snmpLocalDomain
+                ):
                     # A local-domain TAddress carries a filesystem path
                     targetAddrTAddress = targetAddrTAddress.asOctets().decode(
                         targetAddrTAddress.encoding
@@ -210,7 +219,10 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 try:
                     if targetAddrTagList:
                         self.__transportToTagMap[targetAddr].update(
-                            [SnmpTagValue(x) for x in targetAddrTagList.asOctets().split()]
+                            [
+                                SnmpTagValue(x)
+                                for x in targetAddrTagList.asOctets().split()
+                            ]
                         )
 
                     else:
@@ -247,7 +259,9 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
             while True:
                 try:
-                    nextMibNode = snmpTargetParamsSecurityName.getNextNode(nextMibNode.name)
+                    nextMibNode = snmpTargetParamsSecurityName.getNextNode(
+                        nextMibNode.name
+                    )
 
                 except NoSuchInstanceError:
                     break
@@ -367,11 +381,15 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             elif self.__emptyTag in self.__communityToTagMap[communityName]:
                 tags = [self.__emptyTag]
             else:
-                raise error.StatusInformation(errorIndication=errind.unknownCommunityName)
+                raise error.StatusInformation(
+                    errorIndication=errind.unknownCommunityName
+                )
 
             candidateSecurityNames = []
 
-            for x in [self.__tagAndCommunityToSecurityMap[(t, communityName)] for t in tags]:
+            for x in [
+                self.__tagAndCommunityToSecurityMap[(t, communityName)] for t in tags
+            ]:
                 candidateSecurityNames.extend(list(x))
 
             # 5.2.1 (row selection in snmpCommunityTable)
@@ -407,7 +425,9 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         contextEngineId, contextName, pdu = scopedPDU
 
         # rfc2576: 5.2.3
-        communityName = self._sec2com(snmpEngine, securityName, contextEngineId, contextName)
+        communityName = self._sec2com(
+            snmpEngine, securityName, contextEngineId, contextName
+        )
 
         debug.logger & debug.flagSM and debug.logger(
             f"generateRequestMsg: using community {communityName!r} for securityModel {securityModel!r}, securityName {securityName!r}, contextEngineId {contextEngineId!r} contextName {contextName!r}"
@@ -418,10 +438,16 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         msg.setComponentByPosition(1, securityParameters)
         msg.setComponentByPosition(2)
         msg.getComponentByPosition(2).setComponentByType(
-            pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
+            pdu.tagSet,
+            pdu,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
 
-        debug.logger & debug.flagMP and debug.logger(f"generateRequestMsg: {msg.prettyPrint()}")
+        debug.logger & debug.flagMP and debug.logger(
+            f"generateRequestMsg: {msg.prettyPrint()}"
+        )
 
         try:
             return securityParameters, encoder.encode(msg)
@@ -458,10 +484,16 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         msg.setComponentByPosition(1, communityName)
         msg.setComponentByPosition(2)
         msg.getComponentByPosition(2).setComponentByType(
-            pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
+            pdu.tagSet,
+            pdu,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
 
-        debug.logger & debug.flagMP and debug.logger(f"generateResponseMsg: {msg.prettyPrint()}")
+        debug.logger & debug.flagMP and debug.logger(
+            f"generateResponseMsg: {msg.prettyPrint()}"
+        )
 
         try:
             return communityName, encoder.encode(msg)
@@ -486,7 +518,9 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         # rfc2576: 5.2.1
         communityName, transportInformation = securityParameters
 
-        scope = dict(communityName=communityName, transportInformation=transportInformation)
+        scope = dict(
+            communityName=communityName, transportInformation=transportInformation
+        )
 
         with execution_context(
             snmpEngine,
@@ -513,8 +547,10 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                 errorIndication=errind.unknownCommunityName, communityName=communityName
             )
 
-        (snmpEngineID,) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+        (snmpEngineID,) = (
+            snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+            )
         )
 
         securityEngineID = snmpEngineID.syntax
@@ -537,7 +573,11 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
         stateReference = self._cache.push(communityName=communityName)
 
-        scopedPDU = (contextEngineId, contextName, msg.getComponentByPosition(2).getComponent())
+        scopedPDU = (
+            contextEngineId,
+            contextName,
+            msg.getComponentByPosition(2).getComponent(),
+        )
         maxSizeResponseScopedPDU = maxMessageSize - 128
         securityStateReference = stateReference
 

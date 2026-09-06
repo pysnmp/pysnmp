@@ -57,4 +57,6 @@ async def run(varBinds):
     return
 
 
-asyncio.run(run([ObjectType(ObjectIdentity("TCP-MIB")), ObjectType(ObjectIdentity("IP-MIB"))]))
+asyncio.run(
+    run([ObjectType(ObjectIdentity("TCP-MIB")), ObjectType(ObjectIdentity("IP-MIB"))])
+)

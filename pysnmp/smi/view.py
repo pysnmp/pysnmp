@@ -27,7 +27,9 @@ class MibViewController:
 
         debug.logger & debug.flagMIB and debug.logger("indexMib: re-indexing MIB view")
 
-        (MibScalarInstance,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
+        (MibScalarInstance,) = self.mibBuilder.importSymbols(
+            "SNMPv2-SMI", "MibScalarInstance"
+        )
 
         #
         # Create indices
@@ -172,7 +174,9 @@ class MibViewController:
             return nodeName, oidToLabelIdx[nodeName], ()
         if len(nodeName) < 2:
             return nodeName, nodeName, ()
-        oid, label, suffix = self.__getOidLabel(nodeName[:-1], oidToLabelIdx, labelToOidIdx)
+        oid, label, suffix = self.__getOidLabel(
+            nodeName[:-1], oidToLabelIdx, labelToOidIdx
+        )
         suffix = suffix + nodeName[-1:]
         resLabel = label + tuple(str(x) for x in suffix)
         if resLabel in labelToOidIdx:
@@ -209,7 +213,9 @@ class MibViewController:
         if nodeName in mibMod["varToNameIdx"]:
             oid = mibMod["varToNameIdx"][nodeName]
         else:
-            raise error.NoSuchObjectError(str=f"No such symbol {modName}::{nodeName} at {self}")
+            raise error.NoSuchObjectError(
+                str=f"No such symbol {modName}::{nodeName} at {self}"
+            )
         debug.logger & debug.flagMIB and debug.logger(
             f"getNodeNameByDesc: resolved {modName}:{nodeName} -> {oid}"
         )
@@ -234,11 +240,19 @@ class MibViewController:
         else:
             raise error.SmiError(f"No module {modName} at {self}")
         if not mibMod["oidToLabelIdx"]:
-            raise error.NoSuchObjectError(str=f"No variables at MIB module {modName} at {self}")
+            raise error.NoSuchObjectError(
+                str=f"No variables at MIB module {modName} at {self}"
+            )
         if nodeType is not None:
             # Filter by node type (scalar, table, column, row)
-            MibScalar, MibTable, MibTableColumn, MibTableRow = self.mibBuilder.importSymbols(
-                "SNMPv2-SMI", "MibScalar", "MibTable", "MibTableColumn", "MibTableRow"
+            MibScalar, MibTable, MibTableColumn, MibTableRow = (
+                self.mibBuilder.importSymbols(
+                    "SNMPv2-SMI",
+                    "MibScalar",
+                    "MibTable",
+                    "MibTableColumn",
+                    "MibTableRow",
+                )
             )
             nodeTypeMap = {
                 "scalar": MibScalar,
@@ -287,10 +301,13 @@ class MibViewController:
         oid, label, suffix = self.getNodeName(nodeName, modName)
         try:
             return self.getNodeName(
-                self.__mibSymbolsIdx[modName]["oidToLabelIdx"].nextKey(oid) + suffix, modName
+                self.__mibSymbolsIdx[modName]["oidToLabelIdx"].nextKey(oid) + suffix,
+                modName,
             )
         except KeyError:
-            raise error.NoSuchObjectError(str=f"No name next to {modName}::{nodeName} at {self}")
+            raise error.NoSuchObjectError(
+                str=f"No name next to {modName}::{nodeName} at {self}"
+            )
 
     def getParentNodeName(self, nodeName, modName=""):
         oid, label, suffix = self.getNodeName(nodeName, modName)
@@ -315,7 +332,9 @@ class MibViewController:
         if typeName in mibMod["typeToModIdx"]:
             m = mibMod["typeToModIdx"][typeName]
         else:
-            raise error.NoSuchObjectError(str=f"No such type {modName}::{typeName} at {self}")
+            raise error.NoSuchObjectError(
+                str=f"No such type {modName}::{typeName} at {self}"
+            )
         return m, typeName
 
     def getOrderedTypeName(self, index, modName=""):
@@ -325,7 +344,9 @@ class MibViewController:
         else:
             raise error.SmiError(f"No module {modName} at {self}")
         if not mibMod["typeToModIdx"]:
-            raise error.NoSuchObjectError(str=f"No types at MIB module {modName} at {self}")
+            raise error.NoSuchObjectError(
+                str=f"No types at MIB module {modName} at {self}"
+            )
         t = mibMod["typeToModIdx"].keys()[index]
         return mibMod["typeToModIdx"][t], t
 
@@ -340,7 +361,9 @@ class MibViewController:
         try:
             return self.__mibSymbolsIdx[m]["typeToModIdx"].nextKey(t)
         except KeyError:
-            raise error.NoSuchObjectError(str=f"No type next to {modName}::{typeName} at {self}")
+            raise error.NoSuchObjectError(
+                str=f"No type next to {modName}::{typeName} at {self}"
+            )
 
     # ---- Table cell mangling API (TODO #2) ----
     # Convenience methods for table-level introspection that clearly separate
@@ -370,7 +393,9 @@ class MibViewController:
         (MibTableRow,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "MibTableRow")
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
         if not isinstance(rowNode, MibTableRow):
-            raise error.SmiError(f"Symbol {modName}::{rowSymName} is not a MibTableRow at {self}")
+            raise error.SmiError(
+                f"Symbol {modName}::{rowSymName} is not a MibTableRow at {self}"
+            )
         return rowNode.getColumns()
 
     def resolveCellOid(self, modName, rowSymName, column, *indices):
@@ -397,11 +422,16 @@ class MibViewController:
         )
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
         if not isinstance(rowNode, MibTableRow):
-            raise error.SmiError(f"Symbol {modName}::{rowSymName} is not a MibTableRow at {self}")
+            raise error.SmiError(
+                f"Symbol {modName}::{rowSymName} is not a MibTableRow at {self}"
+            )
 
         if isinstance(column, str):
             (columnNode,) = self.mibBuilder.importSymbols(modName, column)
-            if not isinstance(columnNode, MibTableColumn) or columnNode.name[:-1] != rowNode.name:
+            if (
+                not isinstance(columnNode, MibTableColumn)
+                or columnNode.name[:-1] != rowNode.name
+            ):
                 raise error.SmiError(
                     f"Symbol {modName}::{column} is not a column of {rowSymName} at {self}"
                 )
@@ -422,12 +452,16 @@ class MibViewController:
         modName, columnName, suffix = self.getNodeLocation(tuple(cellOid))
         (columnNode,) = self.mibBuilder.importSymbols(modName, columnName)
         if not isinstance(columnNode, MibTableColumn):
-            raise error.SmiError(f"OID {tuple(cellOid)!r} is not a table cell at {self}")
+            raise error.SmiError(
+                f"OID {tuple(cellOid)!r} is not a table cell at {self}"
+            )
 
         rowModName, rowName, rowSuffix = self.getNodeLocation(columnNode.name[:-1])
         (rowNode,) = self.mibBuilder.importSymbols(rowModName, rowName)
         if rowSuffix or not isinstance(rowNode, MibTableRow):
-            raise error.SmiError(f"Column {modName}::{columnName} has no table row at {self}")
+            raise error.SmiError(
+                f"Column {modName}::{columnName} has no table row at {self}"
+            )
 
         return modName, rowName, columnName, rowNode.getCellIndices(suffix)
 

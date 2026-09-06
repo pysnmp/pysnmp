@@ -54,4 +54,6 @@ async def getall(snmpEngine, hostnames):
 
 snmpEngine = SnmpEngine()
 
-asyncio.run(getall(snmpEngine, [("localhost", 161), ("localhost6", 161), ("localhost", 163)]))
+asyncio.run(
+    getall(snmpEngine, [("localhost", 161), ("localhost6", 161), ("localhost", 163)])
+)

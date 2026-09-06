@@ -14,8 +14,12 @@ mibBuilder.loadModules("SNMPv2-MIB")
 mibView = view.MibViewController(mibBuilder)
 
 print("sysORTable columns:")
-for columnId, columnOid, columnNode in mibView.get_table_columns("SNMPv2-MIB", "sysOREntry"):
-    print(columnId, ".".join(str(part) for part in columnOid), columnNode.getMaxAccess())
+for columnId, columnOid, columnNode in mibView.get_table_columns(
+    "SNMPv2-MIB", "sysOREntry"
+):
+    print(
+        columnId, ".".join(str(part) for part in columnOid), columnNode.getMaxAccess()
+    )
 
 cellOid = mibView.resolve_cell_oid("SNMPv2-MIB", "sysOREntry", "sysORID", 7)
 print("Cell OID:", ".".join(str(part) for part in cellOid))

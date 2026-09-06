@@ -35,7 +35,9 @@ varBinds = [
 # Run var-binds through MIB resolver
 # You may want to catch and ignore resolution errors here
 varBinds = [
-    rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(mibViewController)
+    rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
+        mibViewController
+    )
     for x in varBinds
 ]
 

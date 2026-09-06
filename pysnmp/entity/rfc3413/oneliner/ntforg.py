@@ -57,7 +57,9 @@ class AsynNotificationOriginator:
         self.uncfgNtfOrg()
 
     def cfgNtfOrg(self, authData, transportTarget, notifyType):
-        return self.lcd.configure(self.snmpEngine, authData, transportTarget, notifyType)
+        return self.lcd.configure(
+            self.snmpEngine, authData, transportTarget, notifyType
+        )
 
     def uncfgNtfOrg(self, authData=None):
         return self.lcd.unconfigure(self.snmpEngine, authData)
@@ -97,7 +99,12 @@ class AsynNotificationOriginator:
             try:
                 # we need to pass response PDU information to user for INFORMs
                 return cbFun and cbFun(
-                    sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
+                    sendRequestHandle,
+                    errorIndication,
+                    errorStatus,
+                    errorIndex,
+                    varBinds,
+                    cbCtx,
                 )
             except TypeError:
                 # a backward compatible way of calling user function
@@ -107,11 +114,15 @@ class AsynNotificationOriginator:
         if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        if not isinstance(notificationType, (ObjectIdentity, ObjectType, NotificationType)):
+        if not isinstance(
+            notificationType, (ObjectIdentity, ObjectType, NotificationType)
+        ):
             if isinstance(notificationType[0], tuple):
                 # legacy
                 notificationType = ObjectIdentity(
-                    notificationType[0][0], notificationType[0][1], *notificationType[1:]
+                    notificationType[0][0],
+                    notificationType[0][1],
+                    *notificationType[1:],
                 )
             else:
                 notificationType = ObjectIdentity(notificationType)
@@ -123,7 +134,9 @@ class AsynNotificationOriginator:
             self.snmpEngine,
             authData,
             transportTarget,
-            ContextData(contextEngineId or self.snmpContext.contextEngineId, contextName),
+            ContextData(
+                contextEngineId or self.snmpContext.contextEngineId, contextName
+            ),
             notifyType,
             notificationType.addVarBinds(*varBinds),
             __cbFun,
@@ -145,17 +158,27 @@ class NotificationOriginator:
     # the varBinds parameter is legacy, use NotificationType instead
 
     def sendNotification(
-        self, authData, transportTarget, notifyType, notificationType, *varBinds, **kwargs
+        self,
+        authData,
+        transportTarget,
+        notifyType,
+        notificationType,
+        *varBinds,
+        **kwargs,
     ):
         if "lookupNames" not in kwargs:
             kwargs["lookupNames"] = False
         if "lookupValues" not in kwargs:
             kwargs["lookupValues"] = False
-        if not isinstance(notificationType, (ObjectIdentity, ObjectType, NotificationType)):
+        if not isinstance(
+            notificationType, (ObjectIdentity, ObjectType, NotificationType)
+        ):
             if isinstance(notificationType[0], tuple):
                 # legacy
                 notificationType = ObjectIdentity(
-                    notificationType[0][0], notificationType[0][1], *notificationType[1:]
+                    notificationType[0][0],
+                    notificationType[0][1],
+                    *notificationType[1:],
                 )
             else:
                 notificationType = ObjectIdentity(notificationType)
@@ -163,7 +186,12 @@ class NotificationOriginator:
         if not isinstance(notificationType, NotificationType):
             notificationType = NotificationType(notificationType)
 
-        for errorIndication, errorStatus, errorIndex, rspVarBinds in sync.sendNotification(
+        for (
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            rspVarBinds,
+        ) in sync.sendNotification(
             self.snmpEngine,
             authData,
             transportTarget,

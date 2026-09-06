@@ -111,7 +111,9 @@ class Integer32(univ.Integer):
         """Creates a subclass with value range constraint."""
 
         class X(cls):
-            subtypeSpec = cls.subtypeSpec + constraint.ValueRangeConstraint(minimum, maximum)
+            subtypeSpec = cls.subtypeSpec + constraint.ValueRangeConstraint(
+                minimum, maximum
+            )
 
         X.__name__ = cls.__name__
         return X
@@ -172,7 +174,9 @@ class Integer(Integer32):
 
         class X(cls):
             namedValues = namedval.NamedValues(*enums)
-            subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(*values.values())
+            subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(
+                *values.values()
+            )
 
         X.__name__ = cls.__name__
         return X
@@ -222,7 +226,9 @@ class OctetString(univ.OctetString):
 
     """
 
-    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(0, 65535)
+    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(
+        0, 65535
+    )
 
     # rfc1902 uses a notion of "fixed length string" what might mean
     # having zero-range size constraint applied. The following is
@@ -241,7 +247,9 @@ class OctetString(univ.OctetString):
         return self.fixedLength
 
     def clone(self, *args, **kwargs):
-        return univ.OctetString.clone(self, *args, **kwargs).setFixedLength(self.getFixedLength())
+        return univ.OctetString.clone(self, *args, **kwargs).setFixedLength(
+            self.getFixedLength()
+        )
 
     def subtype(self, *args, **kwargs):
         return univ.OctetString.subtype(self, *args, **kwargs).setFixedLength(
@@ -253,7 +261,9 @@ class OctetString(univ.OctetString):
         """Creates a subclass with value size constraint."""
 
         class X(cls):
-            subtypeSpec = cls.subtypeSpec + constraint.ValueSizeConstraint(minimum, maximum)
+            subtypeSpec = cls.subtypeSpec + constraint.ValueSizeConstraint(
+                minimum, maximum
+            )
 
         X.__name__ = cls.__name__
         return X
@@ -386,7 +396,9 @@ class Counter32(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x01)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
+        0, 4294967295
+    )
 
 
 class Gauge32(univ.Integer):
@@ -424,7 +436,9 @@ class Gauge32(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
+        0, 4294967295
+    )
 
 
 class Unsigned32(univ.Integer):
@@ -461,7 +475,9 @@ class Unsigned32(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
+        0, 4294967295
+    )
 
 
 class TimeTicks(univ.Integer):
@@ -498,7 +514,9 @@ class TimeTicks(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x03)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
+        0, 4294967295
+    )
 
 
 class Opaque(univ.OctetString):

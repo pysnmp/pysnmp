@@ -40,7 +40,9 @@ def _prepareFilterEntries(filterEntries):
         else:
             normalizedSubtree = subtree
 
-        prepared.append((subtree, normalizedSubtree, ignoredSubOids, int(filterType) == 1))
+        prepared.append(
+            (subtree, normalizedSubtree, ignoredSubOids, int(filterType) == 1)
+        )
 
     # RFC 3413 section 6 gives precedence to the longest original subtree,
     # then to the lexicographically largest original subtree at equal length.
@@ -155,8 +157,9 @@ class NotificationOriginator:
                 origDiscoveryRetries = 0
                 origRetries += 1
 
-            if origRetries > origRetryCount or origDiscoveryRetries > self.__options.get(
-                "discoveryRetries", 4
+            if (
+                origRetries > origRetryCount
+                or origDiscoveryRetries > self.__options.get("discoveryRetries", 4)
             ):
                 debug.logger & debug.flagApp and debug.logger(
                     "processResponsePdu: sendRequestHandle %s, sendPduHandle %s retry count %d exceeded"
@@ -167,7 +170,9 @@ class NotificationOriginator:
 
             # Convert timeout in seconds into timeout in timer ticks
             timeoutInTicks = (
-                float(origTimeout) / 100 / snmpEngine.transportDispatcher.getTimerResolution()
+                float(origTimeout)
+                / 100
+                / snmpEngine.transportDispatcher.getTimerResolution()
             )
 
             # User-side API assumes SMIv2
@@ -214,7 +219,13 @@ class NotificationOriginator:
 
             debug.logger & debug.flagApp and debug.logger(
                 "processResponsePdu: sendRequestHandle %s, sendPduHandle %s, timeout %d, retry %d of %d"
-                % (sendRequestHandle, sendPduHandle, origTimeout, origRetries, origRetryCount)
+                % (
+                    sendRequestHandle,
+                    sendPduHandle,
+                    origTimeout,
+                    origRetries,
+                    origRetryCount,
+                )
             )
 
             # 3.3.6b
@@ -243,10 +254,17 @@ class NotificationOriginator:
         cbFun(snmpEngine, sendRequestHandle, None, PDU, cbCtx)
 
     def sendPdu(
-        self, snmpEngine, targetName, contextEngineId, contextName, pdu, cbFun=None, cbCtx=None
+        self,
+        snmpEngine,
+        targetName,
+        contextEngineId,
+        contextName,
+        pdu,
+        cbFun=None,
+        cbCtx=None,
     ):
-        (transportDomain, transportAddress, timeout, retryCount, params) = config.getTargetAddr(
-            snmpEngine, targetName
+        (transportDomain, transportAddress, timeout, retryCount, params) = (
+            config.getTargetAddr(snmpEngine, targetName)
         )
 
         (messageProcessingModel, securityModel, securityName, securityLevel) = (
@@ -265,7 +283,9 @@ class NotificationOriginator:
         if reqPDU.tagSet in rfc3411.confirmedClassPDUs:
             # Convert timeout in seconds into timeout in timer ticks
             timeoutInTicks = (
-                float(timeout) / 100 / snmpEngine.transportDispatcher.getTimerResolution()
+                float(timeout)
+                / 100
+                / snmpEngine.transportDispatcher.getTimerResolution()
             )
 
             sendRequestHandle = getNextHandle()
@@ -332,7 +352,9 @@ class NotificationOriginator:
 
         return sendRequestHandle
 
-    def processResponseVarBinds(self, snmpEngine, sendRequestHandle, errorIndication, pdu, cbCtx):
+    def processResponseVarBinds(
+        self, snmpEngine, sendRequestHandle, errorIndication, pdu, cbCtx
+    ):
         notificationHandle, cbFun, cbCtx = cbCtx
 
         self.__pendingNotifications[notificationHandle].remove(sendRequestHandle)
@@ -372,7 +394,10 @@ class NotificationOriginator:
     ):
         debug.logger & debug.flagApp and debug.logger(
             'sendVarBinds: notificationTarget {}, contextEngineId {}, contextName "{}", varBinds {}'.format(
-                notificationTarget, contextEngineId or "<default>", contextName, varBinds
+                notificationTarget,
+                contextEngineId or "<default>",
+                contextName,
+                varBinds,
             )
         )
 
@@ -385,7 +410,9 @@ class NotificationOriginator:
             contextName = __SnmpAdminString(contextName)
 
         # 3.3
-        (notifyTag, notifyType) = config.getNotificationInfo(snmpEngine, notificationTarget)
+        (notifyTag, notifyType) = config.getNotificationInfo(
+            snmpEngine, notificationTarget
+        )
 
         notificationHandle = getNextHandle()
 
@@ -412,18 +439,25 @@ class NotificationOriginator:
 
             if varBinds[0][0] != sysUpTime.getName():
                 varBinds.insert(
-                    0, (v2c.ObjectIdentifier(sysUpTime.getName()), sysUpTime.getSyntax().clone())
+                    0,
+                    (
+                        v2c.ObjectIdentifier(sysUpTime.getName()),
+                        sysUpTime.getSyntax().clone(),
+                    ),
                 )
 
         if len(varBinds) < 2 or varBinds[1][0] != snmpTrapOID.getName():
             varBinds.insert(
-                1, (v2c.ObjectIdentifier(snmpTrapOID.getName()), snmpTrapOID.getSyntax())
+                1,
+                (v2c.ObjectIdentifier(snmpTrapOID.getName()), snmpTrapOID.getSyntax()),
             )
 
         sendRequestHandle = -1
         notificationsSent = 0
 
-        debug.logger & debug.flagApp and debug.logger(f"sendVarBinds: final varBinds {varBinds}")
+        debug.logger & debug.flagApp and debug.logger(
+            f"sendVarBinds: final varBinds {varBinds}"
+        )
 
         for targetAddrName in config.getTargetNames(snmpEngine, notifyTag):
             (transportDomain, transportAddress, timeout, retryCount, params) = (
@@ -598,13 +632,21 @@ class NotificationOriginator:
 
 
 def _sendNotificationCbFun(
-    snmpEngine, sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
+    snmpEngine,
+    sendRequestHandle,
+    errorIndication,
+    errorStatus,
+    errorIndex,
+    varBinds,
+    cbCtx,
 ):
     cbFun, cbCtx = cbCtx
 
     try:
         # we need to pass response PDU information to user for INFORMs
-        cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx)
+        cbFun(
+            sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx
+        )
     except TypeError:
         # a backward compatible way of calling user function
         cbFun(sendRequestHandle, errorIndication, cbCtx)

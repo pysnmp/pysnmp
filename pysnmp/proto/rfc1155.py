@@ -9,7 +9,15 @@ from pyasn1.type import constraint, namedtype, tag, univ
 from pysnmp.proto import error
 from pysnmp.smi.error import SmiError
 
-__all__ = ["Opaque", "NetworkAddress", "ObjectName", "TimeTicks", "Counter", "Gauge", "IpAddress"]
+__all__ = [
+    "Opaque",
+    "NetworkAddress",
+    "ObjectName",
+    "TimeTicks",
+    "Counter",
+    "Gauge",
+    "IpAddress",
+]
 
 
 class IpAddress(univ.OctetString):
@@ -39,7 +47,9 @@ class Counter(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x01)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
+        0, 4294967295
+    )
 
 
 class NetworkAddress(univ.Choice):
@@ -102,14 +112,18 @@ class Gauge(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
+        0, 4294967295
+    )
 
 
 class TimeTicks(univ.Integer):
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x03)
     )
-    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(0, 4294967295)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
+        0, 4294967295
+    )
 
 
 class Opaque(univ.OctetString):

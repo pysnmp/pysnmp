@@ -32,7 +32,9 @@ def execution_context(
     """
 
     if variables is not None and context:
-        raise TypeError("execution context accepts either a mapping or keyword variables")
+        raise TypeError(
+            "execution context accepts either a mapping or keyword variables"
+        )
 
     variables = variables if variables is not None else context
     meta_observer = snmpEngine.observer

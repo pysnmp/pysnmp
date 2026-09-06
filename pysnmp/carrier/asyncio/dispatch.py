@@ -81,7 +81,9 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            raise PySnmpError(";".join(traceback.format_exception(type(e), e, e.__traceback__)))
+            raise PySnmpError(
+                ";".join(traceback.format_exception(type(e), e, e.__traceback__))
+            )
 
     def transportsAreWorking(self):
         for transport in self._AbstractTransportDispatcher__transports.values():
@@ -118,7 +120,9 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
             return
         self.loopingcall.cancel()
         if not self.loop.is_running():
-            self.loop.run_until_complete(asyncio.gather(self.loopingcall, return_exceptions=True))
+            self.loop.run_until_complete(
+                asyncio.gather(self.loopingcall, return_exceptions=True)
+            )
         self.loopingcall = None
 
     def unregisterTransport(self, tDomain):

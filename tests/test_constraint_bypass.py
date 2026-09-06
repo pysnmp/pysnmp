@@ -71,7 +71,9 @@ class TestLoadBearingBypasses:
             (UsmSecurityParameters, 2, "snmpEngineTime"),
         ],
     )
-    def test_mib_scalar_is_rejected_by_a_strict_set(self, mib_builder, spec, position, symbol):
+    def test_mib_scalar_is_rejected_by_a_strict_set(
+        self, mib_builder, spec, position, symbol
+    ):
         (scalar,) = mib_builder.importSymbols("__SNMP-FRAMEWORK-MIB", symbol)
         message = spec()
 

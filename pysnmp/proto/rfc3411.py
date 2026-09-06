@@ -16,7 +16,10 @@ readClassPDUs: dict[Any, int] = {
     rfc1905.GetBulkRequestPDU.tagSet: 1,
 }
 
-writeClassPDUs: dict[Any, int] = {rfc1157.SetRequestPDU.tagSet: 1, rfc1905.SetRequestPDU.tagSet: 1}
+writeClassPDUs: dict[Any, int] = {
+    rfc1157.SetRequestPDU.tagSet: 1,
+    rfc1905.SetRequestPDU.tagSet: 1,
+}
 
 responseClassPDUs: dict[Any, int] = {
     rfc1157.GetResponsePDU.tagSet: 1,

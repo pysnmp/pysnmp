@@ -93,7 +93,10 @@ else:
     if errorStatus:  # SNMP agent errors
         print(
             "%s at %s"
-            % (errorStatus.prettyPrint(), varBinds[int(errorIndex) - 1] if errorIndex else "?")
+            % (
+                errorStatus.prettyPrint(),
+                varBinds[int(errorIndex) - 1] if errorIndex else "?",
+            )
         )
     else:
         for varBind in varBinds:  # SNMP response contents

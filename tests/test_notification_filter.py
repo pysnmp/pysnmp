@@ -35,13 +35,17 @@ def _setup_lcd(filter_subtree=None, filter_type="included"):
             filterType=filter_type,
         )
 
-    config.addNotificationTarget(engine, "notification", "params", "tag", "trap", **options)
+    config.addNotificationTarget(
+        engine, "notification", "params", "tag", "trap", **options
+    )
     return engine
 
 
 def _add_filter(engine, profile_name, subtree, filter_type="included"):
     mib_builder = engine.msgAndPduDsp.mibInstrumController.mibBuilder
-    (entry,) = mib_builder.importSymbols("SNMP-NOTIFICATION-MIB", "snmpNotifyFilterEntry")
+    (entry,) = mib_builder.importSymbols(
+        "SNMP-NOTIFICATION-MIB", "snmpNotifyFilterEntry"
+    )
     instance_id = entry.getInstIdFromIndices(profile_name, subtree)
     engine.msgAndPduDsp.mibInstrumController.writeVars(
         (
@@ -55,11 +59,15 @@ def _add_filter(engine, profile_name, subtree, filter_type="included"):
     return instance_id
 
 
-def _patch_originator_config(monkeypatch, targets, profiles=None, filters=None, notify_type=1):
+def _patch_originator_config(
+    monkeypatch, targets, profiles=None, filters=None, notify_type=1
+):
     profiles = profiles or {}
     filters = filters or {}
 
-    monkeypatch.setattr(ntforg.config, "getNotificationInfo", lambda *args: ("tag", notify_type))
+    monkeypatch.setattr(
+        ntforg.config, "getNotificationInfo", lambda *args: ("tag", notify_type)
+    )
     monkeypatch.setattr(ntforg.config, "getTargetNames", lambda *args: list(targets))
     monkeypatch.setattr(
         ntforg.config,
@@ -111,8 +119,12 @@ class TestMatchFilter:
 
     def test_included_and_excluded_matches(self):
         oid = ObjectIdentifier(SYS_DESCR)
-        assert ntforg._matchFilter([_filter_entry((1, 3, 6), filter_type=1)], oid) is True
-        assert ntforg._matchFilter([_filter_entry((1, 3, 6), filter_type=2)], oid) is False
+        assert (
+            ntforg._matchFilter([_filter_entry((1, 3, 6), filter_type=1)], oid) is True
+        )
+        assert (
+            ntforg._matchFilter([_filter_entry((1, 3, 6), filter_type=2)], oid) is False
+        )
 
     def test_longest_match_wins_independent_of_input_order(self):
         entries = [
@@ -120,7 +132,10 @@ class TestMatchFilter:
             _filter_entry((1, 3, 6), filter_type=1),
         ]
         assert ntforg._matchFilter(entries, ObjectIdentifier(SYS_DESCR)) is False
-        assert ntforg._matchFilter(list(reversed(entries)), ObjectIdentifier(SYS_DESCR)) is False
+        assert (
+            ntforg._matchFilter(list(reversed(entries)), ObjectIdentifier(SYS_DESCR))
+            is False
+        )
 
     def test_equal_length_tie_uses_original_subtree(self):
         entries = [
@@ -169,7 +184,9 @@ class TestFilterReaders:
 
         profile = lcd_config.getNotifyFilterProfile(engine, "params")
         assert profile == OctetString("shared-profile")
-        assert {tuple(entry[0]) for entry in lcd_config.getNotifyFilter(engine, profile)} == {
+        assert {
+            tuple(entry[0]) for entry in lcd_config.getNotifyFilter(engine, profile)
+        } == {
             COLD_START,
             SYS_DESCR,
         }
@@ -234,7 +251,9 @@ class TestNotificationOriginatorFiltering:
             profiles={"filtered": "profile"},
             filters={"profile": [_filter_entry((1, 3, 6, 1, 2, 1), filter_type=1)]},
         )
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", lambda *args: None)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", lambda *args: None
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
 
@@ -246,7 +265,9 @@ class TestNotificationOriginatorFiltering:
     def test_no_profile_sends_all_var_binds_unchanged(self, monkeypatch):
         engine = SnmpEngine()
         _patch_originator_config(monkeypatch, ["target"])
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", lambda *args: None)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", lambda *args: None
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
         originator.sendVarBinds(
@@ -263,7 +284,9 @@ class TestNotificationOriginatorFiltering:
             profiles={"target": "profile"},
             filters={"profile": [_filter_entry((1, 3, 6, 1, 2, 1), filter_type=1)]},
         )
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", lambda *args: None)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", lambda *args: None
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
         originator.sendVarBinds(
@@ -282,7 +305,9 @@ class TestNotificationOriginatorFiltering:
         _patch_originator_config(
             monkeypatch, ["target"], profiles={"target": "profile"}, filters=filters
         )
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", lambda *args: None)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", lambda *args: None
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
         originator.sendVarBinds(
@@ -302,10 +327,14 @@ class TestNotificationOriginatorFiltering:
             profiles={"target": "profile"},
             filters={"profile": [_filter_entry(COLD_START, filter_type=1)]},
         )
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", lambda *args: None)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", lambda *args: None
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
-        originator.sendVarBinds(engine, "notification", None, "", _notification_var_binds())
+        originator.sendVarBinds(
+            engine, "notification", None, "", _notification_var_binds()
+        )
         assert len(sent) == 1
         assert len(sent[0][1]) == 2
 
@@ -318,7 +347,9 @@ class TestNotificationOriginatorFiltering:
             if tuple(variable_name) == COLD_START:
                 raise error.StatusInformation(errorIndication=errind.notInView)
 
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", deny_notification_oid)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", deny_notification_oid
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
         originator.sendVarBinds(
@@ -335,7 +366,9 @@ class TestNotificationOriginatorFiltering:
             if security_name == "denied":
                 raise error.StatusInformation(errorIndication=errind.notInView)
 
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", target_access)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", target_access
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
         originator.sendVarBinds(
@@ -352,7 +385,9 @@ class TestNotificationOriginatorFiltering:
             filters={"profile": [_filter_entry((1, 3, 6, 1, 2, 1), filter_type=1)]},
             notify_type=2,
         )
-        monkeypatch.setattr(engine.accessControlModel[3], "isAccessAllowed", lambda *args: None)
+        monkeypatch.setattr(
+            engine.accessControlModel[3], "isAccessAllowed", lambda *args: None
+        )
         originator = ntforg.NotificationOriginator()
         sent = _capture_sends(monkeypatch, originator)
         callbacks = []
