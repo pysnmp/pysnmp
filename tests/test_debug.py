@@ -76,3 +76,50 @@ class TestDebug:
         )
         # Should not raise
         handler.emit(record)
+
+
+class TestDebugOff:
+    """The switch installed while debugging is off.
+
+    It stands in for a Debug instance so the ``logger & flag and logger(msg)``
+    idiom has one callable type either way. See pysnmp/pysnmp#178.
+    """
+
+    def test_module_logger_starts_off(self):
+        assert isinstance(debug.logger, debug.DebugOff)
+
+    def test_is_falsy(self):
+        assert not debug.DEBUG_OFF
+
+    def test_and_with_any_flag_is_false(self):
+        for flag in debug.flagMap.values():
+            assert not (debug.DEBUG_OFF & flag)
+            assert not (flag & debug.DEBUG_OFF)
+
+    def test_call_is_silent(self, caplog):
+        with caplog.at_level(logging.DEBUG, logger="pysnmp"):
+            assert debug.DEBUG_OFF("a message nobody wants") is None
+        assert caplog.records == []
+
+    def test_str(self):
+        assert str(debug.DEBUG_OFF) == "<debugging off>"
+
+    def test_set_logger_installs_and_restores(self):
+        try:
+            d = debug.Debug("io")
+            debug.setLogger(d)
+            assert debug.logger is d
+            assert debug.logger & debug.flagIO
+        finally:
+            debug.setLogger(None)
+        assert debug.logger is debug.DEBUG_OFF
+
+    def test_set_logger_zero_turns_debugging_off(self):
+        # 0 is how the flag was historically switched off, and still is.
+        debug.setLogger(debug.Debug("io"))
+        try:
+            debug.setLogger(0)
+            assert debug.logger is debug.DEBUG_OFF
+            assert not (debug.logger & debug.flagIO)
+        finally:
+            debug.setLogger(None)

@@ -108,16 +108,56 @@ class Debug:
         return flag & self._flags
 
 
-# This will yield false from bitwise and with a flag, and save
-# on unnecessary calls. setLogger() replaces it with a Debug instance, so the
-# annotation has to admit both: without it every `debug.logger(...)` call in
-# the package reads as an attempt to call an int.
-logger: "Debug | int" = 0
+class DebugOff:
+    """The stand-in for :class:`Debug` while debugging is switched off.
+
+    The package logs with ``debug.logger & flag and debug.logger(msg)``: the
+    bitwise and short-circuits so the message is never built unless the
+    category is enabled. That idiom used to run against a plain ``0``, which
+    made every one of the 240-odd call sites read as a call to an ``int``.
+
+    This answers the same and with a falsy value and swallows the call that
+    never happens, so ``logger`` is one callable type whether debugging is on
+    or off. :class:`Debug` cannot fill the role itself -- constructing one
+    installs a :class:`Printer` and logs the pysnmp version, which is exactly
+    what an unconfigured import must not do.
+    """
+
+    def __call__(self, msg):
+        """Discard `msg`. Nothing is listening."""
+
+    def __and__(self, flag):
+        return flagNone
+
+    def __rand__(self, flag):
+        return flagNone
+
+    def __bool__(self):
+        return False
+
+    def __str__(self):
+        return "<debugging off>"
+
+
+#: What `logger` holds until setLogger() installs a Debug instance. Also what
+#: setLogger() puts back when it is handed a false value to turn debugging off,
+#: which is how `0` -- the historical way to spell that -- keeps working.
+DEBUG_OFF = DebugOff()
+
+logger: "Debug | DebugOff" = DEBUG_OFF
 
 
 def setLogger(newLogger):
+    """Install `newLogger` as the debug switch, or turn debugging off.
+
+    Parameters
+    ----------
+    newLogger:
+        A :class:`Debug` instance to log through. Any false value -- ``0``,
+        ``None`` -- switches debugging off instead.
+    """
     global logger
-    logger = newLogger
+    logger = newLogger or DEBUG_OFF
 
 
 def prettify(value):

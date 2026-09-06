@@ -5,7 +5,7 @@
 #
 import time
 from collections.abc import Callable
-from typing import Any, NoReturn, TypeVar, cast
+from typing import Any, NoReturn, TypeVar
 
 from pyasn1.codec.ber import decoder, encoder, eoo
 from pyasn1.error import PyAsn1Error
@@ -46,7 +46,7 @@ def _run_or_raise_serialization_error(operation: Callable[[], _T], logLabel: str
         return operation()
     except PyAsn1Error as e:
         if logLabel and debug.logger & debug.flagSM:
-            cast(Callable[[str], None], debug.logger)(
+            debug.logger(
                 f"__generateRequestOrResponseMsg: {logLabel} serialization error: {e}"
             )
         raise error.StatusInformation(errorIndication=errind.serializationError)
