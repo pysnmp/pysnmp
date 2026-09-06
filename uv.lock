@@ -932,8 +932,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
-    { name = "pysnmp-pyasn1", specifier = ">=2.0.0,<3.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=2.1.0,<3.0.0" },
+    { name = "pysnmp-pyasn1", specifier = ">=2.0.0rc2,<3.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=2.1.0rc3,<3.0.0" },
 ]
 
 [package.metadata.requires-dev]
