@@ -524,9 +524,10 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         # rfc2576: 5.2.1
         communityName, transportInformation = securityParameters
 
-        scope = dict(
-            communityName=communityName, transportInformation=transportInformation
-        )
+        scope = {
+            "communityName": communityName,
+            "transportInformation": transportInformation,
+        }
 
         with execution_context(
             snmpEngine,

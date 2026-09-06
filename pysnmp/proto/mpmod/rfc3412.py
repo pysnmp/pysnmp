@@ -517,23 +517,20 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             f"prepareResponseMessage: securityModel {responseSecurityModel!r}, securityEngineId {snmpEngineID!r}, securityName {responseSecurityName!r}, securityLevel {responseSecurityLevel!r}"
         )
 
-        # 7.1.8a
-        try:
-            (securityParameters, wholeMsg) = smHandler.generateResponseMsg(
-                snmpEngine,
-                self.messageProcessingModelID,
-                msg,
-                snmpEngineMaxMessageSize.syntax,
-                responseSecurityModel,
-                snmpEngineID,
-                responseSecurityName,
-                responseSecurityLevel,
-                scopedPDU,
-                securityStateReference,
-            )
-        except error.StatusInformation:
-            # 7.1.8.b
-            raise
+        # 7.1.8a. A StatusInformation raised here propagates unchanged
+        # (:RFC:`3412#section-7.1.8` b).
+        (securityParameters, wholeMsg) = smHandler.generateResponseMsg(
+            snmpEngine,
+            self.messageProcessingModelID,
+            msg,
+            snmpEngineMaxMessageSize.syntax,
+            responseSecurityModel,
+            snmpEngineID,
+            responseSecurityName,
+            responseSecurityLevel,
+            scopedPDU,
+            securityStateReference,
+        )
 
         debug.logger & debug.flagMP and debug.logger(
             "prepareResponseMessage: SM finished"

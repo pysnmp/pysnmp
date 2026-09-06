@@ -145,7 +145,7 @@ class SnmpEngine:
 
             f = persistentPath / "boots"
             try:
-                snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(open(f).read())
+                snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(f.read_text())
             except (OSError, UnicodeDecodeError, ValueConstraintError, ValueError) as e:
                 debug.logger & debug.flagApp and debug.logger(
                     f"SnmpEngine: could not load SNMP Engine Boots: {e}"
@@ -153,7 +153,7 @@ class SnmpEngine:
 
             try:
                 snmpEngineBoots.syntax += 1
-            except Exception:
+            except Exception:  # noqa: BLE001 - the stored counter is whatever was on disk; anything that will not increment restarts it
                 snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(1)
 
             try:
@@ -161,7 +161,7 @@ class SnmpEngine:
                 os.write(fd, snmpEngineBoots.syntax.prettyPrint().encode("iso-8859-1"))
                 os.close(fd)
                 shutil.move(fn, f)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - persisting the boot counter is best effort; a read-only filesystem must not stop the engine
                 debug.logger & debug.flagApp and debug.logger(
                     f"SnmpEngine: could not stored SNMP Engine Boots: {e}"
                 )

@@ -183,8 +183,9 @@ class TrapPDUAPI:
                 import socket
 
                 agentAddress = IpAddress(socket.gethostbyname(socket.gethostname()))
-            except Exception:
-                agentAddress = IpAddress("0.0.0.0")
+            except Exception:  # noqa: BLE001 - resolving our own hostname is optional; the unspecified address is the documented fallback
+                # :RFC:`1157` agent-addr with the address unknown.
+                agentAddress = IpAddress("0.0.0.0")  # noqa: S104
             self._networkAddress = NetworkAddress().setComponentByPosition(
                 0, agentAddress
             )
@@ -287,14 +288,12 @@ class TrapPDUAPI:
     def setVarBinds(pdu, varBinds):
         varBindList = pdu.setComponentByPosition(5).getComponentByPosition(5)
         varBindList.clear()
-        idx = 0
-        for varBind in varBinds:
+        for idx, varBind in enumerate(varBinds):
             if isinstance(varBind, VarBind):
                 varBindList.setComponentByPosition(idx, varBind)
             else:
                 varBindList.setComponentByPosition(idx)
                 apiVarBind.setOIDVal(varBindList.getComponentByPosition(idx), varBind)
-            idx += 1
 
 
 apiTrapPDU = TrapPDUAPI()

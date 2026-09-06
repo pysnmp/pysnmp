@@ -558,7 +558,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
 
         # 3.1.3
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if usmUserAuthProtocol == noauth.NoAuth.serviceID:
                 raise error.StatusInformation(
                     errorIndication=errind.unsupportedSecurityLevel
@@ -663,7 +663,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
         # 3.1.4b
-        elif securityLevel == 1 or securityLevel == 2:
+        elif securityLevel in (1, 2):
             securityParameters.setComponentByPosition(5, "")
 
         debug.logger & debug.flagSM and debug.logger(
@@ -708,7 +708,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         )
 
         # 3.1.8a
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if usmUserAuthProtocol in self.authServices:
                 authHandler = self.authServices[usmUserAuthProtocol]
             else:
@@ -1113,7 +1113,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
 
         # 3.2.6
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if usmUserAuthProtocol in self.authServices:
                 authHandler = self.authServices[usmUserAuthProtocol]
             else:
@@ -1172,7 +1172,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
         # 3.2.7
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if msgAuthoritativeEngineId == snmpEngineID:
                 # Authoritative SNMP engine: use local notion (SF bug #1649032)
                 (snmpEngineBoots, snmpEngineTime) = mibBuilder.importSymbols(

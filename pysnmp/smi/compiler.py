@@ -64,7 +64,7 @@ else:
                 PyFileBorrower(x, genTexts=mibBuilder.loadTexts)
                 for x in getReadersFromUrls(
                     *kwargs.get("borrowers") or defaultBorrowers,
-                    **dict(lowcaseMatching=False),
+                    lowcaseMatching=False,
                 )
             ]
         )

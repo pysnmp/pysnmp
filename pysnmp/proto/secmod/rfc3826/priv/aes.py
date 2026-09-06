@@ -46,11 +46,7 @@ class Aes(base.AbstractEncryptionService):
         ) + (univ.OctetString(salt).asOctets(),)
 
     def __getDecryptionKey(self, privKey, snmpEngineBoots, snmpEngineTime, salt):
-        snmpEngineBoots, snmpEngineTime, salt = (
-            int(snmpEngineBoots),
-            int(snmpEngineTime),
-            salt,
-        )
+        snmpEngineBoots, snmpEngineTime = int(snmpEngineBoots), int(snmpEngineTime)
 
         iv = [
             snmpEngineBoots >> 24 & 0xFF,

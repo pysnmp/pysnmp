@@ -20,10 +20,7 @@ BYTECODE_SUFFIXES = importlib.machinery.BYTECODE_SUFFIXES
 
 PY_SUFFIXES = SOURCE_SUFFIXES + BYTECODE_SUFFIXES
 
-try:
-    from errno import ENOENT
-except ImportError:
-    ENOENT = -1
+from errno import ENOENT
 
 classTypes = (type,)
 
@@ -76,7 +73,7 @@ class __AbstractMibSource:
 
             except OSError as exc:
                 why = sys.exc_info()[1]
-                if ENOENT == -1 or why.errno == ENOENT:
+                if why.errno == ENOENT:
                     debug.logger & debug.flagBld and debug.logger(
                         f"file {f + pycSfx} access error: {why}"
                     )
@@ -107,7 +104,7 @@ class __AbstractMibSource:
 
             except OSError as exc:
                 why = sys.exc_info()[1]
-                if ENOENT == -1 or why.errno == ENOENT:
+                if why.errno == ENOENT:
                     debug.logger & debug.flagBld and debug.logger(
                         f"file {f + pySfx} access error: {why}"
                     )
@@ -124,7 +121,9 @@ class __AbstractMibSource:
                 break
 
         if pycTime != -1 and pycTime >= pyTime:
-            return marshal.loads(pycData), pycSfx
+            # The .pyc is one this package compiled from a MIB it found on its
+            # own MIB path, not untrusted input.
+            return marshal.loads(pycData), pycSfx  # noqa: S302
 
         if pyTime != -1:
             modData, pyPath = self._getData(f + pySfx, "r")
@@ -238,10 +237,8 @@ class DirMibSource(__AbstractMibSource):
         try:
             if f in os.listdir(self._srcName):  # make FS case-sensitive
                 p = os.path.join(self._srcName, f)
-                fp = open(p, mode)
-                data = fp.read()
-                fp.close()
-                return data, p
+                with open(p, mode) as fp:
+                    return fp.read(), p
 
         except OSError:
             why = sys.exc_info()
@@ -358,7 +355,9 @@ class MibBuilder:
             g = {"mibBuilder": self, "userCtx": userCtx}
 
             try:
-                exec(codeObj, g)
+                # Executing the MIB module is what loading one means: a pysnmp
+                # MIB is Python that calls back into this builder.
+                exec(codeObj, g)  # noqa: S102
 
             except Exception as exc:
                 self.__modPathsSeen.remove(modPath)

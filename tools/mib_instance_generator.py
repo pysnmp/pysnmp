@@ -87,7 +87,7 @@ def _default_value_for_syntax(syntax: Any, prefer_nonzero: bool = False) -> str 
     for literal in _candidate_literals(syntax, prefer_nonzero=prefer_nonzero):
         try:
             candidate = syntax.clone(ast.literal_eval(literal))
-        except Exception:
+        except Exception:  # noqa: BLE001, S112 - the point of the loop is to find a literal this syntax accepts
             continue
         if candidate.isValue:
             return literal
@@ -106,7 +106,7 @@ def _table_index_suffix(mibBuilder: Any, row: Any) -> tuple[int, ...]:
 
     try:
         return tuple(row.getInstIdFromIndices(*index_values))
-    except Exception:
+    except Exception:  # noqa: BLE001 - a MIB whose indices will not build gets the default instance identifier
         return (1,)
 
 
@@ -296,7 +296,7 @@ def main() -> int:
         source = generate_instances(
             mib_builder, module_name, instance_mod_suffix=args.suffix
         )
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001 - top level of a command-line tool: report and exit non-zero, never traceback
         print(f"Error processing MIB: {error}", file=sys.stderr)
         return 1
 

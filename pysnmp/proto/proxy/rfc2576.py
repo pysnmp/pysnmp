@@ -223,7 +223,9 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
                 )  # v2c.OctetString is more constrained
                 break
         else:
-            v1.apiTrapPDU.setAgentAddr(v1Pdu, v1.IpAddress("0.0.0.0"))
+            # :RFC:`2576#section-3.2` -- agent-addr is 0.0.0.0 when the v2c
+            # trap carries no snmpTrapAddress.
+            v1.apiTrapPDU.setAgentAddr(v1Pdu, v1.IpAddress("0.0.0.0"))  # noqa: S104
 
         # 3.2.3
         if snmpTrapOIDParam in __v2ToV1TrapMap:

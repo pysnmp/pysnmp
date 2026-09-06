@@ -211,14 +211,14 @@ class NotificationOriginator:
                     self.processResponsePdu,
                     (sendRequestHandle, cbFun, cbCtx),
                 )
-            except error.StatusInformation as statusInformation:
+            except error.StatusInformation as sendError:
                 debug.logger & debug.flagApp and debug.logger(
-                    f"processResponsePdu: sendRequestHandle {sendRequestHandle}: sendPdu() failed with {statusInformation!r} "
+                    f"processResponsePdu: sendRequestHandle {sendRequestHandle}: sendPdu() failed with {sendError!r} "
                 )
                 cbFun(
                     snmpEngine,
                     sendRequestHandle,
-                    statusInformation["errorIndication"],
+                    sendError["errorIndication"],
                     None,
                     cbCtx,
                 )

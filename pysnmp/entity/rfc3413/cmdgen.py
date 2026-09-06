@@ -172,20 +172,20 @@ class CommandGenerator:
                     origRetries,
                     origDiscoveryRetries,
                 )
-                return
 
-            except StatusInformation as statusInformation:
+            except StatusInformation as sendError:
                 debug.logger & debug.flagApp and debug.logger(
-                    f"processResponsePdu: origSendRequestHandle {sendPduHandle}, _sendPdu() failed with {statusInformation!r}"
+                    f"processResponsePdu: origSendRequestHandle {sendPduHandle}, _sendPdu() failed with {sendError!r}"
                 )
                 cbFun(
                     snmpEngine,
                     origSendRequestHandle,
-                    statusInformation["errorIndication"],
+                    sendError["errorIndication"],
                     None,
                     cbCtx,
                 )
-                return
+
+            return
 
         if (
             origMessageProcessingModel != messageProcessingModel

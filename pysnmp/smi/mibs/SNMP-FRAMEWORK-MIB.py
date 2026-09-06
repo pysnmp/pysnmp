@@ -119,12 +119,12 @@ class SnmpEngineID(TextualConvention, OctetString):
     try:
         # Attempt to base engine ID on local system name and properties
         defaultValue += [ord(x) for x in os.uname()[1][:16]]
-    except Exception:
+    except Exception:  # noqa: BLE001, S110 - best-effort seed; a platform without uname() just contributes nothing
         pass
     try:
         # Attempt to base engine ID on PID
         defaultValue += [os.getpid() >> 8 & 0xFF, os.getpid() & 0xFF]
-    except Exception:
+    except Exception:  # noqa: BLE001, S110 - best-effort seed, as above
         pass
     # add pseudo-random text ID
     defaultValue += [id(defaultValue) >> 8 & 0xFF, id(defaultValue) & 0xFF]
@@ -136,7 +136,7 @@ class SnmpEngineTime(Integer32):
         if not args:
             try:
                 args = (time.time() - self,)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - no value set yet, so clone with no argument
                 pass
         return Integer32.clone(self, *args, **kwargs)
 

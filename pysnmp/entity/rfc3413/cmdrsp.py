@@ -303,10 +303,10 @@ class CommandResponderBase:
             )
             errorIndication = statusInformation["errorIndication"]
             # 3.2.5...
-            if (
-                errorIndication == errind.noSuchView
-                or errorIndication == errind.noAccessEntry
-                or errorIndication == errind.noGroupName
+            if errorIndication in (
+                errind.noSuchView,
+                errind.noAccessEntry,
+                errind.noGroupName,
             ):
                 raise pysnmp.smi.error.AuthorizationError(
                     name=name, idx=idx

@@ -219,8 +219,7 @@ class MibInstrumController(AbstractMibInstrumController):
             status = "ok"
             if state == "stop":
                 break
-            idx = 0
-            for name, val in inputVarBinds:
+            for idx, (name, val) in enumerate(inputVarBinds):
                 f = getattr(mibTree, state, None)
                 if f is None:
                     raise error.SmiError(f"Unsupported state handler {state} at {self}")
@@ -244,7 +243,6 @@ class MibInstrumController(AbstractMibInstrumController):
                     )
                     if rval is not None:
                         outputVarBinds.append((rval[0], rval[1]))
-                idx += 1
         if origExc:
             try:
                 raise origExc.with_traceback(origTraceback)

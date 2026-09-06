@@ -269,32 +269,26 @@ class MsgAndPduDispatcher:
             "returnResponsePdu: PDU {}".format(PDU and PDU.prettyPrint() or "<empty>")
         )
 
-        # 4.1.2.2
-        try:
-            (transportDomain, transportAddress, outgoingMessage) = (
-                mpHandler.prepareResponseMessage(
-                    snmpEngine,
-                    messageProcessingModel,
-                    securityModel,
-                    securityName,
-                    securityLevel,
-                    contextEngineId,
-                    contextName,
-                    pduVersion,
-                    PDU,
-                    maxSizeResponseScopedPDU,
-                    stateReference,
-                    statusInformation,
-                )
+        # 4.1.2.2. A StatusInformation raised here propagates unchanged
+        # (:RFC:`3412#section-4.1.2.3`).
+        (transportDomain, transportAddress, outgoingMessage) = (
+            mpHandler.prepareResponseMessage(
+                snmpEngine,
+                messageProcessingModel,
+                securityModel,
+                securityName,
+                securityLevel,
+                contextEngineId,
+                contextName,
+                pduVersion,
+                PDU,
+                maxSizeResponseScopedPDU,
+                stateReference,
+                statusInformation,
             )
+        )
 
-            debug.logger & debug.flagDsp and debug.logger(
-                "returnResponsePdu: MP suceeded"
-            )
-
-        except error.StatusInformation:
-            # 4.1.2.3
-            raise
+        debug.logger & debug.flagDsp and debug.logger("returnResponsePdu: MP suceeded")
 
         # Handle oversized messages XXX transport constrains?
         (snmpEngineMaxMessageSize,) = (

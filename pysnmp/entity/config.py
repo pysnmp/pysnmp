@@ -520,7 +520,8 @@ def addTargetAddr(
         (SnmpUDPAddress,) = mibBuilder.importSymbols("SNMPv2-TM", "SnmpUDPAddress")
         transportAddress = SnmpUDPAddress(transportAddress)
         if sourceAddress is None:
-            sourceAddress = ("0.0.0.0", 0)
+            # The unspecified address: any source, not a bind address.
+            sourceAddress = ("0.0.0.0", 0)  # noqa: S104
         sourceAddress = SnmpUDPAddress(sourceAddress)
     elif transportDomain[: len(snmpUDP6Domain)] == snmpUDP6Domain:
         (TransportAddressIPv6,) = mibBuilder.importSymbols(

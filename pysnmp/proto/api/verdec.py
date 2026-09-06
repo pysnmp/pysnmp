@@ -24,9 +24,6 @@ def decodeMessageVersion(wholeMsg):
             recursiveFlag=False,
             substrateFun=lambda a, b, c: (a, b[:c]),
         )
-        if eoo.endOfOctets.isSameTypeWith(ver):
-            raise ProtocolError("EOO at SNMP version component")
-        return ver
     except PyAsn1Error as exc:
         raise ProtocolError("Invalid BER at SNMP version component") from exc
     except (TypeError, ValueError) as exc:
@@ -36,3 +33,10 @@ def decodeMessageVersion(wholeMsg):
         # first thing an untrusted datagram touches, so nothing but
         # ProtocolError may escape here.
         raise ProtocolError(f"Malformed BER at SNMP version component: {exc}") from exc
+    else:
+        # Outside the try on purpose: ProtocolError derives from PyAsn1Error,
+        # so raising it above would be caught by the handler two lines up and
+        # come back out as "Invalid BER" instead.
+        if eoo.endOfOctets.isSameTypeWith(ver):
+            raise ProtocolError("EOO at SNMP version component")
+        return ver

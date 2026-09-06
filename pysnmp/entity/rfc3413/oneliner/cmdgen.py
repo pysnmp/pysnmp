@@ -97,7 +97,9 @@ class AsynCommandGenerator:
             transportTarget,
             ContextData(contextEngineId, contextName),
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncGetCmd = getCmd
@@ -143,7 +145,9 @@ class AsynCommandGenerator:
             transportTarget,
             ContextData(contextEngineId, contextName),
             *varBinds,
-            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncSetCmd = setCmd
@@ -189,7 +193,9 @@ class AsynCommandGenerator:
             transportTarget,
             ContextData(contextEngineId, contextName),
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncNextCmd = nextCmd
@@ -239,7 +245,9 @@ class AsynCommandGenerator:
             nonRepeaters,
             maxRepetitions,
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo, lookupMib=lookupNames or lookupValues),
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncBulkCmd = bulkCmd

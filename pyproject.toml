@@ -192,10 +192,20 @@ ignore = [
 # Examples are documentation: star imports and binding every interface are
 # what an agent example is showing you how to do.
 "examples/**" = ["F401", "F403", "F405", "F821", "S104"]
+# MD5 and SHA-1 are not a choice here: usmHMACMD5AuthProtocol and
+# usmHMACSHAAuthProtocol are what :RFC:`3414#section-6` and #section-7 define,
+# and pysnmp warns at runtime where either is configured.
+"pysnmp/proto/secmod/rfc3414/auth/hmacmd5.py" = ["S324"]
+"pysnmp/proto/secmod/rfc3414/auth/hmacsha.py" = ["S324"]
 # Tests assert, exec the code they generate, and check for broad exceptions
 # on purpose. B904: test_error_cause.py raises without `from` deliberately --
 # implicit __context__ chaining is the thing under test.
-"tests/**" = ["S101", "S102", "S104", "B017", "B904", "BLE", "PL", "RUF", "TRY"]
+# S105/S108/S603: fixed passphrases, a fixed socket path and subprocess calls
+# with a literal argv are what a test harness is made of.
+"tests/**" = [
+    "S101", "S102", "S104", "S105", "S108", "S603",
+    "B017", "B904", "BLE", "PL", "RUF", "TRY",
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pysnmp"]

@@ -1002,9 +1002,11 @@ class MibTableColumn(MibScalar):
             if self._vars[name] is None:
                 del self._vars[name]
             else:
-                # Catch half-created instances (hackerish)
+                # Catch half-created instances (hackerish): comparing a
+                # value-less pyasn1 object is what raises, so the comparison
+                # is the probe and its result is not wanted.
                 try:
-                    self._vars[name] == 0
+                    self._vars[name] == 0  # noqa: B015
                 except PyAsn1Error:
                     del self._vars[name]
                 else:
@@ -1412,17 +1414,15 @@ class MibTableRow(MibTree):
             cacheable = False
         except KeyError:
             cacheable = True
-        idx = 0
         instId = ()
         parentIndices = []
-        for impliedFlag, modName, symName in self.indexNames:
+        for idx, (impliedFlag, modName, symName) in enumerate(self.indexNames):
             if idx >= len(indices):
                 break
             (mibObj,) = mibBuilder.importSymbols(modName, symName)
             syntax = mibObj.syntax.clone(indices[idx])
             instId += self.getAsName(syntax, impliedFlag, parentIndices)
             parentIndices.append(syntax)
-            idx += 1
         if cacheable:
             self.__idxToIdCache[indices] = instId
         return instId

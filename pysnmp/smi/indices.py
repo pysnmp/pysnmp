@@ -68,8 +68,8 @@ class OrderedDict(dict):
                     self[k] = v
 
         if kwargs:
-            for k in kwargs:
-                self[k] = kwargs[k]
+            for k, v in kwargs.items():
+                self[k] = v
 
     def sortingFun(self, keys):
         keys.sort()

@@ -34,7 +34,7 @@ class TestOrderedDict:
     def test_items_and_values_follow_the_same_order(self):
         d = self._built()
         assert [k for k, _ in d.items()] == d.keys()
-        assert d.values() == [k.upper() for k in d.keys()]
+        assert d.values() == [k.upper() for k in d]
 
     def test_deletion_keeps_the_order(self):
         d = self._built()
