@@ -234,7 +234,7 @@ class OctetString(univ.OctetString):
     # having zero-range size constraint applied. The following is
     # supposed to be used for setting and querying this property.
 
-    fixedLength = None
+    fixedLength: int | None = None
 
     def setFixedLength(self, value):
         self.fixedLength = value

@@ -4,6 +4,9 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from collections.abc import Callable
+from typing import Any
+
 from pyasn1.type import univ
 
 from pysnmp import debug, error, nextid
@@ -47,6 +50,12 @@ def getNextVarBinds(varBinds, origVarBinds=None):
 
 class CommandGenerator:
     _null = univ.Null("")
+
+    #: Deprecated pre-4.4 entry point, superseded by sendVarBinds(). The
+    #: implementations are installed onto the concrete generators at the foot
+    #: of this module; declaring it here is what makes those assignments legal
+    #: rather than a monkey-patch onto a class that never mentions the name.
+    sendReq: Callable[..., Any]
 
     def __init__(self, **options):
         self.__options = options

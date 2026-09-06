@@ -4,6 +4,9 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from collections.abc import Callable
+from typing import Any
+
 from pysnmp import debug, nextid
 from pysnmp.entity.rfc3413 import config
 from pysnmp.proto import errind, error, rfc3411
@@ -97,6 +100,12 @@ def _matchFilter(filterEntries, oid):
 
 class NotificationOriginator:
     acmID = 3  # default MIB access control method to use
+
+    #: Deprecated pre-4.4 entry point, superseded by sendVarBinds(). The
+    #: implementation is installed at the foot of this module; declaring it
+    #: here is what makes that assignment legal rather than a monkey-patch
+    #: onto a class that never mentions the name.
+    sendNotification: Callable[..., Any]
 
     def __init__(self, **options):
         self.__pendingReqs = {}

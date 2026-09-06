@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from pyasn1.type import tag
+
 import pysnmp.smi.error
 from pysnmp import debug
 from pysnmp.proto import errind, error, rfc1902, rfc1905, rfc3411
@@ -14,7 +16,8 @@ from pysnmp.proto.proxy import rfc2576
 # 3.2
 class CommandResponderBase:
     acmID = 3  # default MIB access control method to use
-    pduTypes = ()
+    #: PDU tag sets this responder registers for; each subclass names its own.
+    pduTypes: tuple[tag.TagSet, ...] = ()
 
     def __init__(self, snmpEngine, snmpContext):
         snmpEngine.msgAndPduDsp.registerContextEngineId(
