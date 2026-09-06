@@ -195,7 +195,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         elif securityLevel == 3:
             msgFlags |= 0x03
         else:
-            raise error.ProtocolError("Unknown securityLevel %s" % securityLevel)
+            raise error.ProtocolError(f"Unknown securityLevel {securityLevel}")
 
         if pdu.tagSet in rfc3411.confirmedClassPDUs:
             msgFlags |= 0x04
@@ -262,7 +262,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         msgID = self._cache.newMsgID()
 
         debug.logger & debug.flagMP and debug.logger(
-            "prepareOutgoingMessage: new msgID %s" % msgID
+            f"prepareOutgoingMessage: new msgID {msgID}"
         )
 
         k = (transportDomain, transportAddress)
@@ -417,7 +417,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         transportAddress = cachedParams["transportAddress"]
 
         debug.logger & debug.flagMP and debug.logger(
-            "prepareResponseMessage: stateReference %s" % stateReference
+            f"prepareResponseMessage: stateReference {stateReference}"
         )
 
         # 7.1.3
@@ -473,8 +473,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             pdu = reportPDU
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareResponseMessage: prepare report PDU for statusInformation %s"
-                % statusInformation
+                f"prepareResponseMessage: prepare report PDU for statusInformation {statusInformation}"
             )
         # 7.1.4
         if not responseContextEngineId:
@@ -647,7 +646,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             origTraceback = smError.__traceback__
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareDataElements: SM failed, statusInformation %s" % smError
+                f"prepareDataElements: SM failed, statusInformation {smError}"
             )
 
             with execution_context(
@@ -915,7 +914,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             )
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareDataElements: new stateReference %s" % stateReference
+                f"prepareDataElements: new stateReference {stateReference}"
             )
 
             with execution_context(

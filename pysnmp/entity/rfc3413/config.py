@@ -65,7 +65,7 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
                 snmpSourceAddrTAddress.name + tblIdx
             ).syntax
         except NoSuchInstanceError:
-            raise SmiError("Target %s not configured to LCD" % snmpTargetAddrName)
+            raise SmiError(f"Target {snmpTargetAddrName} not configured to LCD")
 
         transport = snmpEngine.transportDispatcher.getTransport(snmpTargetAddrTDomain)
 
@@ -155,7 +155,7 @@ def getTargetParams(snmpEngine, paramsName):
                 snmpTargetParamsSecurityLevel.name + tblIdx
             ).syntax
         except NoSuchInstanceError:
-            raise SmiError("Parameters %s not configured at LCD" % paramsName)
+            raise SmiError(f"Parameters {paramsName} not configured at LCD")
 
         nameToParamsMap[paramsName] = (
             snmpTargetParamsMPModel,
@@ -227,7 +227,7 @@ def getNotificationInfo(snmpEngine, notificationTarget):
             snmpNotifyType = snmpNotifyType.getNode(snmpNotifyType.name + tblIdx).syntax
 
         except NoSuchInstanceError:
-            raise SmiError("Target %s not configured at LCD" % notificationTarget)
+            raise SmiError(f"Target {notificationTarget} not configured at LCD")
 
         targetToNotifyMap[notificationTarget] = (snmpNotifyTag, snmpNotifyType)
 
@@ -285,7 +285,7 @@ def getTargetNames(snmpEngine, tag):
         cache["id"] = snmpTargetAddrEntry.branchVersionId
 
     if tag not in tagToTargetsMap:
-        raise SmiError("Transport tag %s not configured at LCD" % tag)
+        raise SmiError(f"Transport tag {tag} not configured at LCD")
 
     return tagToTargetsMap[tag]
 

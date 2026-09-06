@@ -77,7 +77,7 @@ class Debug:
             )
         else:
             self._printer = Printer()
-        self("running pysnmp version %s" % __version__)
+        self(f"running pysnmp version {__version__}")
         for f in flags:
             inverse = f and f[0] in ("!", "~")
             if inverse:
@@ -88,7 +88,7 @@ class Debug:
                 else:
                     self._flags |= flagMap[f]
             except KeyError:
-                raise error.PySnmpError("bad debug flag %s" % f)
+                raise error.PySnmpError(f"bad debug flag {f}")
 
             self(
                 "debug category '{}' {}".format(f, inverse and "disabled" or "enabled")
@@ -175,7 +175,7 @@ def prettify(value):
 def hexdump(octets):
     return " ".join(
         [
-            "{}{:02X}".format(n % 16 == 0 and ("\n%.5d: " % n) or "", x)
+            "{}{:02X}".format(n % 16 == 0 and f"\n{n:05d}: " or "", x)
             for n, x in zip(range(len(octets)), list(octets))
         ]
     )

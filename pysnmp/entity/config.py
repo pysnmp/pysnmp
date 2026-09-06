@@ -198,17 +198,9 @@ def addV1System(
 
     debug.logger & debug.flagSM and debug.logger(
         "addV1System: added new table entry "
-        'communityIndex "%s" communityName "%s" securityName "%s" '
-        'contextEngineId "%s" contextName "%s" transportTag '
-        '"%s"'
-        % (
-            communityIndex,
-            debug.prettify(communityName),
-            debug.prettify(securityName),
-            debug.prettify(contextEngineId),
-            debug.prettify(contextName),
-            debug.prettify(transportTag),
-        )
+        f'communityIndex "{communityIndex}" communityName "{debug.prettify(communityName)}" securityName "{debug.prettify(securityName)}" '
+        f'contextEngineId "{debug.prettify(contextEngineId)}" contextName "{debug.prettify(contextName)}" transportTag '
+        f'"{debug.prettify(transportTag)}"'
     )
 
 
@@ -221,7 +213,7 @@ def delV1System(snmpEngine: Any, communityIndex: str) -> None:
     )
 
     debug.logger & debug.flagSM and debug.logger(
-        'delV1System: deleted table entry by communityIndex "%s"' % (communityIndex,)
+        f'delV1System: deleted table entry by communityIndex "{communityIndex}"'
     )
 
 
@@ -390,25 +382,11 @@ def addV3User(
 
     debug.logger & debug.flagSM and debug.logger(
         "addV3User: added new table entries "
-        'userName "%s" securityName "%s" authProtocol %s '
-        'privProtocol %s localAuthKey "%s" localPrivKey "%s" '
-        'masterAuthKey "%s" masterPrivKey "%s" authKey "%s" '
-        'privKey "%s" by index securityName "%s" securityEngineId '
-        '"%s"'
-        % (
-            userName,
-            securityName,
-            authProtocol,
-            privProtocol,
-            localAuthKey and localAuthKey.prettyPrint(),
-            localPrivKey and localPrivKey.prettyPrint(),
-            masterAuthKey and masterAuthKey.prettyPrint(),
-            masterPrivKey and masterPrivKey.prettyPrint(),
-            authKey and authKey.prettyPrint(),
-            privKey and privKey.prettyPrint(),
-            securityName,
-            securityEngineId.prettyPrint(),
-        )
+        f'userName "{userName}" securityName "{securityName}" authProtocol {authProtocol} '
+        f'privProtocol {privProtocol} localAuthKey "{localAuthKey and localAuthKey.prettyPrint()}" localPrivKey "{localPrivKey and localPrivKey.prettyPrint()}" '
+        f'masterAuthKey "{masterAuthKey and masterAuthKey.prettyPrint()}" masterPrivKey "{masterPrivKey and masterPrivKey.prettyPrint()}" authKey "{authKey and authKey.prettyPrint()}" '
+        f'privKey "{privKey and privKey.prettyPrint()}" by index securityName "{securityName}" securityEngineId '
+        f'"{securityEngineId.prettyPrint()}"'
     )
 
 
@@ -435,8 +413,8 @@ def delV3User(
 
     debug.logger & debug.flagSM and debug.logger(
         "delV3User: deleted table entries by index "
-        'userName "%s" securityEngineId '
-        '"%s"' % (debug.prettify(userName), securityEngineId.prettyPrint())
+        f'userName "{debug.prettify(userName)}" securityEngineId '
+        f'"{securityEngineId.prettyPrint()}"'
     )
 
     # Drop all derived rows
@@ -482,7 +460,7 @@ def addTargetParams(
     elif mpModel == 3:
         securityModel = 3
     else:
-        raise error.PySnmpError("Unknown MP model %s" % mpModel)
+        raise error.PySnmpError(f"Unknown MP model {mpModel}")
 
     snmpTargetParamsEntry, tblIdx = __cookTargetParamsInfo(snmpEngine, name)
 
@@ -838,7 +816,7 @@ def __cookVacmUserInfo(
 ) -> tuple[Any, Any, Any, Any, Any]:
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-    groupName = "v-%s-%d" % (hash(securityName), securityModel)
+    groupName = f"v-{hash(securityName)}-{securityModel}"
     (SnmpSecurityLevel,) = mibBuilder.importSymbols(
         "SNMP-FRAMEWORK-MIB", "SnmpSecurityLevel"
     )
@@ -1046,7 +1024,7 @@ def __cookNotificationTargetInfo(
     profileName = (
         filterProfileName
         if filterProfileName is not None
-        else "%s-filter" % hash(notificationName)
+        else f"{hash(notificationName)}-filter"
     )
 
     if filterSubtree:

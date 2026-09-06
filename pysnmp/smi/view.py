@@ -147,7 +147,7 @@ class MibViewController:
         modNames = self.__mibSymbolsIdx.keys()
         if modNames:
             return modNames[index]
-        raise error.SmiError("No modules loaded at %s" % self)
+        raise error.SmiError(f"No modules loaded at {self}")
 
     def getFirstModuleName(self):
         return self.getOrderedModuleName(0)

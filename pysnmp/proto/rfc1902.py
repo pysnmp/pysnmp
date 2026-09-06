@@ -348,7 +348,7 @@ class IpAddress(OctetString):
             try:
                 value = [int(x) for x in value.split(".")]
             except Exception:
-                raise error.ProtocolError("Bad IP address syntax %s" % value)
+                raise error.ProtocolError(f"Bad IP address syntax {value}")
         value = OctetString.prettyIn(self, value)
         if len(value) != 4:
             raise error.ProtocolError("Bad IP address syntax")
@@ -356,7 +356,7 @@ class IpAddress(OctetString):
 
     def prettyOut(self, value):
         if value:
-            return ".".join(["%d" % x for x in self.__class__(value).asNumbers()])
+            return ".".join([str(x) for x in self.__class__(value).asNumbers()])
         else:
             return ""
 
@@ -675,7 +675,7 @@ class Bits(OctetString):
         for bit in bits:  # tuple of named bits
             v = self.namedValues[bit]
             if v is None:
-                raise error.ProtocolError("Unknown named bit %s" % bit)
+                raise error.ProtocolError(f"Unknown named bit {bit}")
             d, m = divmod(v, 8)
             if d >= len(octets):
                 octets.extend([0] * (d - len(octets) + 1))

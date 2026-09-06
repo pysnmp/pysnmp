@@ -516,7 +516,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 pass
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareDataElements: cached by new stateReference %s" % stateReference
+                f"prepareDataElements: cached by new stateReference {stateReference}"
             )
 
             # rfc3412: 7.2.13c

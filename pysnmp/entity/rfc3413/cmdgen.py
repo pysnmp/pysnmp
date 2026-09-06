@@ -80,7 +80,7 @@ class CommandGenerator:
 
         # 3.1.1
         if sendPduHandle not in self.__pendingReqs:
-            raise error.PySnmpError("Missing sendPduHandle %s" % sendPduHandle)
+            raise error.PySnmpError(f"Missing sendPduHandle {sendPduHandle}")
 
         (
             origTransportDomain,
@@ -121,8 +121,8 @@ class CommandGenerator:
                 or origDiscoveryRetries > self.__options.get("discoveryRetries", 4)
             ):
                 debug.logger & debug.flagApp and debug.logger(
-                    "processResponsePdu: sendPduHandle %s, retry count %d exceeded"
-                    % (sendPduHandle, origRetries)
+                    f"processResponsePdu: sendPduHandle {sendPduHandle}, "
+                    f"retry count {origRetries} exceeded"
                 )
                 cbFun(snmpEngine, origSendRequestHandle, errorIndication, None, cbCtx)
                 return
@@ -198,8 +198,7 @@ class CommandGenerator:
             or origPduVersion != pduVersion
         ):
             debug.logger & debug.flagApp and debug.logger(
-                "processResponsePdu: sendPduHandle %s, request/response data mismatch"
-                % sendPduHandle
+                f"processResponsePdu: sendPduHandle {sendPduHandle}, request/response data mismatch"
             )
 
             cbFun(snmpEngine, origSendRequestHandle, "badResponse", None, cbCtx)
@@ -212,8 +211,7 @@ class CommandGenerator:
         # 3.1.2
         if v2c.apiPDU.getRequestID(PDU) != v2c.apiPDU.getRequestID(origPdu):
             debug.logger & debug.flagApp and debug.logger(
-                "processResponsePdu: sendPduHandle %s, request-id/response-id mismatch"
-                % sendPduHandle
+                f"processResponsePdu: sendPduHandle {sendPduHandle}, request-id/response-id mismatch"
             )
             cbFun(snmpEngine, origSendRequestHandle, "badResponse", None, cbCtx)
             return
@@ -300,8 +298,8 @@ class CommandGenerator:
         )
 
         debug.logger & debug.flagApp and debug.logger(
-            "sendPdu: sendPduHandle %s, timeout %d*10 ms/%d ticks, retry 0 of %d"
-            % (sendPduHandle, timeout, timeoutInTicks, retryCount)
+            f"sendPdu: sendPduHandle {sendPduHandle}, timeout {timeout}*10 ms/"
+            f"{timeoutInTicks} ticks, retry 0 of {retryCount}"
         )
 
         return sendRequestHandle
@@ -468,8 +466,7 @@ class NextCommandGenerator(NextCommandGeneratorSingleRun):
             cbCtx,
         ):
             debug.logger & debug.flagApp and debug.logger(
-                "processResponseVarBinds: sendRequestHandle %s, app says to stop walking"
-                % sendRequestHandle
+                f"processResponseVarBinds: sendRequestHandle {sendRequestHandle}, app says to stop walking"
             )
             return  # app says enough
 
@@ -616,8 +613,7 @@ class BulkCommandGenerator(BulkCommandGeneratorSingleRun):
             cbCtx,
         ):
             debug.logger & debug.flagApp and debug.logger(
-                "processResponseVarBinds: sendRequestHandle %s, app says to stop walking"
-                % sendRequestHandle
+                f"processResponseVarBinds: sendRequestHandle {sendRequestHandle}, app says to stop walking"
             )
             return  # app says enough
 

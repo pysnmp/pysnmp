@@ -142,15 +142,14 @@ class SnmpTagList(TextualConvention, OctetString):
             if v in self._delimiters:
                 if inDelim:
                     raise error.SmiError(
-                        "Leading or multiple delimiters not allowed in tag list %r"
-                        % value
+                        f"Leading or multiple delimiters not allowed in tag list {value!r}"
                     )
                 inDelim = True
             else:
                 inDelim = False
         if value and inDelim:
             raise error.SmiError(
-                "Dangling delimiter not allowed in tag list %r" % value
+                f"Dangling delimiter not allowed in tag list {value!r}"
             )
         return OctetString.prettyIn(self, value)
 

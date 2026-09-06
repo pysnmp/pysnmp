@@ -84,7 +84,7 @@ class MetaObserver:
 
     def registerObserver(self, cbFun, *execpoints, **kwargs):
         if cbFun in self.__contexts:
-            raise error.PySnmpError("duplicate observer %s" % cbFun)
+            raise error.PySnmpError(f"duplicate observer {cbFun}")
         else:
             self.__contexts[cbFun] = kwargs.get("cbCtx")
         for execpoint in execpoints:

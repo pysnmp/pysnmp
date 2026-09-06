@@ -149,7 +149,7 @@ class CommandResponderBase:
             PDU.tagSet not in rfc3411.readClassPDUs
             and PDU.tagSet not in rfc3411.writeClassPDUs
         ):
-            raise error.ProtocolError("Unexpected PDU class %s" % PDU.tagSet)
+            raise error.ProtocolError(f"Unexpected PDU class {PDU.tagSet}")
 
         # 3.2.2 --> no-op
 
@@ -328,7 +328,7 @@ class CommandResponderBase:
             elif errorIndication == errind.notInView:
                 return 1
             else:
-                raise error.ProtocolError("Unknown ACM error %s" % errorIndication)
+                raise error.ProtocolError(f"Unknown ACM error {errorIndication}")
         else:
             # rfc2576: 4.1.2.1
             if (
@@ -402,7 +402,7 @@ class BulkCommandResponder(CommandResponderBase):
             M = min(M, self.maxVarBinds // R)
 
         debug.logger & debug.flagApp and debug.logger(
-            "handleMgmtOperation: N %d, M %d, R %d" % (N, M, R)
+            f"handleMgmtOperation: N {N}, M {M}, R {R}"
         )
 
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readNextVars

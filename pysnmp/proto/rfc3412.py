@@ -52,7 +52,7 @@ class MsgAndPduDispatcher:
         if stateReference in self.__transportInfo:
             return self.__transportInfo[stateReference]
         else:
-            raise error.ProtocolError("No data for stateReference %s" % stateReference)
+            raise error.ProtocolError(f"No data for stateReference {stateReference}")
 
     # Application registration with dispatcher
 
@@ -152,11 +152,9 @@ class MsgAndPduDispatcher:
             )
 
             debug.logger & debug.flagDsp and debug.logger(
-                "sendPdu: current time %d ticks, one tick is %s seconds"
-                % (
-                    snmpEngine.transportDispatcher.getTimerTicks(),
-                    snmpEngine.transportDispatcher.getTimerResolution(),
-                )
+                f"sendPdu: current time "
+                f"{snmpEngine.transportDispatcher.getTimerTicks()} ticks, one tick "
+                f"is {snmpEngine.transportDispatcher.getTimerResolution()} seconds"
             )
 
         debug.logger & debug.flagDsp and debug.logger(
@@ -355,7 +353,7 @@ class MsgAndPduDispatcher:
             return b""  # n.b the whole buffer gets dropped
 
         debug.logger & debug.flagDsp and debug.logger(
-            "receiveMessage: msgVersion %s, msg decoded" % msgVersion
+            f"receiveMessage: msgVersion {msgVersion}, msg decoded"
         )
 
         messageProcessingModel = msgVersion
@@ -401,8 +399,7 @@ class MsgAndPduDispatcher:
                 # Dropped REPORT -- re-run pending reqs queue as some
                 # of them may be waiting for this REPORT
                 debug.logger & debug.flagDsp and debug.logger(
-                    "receiveMessage: MP failed, statusInformation %s, forcing a retry"
-                    % mpError
+                    f"receiveMessage: MP failed, statusInformation {mpError}, forcing a retry"
                 )
                 self.__expireRequest(
                     mpError["sendPduHandle"],
@@ -424,7 +421,7 @@ class MsgAndPduDispatcher:
             return restOfWholeMsg
 
         debug.logger & debug.flagDsp and debug.logger(
-            "receiveMessage: PDU %s" % PDU.prettyPrint()
+            f"receiveMessage: PDU {PDU.prettyPrint()}"
         )
 
         # 4.2.2
@@ -432,7 +429,7 @@ class MsgAndPduDispatcher:
             # 4.2.2.1 (request or notification)
 
             debug.logger & debug.flagDsp and debug.logger(
-                "receiveMessage: pduType %s" % pduType
+                f"receiveMessage: pduType {pduType}"
             )
             # 4.2.2.1.1
             processPdu = self.getRegisteredApp(contextEngineId, pduType)
@@ -483,7 +480,7 @@ class MsgAndPduDispatcher:
 
                 except PySnmpError as e:
                     debug.logger & debug.flagDsp and debug.logger(
-                        "receiveMessage: report failed, statusInformation %s" % e
+                        f"receiveMessage: report failed, statusInformation {e}"
                     )
 
                 else:
@@ -557,7 +554,7 @@ class MsgAndPduDispatcher:
                 return restOfWholeMsg
 
             debug.logger & debug.flagDsp and debug.logger(
-                "receiveMessage: cache read by sendPduHandle %s" % sendPduHandle
+                f"receiveMessage: cache read by sendPduHandle {sendPduHandle}"
             )
 
             # 4.2.2.2.3
@@ -626,7 +623,7 @@ class MsgAndPduDispatcher:
         processResponsePdu = cachedParams["cbFun"]
 
         debug.logger & debug.flagDsp and debug.logger(
-            "__expireRequest: req cachedParams %s" % cachedParams
+            f"__expireRequest: req cachedParams {cachedParams}"
         )
 
         # Fail timed-out requests

@@ -33,7 +33,7 @@ except ImportError as e:
     def addMibCompilerDecorator(errorMsg):
         def addMibCompiler(mibBuilder, **kwargs):
             if not kwargs.get("ifAvailable"):
-                raise error.SmiError("MIB compiler not available: %s" % errorMsg)
+                raise error.SmiError(f"MIB compiler not available: {errorMsg}")
 
         return addMibCompiler
 

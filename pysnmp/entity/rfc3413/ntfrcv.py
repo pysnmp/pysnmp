@@ -123,7 +123,7 @@ class NotificationReceiver:
         elif PDU.tagSet in rfc3411.unconfirmedClassPDUs:
             pass
         else:
-            raise error.ProtocolError("Unexpected PDU class %s" % PDU.tagSet)
+            raise error.ProtocolError(f"Unexpected PDU class {PDU.tagSet}")
 
         debug.logger & debug.flagApp and debug.logger(
             f"processPdu: stateReference {stateReference}, user cbFun {self.__cbFun}, cbCtx {self.__cbCtx}, varBinds {varBinds}"

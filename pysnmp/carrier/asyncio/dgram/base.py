@@ -74,8 +74,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         while self._writeQ:
             outgoingMessage, transportAddress = self._writeQ.pop(0)
             debug.logger & debug.flagIO and debug.logger(
-                "connection_made: transportAddress %r outgoingMessage %s"
-                % (transportAddress, debug.hexdump(outgoingMessage))
+                f"connection_made: transportAddress {transportAddress!r} outgoingMessage {debug.hexdump(outgoingMessage)}"
             )
             try:
                 self.transport.sendto(

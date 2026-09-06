@@ -30,7 +30,7 @@ class SnmpContext:
     def registerContextName(self, contextName, mibInstrum=None):
         contextName = univ.OctetString(contextName).asOctets()
         if contextName in self.contextNames:
-            raise error.PySnmpError("Duplicate contextName %s" % contextName)
+            raise error.PySnmpError(f"Duplicate contextName {contextName}")
         debug.logger & debug.flagIns and debug.logger(
             f"registerContextName: registered contextName {contextName!r}, mibInstrum {mibInstrum!r}"
         )
@@ -43,7 +43,7 @@ class SnmpContext:
         contextName = univ.OctetString(contextName).asOctets()
         if contextName in self.contextNames:
             debug.logger & debug.flagIns and debug.logger(
-                "unregisterContextName: unregistered contextName %r" % contextName
+                f"unregisterContextName: unregistered contextName {contextName!r}"
             )
             del self.contextNames[contextName]
 
@@ -51,9 +51,9 @@ class SnmpContext:
         contextName = univ.OctetString(contextName).asOctets()
         if contextName not in self.contextNames:
             debug.logger & debug.flagIns and debug.logger(
-                "getMibInstrum: contextName %r not registered" % contextName
+                f"getMibInstrum: contextName {contextName!r} not registered"
             )
-            raise error.PySnmpError("Missing contextName %s" % contextName)
+            raise error.PySnmpError(f"Missing contextName {contextName}")
         else:
             debug.logger & debug.flagIns and debug.logger(
                 f"getMibInstrum: contextName {contextName!r}, mibInstum {self.contextNames[contextName]!r}"

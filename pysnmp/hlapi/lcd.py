@@ -77,7 +77,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             paramsName, useCount = cache["parm"][paramsKey]
             cache["parm"][paramsKey] = paramsName, useCount + 1
         else:
-            paramsName = "p%s" % self.nextID()
+            paramsName = f"p{self.nextID()}"
             config.addTargetParams(
                 snmpEngine,
                 paramsName,
@@ -112,7 +112,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             addrName, useCount = cache["addr"][transportKey]
             cache["addr"][transportKey] = addrName, useCount + 1
         else:
-            addrName = "a%s" % self.nextID()
+            addrName = f"a{self.nextID()}"
             config.addTargetAddr(
                 snmpEngine,
                 addrName,
@@ -231,7 +231,7 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
                 notifyName, paramsName, useCount = cache["name"][notifyNameKey]
                 cache["name"][notifyNameKey] = notifyName, paramsName, useCount + 1
             else:
-                notifyName = "n%s" % self.nextID()
+                notifyName = f"n{self.nextID()}"
                 config.addNotificationTarget(
                     snmpEngine, notifyName, paramsName, tag, notifyType
                 )

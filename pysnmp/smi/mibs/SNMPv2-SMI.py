@@ -196,7 +196,7 @@ MODULE-IDENTITY
             self.getOrganization(),
             self.getContactInfo(),
             self.getDescription(),
-            "".join(['REVISION "%s"\n' % x for x in self.getRevisions()]),
+            "".join([f'REVISION "{x}"\n' for x in self.getRevisions()]),
         )
 
 
@@ -1353,7 +1353,7 @@ class MibTableRow(MibTree):
                 colNode = mibNode.getNode(mibNode.name + name[len(self.name) + 1 :])
                 if not colNode.syntax.isValue:
                     raise error.InconsistentValueError(
-                        msg="Row consistency check failed for %r" % colNode
+                        msg=f"Row consistency check failed for {colNode!r}"
                     )
 
     def writeCleanup(self, name, val, idx, acInfo):

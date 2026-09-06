@@ -454,7 +454,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
         except PyAsn1Error as e:
             debug.logger & debug.flagMP and debug.logger(
-                "generateRequestMsg: serialization failure: %s" % e
+                f"generateRequestMsg: serialization failure: {e}"
             )
             raise error.StatusInformation(errorIndication=errind.serializationError)
 
@@ -500,7 +500,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
         except PyAsn1Error as e:
             debug.logger & debug.flagMP and debug.logger(
-                "generateResponseMsg: serialization failure: %s" % e
+                f"generateResponseMsg: serialization failure: {e}"
             )
             raise error.StatusInformation(errorIndication=errind.serializationError)
 

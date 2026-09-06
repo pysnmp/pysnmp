@@ -132,7 +132,7 @@ class NotificationOriginator:
 
         # 3.3.6d
         if sendPduHandle not in self.__pendingReqs:
-            raise error.ProtocolError("Missing sendPduHandle %s" % sendPduHandle)
+            raise error.ProtocolError(f"Missing sendPduHandle {sendPduHandle}")
 
         (
             origTransportDomain,
@@ -171,8 +171,8 @@ class NotificationOriginator:
                 or origDiscoveryRetries > self.__options.get("discoveryRetries", 4)
             ):
                 debug.logger & debug.flagApp and debug.logger(
-                    "processResponsePdu: sendRequestHandle %s, sendPduHandle %s retry count %d exceeded"
-                    % (sendRequestHandle, sendPduHandle, origRetries)
+                    f"processResponsePdu: sendRequestHandle {sendRequestHandle}, "
+                    f"sendPduHandle {sendPduHandle} retry count {origRetries} exceeded"
                 )
                 cbFun(snmpEngine, sendRequestHandle, errorIndication, None, cbCtx)
                 return
@@ -227,14 +227,9 @@ class NotificationOriginator:
             snmpEngine.transportDispatcher.jobStarted(id(self))
 
             debug.logger & debug.flagApp and debug.logger(
-                "processResponsePdu: sendRequestHandle %s, sendPduHandle %s, timeout %d, retry %d of %d"
-                % (
-                    sendRequestHandle,
-                    sendPduHandle,
-                    origTimeout,
-                    origRetries,
-                    origRetryCount,
-                )
+                f"processResponsePdu: sendRequestHandle {sendRequestHandle}, "
+                f"sendPduHandle {sendPduHandle}, timeout {origTimeout}, "
+                f"retry {origRetries} of {origRetryCount}"
             )
 
             # 3.3.6b
@@ -319,7 +314,7 @@ class NotificationOriginator:
             )
 
             debug.logger & debug.flagApp and debug.logger(
-                "sendPdu: sendPduHandle %s, timeout %d" % (sendPduHandle, timeout)
+                f"sendPdu: sendPduHandle {sendPduHandle}, timeout {timeout}"
             )
 
             # 3.3.6b
@@ -611,8 +606,8 @@ class NotificationOriginator:
                 return notificationHandle
 
             debug.logger & debug.flagApp and debug.logger(
-                "sendVarBinds: notificationHandle %s, sendRequestHandle %s, timeout %d"
-                % (notificationHandle, sendRequestHandle, timeout)
+                f"sendVarBinds: notificationHandle {notificationHandle}, "
+                f"sendRequestHandle {sendRequestHandle}, timeout {timeout}"
             )
 
             if notifyType == 2:

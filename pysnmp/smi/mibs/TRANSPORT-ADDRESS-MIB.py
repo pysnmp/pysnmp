@@ -46,7 +46,7 @@ else:
 
             if "." in groups[-1]:
                 groups[-1:] = [
-                    "%x" % x for x in struct.unpack("!HH", socket.inet_aton(groups[-1]))
+                    f"{x:x}" for x in struct.unpack("!HH", socket.inet_aton(groups[-1]))
                 ]
 
             if spaces == 1:
@@ -81,7 +81,7 @@ else:
                 raise OSError(f"Unknown address family {address_family}")
 
             if len(packed_ip) != 16:
-                raise OSError("incorrect address length: %s" % len(packed_ip))
+                raise OSError(f"incorrect address length: {len(packed_ip)}")
 
             groups = list(struct.unpack("!8H", packed_ip))
 
@@ -110,7 +110,7 @@ else:
             if groups[-1] == ":":
                 groups.append(":")
 
-            return ":".join([x != ":" and "%x" % x or "" for x in groups])
+            return ":".join([x != ":" and f"{x:x}" or "" for x in groups])
 
 
 Integer, OctetString, ObjectIdentifier = mibBuilder.importSymbols(

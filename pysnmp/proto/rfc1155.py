@@ -31,14 +31,14 @@ class IpAddress(univ.OctetString):
             try:
                 value = [int(x) for x in value.split(".")]
             except Exception:
-                raise error.ProtocolError("Bad IP address syntax %s" % value)
+                raise error.ProtocolError(f"Bad IP address syntax {value}")
         if len(value) != 4:
             raise error.ProtocolError("Bad IP address syntax")
         return univ.OctetString.prettyIn(self, value)
 
     def prettyOut(self, value):
         if value:
-            return ".".join(["%d" % x for x in self.__class__(value).asNumbers()])
+            return ".".join([str(x) for x in self.__class__(value).asNumbers()])
         else:
             return ""
 
