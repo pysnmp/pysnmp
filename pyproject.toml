@@ -119,10 +119,68 @@ target-version = "py310"
 extend-exclude = [".eggs", ".git", ".hg", ".mypy_cache", ".tox", ".venv", "_build", "buck-out", "build", "dist"]
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "UP"]
+# The rule set pyasn1 and pysmi share, so a contributor moving between the
+# three repositories meets the same lint. The docstring family (D) is the one
+# deliberate gap: pysnmp has some 800 undocumented public classes and methods,
+# which is a documentation project rather than a lint fix. Tracked in #186.
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "S",      # flake8-bandit (security)
+    "SIM",    # flake8-simplify
+    "BLE",    # flake8-blind-except
+    "G",      # flake8-logging-format (keep logging interpolation lazy)
+    "LOG",    # flake8-logging (logger misuse)
+    "FLY",    # flynt (static str.join -> f-string)
+    "C4",     # flake8-comprehensions
+    "RSE",    # flake8-raise
+    "RUF",    # ruff-specific rules
+    "PL",     # pylint
+    "TRY",    # tryceratops
+]
 ignore = [
-    "E501",   # line-too-long: many legacy lines exceed 99; revisit in a later phase
-    "UP031",  # printf-string-formatting: 182 sites, unsafe autofix; revisit separately
+    # Shared with pyasn1 and pysmi.
+    "E501",     # line-too-long — ruff format decides where lines break
+    "E721",     # type-comparison — existing pattern
+    "E731",     # lambda-assignment — existing codebase style
+    "E741",     # ambiguous-variable-name — SNMP/ASN.1 naming conventions
+    "E712",     # true-false-comparison — existing pattern
+    "E402",     # module-import-not-at-top — some imports after variable defs
+    "B011",     # assert-false — used in tests
+    "B007",     # unused-loop-control-variable — existing pattern
+    "B905",     # zip-without-explicit-strict — existing pattern
+    "B028",     # no-explicit-stacklevel — existing pattern
+    "SIM108",   # if-else-block-instead-of-if-exp — readability preference
+    "SIM102",   # collapsible-if — readability preference
+    "SIM105",   # suppressible-exception — existing pattern
+    "SIM101",   # duplicate-isinstance-call — existing pattern
+    "SIM110",   # reimplemented-builtin — existing pattern
+    "PLR0911",  # too-many-return-statements
+    "PLR0912",  # too-many-branches
+    "PLR0913",  # too-many-arguments
+    "PLR0915",  # too-many-statements
+    "PLR0917",  # too-many-positional-arguments
+    "PLR2004",  # magic-value-comparison — protocol constants
+    "PLC0415",  # import-outside-top-level — deliberate, breaks import cycles
+    "PLW2901",  # redefined-loop-name — existing pattern
+    "PLW0603",  # global-statement — setLogger() rebinds the module logger
+    "PLW1641",  # eq-without-hash — pyasn1 types are deliberately unhashable
+    "RUF005",   # collection-literal-concatenation — style preference
+    "RUF012",   # mutable-class-default — protocol tables are class-level
+    "RUF021",   # parenthesize-chained-operators — existing pattern
+    "RUF059",   # unused-unpacked-variable — matches B007 above
+    "TRY003",   # raise-vanilla-args — message text is part of the error contract
+
+    # Specific to what this package is. SNMPv1 and v2c have no security by
+    # design and MD5, SHA-1 and DES are what :RFC:`3414` and :RFC:`3826`
+    # specify; pysnmp exists to speak those protocols, and already warns at
+    # runtime where a weak one is configured (see pysnmp/error.py).
+    "S508",     # snmp-insecure-version
+    "S509",     # snmp-weak-cryptography
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -131,8 +189,26 @@ ignore = [
 "pysnmp/smi/mibs/**" = ["F821"]
 # Package __init__ modules re-export the public API.
 "**/__init__.py" = ["F401"]
-# Examples are documentation and use star imports on purpose.
-"examples/**" = ["F401", "F403", "F405", "F821"]
+# Examples are documentation: star imports and binding every interface are
+# what an agent example is showing you how to do.
+# PLR2044: the `"""  #` that closes an example's prose block is not an empty
+# comment, it is the marker docs/source/examples/**.rst splits on -- the text
+# above it is included as prose, the code below it as a literal block.
+"examples/**" = ["F401", "F403", "F405", "F821", "S104", "PLR2044"]
+# MD5 and SHA-1 are not a choice here: usmHMACMD5AuthProtocol and
+# usmHMACSHAAuthProtocol are what :RFC:`3414#section-6` and #section-7 define,
+# and pysnmp warns at runtime where either is configured.
+"pysnmp/proto/secmod/rfc3414/auth/hmacmd5.py" = ["S324"]
+"pysnmp/proto/secmod/rfc3414/auth/hmacsha.py" = ["S324"]
+# Tests assert, exec the code they generate, and check for broad exceptions
+# on purpose. B904: test_error_cause.py raises without `from` deliberately --
+# implicit __context__ chaining is the thing under test.
+# S105/S108/S603: fixed passphrases, a fixed socket path and subprocess calls
+# with a literal argv are what a test harness is made of.
+"tests/**" = [
+    "S101", "S102", "S104", "S105", "S108", "S603",
+    "B017", "B904", "BLE", "PL", "RUF", "TRY",
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pysnmp"]

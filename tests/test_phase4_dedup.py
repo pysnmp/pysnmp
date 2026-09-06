@@ -64,10 +64,12 @@ def test_execution_context_clears_after_body_exception():
     meta_observer = observer.MetaObserver()
     engine = SimpleNamespace(observer=meta_observer)
 
-    with pytest.raises(RuntimeError, match="boom"):
-        with observer.execution_context(engine, "test.exception", value=1):
-            assert meta_observer.getExecutionContext("test.exception") == {"value": 1}
-            raise RuntimeError("boom")
+    with (
+        pytest.raises(RuntimeError, match="boom"),
+        observer.execution_context(engine, "test.exception", value=1),
+    ):
+        assert meta_observer.getExecutionContext("test.exception") == {"value": 1}
+        raise RuntimeError("boom")
 
     with pytest.raises(KeyError):
         meta_observer.getExecutionContext("test.exception")
@@ -98,9 +100,11 @@ def test_execution_context_clears_when_observer_raises():
 
     meta_observer.registerObserver(fail_observer, "test.observer-error")
 
-    with pytest.raises(RuntimeError, match="observer failure"):
-        with observer.execution_context(engine, "test.observer-error"):
-            pass
+    with (
+        pytest.raises(RuntimeError, match="observer failure"),
+        observer.execution_context(engine, "test.observer-error"),
+    ):
+        pass
 
     with pytest.raises(KeyError):
         meta_observer.getExecutionContext("test.observer-error")
@@ -109,9 +113,11 @@ def test_execution_context_clears_when_observer_raises():
 def test_execution_context_rejects_mapping_and_keywords():
     engine = SimpleNamespace(observer=observer.MetaObserver())
 
-    with pytest.raises(TypeError, match="either a mapping or keyword variables"):
-        with observer.execution_context(engine, "test.invalid", {}, value=1):
-            pass
+    with (
+        pytest.raises(TypeError, match="either a mapping or keyword variables"),
+        observer.execution_context(engine, "test.invalid", {}, value=1),
+    ):
+        pass
 
 
 def test_callback_unmakes_flat_varbinds():

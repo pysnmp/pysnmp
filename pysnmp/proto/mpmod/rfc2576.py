@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from typing import Any
+
 from pyasn1.codec.ber import decoder, eoo
 from pyasn1.type import univ
 
@@ -20,7 +22,7 @@ from pysnmp.proto.mpmod.base import AbstractMessageProcessingModel
 
 class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     messageProcessingModelID = univ.Integer(0)  # SNMPv1
-    snmpMsgSpec = v1.Message
+    snmpMsgSpec: type[Any] = v1.Message
 
     # rfc3412: 7.1
     def prepareOutgoingMessage(
@@ -323,10 +325,10 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             try:
                 smHandler = snmpEngine.securityModels[securityModel]
 
-            except KeyError:
+            except KeyError as exc:
                 raise error.StatusInformation(
                     errorIndication=errind.unsupportedSecurityModel
-                )
+                ) from exc
 
             # rfc3412: 7.2.6
             (
@@ -350,7 +352,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 f"prepareDataElements: SM returned securityEngineId {securityEngineId!r} securityName {securityName!r}"
             )
 
-        except error.StatusInformation as statusInformation:
+        except error.StatusInformation as smError:
             with execution_context(
                 snmpEngine,
                 "rfc2576.prepareDataElements:sm-failure",
@@ -359,7 +361,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 securityModel=securityModel,
                 securityLevel=securityLevel,
                 securityParameters=securityParameters,
-                statusInformation=statusInformation,
+                statusInformation=smError,
             ):
                 pass
 
@@ -384,9 +386,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             # 7.2.10a
             try:
                 cachedReqParams = self._cache.popByMsgId(int(msgID))
-            except error.ProtocolError:
+            except error.ProtocolError as exc:
                 smHandler.releaseStateInformation(securityStateReference)
-                raise error.StatusInformation(errorIndication=errind.dataMismatch)
+                raise error.StatusInformation(
+                    errorIndication=errind.dataMismatch
+                ) from exc
 
             # recover original PDU request-id to return to app
             pdu.setComponentByPosition(0, cachedReqParams["reqID"])
@@ -514,7 +518,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 pass
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareDataElements: cached by new stateReference %s" % stateReference
+                f"prepareDataElements: cached by new stateReference {stateReference}"
             )
 
             # rfc3412: 7.2.13c
@@ -580,4 +584,4 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
 class SnmpV2cMessageProcessingModel(SnmpV1MessageProcessingModel):
     messageProcessingModelID = univ.Integer(1)  # SNMPv2c
-    snmpMsgSpec = v2c.Message
+    snmpMsgSpec: type[Any] = v2c.Message

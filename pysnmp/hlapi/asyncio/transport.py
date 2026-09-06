@@ -5,15 +5,16 @@
 #
 
 import socket
+from typing import cast
 
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
 from pysnmp.error import PySnmpError
 from pysnmp.hlapi.transport import AbstractTransportTarget
 
-__all__ = ["UnixTransportTarget", "Udp6TransportTarget", "UdpTransportTarget"]
+__all__ = ["Udp6TransportTarget", "UdpTransportTarget", "UnixTransportTarget"]
 
 
-class UdpTransportTarget(AbstractTransportTarget):
+class UdpTransportTarget(AbstractTransportTarget[tuple[str, int]]):
     """Creates UDP/IPv4 configuration entry and initialize socket API if needed.
 
     This object can be used for adding new entries to Local Configuration
@@ -53,22 +54,28 @@ class UdpTransportTarget(AbstractTransportTarget):
 
     def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int]:
         try:
-            return socket.getaddrinfo(
-                transportAddr[0],
-                transportAddr[1],
-                socket.AF_INET,
-                socket.SOCK_DGRAM,
-                socket.IPPROTO_UDP,
-            )[0][4][:2]
+            # AF_INET pins the sockaddr to (host, port), but getaddrinfo is
+            # typed over every address family it can return, so the slice has
+            # to be narrowed by hand.
+            return cast(
+                tuple[str, int],
+                socket.getaddrinfo(
+                    transportAddr[0],
+                    transportAddr[1],
+                    socket.AF_INET,
+                    socket.SOCK_DGRAM,
+                    socket.IPPROTO_UDP,
+                )[0][4][:2],
+            )
         except socket.gaierror as e:
             raise PySnmpError(
                 "Bad IPv4/UDP transport address {}: {}".format(
                     "@".join([str(x) for x in transportAddr]), e
                 )
-            )
+            ) from e
 
 
-class Udp6TransportTarget(AbstractTransportTarget):
+class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
     This object can be used by
@@ -118,24 +125,30 @@ class Udp6TransportTarget(AbstractTransportTarget):
     transportDomain = udp6.domainName
     protoTransport = udp6.Udp6AsyncioTransport
 
-    def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int, int, int]:
+    def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int]:
         try:
-            return socket.getaddrinfo(
-                transportAddr[0],
-                transportAddr[1],
-                socket.AF_INET6,
-                socket.SOCK_DGRAM,
-                socket.IPPROTO_UDP,
-            )[0][4][:2]
+            # An AF_INET6 sockaddr is (host, port, flowinfo, scopeid); the
+            # slice keeps the first two, which is what the transport wants and
+            # what the previous annotation of this method got wrong.
+            return cast(
+                tuple[str, int],
+                socket.getaddrinfo(
+                    transportAddr[0],
+                    transportAddr[1],
+                    socket.AF_INET6,
+                    socket.SOCK_DGRAM,
+                    socket.IPPROTO_UDP,
+                )[0][4][:2],
+            )
         except socket.gaierror as e:
             raise PySnmpError(
                 "Bad IPv6/UDP transport address {}: {}".format(
                     "@".join([str(x) for x in transportAddr]), e
                 )
-            )
+            ) from e
 
 
-class UnixTransportTarget(AbstractTransportTarget):
+class UnixTransportTarget(AbstractTransportTarget[str]):
     transportDomain = unix.domainName
     protoTransport = unix.UnixAsyncioTransport
 

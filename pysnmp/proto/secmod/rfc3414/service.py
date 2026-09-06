@@ -5,7 +5,7 @@
 #
 import time
 from collections.abc import Callable
-from typing import Any, NoReturn, TypeVar, cast
+from typing import Any, NoReturn, TypeVar
 
 from pyasn1.codec.ber import decoder, encoder, eoo
 from pyasn1.error import PyAsn1Error
@@ -46,10 +46,10 @@ def _run_or_raise_serialization_error(operation: Callable[[], _T], logLabel: str
         return operation()
     except PyAsn1Error as e:
         if logLabel and debug.logger & debug.flagSM:
-            cast(Callable[[str], None], debug.logger)(
+            debug.logger(
                 f"__generateRequestOrResponseMsg: {logLabel} serialization error: {e}"
             )
-        raise error.StatusInformation(errorIndication=errind.serializationError)
+        raise error.StatusInformation(errorIndication=errind.serializationError) from e
 
 
 # USM security params
@@ -167,11 +167,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
         try:
             userName = self.__securityToUserMap[(securityEngineID, securityName)]
-        except KeyError:
+        except KeyError as exc:
             debug.logger & debug.flagSM and debug.logger(
                 f"_sec2usr: no entry exists for snmpEngineId {securityEngineID!r}, securityName {securityName!r}"
             )
-            raise NoSuchInstanceError()  # emulate MIB lookup
+            raise NoSuchInstanceError from exc  # emulate MIB lookup
 
         debug.logger & debug.flagSM and debug.logger(
             f"_sec2usr: using userName {userName!r} for snmpEngineId {securityEngineID!r}, securityName {securityName!r}"
@@ -362,25 +362,14 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
             debug.logger & debug.flagSM and debug.logger(
                 "__generateRequestOrResponseMsg: using cached USM user entry "
-                'usmUserName "%s" '
-                'usmUserSecurityName "%s" '
-                'usmUserAuthProtocol "%s" '
-                'usmUserAuthKeyLocalized "%s" '
-                'usmUserPrivProtocol "%s" '
-                'usmUserPrivKeyLocalized "%s" for '
-                'securityEngineID "%s" and  securityName "%s" found by '
-                'securityStateReference "%s" '
-                % (
-                    debug.prettify(usmUserName),
-                    debug.prettify(usmUserSecurityName),
-                    usmUserAuthProtocol,
-                    usmUserAuthKeyLocalized and usmUserAuthKeyLocalized.prettyPrint(),
-                    usmUserPrivProtocol,
-                    usmUserPrivKeyLocalized and usmUserPrivKeyLocalized.prettyPrint(),
-                    securityEngineID.prettyPrint(),
-                    debug.prettify(securityName),
-                    securityStateReference,
-                )
+                f'usmUserName "{debug.prettify(usmUserName)}" '
+                f'usmUserSecurityName "{debug.prettify(usmUserSecurityName)}" '
+                f'usmUserAuthProtocol "{usmUserAuthProtocol}" '
+                f'usmUserAuthKeyLocalized "{usmUserAuthKeyLocalized and usmUserAuthKeyLocalized.prettyPrint()}" '
+                f'usmUserPrivProtocol "{usmUserPrivProtocol}" '
+                f'usmUserPrivKeyLocalized "{usmUserPrivKeyLocalized and usmUserPrivKeyLocalized.prettyPrint()}" for '
+                f'securityEngineID "{securityEngineID.prettyPrint()}" and  securityName "{debug.prettify(securityName)}" found by '
+                f'securityStateReference "{securityStateReference}" '
             )
 
         elif securityEngineID:
@@ -418,14 +407,13 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
                 debug.logger & debug.flagSM and debug.logger(
                     "__generateRequestOrResponseMsg: found USM user entry "
-                    'usmUserName "%s" '
-                    'usmUserSecurityName "%s" '
-                    'usmUserAuthProtocol "%s" '
-                    'usmUserAuthKeyLocalized "%s" '
-                    'usmUserPrivProtocol "%s" '
-                    'usmUserPrivKeyLocalized "%s" by '
-                    'securityEngineID "%s" and  securityName "%s"'
-                    % (
+                    'usmUserName "{}" '
+                    'usmUserSecurityName "{}" '
+                    'usmUserAuthProtocol "{}" '
+                    'usmUserAuthKeyLocalized "{}" '
+                    'usmUserPrivProtocol "{}" '
+                    'usmUserPrivKeyLocalized "{}" by '
+                    'securityEngineID "{}" and  securityName "{}"'.format(
                         debug.prettify(usmUserName),
                         debug.prettify(usmUserSecurityName),
                         usmUserAuthProtocol,
@@ -439,7 +427,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     )
                 )
 
-            except NoSuchInstanceError:
+            except NoSuchInstanceError as exc:
                 (pysnmpUsmDiscovery,) = mibBuilder.importSymbols(
                     "__PYSNMP-USM-MIB", "pysnmpUsmDiscovery"
                 )
@@ -461,14 +449,13 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
                         debug.logger & debug.flagSM and debug.logger(
                             "__generateRequestOrResponseMsg: cloned USM user entry "
-                            'usmUserName "%s" '
-                            'usmUserSecurityName "%s" '
-                            'usmUserAuthProtocol "%s" '
-                            'usmUserAuthKeyLocalized "%s" '
-                            'usmUserPrivProtocol "%s" '
-                            'usmUserPrivKeyLocalized "%s" for '
-                            'securityEngineID "%s" and  securityName "%s"'
-                            % (
+                            'usmUserName "{}" '
+                            'usmUserSecurityName "{}" '
+                            'usmUserAuthProtocol "{}" '
+                            'usmUserAuthKeyLocalized "{}" '
+                            'usmUserPrivProtocol "{}" '
+                            'usmUserPrivKeyLocalized "{}" for '
+                            'securityEngineID "{}" and  securityName "{}"'.format(
                                 debug.prettify(usmUserName),
                                 debug.prettify(usmUserSecurityName),
                                 usmUserAuthProtocol,
@@ -485,12 +472,8 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     except NoSuchInstanceError:
                         debug.logger & debug.flagSM and debug.logger(
                             "__generateRequestOrResponseMsg: failed to clone "
-                            'USM user for securityEngineID "%s" securityName '
-                            '"%s"'
-                            % (
-                                debug.prettify(securityEngineID),
-                                debug.prettify(securityName),
-                            )
+                            f'USM user for securityEngineID "{debug.prettify(securityEngineID)}" securityName '
+                            f'"{debug.prettify(securityName)}"'
                         )
 
                         reportUnknownName = True
@@ -498,7 +481,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 if reportUnknownName:
                     raise error.StatusInformation(
                         errorIndication=errind.unknownSecurityName
-                    )
+                    ) from exc
 
             except PyAsn1Error as e:
                 debug.logger & debug.flagSM and debug.logger(
@@ -508,7 +491,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     "__SNMPv2-MIB", "snmpInGenErrs"
                 )
                 snmpInGenErrs.syntax += 1
-                raise error.StatusInformation(errorIndication=errind.invalidMsg)
+                raise error.StatusInformation(errorIndication=errind.invalidMsg) from e
 
         else:
             # 4. (start SNMP engine ID discovery)
@@ -555,23 +538,13 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             debug.logger & debug.flagSM and debug.logger(
                 "__generateRequestOrResponseMsg: using blank USM info for peer "
                 "SNMP engine ID discovery "
-                'usmUserName "%s" '
-                'usmUserSecurityName "%s" '
-                'usmUserAuthProtocol "%s" '
-                'usmUserAuthKeyLocalized "%s" '
-                'usmUserPrivProtocol "%s" '
-                'usmUserPrivKeyLocalized "%s" for '
-                'securityEngineID "%s" and  securityName "%s"'
-                % (
-                    usmUserName,
-                    usmUserSecurityName,
-                    usmUserAuthProtocol,
-                    usmUserAuthKeyLocalized,
-                    usmUserPrivProtocol,
-                    usmUserPrivKeyLocalized,
-                    securityEngineID and securityEngineID.prettyPrint(),
-                    securityName,
-                )
+                f'usmUserName "{usmUserName}" '
+                f'usmUserSecurityName "{usmUserSecurityName}" '
+                f'usmUserAuthProtocol "{usmUserAuthProtocol}" '
+                f'usmUserAuthKeyLocalized "{usmUserAuthKeyLocalized}" '
+                f'usmUserPrivProtocol "{usmUserPrivProtocol}" '
+                f'usmUserPrivKeyLocalized "{usmUserPrivKeyLocalized}" for '
+                f'securityEngineID "{securityEngineID and securityEngineID.prettyPrint()}" and  securityName "{securityName}"'
             )
 
         # 3.1.2
@@ -585,7 +558,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
 
         # 3.1.3
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if usmUserAuthProtocol == noauth.NoAuth.serviceID:
                 raise error.StatusInformation(
                     errorIndication=errind.unsupportedSecurityLevel
@@ -652,7 +625,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 raise error.StatusInformation(errorIndication=errind.encryptionError)
 
             debug.logger & debug.flagSM and debug.logger(
-                "__generateRequestOrResponseMsg: scopedPDU %s" % scopedPDU.prettyPrint()
+                f"__generateRequestOrResponseMsg: scopedPDU {scopedPDU.prettyPrint()}"
             )
 
             dataToEncrypt = _run_or_raise_serialization_error(
@@ -660,8 +633,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
             debug.logger & debug.flagSM and debug.logger(
-                "__generateRequestOrResponseMsg: scopedPDU encoded into %s"
-                % debug.hexdump(dataToEncrypt)
+                f"__generateRequestOrResponseMsg: scopedPDU encoded into {debug.hexdump(dataToEncrypt)}"
             )
 
             # noinspection PyUnboundLocalVariable
@@ -687,16 +659,15 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
             debug.logger & debug.flagSM and debug.logger(
-                "__generateRequestOrResponseMsg: scopedPDU ciphered into %s"
-                % debug.hexdump(encryptedData)
+                f"__generateRequestOrResponseMsg: scopedPDU ciphered into {debug.hexdump(encryptedData)}"
             )
 
         # 3.1.4b
-        elif securityLevel == 1 or securityLevel == 2:
+        elif securityLevel in (1, 2):
             securityParameters.setComponentByPosition(5, "")
 
         debug.logger & debug.flagSM and debug.logger(
-            "__generateRequestOrResponseMsg: %s" % scopedPDUData.prettyPrint()
+            f"__generateRequestOrResponseMsg: {scopedPDUData.prettyPrint()}"
         )
 
         # 3.1.5
@@ -737,7 +708,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         )
 
         # 3.1.8a
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if usmUserAuthProtocol in self.authServices:
                 authHandler = self.authServices[usmUserAuthProtocol]
             else:
@@ -762,8 +733,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
             debug.logger & debug.flagSM and debug.logger(
-                "__generateRequestOrResponseMsg: auth outgoing msg: %s"
-                % msg.prettyPrint()
+                f"__generateRequestOrResponseMsg: auth outgoing msg: {msg.prettyPrint()}"
             )
 
             wholeMsg = _run_or_raise_serialization_error(
@@ -798,8 +768,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
             def encode_plain_message():
                 debug.logger & debug.flagSM and debug.logger(
-                    "__generateRequestOrResponseMsg: plain outgoing msg: %s"
-                    % msg.prettyPrint()
+                    f"__generateRequestOrResponseMsg: plain outgoing msg: {msg.prettyPrint()}"
                 )
                 return encoder.encode(msg)
 
@@ -888,8 +857,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         maxSizeResponseScopedPDU = int(maxMessageSize) - len(securityParameters) - 48
 
         debug.logger & debug.flagSM and debug.logger(
-            "processIncomingMsg: securityParameters %s"
-            % debug.hexdump(securityParameters)
+            f"processIncomingMsg: securityParameters {debug.hexdump(securityParameters)}"
         )
 
         # 3.2.1
@@ -959,8 +927,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     # Report original contextName
                     if scopedPduData.getName() != "plaintext":
                         debug.logger & debug.flagSM and debug.logger(
-                            "processIncomingMsg: scopedPduData not plaintext %s"
-                            % scopedPduData.prettyPrint()
+                            f"processIncomingMsg: scopedPduData not plaintext {scopedPduData.prettyPrint()}"
                         )
                         raise error.StatusInformation(
                             errorIndication=errind.unknownEngineID
@@ -1062,7 +1029,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     "__SNMPv2-MIB", "snmpInGenErrs"
                 )
                 snmpInGenErrs.syntax += 1
-                raise error.StatusInformation(errorIndication=errind.invalidMsg)
+                raise error.StatusInformation(errorIndication=errind.invalidMsg) from e
         else:
             # empty username used for engineID discovery
             usmUserName = usmUserSecurityName = b""
@@ -1146,7 +1113,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
 
         # 3.2.6
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if usmUserAuthProtocol in self.authServices:
                 authHandler = self.authServices[usmUserAuthProtocol]
             else:
@@ -1205,7 +1172,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             )
 
         # 3.2.7
-        if securityLevel == 3 or securityLevel == 2:
+        if securityLevel in (2, 3):
             if msgAuthoritativeEngineId == snmpEngineID:
                 # Authoritative SNMP engine: use local notion (SF bug #1649032)
                 (snmpEngineBoots, snmpEngineTime) = mibBuilder.importSymbols(
@@ -1217,22 +1184,21 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 debug.logger & debug.flagSM and debug.logger(
                     f"processIncomingMsg: read snmpEngineBoots ({snmpEngineBoots}), snmpEngineTime ({snmpEngineTime}) from LCD"
                 )
+            # Non-authoritative SNMP engine: use cached estimates
+            elif msgAuthoritativeEngineId in self.__timeline:
+                (
+                    snmpEngineBoots,
+                    snmpEngineTime,
+                    latestReceivedEngineTime,
+                    latestUpdateTimestamp,
+                ) = self.__timeline[msgAuthoritativeEngineId]
+                # time passed since last talk with this SNMP engine
+                idleTime = int(time.time()) - latestUpdateTimestamp
+                debug.logger & debug.flagSM and debug.logger(
+                    f"processIncomingMsg: read timeline snmpEngineBoots {snmpEngineBoots} snmpEngineTime {snmpEngineTime} for msgAuthoritativeEngineId {msgAuthoritativeEngineId!r}, idle time {idleTime} secs"
+                )
             else:
-                # Non-authoritative SNMP engine: use cached estimates
-                if msgAuthoritativeEngineId in self.__timeline:
-                    (
-                        snmpEngineBoots,
-                        snmpEngineTime,
-                        latestReceivedEngineTime,
-                        latestUpdateTimestamp,
-                    ) = self.__timeline[msgAuthoritativeEngineId]
-                    # time passed since last talk with this SNMP engine
-                    idleTime = int(time.time()) - latestUpdateTimestamp
-                    debug.logger & debug.flagSM and debug.logger(
-                        f"processIncomingMsg: read timeline snmpEngineBoots {snmpEngineBoots} snmpEngineTime {snmpEngineTime} for msgAuthoritativeEngineId {msgAuthoritativeEngineId!r}, idle time {idleTime} secs"
-                    )
-                else:
-                    raise error.ProtocolError("Peer SNMP engine info missing")
+                raise error.ProtocolError("Peer SNMP engine info missing")
 
             # 3.2.7a
             if msgAuthoritativeEngineId == snmpEngineID:
@@ -1328,8 +1294,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                     encryptedPDU,
                 )
                 debug.logger & debug.flagSM and debug.logger(
-                    "processIncomingMsg: PDU deciphered into %s"
-                    % debug.hexdump(decryptedData)
+                    f"processIncomingMsg: PDU deciphered into {debug.hexdump(decryptedData)}"
                 )
 
             except error.StatusInformation:
@@ -1356,11 +1321,11 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 
             except PyAsn1Error as e:
                 debug.logger & debug.flagSM and debug.logger(
-                    "processIncomingMsg: scopedPDU decoder failed %s" % type(e)
+                    f"processIncomingMsg: scopedPDU decoder failed {type(e)}"
                 )
                 raise error.StatusInformation(
                     errorIndication=errind.decryptionError, msgUserName=msgUserName
-                )
+                ) from e
 
             if eoo.endOfOctets.isSameTypeWith(scopedPDU):
                 raise error.StatusInformation(
@@ -1375,7 +1340,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 )
 
         debug.logger & debug.flagSM and debug.logger(
-            "processIncomingMsg: scopedPDU decoded %s" % scopedPDU.prettyPrint()
+            f"processIncomingMsg: scopedPDU decoded {scopedPDU.prettyPrint()}"
         )
 
         # 3.2.10
@@ -1433,7 +1398,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 # import: eso.priv.aesbase imports rfc3414.localkey, which triggers this
 # module via rfc3414.__init__, which imports this module before the eso.priv
 # classes are fully defined.
-from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3  # noqa: E402
+from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
 
 SnmpUSMSecurityModel.privServices.update(
     {

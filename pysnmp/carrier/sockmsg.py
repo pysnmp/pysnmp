@@ -78,8 +78,8 @@ def getRecvFrom(addressType):
                 break
 
         debug.logger & debug.flagIO and debug.logger(
-            "recvfrom: received %d octets from %s to %s; "
-            "iov blob %r" % (len(data), _from, _to, ancdata)
+            f"recvfrom: received {len(data)} octets from {_from} to {_to}; "
+            f"iov blob {ancdata!r}"
         )
 
         return data, addressType(_from).setLocalAddress(_to)
@@ -108,8 +108,8 @@ def getSendTo(addressType):
             ancdata = [(socket.SOL_IPV6, socket.IPV6_PKTINFO, memoryview(_f).tobytes())]
 
         debug.logger & debug.flagIO and debug.logger(
-            "sendto: sending %d octets to %s; address %r; "
-            "iov blob %r" % (len(_data), _to, addr, ancdata)
+            f"sendto: sending {len(_data)} octets to {_to}; address {addr!r}; "
+            f"iov blob {ancdata!r}"
         )
 
         return s.sendmsg([_data], ancdata, 0, _to)

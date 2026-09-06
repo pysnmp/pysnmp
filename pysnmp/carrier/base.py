@@ -210,7 +210,9 @@ class AbstractTransportAddress:
 
 
 class AbstractTransport:
-    protoTransportDispatcher = None
+    #: Dispatcher this transport was written against; isCompatibleWithDispatcher()
+    #: below checks candidates against it, and every concrete transport names one.
+    protoTransportDispatcher: type[AbstractTransportDispatcher] | None = None
     addressType = AbstractTransportAddress
     _cbFun = None
 

@@ -18,8 +18,8 @@ from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 __all__ = [
     "DeviceReport",
     "SysOREntry",
-    "get_device_report",
     "getDeviceReport",
+    "get_device_report",
 ]
 
 

@@ -101,7 +101,7 @@ def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=""):
     v2Pdu = __v1ToV2PduMap[pduType].clone()
 
     debug.logger & debug.flagPrx and debug.logger(
-        "v1ToV2: v1Pdu %s" % v1Pdu.prettyPrint()
+        f"v1ToV2: v1Pdu {v1Pdu.prettyPrint()}"
     )
 
     v2VarBinds = []
@@ -173,7 +173,7 @@ def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=""):
     v2c.apiPDU.setVarBinds(v2Pdu, v2VarBinds)
 
     debug.logger & debug.flagPrx and debug.logger(
-        "v1ToV2: v2Pdu %s" % v2Pdu.prettyPrint()
+        f"v1ToV2: v2Pdu {v2Pdu.prettyPrint()}"
     )
 
     return v2Pdu
@@ -181,7 +181,7 @@ def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=""):
 
 def v2ToV1(v2Pdu, origV1Pdu=None):
     debug.logger & debug.flagPrx and debug.logger(
-        "v2ToV1: v2Pdu %s" % v2Pdu.prettyPrint()
+        f"v2ToV1: v2Pdu {v2Pdu.prettyPrint()}"
     )
 
     pduType = v2Pdu.tagSet
@@ -209,11 +209,10 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
             else:
                 # snmpTraps
                 v1.apiTrapPDU.setEnterprise(v1Pdu, (1, 3, 6, 1, 6, 3, 1, 1, 5))
+        elif snmpTrapOIDParam[-2] == 0:
+            v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-2])
         else:
-            if snmpTrapOIDParam[-2] == 0:
-                v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-2])
-            else:
-                v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-1])
+            v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-1])
 
         # 3.2.2
         for oid, val in v2VarBinds:
@@ -224,7 +223,9 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
                 )  # v2c.OctetString is more constrained
                 break
         else:
-            v1.apiTrapPDU.setAgentAddr(v1Pdu, v1.IpAddress("0.0.0.0"))
+            # :RFC:`2576#section-3.2` -- agent-addr is 0.0.0.0 when the v2c
+            # trap carries no snmpTrapAddress.
+            v1.apiTrapPDU.setAgentAddr(v1Pdu, v1.IpAddress("0.0.0.0"))  # noqa: S104
 
         # 3.2.3
         if snmpTrapOIDParam in __v2ToV1TrapMap:
@@ -311,7 +312,7 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
         v1.apiPDU.setRequestID(v1Pdu, v2c.apiPDU.getRequestID(v2Pdu))
 
     debug.logger & debug.flagPrx and debug.logger(
-        "v2ToV1: v1Pdu %s" % v1Pdu.prettyPrint()
+        f"v2ToV1: v1Pdu {v1Pdu.prettyPrint()}"
     )
 
     return v1Pdu

@@ -40,6 +40,13 @@ class OrderedDict(dict):
             self.__order()
         return list(self.__keys)
 
+    def __iter__(self):
+        # dict.__iter__ would hand back insertion order, which is not the
+        # order this class exists to impose. Everything that walks one of
+        # these -- `for k in d`, `list(d)`, `dict(d)`, `**d` -- has to see the
+        # same sequence keys() does, or it silently gets a different answer.
+        return iter(self.keys())
+
     def values(self):
         if self.__dirty:
             self.__order()
@@ -61,8 +68,8 @@ class OrderedDict(dict):
                     self[k] = v
 
         if kwargs:
-            for k in kwargs:
-                self[k] = kwargs[k]
+            for k, v in kwargs.items():
+                self[k] = v
 
     def sortingFun(self, keys):
         keys.sort()

@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from pyasn1.type import tag
+
 import pysnmp.smi.error
 from pysnmp import debug
 from pysnmp.proto import errind, error, rfc1902, rfc1905, rfc3411
@@ -14,7 +16,8 @@ from pysnmp.proto.proxy import rfc2576
 # 3.2
 class CommandResponderBase:
     acmID = 3  # default MIB access control method to use
-    pduTypes = ()
+    #: PDU tag sets this responder registers for; each subclass names its own.
+    pduTypes: tuple[tag.TagSet, ...] = ()
 
     def __init__(self, snmpEngine, snmpContext):
         snmpEngine.msgAndPduDsp.registerContextEngineId(
@@ -146,7 +149,7 @@ class CommandResponderBase:
             PDU.tagSet not in rfc3411.readClassPDUs
             and PDU.tagSet not in rfc3411.writeClassPDUs
         ):
-            raise error.ProtocolError("Unexpected PDU class %s" % PDU.tagSet)
+            raise error.ProtocolError(f"Unexpected PDU class {PDU.tagSet}")
 
         # 3.2.2 --> no-op
 
@@ -300,14 +303,18 @@ class CommandResponderBase:
             )
             errorIndication = statusInformation["errorIndication"]
             # 3.2.5...
-            if (
-                errorIndication == errind.noSuchView
-                or errorIndication == errind.noAccessEntry
-                or errorIndication == errind.noGroupName
+            if errorIndication in (
+                errind.noSuchView,
+                errind.noAccessEntry,
+                errind.noGroupName,
             ):
-                raise pysnmp.smi.error.AuthorizationError(name=name, idx=idx)
+                raise pysnmp.smi.error.AuthorizationError(
+                    name=name, idx=idx
+                ) from statusInformation
             elif errorIndication == errind.otherError:
-                raise pysnmp.smi.error.GenError(name=name, idx=idx)
+                raise pysnmp.smi.error.GenError(
+                    name=name, idx=idx
+                ) from statusInformation
             elif errorIndication == errind.noSuchContext:
                 (snmpUnknownContexts,) = (
                     snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
@@ -321,11 +328,13 @@ class CommandResponderBase:
                     idx=idx,
                     oid=snmpUnknownContexts.name,
                     val=snmpUnknownContexts.syntax,
-                )
+                ) from statusInformation
             elif errorIndication == errind.notInView:
                 return 1
             else:
-                raise error.ProtocolError("Unknown ACM error %s" % errorIndication)
+                raise error.ProtocolError(
+                    f"Unknown ACM error {errorIndication}"
+                ) from statusInformation
         else:
             # rfc2576: 4.1.2.1
             if (
@@ -385,11 +394,9 @@ class BulkCommandResponder(CommandResponderBase):
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
         (acFun, acCtx) = acInfo
         nonRepeaters = v2c.apiBulkPDU.getNonRepeaters(PDU)
-        if nonRepeaters < 0:
-            nonRepeaters = 0
+        nonRepeaters = max(nonRepeaters, 0)
         maxRepetitions = v2c.apiBulkPDU.getMaxRepetitions(PDU)
-        if maxRepetitions < 0:
-            maxRepetitions = 0
+        maxRepetitions = max(maxRepetitions, 0)
 
         reqVarBinds = v2c.apiPDU.getVarBinds(PDU)
 
@@ -401,7 +408,7 @@ class BulkCommandResponder(CommandResponderBase):
             M = min(M, self.maxVarBinds // R)
 
         debug.logger & debug.flagApp and debug.logger(
-            "handleMgmtOperation: N %d, M %d, R %d" % (N, M, R)
+            f"handleMgmtOperation: N {N}, M {M}, R {R}"
         )
 
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readNextVars
@@ -417,11 +424,11 @@ class BulkCommandResponder(CommandResponderBase):
             varBinds = rspVarBinds[-R:]
             M -= 1
 
-        if len(rspVarBinds):
+        if rspVarBinds:
             self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
             self.releaseStateInformation(stateReference)
         else:
-            raise pysnmp.smi.error.SmiError()
+            raise pysnmp.smi.error.SmiError
 
 
 class SetCommandResponder(CommandResponderBase):
@@ -447,4 +454,4 @@ class SetCommandResponder(CommandResponderBase):
         ) as e:
             err = pysnmp.smi.error.NotWritableError()
             err.update(e)
-            raise err
+            raise err from e

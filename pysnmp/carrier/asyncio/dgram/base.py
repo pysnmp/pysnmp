@@ -41,7 +41,10 @@ from pysnmp.carrier.asyncio.base import AbstractAsyncioTransport
 class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     """Base Asyncio datagram Transport, to be used with AsyncioDispatcher"""
 
-    sockFamily = None
+    #: Address family this transport opens sockets in. None where the
+    #: platform has no such family -- AF_UNIX on Windows, AF_INET6 on a build
+    #: without IPv6 -- in which case the transport cannot be opened at all.
+    sockFamily: "socket.AddressFamily | None" = None
 
     def __init__(self, sock=None, sockMap=None, loop=None):
         self._writeQ = []
@@ -71,8 +74,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         while self._writeQ:
             outgoingMessage, transportAddress = self._writeQ.pop(0)
             debug.logger & debug.flagIO and debug.logger(
-                "connection_made: transportAddress %r outgoingMessage %s"
-                % (transportAddress, debug.hexdump(outgoingMessage))
+                f"connection_made: transportAddress {transportAddress!r} outgoingMessage {debug.hexdump(outgoingMessage)}"
             )
             try:
                 self.transport.sendto(
@@ -81,7 +83,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             except Exception as e:
                 raise error.CarrierError(
                     ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-                )
+                ) from e
 
     def connection_lost(self, exc):
         self.transport = None
@@ -101,7 +103,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         except Exception as e:
             raise error.CarrierError(
                 ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-            )
+            ) from e
         return self
 
     def openServerMode(self, iface):
@@ -116,7 +118,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         except Exception as e:
             raise error.CarrierError(
                 ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-            )
+            ) from e
         return self
 
     def closeTransport(self):
@@ -149,7 +151,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             except Exception as e:
                 raise error.CarrierError(
                     ";".join(traceback.format_exception(type(e), e, e.__traceback__))
-                )
+                ) from e
 
     def getLocalAddress(self):
         if self.transport is None:
@@ -176,7 +178,9 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         try:
             self._configureSocket(configureSocket)
         except OSError as e:
-            raise error.CarrierError(f"setsockopt() for SO_BROADCAST failed: {e}")
+            raise error.CarrierError(
+                f"setsockopt() for SO_BROADCAST failed: {e}"
+            ) from e
         return self
 
     def enablePktInfo(self, flag=1):
@@ -201,5 +205,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         try:
             self._configureSocket(configureSocket)
         except (AttributeError, OSError) as e:
-            raise error.CarrierError(f"setsockopt() for IP_TRANSPARENT failed: {e}")
+            raise error.CarrierError(
+                f"setsockopt() for IP_TRANSPARENT failed: {e}"
+            ) from e
         return self

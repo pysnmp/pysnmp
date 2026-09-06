@@ -8,7 +8,9 @@ from pysnmp.proto.secmod import cache
 
 
 class AbstractSecurityModel:
-    securityModelID = None
+    #: securityModel value this model answers to (:RFC:`3411#section-4`), e.g. 3
+    #: for USM. None until a concrete model names one.
+    securityModelID: int | None = None
 
     def __init__(self):
         self._cache = cache.Cache()
@@ -24,7 +26,7 @@ class AbstractSecurityModel:
         wholeMsg,
         msg,
     ):
-        raise error.ProtocolError("Security model %s not implemented" % self)
+        raise error.ProtocolError(f"Security model {self} not implemented")
 
     def generateRequestMsg(
         self,
@@ -38,7 +40,7 @@ class AbstractSecurityModel:
         securityLevel,
         scopedPDU,
     ):
-        raise error.ProtocolError("Security model %s not implemented" % self)
+        raise error.ProtocolError(f"Security model {self} not implemented")
 
     def generateResponseMsg(
         self,
@@ -53,7 +55,7 @@ class AbstractSecurityModel:
         scopedPDU,
         securityStateReference,
     ):
-        raise error.ProtocolError("Security model %s not implemented" % self)
+        raise error.ProtocolError(f"Security model {self} not implemented")
 
     def releaseStateInformation(self, stateReference):
         self._cache.pop(stateReference)

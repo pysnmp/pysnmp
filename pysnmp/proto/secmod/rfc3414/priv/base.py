@@ -7,7 +7,9 @@ from pysnmp.proto import error
 
 
 class AbstractEncryptionService:
-    serviceID = None
+    #: OID naming the protocol this service implements, e.g. usmDESPrivProtocol.
+    #: Concrete services differ in length, so the arity cannot be pinned here.
+    serviceID: tuple[int, ...] | None = None
     keySize = 0
 
     def hashPassphrase(self, authProtocol, privKey):

@@ -88,14 +88,14 @@ class Vacm:
         try:
             views = groups[groupName]
 
-        except KeyError:
-            raise error.StatusInformation(errorIndication=errind.noGroupName)
+        except KeyError as exc:
+            raise error.StatusInformation(errorIndication=errind.noGroupName) from exc
 
         try:
             matches = views[viewType]
 
-        except KeyError:
-            raise error.StatusInformation(errorIndication=errind.noAccessEntry)
+        except KeyError as exc:
+            raise error.StatusInformation(errorIndication=errind.noAccessEntry) from exc
 
         try:
             # vacmAccessTable #2: exact match shortcut
@@ -156,17 +156,9 @@ class Vacm:
         mibInstrumController = snmpEngine.msgAndPduDsp.mibInstrumController
 
         debug.logger & debug.flagACL and debug.logger(
-            "isAccessAllowed: securityModel %s, securityName %s, "
-            "securityLevel %s, viewType %s, contextName %s for "
-            "variableName %s"
-            % (
-                securityModel,
-                debug.prettify(securityName),
-                securityLevel,
-                viewType,
-                debug.prettify(contextName),
-                variableName,
-            )
+            f"isAccessAllowed: securityModel {securityModel}, securityName {debug.prettify(securityName)}, "
+            f"securityLevel {securityLevel}, viewType {viewType}, contextName {debug.prettify(contextName)} for "
+            f"variableName {variableName}"
         )
 
         # Rebuild contextName map if changed
@@ -231,8 +223,8 @@ class Vacm:
         try:
             groupName = self._groupNameMap[indices]
 
-        except KeyError:
-            raise error.StatusInformation(errorIndication=errind.noGroupName)
+        except KeyError as exc:
+            raise error.StatusInformation(errorIndication=errind.noGroupName) from exc
 
         # Rebuild access map if changed
 

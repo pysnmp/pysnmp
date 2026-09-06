@@ -7,7 +7,9 @@ from pysnmp.proto import errind, error
 
 
 class AbstractAuthenticationService:
-    serviceID = None
+    #: OID naming the protocol this service implements, e.g. usmHMACMD5AuthProtocol.
+    #: Concrete services differ in length, so the arity cannot be pinned here.
+    serviceID: tuple[int, ...] | None = None
 
     def hashPassphrase(self, authKey):
         raise error.ProtocolError(errind.noAuthentication)

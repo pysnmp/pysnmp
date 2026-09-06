@@ -4,21 +4,26 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from pysnmp import error
 from pysnmp.carrier.base import AbstractTransport
 
 __all__ = []
 
+#: The address shape a concrete target speaks. Each transport has its own --
+#: (host, port) for UDP over IPv4 and IPv6, a path string for Unix domain
+#: sockets -- so the base cannot name one and have the subclasses honour it.
+TransportAddrT = TypeVar("TransportAddrT")
 
-class AbstractTransportTarget:
+
+class AbstractTransportTarget(Generic[TransportAddrT]):
     transportDomain: Any = None
     protoTransport: Any = AbstractTransport
 
     def __init__(
         self,
-        transportAddr: tuple[str, ...],
+        transportAddr: TransportAddrT,
         timeout: int = 1,
         retries: int = 5,
         tagList: Any = b"",
@@ -27,18 +32,18 @@ class AbstractTransportTarget:
         self.timeout = timeout
         self.retries = retries
         self.tagList = tagList
-        self.iface = None
-        self.transport = None
+        self.iface: tuple[str, ...] | None = None
+        self.transport: Any = None
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.transportAddr!r}, timeout={self.timeout!r}, retries={self.retries!r}, tagList={self.tagList!r})"
 
-    def getTransportInfo(self) -> tuple[Any, tuple[str, ...]]:
+    def getTransportInfo(self) -> tuple[Any, TransportAddrT]:
         return self.transportDomain, self.transportAddr
 
     def setLocalAddress(
         self, iface: tuple[str, ...] | None
-    ) -> "AbstractTransportTarget":
+    ) -> "AbstractTransportTarget[TransportAddrT]":
         """Set source address.
 
         Parameters
@@ -67,5 +72,5 @@ class AbstractTransportTarget:
                 f"Transport {self.protoTransport!r} is not compatible with dispatcher {snmpEngine.transportDispatcher!r}"
             )
 
-    def _resolveAddr(self, transportAddr: tuple[str, ...]) -> tuple[str, ...]:
-        raise NotImplementedError()
+    def _resolveAddr(self, transportAddr: TransportAddrT) -> TransportAddrT:
+        raise NotImplementedError

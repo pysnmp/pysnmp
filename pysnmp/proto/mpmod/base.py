@@ -3,12 +3,17 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+from typing import Any
+
 from pysnmp.proto import error
 from pysnmp.proto.mpmod import cache
 
 
 class AbstractMessageProcessingModel:
-    snmpMsgSpec = NotImplementedError
+    #: ASN.1 class of the message this model speaks; __init__ instantiates it.
+    #: NotImplementedError stands in for a model that has not named one -- it is
+    #: constructed, not raised, so the failure surfaces later rather than here.
+    snmpMsgSpec: type[Any] = NotImplementedError
 
     def __init__(self):
         self._snmpMsgSpec = self.snmpMsgSpec()  # local copy

@@ -37,7 +37,7 @@ def make_callback(
                 ]
             else:
                 varBindsUnmade = unmake_fn(snmpEngine, varBinds, lookupMib)
-        except Exception as ex:  # pylint: disable=broad-exception-caught
+        except Exception as ex:  # noqa: BLE001 - whatever unmaking the var-binds raises belongs to the caller, through the future
             future.set_exception(ex)
         else:
             future.set_result(

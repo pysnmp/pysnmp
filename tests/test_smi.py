@@ -43,7 +43,7 @@ class TestSmiError:
 
     def test_mib_operation_error_keys(self):
         err = error.MibOperationError(idx=0, oid=(1, 3))
-        assert "idx" in err.keys()
+        assert "idx" in err
 
     def test_mib_operation_error_update(self):
         err = error.MibOperationError(idx=0)

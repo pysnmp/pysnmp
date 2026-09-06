@@ -17,11 +17,9 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 # RFC3826
 
-#
-
 
 class Aes(base.AbstractEncryptionService):
-    serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 2, 4)  # usmAesCfb128Protocol
+    serviceID: tuple[int, ...] = (1, 3, 6, 1, 6, 3, 10, 1, 2, 4)  # usmAesCfb128Protocol
     keySize = 16
     _localInt = secrets.randbits(64)
 
@@ -48,11 +46,7 @@ class Aes(base.AbstractEncryptionService):
         ) + (univ.OctetString(salt).asOctets(),)
 
     def __getDecryptionKey(self, privKey, snmpEngineBoots, snmpEngineTime, salt):
-        snmpEngineBoots, snmpEngineTime, salt = (
-            int(snmpEngineBoots),
-            int(snmpEngineTime),
-            salt,
-        )
+        snmpEngineBoots, snmpEngineTime = int(snmpEngineBoots), int(snmpEngineTime)
 
         iv = [
             snmpEngineBoots >> 24 & 0xFF,

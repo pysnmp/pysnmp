@@ -5,6 +5,7 @@
 #
 import sys
 from pathlib import Path
+from typing import Any
 
 defaultSources = ["file:///usr/share/snmp/mibs", "file:///usr/share/mibs"]
 
@@ -13,7 +14,7 @@ if sys.platform[:3] == "win":
 else:
     defaultDest = str(Path.home() / ".pysnmp" / "mibs")
 
-defaultBorrowers = []
+defaultBorrowers: list[Any] = []
 
 try:
     from pysmi.borrower.pyfile import PyFileBorrower
@@ -32,7 +33,7 @@ except ImportError as e:
     def addMibCompilerDecorator(errorMsg):
         def addMibCompiler(mibBuilder, **kwargs):
             if not kwargs.get("ifAvailable"):
-                raise error.SmiError("MIB compiler not available: %s" % errorMsg)
+                raise error.SmiError(f"MIB compiler not available: {errorMsg}")
 
         return addMibCompiler
 
@@ -63,7 +64,7 @@ else:
                 PyFileBorrower(x, genTexts=mibBuilder.loadTexts)
                 for x in getReadersFromUrls(
                     *kwargs.get("borrowers") or defaultBorrowers,
-                    **dict(lowcaseMatching=False),
+                    lowcaseMatching=False,
                 )
             ]
         )

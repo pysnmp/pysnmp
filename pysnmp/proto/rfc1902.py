@@ -8,19 +8,19 @@ from pyasn1.type import constraint, namedtype, namedval, tag, univ
 from pysnmp.proto import error
 
 __all__ = [
+    "Bits",
+    "Counter32",
+    "Counter64",
+    "Gauge32",
+    "Integer",
+    "Integer32",
+    "IpAddress",
+    "Null",
+    "ObjectIdentifier",
+    "OctetString",
     "Opaque",
     "TimeTicks",
-    "Bits",
-    "Integer",
-    "OctetString",
-    "IpAddress",
-    "Counter64",
     "Unsigned32",
-    "Gauge32",
-    "Integer32",
-    "ObjectIdentifier",
-    "Counter32",
-    "Null",
 ]
 
 
@@ -234,7 +234,7 @@ class OctetString(univ.OctetString):
     # having zero-range size constraint applied. The following is
     # supposed to be used for setting and querying this property.
 
-    fixedLength = None
+    fixedLength: int | None = None
 
     def setFixedLength(self, value):
         self.fixedLength = value
@@ -347,8 +347,8 @@ class IpAddress(OctetString):
         if isinstance(value, str) and len(value) != 4:
             try:
                 value = [int(x) for x in value.split(".")]
-            except Exception:
-                raise error.ProtocolError("Bad IP address syntax %s" % value)
+            except Exception as exc:
+                raise error.ProtocolError(f"Bad IP address syntax {value}") from exc
         value = OctetString.prettyIn(self, value)
         if len(value) != 4:
             raise error.ProtocolError("Bad IP address syntax")
@@ -356,7 +356,7 @@ class IpAddress(OctetString):
 
     def prettyOut(self, value):
         if value:
-            return ".".join(["%d" % x for x in self.__class__(value).asNumbers()])
+            return ".".join([str(x) for x in self.__class__(value).asNumbers()])
         else:
             return ""
 
@@ -675,7 +675,7 @@ class Bits(OctetString):
         for bit in bits:  # tuple of named bits
             v = self.namedValues[bit]
             if v is None:
-                raise error.ProtocolError("Unknown named bit %s" % bit)
+                raise error.ProtocolError(f"Unknown named bit {bit}")
             d, m = divmod(v, 8)
             if d >= len(octets):
                 octets.extend([0] * (d - len(octets) + 1))

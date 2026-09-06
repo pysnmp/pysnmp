@@ -67,7 +67,7 @@ class SnmpEngine:
         maxMessageSize: int = 65507,
         msgAndPduDsp: Any = None,
     ) -> None:
-        self.cache = {}
+        self.cache: dict[Any, Any] = {}
 
         self.observer = observer.MetaObserver()
 
@@ -121,8 +121,7 @@ class SnmpEngine:
             self.snmpEngineID = origSnmpEngineID.syntax
 
             debug.logger & debug.flagApp and debug.logger(
-                "SnmpEngine: using custom SNMP Engine ID: %s"
-                % self.snmpEngineID.prettyPrint()
+                f"SnmpEngine: using custom SNMP Engine ID: {self.snmpEngineID.prettyPrint()}"
             )
 
             # Attempt to make some of snmp Engine settings persistent.
@@ -135,7 +134,7 @@ class SnmpEngine:
             )
 
             debug.logger & debug.flagApp and debug.logger(
-                "SnmpEngine: using persistent directory: %s" % persistentPath
+                f"SnmpEngine: using persistent directory: {persistentPath}"
             )
 
             if not persistentPath.exists():
@@ -146,15 +145,15 @@ class SnmpEngine:
 
             f = persistentPath / "boots"
             try:
-                snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(open(f).read())
+                snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(f.read_text())
             except (OSError, UnicodeDecodeError, ValueConstraintError, ValueError) as e:
                 debug.logger & debug.flagApp and debug.logger(
-                    "SnmpEngine: could not load SNMP Engine Boots: %s" % e
+                    f"SnmpEngine: could not load SNMP Engine Boots: {e}"
                 )
 
             try:
                 snmpEngineBoots.syntax += 1
-            except Exception:
+            except Exception:  # noqa: BLE001 - the stored counter is whatever was on disk; anything that will not increment restarts it
                 snmpEngineBoots.syntax = snmpEngineBoots.syntax.clone(1)
 
             try:
@@ -162,14 +161,13 @@ class SnmpEngine:
                 os.write(fd, snmpEngineBoots.syntax.prettyPrint().encode("iso-8859-1"))
                 os.close(fd)
                 shutil.move(fn, f)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - persisting the boot counter is best effort; a read-only filesystem must not stop the engine
                 debug.logger & debug.flagApp and debug.logger(
-                    "SnmpEngine: could not stored SNMP Engine Boots: %s" % e
+                    f"SnmpEngine: could not stored SNMP Engine Boots: {e}"
                 )
             else:
                 debug.logger & debug.flagApp and debug.logger(
-                    "SnmpEngine: stored SNMP Engine Boots: %s"
-                    % snmpEngineBoots.syntax.prettyPrint()
+                    f"SnmpEngine: stored SNMP Engine Boots: {snmpEngineBoots.syntax.prettyPrint()}"
                 )
 
     def __repr__(self) -> str:
@@ -220,10 +218,10 @@ class SnmpEngine:
 
     # User app may attach opaque objects to SNMP Engine
     def setUserContext(self, **kwargs: Any) -> None:
-        self.cache.update({"__%s" % k: kwargs[k] for k in kwargs})
+        self.cache.update({f"__{k}": kwargs[k] for k in kwargs})
 
     def getUserContext(self, arg: str) -> Any:
-        return self.cache.get("__%s" % arg)
+        return self.cache.get(f"__{arg}")
 
     def delUserContext(self, arg: str) -> None:
-        self.cache.pop("__%s" % arg, None)
+        self.cache.pop(f"__{arg}", None)

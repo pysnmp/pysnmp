@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from typing import Any
+
 from pyasn1.codec.ber import decoder, eoo
 from pyasn1.type import constraint, namedtype, univ
 
@@ -93,7 +95,7 @@ _snmpErrors = {
 
 class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
     messageProcessingModelID = univ.Integer(3)  # SNMPv3
-    snmpMsgSpec = SNMPv3Message
+    snmpMsgSpec: type[Any] = SNMPv3Message
     _emptyStr = univ.OctetString("")
     _msgFlags = {
         0: univ.OctetString("\x00"),
@@ -193,7 +195,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         elif securityLevel == 3:
             msgFlags |= 0x03
         else:
-            raise error.ProtocolError("Unknown securityLevel %s" % securityLevel)
+            raise error.ProtocolError(f"Unknown securityLevel {securityLevel}")
 
         if pdu.tagSet in rfc3411.confirmedClassPDUs:
             msgFlags |= 0x04
@@ -260,7 +262,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         msgID = self._cache.newMsgID()
 
         debug.logger & debug.flagMP and debug.logger(
-            "prepareOutgoingMessage: new msgID %s" % msgID
+            f"prepareOutgoingMessage: new msgID {msgID}"
         )
 
         k = (transportDomain, transportAddress)
@@ -315,16 +317,15 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         if pdu.tagSet in rfc3411.unconfirmedClassPDUs:
             securityEngineId = snmpEngineID
 
+        elif peerSnmpEngineData is None:
+            debug.logger & debug.flagMP and debug.logger(
+                "prepareOutgoingMessage: peer SNMP engine is not known"
+            )
+
+            securityEngineId = None
+
         else:
-            if peerSnmpEngineData is None:
-                debug.logger & debug.flagMP and debug.logger(
-                    "prepareOutgoingMessage: peer SNMP engine is not known"
-                )
-
-                securityEngineId = None
-
-            else:
-                securityEngineId = peerSnmpEngineData["securityEngineId"]
+            securityEngineId = peerSnmpEngineData["securityEngineId"]
 
         debug.logger & debug.flagMP and debug.logger(
             f"prepareOutgoingMessage: securityModel {securityModel!r}, securityEngineId {securityEngineId!r}, securityName {securityName!r}, securityLevel {securityLevel!r}"
@@ -416,7 +417,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         transportAddress = cachedParams["transportAddress"]
 
         debug.logger & debug.flagMP and debug.logger(
-            "prepareResponseMessage: stateReference %s" % stateReference
+            f"prepareResponseMessage: stateReference {stateReference}"
         )
 
         # 7.1.3
@@ -472,8 +473,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             pdu = reportPDU
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareResponseMessage: prepare report PDU for statusInformation %s"
-                % statusInformation
+                f"prepareResponseMessage: prepare report PDU for statusInformation {statusInformation}"
             )
         # 7.1.4
         if not responseContextEngineId:
@@ -517,23 +517,20 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             f"prepareResponseMessage: securityModel {responseSecurityModel!r}, securityEngineId {snmpEngineID!r}, securityName {responseSecurityName!r}, securityLevel {responseSecurityLevel!r}"
         )
 
-        # 7.1.8a
-        try:
-            (securityParameters, wholeMsg) = smHandler.generateResponseMsg(
-                snmpEngine,
-                self.messageProcessingModelID,
-                msg,
-                snmpEngineMaxMessageSize.syntax,
-                responseSecurityModel,
-                snmpEngineID,
-                responseSecurityName,
-                responseSecurityLevel,
-                scopedPDU,
-                securityStateReference,
-            )
-        except error.StatusInformation:
-            # 7.1.8.b
-            raise
+        # 7.1.8a. A StatusInformation raised here propagates unchanged
+        # (:RFC:`3412#section-7.1.8` b).
+        (securityParameters, wholeMsg) = smHandler.generateResponseMsg(
+            snmpEngine,
+            self.messageProcessingModelID,
+            msg,
+            snmpEngineMaxMessageSize.syntax,
+            responseSecurityModel,
+            snmpEngineID,
+            responseSecurityName,
+            responseSecurityLevel,
+            scopedPDU,
+            securityStateReference,
+        )
 
         debug.logger & debug.flagMP and debug.logger(
             "prepareResponseMessage: SM finished"
@@ -642,12 +639,11 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 "prepareDataElements: SM succeeded"
             )
 
-        except error.StatusInformation as statusInformation:
-            origTraceback = statusInformation.__traceback__
+        except error.StatusInformation as smError:
+            origTraceback = smError.__traceback__
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareDataElements: SM failed, statusInformation %s"
-                % statusInformation
+                f"prepareDataElements: SM failed, statusInformation {smError}"
             )
 
             with execution_context(
@@ -658,25 +654,23 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                 securityModel=securityModel,
                 securityLevel=securityLevel,
                 securityParameters=securityParameters,
-                statusInformation=statusInformation,
+                statusInformation=smError,
             ):
                 pass
 
-            if "errorIndication" in statusInformation:
+            if "errorIndication" in smError:
                 # 7.2.6a
-                if "oid" in statusInformation:
+                if "oid" in smError:
                     # 7.2.6a1
-                    securityStateReference = statusInformation["securityStateReference"]
-                    contextEngineId = statusInformation["contextEngineId"]
-                    contextName = statusInformation["contextName"]
-                    if "scopedPDU" in statusInformation:
-                        scopedPDU = statusInformation["scopedPDU"]
+                    securityStateReference = smError["securityStateReference"]
+                    contextEngineId = smError["contextEngineId"]
+                    contextName = smError["contextName"]
+                    if "scopedPDU" in smError:
+                        scopedPDU = smError["scopedPDU"]
                         pdu = scopedPDU.getComponentByPosition(2).getComponent()
                     else:
                         pdu = None
-                    maxSizeResponseScopedPDU = statusInformation[
-                        "maxSizeResponseScopedPDU"
-                    ]
+                    maxSizeResponseScopedPDU = smError["maxSizeResponseScopedPDU"]
                     securityName = None  # XXX secmod cache used
 
                     # 7.2.6a2
@@ -712,7 +706,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
                             pdu,
                             maxSizeResponseScopedPDU,
                             stateReference,
-                            statusInformation,
+                            smError,
                         )
                     except error.StatusInformation:
                         pass
@@ -723,7 +717,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
 
             # 7.2.6b
             try:
-                raise statusInformation.with_traceback(origTraceback)
+                raise smError.with_traceback(origTraceback)
             finally:
                 # Break cycle between locals and traceback object
                 del origTraceback
@@ -781,9 +775,11 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             # 7.2.10a
             try:
                 cachedReqParams = self._cache.popByMsgId(msgID)
-            except error.ProtocolError:
+            except error.ProtocolError as exc:
                 smHandler.releaseStateInformation(securityStateReference)
-                raise error.StatusInformation(errorIndication=errind.dataMismatch)
+                raise error.StatusInformation(
+                    errorIndication=errind.dataMismatch
+                ) from exc
             # 7.2.10b
             sendPduHandle = cachedReqParams["sendPduHandle"]
         else:
@@ -917,7 +913,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
             )
 
             debug.logger & debug.flagMP and debug.logger(
-                "prepareDataElements: new stateReference %s" % stateReference
+                f"prepareDataElements: new stateReference {stateReference}"
             )
 
             with execution_context(

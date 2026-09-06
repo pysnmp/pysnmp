@@ -14,7 +14,7 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 
 class AbstractAesBlumenthal(aes.Aes):
-    serviceID = ()
+    serviceID: tuple[int, ...] = ()
     keySize = 0
 
     # 3.1.2.1
@@ -31,7 +31,7 @@ class AbstractAesBlumenthal(aes.Aes):
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
 
         # now extend this key if too short by repeating steps that includes the hashPassphrase step
-        for count in range(1, int(ceil(self.keySize * 1.0 / len(localPrivKey)))):
+        for count in range(1, ceil(self.keySize * 1.0 / len(localPrivKey))):
             localPrivKey += localPrivKey.clone(
                 hashAlgo(localPrivKey.asOctets()).digest()
             )
@@ -55,7 +55,7 @@ class AbstractAesReeder(aes.Aes):
     the steps in the password to key algorithm (hash phrase, then localize with SNMPEngine ID).
     """
 
-    serviceID = ()
+    serviceID: tuple[int, ...] = ()
     keySize = 0
 
     # 2.1 of https://tools.itef.org/pdf/draft_bluementhal-aes-usm-04.txt

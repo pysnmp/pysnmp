@@ -5,8 +5,9 @@ repos:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
-
-  # pyasn1 and pysmi also run mypy here, over their own package. This
-  # repository does not yet: mypy reports 1339 errors across 68 files against
-  # the configuration already in pyproject.toml, so the hook would fail on
-  # every commit. Tracked in pysnmp/pysnmp#178; add it here once that is closed.
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.3.1
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports]
+        files: ^pysnmp/

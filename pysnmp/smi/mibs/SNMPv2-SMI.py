@@ -196,7 +196,7 @@ MODULE-IDENTITY
             self.getOrganization(),
             self.getContactInfo(),
             self.getDescription(),
-            "".join(['REVISION "%s"\n' % x for x in self.getRevisions()]),
+            "".join([f'REVISION "{x}"\n' for x in self.getRevisions()]),
         )
 
 
@@ -294,7 +294,7 @@ NOTIFICATION-TYPE
   DESCRIPTION "{}"
   REFERENCE "{}"
 """.format(
-            ", ".join([x for x in self.getObjects()]),
+            ", ".join(list(self.getObjects())),
             self.getStatus(),
             self.getDescription(),
             self.getReference(),
@@ -450,8 +450,8 @@ class MibTree(ObjectType):
         else:
             try:
                 return self._vars[self._vars.nextKey(name)]
-            except KeyError:
-                raise error.NoSuchObjectError(idx=idx, name=name)
+            except KeyError as exc:
+                raise error.NoSuchObjectError(idx=idx, name=name) from exc
 
     def getNode(self, name, idx=None):
         """Return tree node found by name"""
@@ -472,8 +472,8 @@ class MibTree(ObjectType):
             except (error.NoSuchInstanceError, error.NoSuchObjectError):
                 try:
                     return self._vars[self._vars.nextKey(nextNode.name)]
-                except KeyError:
-                    raise error.NoSuchObjectError(idx=idx, name=name)
+                except KeyError as exc:
+                    raise error.NoSuchObjectError(idx=idx, name=name) from exc
 
     # MIB instrumentation
 
@@ -615,26 +615,26 @@ class MibScalar(MibTree):
     def getBranch(self, name, idx):
         try:
             return MibTree.getBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNextBranch(self, name, idx=None):
         try:
             return MibTree.getNextBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNode(self, name, idx=None):
         try:
             return MibTree.getNode(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNextNode(self, name, idx=None):
         try:
             return MibTree.getNextNode(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     # MIB instrumentation methods
 
@@ -729,9 +729,9 @@ class MibScalarInstance(MibTree):
                 f"setValue: {self.name}={value!r} failed with traceback {traceback.format_exception(exc_t, exc_v, exc_tb)}"
             )
             if isinstance(exc_v, error.TableRowManagement):
-                raise exc_v
+                raise
             else:
-                raise error.WrongValueError(idx=idx, name=name, msg=exc_v)
+                raise error.WrongValueError(idx=idx, name=name, msg=exc_v) from exc_v
 
     #
     # Subtree traversal
@@ -742,14 +742,14 @@ class MibScalarInstance(MibTree):
     def getBranch(self, name, idx):
         try:
             return MibTree.getBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNextBranch(self, name, idx=None):
         try:
             return MibTree.getNextBranch(self, name, idx)
-        except (error.NoSuchInstanceError, error.NoSuchObjectError):
-            raise error.NoSuchInstanceError(idx=idx, name=name)
+        except (error.NoSuchInstanceError, error.NoSuchObjectError) as exc:
+            raise error.NoSuchInstanceError(idx=idx, name=name) from exc
 
     def getNode(self, name, idx=None):
         # Recursion terminator
@@ -803,9 +803,9 @@ class MibScalarInstance(MibTree):
                 # SMI exceptions may carry additional content
                 if "syntax" in why:
                     self.__newSyntax = why["syntax"]
-                    raise why
+                    raise
                 else:
-                    raise error.WrongValueError(idx=idx, name=name, msg=why)
+                    raise error.WrongValueError(idx=idx, name=name, msg=why) from why
         else:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
@@ -843,7 +843,7 @@ class MibScalarInstance(MibTree):
                 if "syntax" in why:
                     self.__newSyntax = why["syntax"]
                 else:
-                    raise error.WrongValueError(idx=idx, name=name, msg=why)
+                    raise error.WrongValueError(idx=idx, name=name, msg=why) from why
         else:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
@@ -1002,9 +1002,11 @@ class MibTableColumn(MibScalar):
             if self._vars[name] is None:
                 del self._vars[name]
             else:
-                # Catch half-created instances (hackerish)
+                # Catch half-created instances (hackerish): comparing a
+                # value-less pyasn1 object is what raises, so the comparison
+                # is the probe and its result is not wanted.
                 try:
-                    self._vars[name] == 0
+                    self._vars[name] == 0  # noqa: B015
                 except PyAsn1Error:
                     del self._vars[name]
                 else:
@@ -1225,7 +1227,7 @@ class MibTableRow(MibTree):
         if not baseIndices:
             return
 
-        for modName, mibSym in self.augmentingRows.keys():
+        for modName, mibSym in self.augmentingRows:
             (mibObj,) = mibBuilder.importSymbols(modName, mibSym)
             debug.logger & debug.flagIns and debug.logger(
                 f"announceManagementEvent {action} to {mibObj}"
@@ -1353,7 +1355,7 @@ class MibTableRow(MibTree):
                 colNode = mibNode.getNode(mibNode.name + name[len(self.name) + 1 :])
                 if not colNode.syntax.isValue:
                     raise error.InconsistentValueError(
-                        msg="Row consistency check failed for %r" % colNode
+                        msg=f"Row consistency check failed for {colNode!r}"
                     )
 
     def writeCleanup(self, name, val, idx, acInfo):
@@ -1412,17 +1414,15 @@ class MibTableRow(MibTree):
             cacheable = False
         except KeyError:
             cacheable = True
-        idx = 0
         instId = ()
         parentIndices = []
-        for impliedFlag, modName, symName in self.indexNames:
+        for idx, (impliedFlag, modName, symName) in enumerate(self.indexNames):
             if idx >= len(indices):
                 break
             (mibObj,) = mibBuilder.importSymbols(modName, symName)
             syntax = mibObj.syntax.clone(indices[idx])
             instId += self.getAsName(syntax, impliedFlag, parentIndices)
             parentIndices.append(syntax)
-            idx += 1
         if cacheable:
             self.__idxToIdCache[indices] = instId
         return instId
@@ -1436,7 +1436,7 @@ class MibTableRow(MibTree):
     def getInstNamesByIndex(self, *indices):
         """Build column instance names from indices"""
         instNames = []
-        for columnName in self._vars.keys():
+        for columnName in self._vars:
             instNames.append(self.getInstNameByIndex(*(columnName[-1],) + indices))
 
         return tuple(instNames)

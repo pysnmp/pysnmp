@@ -9,7 +9,7 @@ from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 from pysnmp.proto import errind
 from pysnmp.proto.rfc1905 import endOfMibView
 
-__all__ = ["getCmd", "nextCmd", "setCmd", "bulkCmd"]
+__all__ = ["bulkCmd", "getCmd", "nextCmd", "setCmd"]
 
 
 def _loop() -> asyncio.AbstractEventLoop:
@@ -118,11 +118,16 @@ def nextCmd(
     vbProcessor = CommandGeneratorVarBinds()
     initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
     totalRows = totalCalls = 0
+    # `varBinds` arrives as the *args tuple, but each round replaces it with a
+    # row of the response and then rewrites entries of that row in place. Carry
+    # it in a list of its own rather than rebinding the parameter to something
+    # it cannot hold.
+    currentVarBinds: list[Any] = list(varBinds)
 
     try:
         asyncio.set_event_loop(loop)
-        while varBinds:
-            previousVarBinds = varBinds
+        while currentVarBinds:
+            previousVarBinds = currentVarBinds
             errorIndication, errorStatus, errorIndex, varBindTable = (
                 loop.run_until_complete(
                     cmdgen.nextCmd(
@@ -130,7 +135,7 @@ def nextCmd(
                         authData,
                         transportTarget,
                         contextData,
-                        *[(x[0], Null("")) for x in varBinds],
+                        *[(x[0], Null("")) for x in currentVarBinds],
                         **options,
                     )
                 )
@@ -140,28 +145,36 @@ def nextCmd(
             ):
                 errorIndication = None
             if errorIndication or errorStatus:
-                yield errorIndication, errorStatus, errorIndex, varBinds
+                yield errorIndication, errorStatus, errorIndex, currentVarBinds
                 return
 
-            varBinds = varBindTable[0] if varBindTable else []
+            currentVarBinds = list(varBindTable[0]) if varBindTable else []
             stopFlag = True
-            for column, (name, value) in enumerate(varBinds):
+            for column, (name, value) in enumerate(currentVarBinds):
                 if isinstance(value, Null) or (
                     not lexicographicMode and not initialVars[column].isPrefixOf(name)
                 ):
-                    varBinds[column] = previousVarBinds[column][0], endOfMibView
-                if varBinds[column][1] is not endOfMibView:
+                    currentVarBinds[column] = (
+                        previousVarBinds[column][0],
+                        endOfMibView,
+                    )
+                if currentVarBinds[column][1] is not endOfMibView:
                     stopFlag = False
             if stopFlag:
                 return
 
             totalRows += 1
             totalCalls += 1
-            nextVarBinds = yield errorIndication, errorStatus, errorIndex, varBinds
+            nextVarBinds = yield (
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                currentVarBinds,
+            )
             if nextVarBinds:
-                varBinds = nextVarBinds
+                currentVarBinds = list(nextVarBinds)
                 initialVars = [
-                    x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)
+                    x[0] for x in vbProcessor.makeVarBinds(snmpEngine, currentVarBinds)
                 ]
             if (maxRows and totalRows >= maxRows) or (
                 maxCalls and totalCalls >= maxCalls

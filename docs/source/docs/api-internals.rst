@@ -46,6 +46,14 @@ Return types
 Transport
 ---------
 
+.. py:class:: pysnmp.hlapi.transport.TransportAddrT
+
+   The address shape a concrete transport target speaks. Each transport has
+   its own -- a ``(host, port)`` pair for UDP over IPv4 and IPv6, a path
+   string for Unix domain sockets -- so :py:class:`AbstractTransportTarget
+   <pysnmp.hlapi.transport.AbstractTransportTarget>` is generic in it rather
+   than naming one its subclasses would have to contradict.
+
 .. autoclass:: pysnmp.hlapi.transport.AbstractTransportTarget
    :members:
 

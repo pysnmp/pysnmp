@@ -4,16 +4,17 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 import os
+import socket
 import tempfile
 from pathlib import Path
 
-try:
-    from socket import AF_UNIX
-except ImportError:
-    AF_UNIX = None
-
 from pysnmp.carrier.asyncio.dgram.base import DgramAsyncioProtocol
 from pysnmp.carrier.base import AbstractTransportAddress
+
+# AF_UNIX does not exist on Windows. Look it up rather than importing it, so
+# the name keeps one type instead of being a constant on one platform and None
+# on another.
+AF_UNIX: "socket.AddressFamily | None" = getattr(socket, "AF_UNIX", None)
 
 domainName = snmpLocalDomain = (1, 3, 6, 1, 2, 1, 100, 1, 13)
 

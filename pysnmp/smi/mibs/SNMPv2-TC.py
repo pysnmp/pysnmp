@@ -85,22 +85,20 @@ class TextualConvention:
                 tuple(self.displayHint.split("-")) + (0,)
             )[:2]
             if displayHintType == "x":
-                return "0x%x" % value
+                return f"0x{value:x}"
             elif displayHintType == "d":
                 try:
-                    return "%.*f" % (
-                        int(decimalPrecision),
-                        float(value) / pow(10, int(decimalPrecision)),
-                    )
+                    precision = int(decimalPrecision)
+                    return f"{float(value) / pow(10, precision):.{precision}f}"
                 except Exception as e:
-                    raise SmiError("float evaluation error: %s" % e)
+                    raise SmiError(f"float evaluation error: {e}") from e
             elif displayHintType == "o":
-                return "0%o" % value
+                return f"0{value:o}"
             elif displayHintType == "b":
                 runningValue = value
                 outputValue = ["B"]
                 while runningValue:
-                    outputValue.insert(0, "%d" % (runningValue & 0x01))
+                    outputValue.insert(0, f"{runningValue & 0x01}")
                     runningValue >>= 1
                 return "".join(outputValue)
             else:
@@ -137,11 +135,11 @@ class TextualConvention:
 
                 try:
                     octetLength = int(octetLength)
-                except Exception:
-                    raise SmiError("Bad octet length: %s" % octetLength)
+                except Exception as exc:
+                    raise SmiError(f"Bad octet length: {octetLength}") from exc
 
                 if not displayHint:
-                    raise SmiError("Short octet length: %s" % self.displayHint)
+                    raise SmiError(f"Short octet length: {self.displayHint}")
 
                 # 3
                 displayFormat = displayHint[0]
@@ -188,18 +186,17 @@ class TextualConvention:
                                 numberString = numberString[1:]
                             except Exception as e:
                                 raise SmiError(
-                                    "Display format eval failure: %s: %s"
-                                    % (numberString, e)
-                                )
+                                    f"Display format eval failure: {numberString}: {e}"
+                                ) from e
                         if displayFormat == "x":
-                            outputValue += "%02x" % number
+                            outputValue += f"{number:02x}"
                         elif displayFormat == "o":
-                            outputValue += "%03o" % number
+                            outputValue += f"{number:03o}"
                         else:
-                            outputValue += "%d" % number
+                            outputValue += f"{number}"
                     else:
                         raise SmiError(
-                            "Unsupported display format char: %s" % displayFormat
+                            f"Unsupported display format char: {displayFormat}"
                         )
                     if runningValue and repeatTerminator:
                         outputValue += repeatTerminator
@@ -260,21 +257,21 @@ class TextualConvention:
                     else:
                         return base.prettyIn(self, int(value[2:], 16))
                 except Exception as e:
-                    raise SmiError("integer evaluation error: %s" % e)
+                    raise SmiError(f"integer evaluation error: {e}") from e
             elif displayHintType == "d":
                 try:
                     return base.prettyIn(
                         self, int(float(value) * 10 ** int(decimalPrecision))
                     )
                 except Exception as e:
-                    raise SmiError("float evaluation error: %s" % e)
+                    raise SmiError(f"float evaluation error: {e}") from e
             elif displayHintType == "o" and (
                 value.startswith("0") or value.startswith("-0")
             ):
                 try:
                     return base.prettyIn(self, int(value, 8))
                 except Exception as e:
-                    raise SmiError("octal evaluation error: %s" % e)
+                    raise SmiError(f"octal evaluation error: {e}") from e
             elif displayHintType == "b" and (
                 value.startswith("B") or value.startswith("-B")
             ):
@@ -282,7 +279,7 @@ class TextualConvention:
                 try:
                     binValue = int(value[2:] if negative else value[1:], 2)
                 except Exception as e:
-                    raise SmiError("binary evaluation error: %s" % e)
+                    raise SmiError(f"binary evaluation error: {e}") from e
                 return base.prettyIn(self, -binValue if negative else binValue)
             else:
                 raise SmiError(
@@ -367,8 +364,7 @@ class TextualConvention:
                 # 1 this information is totally lost, just fail explicitly
                 if displayHint[0] == "*":
                     raise SmiError(
-                        'Can\'t parse "*" in DISPLAY-HINT (%s)'
-                        % self.__class__.__name__
+                        f'Can\'t parse "*" in DISPLAY-HINT ({self.__class__.__name__})'
                     )
 
                 # 2 this becomes ambiguous when it comes to rendered value
@@ -383,11 +379,11 @@ class TextualConvention:
 
                 try:
                     octetLength = int(octetLength)
-                except Exception:
-                    raise SmiError("Bad octet length: %s" % octetLength)
+                except Exception as exc:
+                    raise SmiError(f"Bad octet length: {octetLength}") from exc
 
                 if not displayHint:
-                    raise SmiError("Short octet length: %s" % self.displayHint)
+                    raise SmiError(f"Short octet length: {self.displayHint}")
 
                 # 3
                 displayFormat = displayHint[0]
@@ -411,8 +407,7 @@ class TextualConvention:
                         literal = displaySep.encode("iso-8859-1")
                         if not runningValue.startswith(literal):
                             raise SmiError(
-                                "Display format eval failure: %s: expected %s"
-                                % (runningValue[: len(literal)], literal)
+                                f"Display format eval failure: {runningValue[: len(literal)]}: expected {literal}"
                             )
                         runningValue = runningValue[len(literal) :]
                         if not displayHint:
@@ -442,9 +437,8 @@ class TextualConvention:
                         )
                     except Exception as e:
                         raise SmiError(
-                            "Display format eval failure: %s: %s"
-                            % (runningValue[:guessedOctetLength], e)
-                        )
+                            f"Display format eval failure: {runningValue[:guessedOctetLength]}: {e}"
+                        ) from e
 
                     num_as_bytes = []
                     if num:
@@ -468,9 +462,7 @@ class TextualConvention:
 
                     octetLength = guessedOctetLength
                 else:
-                    raise SmiError(
-                        "Unsupported display format char: %s" % displayFormat
-                    )
+                    raise SmiError(f"Unsupported display format char: {displayFormat}")
 
                 runningValue = runningValue[octetLength:]
 
@@ -520,7 +512,7 @@ class TestAndIncr(TextualConvention, Integer):
     def setValue(self, value):
         if value is not None:
             if value != self:
-                raise InconsistentValueError()
+                raise InconsistentValueError
             value += 1
             if value > 2147483646:
                 value = 0
@@ -584,22 +576,18 @@ class RowStatus(TextualConvention, Integer):
         (stCreateAndGo, stNotReady): (InconsistentValueError, stNotReady),
         (stCreateAndGo, stNotInService): (InconsistentValueError, stNotInService),
         (stCreateAndGo, stActive): (InconsistentValueError, stActive),
-        #
         (stCreateAndWait, stNotExists): (RowCreationWanted, stActive),
         (stCreateAndWait, stNotReady): (InconsistentValueError, stNotReady),
         (stCreateAndWait, stNotInService): (InconsistentValueError, stNotInService),
         (stCreateAndWait, stActive): (InconsistentValueError, stActive),
-        #
         (stActive, stNotExists): (InconsistentValueError, stNotExists),
         (stActive, stNotReady): (InconsistentValueError, stNotReady),
         (stActive, stNotInService): (None, stActive),
         (stActive, stActive): (None, stActive),
-        #
         (stNotInService, stNotExists): (InconsistentValueError, stNotExists),
         (stNotInService, stNotReady): (InconsistentValueError, stNotReady),
         (stNotInService, stNotInService): (None, stNotInService),
         (stNotInService, stActive): (None, stActive),
-        #
         (stDestroy, stNotExists): (RowDestructionWanted, stNotExists),
         (stDestroy, stNotReady): (RowDestructionWanted, stNotExists),
         (stDestroy, stNotInService): (RowDestructionWanted, stNotExists),

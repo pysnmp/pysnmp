@@ -12,7 +12,19 @@ class AesBlumenthal256(aesbase.AbstractAesBlumenthal):
     http://tools.ietf.org/html/draft-blumenthal-aes-usm-04
     """
 
-    serviceID = (1, 3, 6, 1, 4, 1, 9, 12, 6, 1, 2)  # cusmAESCfb256PrivProtocol
+    serviceID: tuple[int, ...] = (
+        1,
+        3,
+        6,
+        1,
+        4,
+        1,
+        9,
+        12,
+        6,
+        1,
+        2,
+    )  # cusmAESCfb256PrivProtocol
     keySize = 32
 
 
@@ -28,7 +40,7 @@ class Aes256(aesbase.AbstractAesReeder):
     Known to be used by many vendors including Cisco and others.
     """
 
-    serviceID = (
+    serviceID: tuple[int, ...] = (
         1,
         3,
         6,

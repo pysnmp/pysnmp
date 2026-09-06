@@ -19,7 +19,18 @@ _fortyEightZeros = (0,) * 48
 
 
 class HmacMd5(base.AbstractAuthenticationService):
-    serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 1, 2)  # usmHMACMD5AuthProtocol
+    serviceID: tuple[int, ...] = (
+        1,
+        3,
+        6,
+        1,
+        6,
+        3,
+        10,
+        1,
+        1,
+        2,
+    )  # usmHMACMD5AuthProtocol
     __ipad = [0x36] * 64
     __opad = [0x5C] * 64
 

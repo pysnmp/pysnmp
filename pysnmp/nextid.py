@@ -11,19 +11,14 @@ class Integer:
 
     def __init__(self, maximum, increment=256):
         self.__maximum = maximum
-        if increment >= maximum:
-            increment = maximum
+        increment = min(maximum, increment)
         self.__increment = increment
         self.__threshold = increment // 2
         e = secrets.randbelow(self.__maximum - self.__increment)
         self.__bank = list(range(e, e + self.__increment))
 
     def __repr__(self):
-        return "%s(%d, %d)" % (
-            self.__class__.__name__,
-            self.__maximum,
-            self.__increment,
-        )
+        return f"{self.__class__.__name__}({self.__maximum}, {self.__increment})"
 
     def __call__(self):
         v = self.__bank.pop(0)

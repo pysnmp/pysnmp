@@ -4,6 +4,9 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from collections.abc import Callable
+from typing import Any
+
 from pysnmp import debug, nextid
 from pysnmp.entity.rfc3413 import config
 from pysnmp.proto import errind, error, rfc3411
@@ -98,6 +101,12 @@ def _matchFilter(filterEntries, oid):
 class NotificationOriginator:
     acmID = 3  # default MIB access control method to use
 
+    #: Deprecated pre-4.4 entry point, superseded by sendVarBinds(). The
+    #: implementation is installed at the foot of this module; declaring it
+    #: here is what makes that assignment legal rather than a monkey-patch
+    #: onto a class that never mentions the name.
+    sendNotification: Callable[..., Any]
+
     def __init__(self, **options):
         self.__pendingReqs = {}
         self.__pendingNotifications = {}
@@ -123,7 +132,7 @@ class NotificationOriginator:
 
         # 3.3.6d
         if sendPduHandle not in self.__pendingReqs:
-            raise error.ProtocolError("Missing sendPduHandle %s" % sendPduHandle)
+            raise error.ProtocolError(f"Missing sendPduHandle {sendPduHandle}")
 
         (
             origTransportDomain,
@@ -162,8 +171,8 @@ class NotificationOriginator:
                 or origDiscoveryRetries > self.__options.get("discoveryRetries", 4)
             ):
                 debug.logger & debug.flagApp and debug.logger(
-                    "processResponsePdu: sendRequestHandle %s, sendPduHandle %s retry count %d exceeded"
-                    % (sendRequestHandle, sendPduHandle, origRetries)
+                    f"processResponsePdu: sendRequestHandle {sendRequestHandle}, "
+                    f"sendPduHandle {sendPduHandle} retry count {origRetries} exceeded"
                 )
                 cbFun(snmpEngine, sendRequestHandle, errorIndication, None, cbCtx)
                 return
@@ -202,14 +211,14 @@ class NotificationOriginator:
                     self.processResponsePdu,
                     (sendRequestHandle, cbFun, cbCtx),
                 )
-            except error.StatusInformation as statusInformation:
+            except error.StatusInformation as sendError:
                 debug.logger & debug.flagApp and debug.logger(
-                    f"processResponsePdu: sendRequestHandle {sendRequestHandle}: sendPdu() failed with {statusInformation!r} "
+                    f"processResponsePdu: sendRequestHandle {sendRequestHandle}: sendPdu() failed with {sendError!r} "
                 )
                 cbFun(
                     snmpEngine,
                     sendRequestHandle,
-                    statusInformation["errorIndication"],
+                    sendError["errorIndication"],
                     None,
                     cbCtx,
                 )
@@ -218,14 +227,9 @@ class NotificationOriginator:
             snmpEngine.transportDispatcher.jobStarted(id(self))
 
             debug.logger & debug.flagApp and debug.logger(
-                "processResponsePdu: sendRequestHandle %s, sendPduHandle %s, timeout %d, retry %d of %d"
-                % (
-                    sendRequestHandle,
-                    sendPduHandle,
-                    origTimeout,
-                    origRetries,
-                    origRetryCount,
-                )
+                f"processResponsePdu: sendRequestHandle {sendRequestHandle}, "
+                f"sendPduHandle {sendPduHandle}, timeout {origTimeout}, "
+                f"retry {origRetries} of {origRetryCount}"
             )
 
             # 3.3.6b
@@ -310,7 +314,7 @@ class NotificationOriginator:
             )
 
             debug.logger & debug.flagApp and debug.logger(
-                "sendPdu: sendPduHandle %s, timeout %d" % (sendPduHandle, timeout)
+                f"sendPdu: sendPduHandle {sendPduHandle}, timeout {timeout}"
             )
 
             # 3.3.6b
@@ -602,8 +606,8 @@ class NotificationOriginator:
                 return notificationHandle
 
             debug.logger & debug.flagApp and debug.logger(
-                "sendVarBinds: notificationHandle %s, sendRequestHandle %s, timeout %d"
-                % (notificationHandle, sendRequestHandle, timeout)
+                f"sendVarBinds: notificationHandle {notificationHandle}, "
+                f"sendRequestHandle {sendRequestHandle}, timeout {timeout}"
             )
 
             if notifyType == 2:

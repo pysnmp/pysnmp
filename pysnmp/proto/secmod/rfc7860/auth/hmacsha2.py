@@ -72,7 +72,7 @@ class HmacSha2(base.AbstractAuthenticationService):
             mac = hmac.new(authKey.asOctets(), wholeMsg, self.__hashAlgo)
 
         except errind.ErrorIndication as e:
-            raise error.StatusInformation(errorIndication=e)
+            raise error.StatusInformation(errorIndication=e) from e
 
         # 7.3.1.4
         mac = mac.digest()[: self.__digestLength]
@@ -99,7 +99,7 @@ class HmacSha2(base.AbstractAuthenticationService):
             mac = hmac.new(authKey.asOctets(), authenticatedWholeMsg, self.__hashAlgo)
 
         except errind.ErrorIndication as e:
-            raise error.StatusInformation(errorIndication=e)
+            raise error.StatusInformation(errorIndication=e) from e
 
         # 7.3.2.5
         mac = mac.digest()[: self.__digestLength]
