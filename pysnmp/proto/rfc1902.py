@@ -8,19 +8,19 @@ from pyasn1.type import constraint, namedtype, namedval, tag, univ
 from pysnmp.proto import error
 
 __all__ = [
+    "Bits",
+    "Counter32",
+    "Counter64",
+    "Gauge32",
+    "Integer",
+    "Integer32",
+    "IpAddress",
+    "Null",
+    "ObjectIdentifier",
+    "OctetString",
     "Opaque",
     "TimeTicks",
-    "Bits",
-    "Integer",
-    "OctetString",
-    "IpAddress",
-    "Counter64",
     "Unsigned32",
-    "Gauge32",
-    "Integer32",
-    "ObjectIdentifier",
-    "Counter32",
-    "Null",
 ]
 
 

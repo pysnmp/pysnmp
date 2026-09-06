@@ -16,7 +16,7 @@ from pysnmp.smi.builder import ZipMibSource
 from pysnmp.smi.compiler import addMibCompiler
 from pysnmp.smi.error import SmiError
 
-__all__ = ["ObjectIdentity", "ObjectType", "NotificationType"]
+__all__ = ["NotificationType", "ObjectIdentity", "ObjectType"]
 
 
 @functools.total_ordering
@@ -478,9 +478,8 @@ class ObjectIdentity:
                         rowModName, rowSymName
                     )
                     self.__indices = rowNode.getIndicesFromInstId(suffix)
-            else:
-                if suffix:
-                    self.__indices = (rfc1902.ObjectName(suffix),)
+            elif suffix:
+                self.__indices = (rfc1902.ObjectName(suffix),)
             self.__state |= self.stClean
 
             debug.logger & debug.flagMIB and debug.logger(

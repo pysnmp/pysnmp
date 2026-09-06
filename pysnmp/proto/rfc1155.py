@@ -10,13 +10,13 @@ from pysnmp.proto import error
 from pysnmp.smi.error import SmiError
 
 __all__ = [
-    "Opaque",
-    "NetworkAddress",
-    "ObjectName",
-    "TimeTicks",
     "Counter",
     "Gauge",
     "IpAddress",
+    "NetworkAddress",
+    "ObjectName",
+    "Opaque",
+    "TimeTicks",
 ]
 
 

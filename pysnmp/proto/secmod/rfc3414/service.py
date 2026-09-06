@@ -1217,22 +1217,21 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
                 debug.logger & debug.flagSM and debug.logger(
                     f"processIncomingMsg: read snmpEngineBoots ({snmpEngineBoots}), snmpEngineTime ({snmpEngineTime}) from LCD"
                 )
+            # Non-authoritative SNMP engine: use cached estimates
+            elif msgAuthoritativeEngineId in self.__timeline:
+                (
+                    snmpEngineBoots,
+                    snmpEngineTime,
+                    latestReceivedEngineTime,
+                    latestUpdateTimestamp,
+                ) = self.__timeline[msgAuthoritativeEngineId]
+                # time passed since last talk with this SNMP engine
+                idleTime = int(time.time()) - latestUpdateTimestamp
+                debug.logger & debug.flagSM and debug.logger(
+                    f"processIncomingMsg: read timeline snmpEngineBoots {snmpEngineBoots} snmpEngineTime {snmpEngineTime} for msgAuthoritativeEngineId {msgAuthoritativeEngineId!r}, idle time {idleTime} secs"
+                )
             else:
-                # Non-authoritative SNMP engine: use cached estimates
-                if msgAuthoritativeEngineId in self.__timeline:
-                    (
-                        snmpEngineBoots,
-                        snmpEngineTime,
-                        latestReceivedEngineTime,
-                        latestUpdateTimestamp,
-                    ) = self.__timeline[msgAuthoritativeEngineId]
-                    # time passed since last talk with this SNMP engine
-                    idleTime = int(time.time()) - latestUpdateTimestamp
-                    debug.logger & debug.flagSM and debug.logger(
-                        f"processIncomingMsg: read timeline snmpEngineBoots {snmpEngineBoots} snmpEngineTime {snmpEngineTime} for msgAuthoritativeEngineId {msgAuthoritativeEngineId!r}, idle time {idleTime} secs"
-                    )
-                else:
-                    raise error.ProtocolError("Peer SNMP engine info missing")
+                raise error.ProtocolError("Peer SNMP engine info missing")
 
             # 3.2.7a
             if msgAuthoritativeEngineId == snmpEngineID:
@@ -1433,7 +1432,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
 # import: eso.priv.aesbase imports rfc3414.localkey, which triggers this
 # module via rfc3414.__init__, which imports this module before the eso.priv
 # classes are fully defined.
-from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3  # noqa: E402
+from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
 
 SnmpUSMSecurityModel.privServices.update(
     {

@@ -388,11 +388,9 @@ class BulkCommandResponder(CommandResponderBase):
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
         (acFun, acCtx) = acInfo
         nonRepeaters = v2c.apiBulkPDU.getNonRepeaters(PDU)
-        if nonRepeaters < 0:
-            nonRepeaters = 0
+        nonRepeaters = max(nonRepeaters, 0)
         maxRepetitions = v2c.apiBulkPDU.getMaxRepetitions(PDU)
-        if maxRepetitions < 0:
-            maxRepetitions = 0
+        maxRepetitions = max(maxRepetitions, 0)
 
         reqVarBinds = v2c.apiPDU.getVarBinds(PDU)
 
@@ -420,7 +418,7 @@ class BulkCommandResponder(CommandResponderBase):
             varBinds = rspVarBinds[-R:]
             M -= 1
 
-        if len(rspVarBinds):
+        if rspVarBinds:
             self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
             self.releaseStateInformation(stateReference)
         else:

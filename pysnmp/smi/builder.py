@@ -89,7 +89,7 @@ class __AbstractMibSource:
                     )
 
             else:
-                if PY_MAGIC_NUMBER == pycData[:4]:
+                if pycData[:4] == PY_MAGIC_NUMBER:
                     # PEP 552 (Python 3.7+) uses a 16-byte header:
                     #   magic (4) + bitfield (4) + word3 (4) + word4 (4)
                     # When bitfield & 1 == 0, word3 is the timestamp and
@@ -144,16 +144,16 @@ class __AbstractMibSource:
 
     # Interfaces for subclasses
     def _init(self) -> Any:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _listdir(self) -> tuple[str, ...]:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _getTimestamp(self, f: str) -> float:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _getData(self, f: str, mode: str) -> tuple[Any, str]:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class ZipMibSource(__AbstractMibSource):

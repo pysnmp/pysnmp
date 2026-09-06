@@ -11,7 +11,7 @@ from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
 from pysnmp.error import PySnmpError
 from pysnmp.hlapi.transport import AbstractTransportTarget
 
-__all__ = ["UnixTransportTarget", "Udp6TransportTarget", "UdpTransportTarget"]
+__all__ = ["Udp6TransportTarget", "UdpTransportTarget", "UnixTransportTarget"]
 
 
 class UdpTransportTarget(AbstractTransportTarget[tuple[str, int]]):

@@ -209,11 +209,10 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
             else:
                 # snmpTraps
                 v1.apiTrapPDU.setEnterprise(v1Pdu, (1, 3, 6, 1, 6, 3, 1, 1, 5))
+        elif snmpTrapOIDParam[-2] == 0:
+            v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-2])
         else:
-            if snmpTrapOIDParam[-2] == 0:
-                v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-2])
-            else:
-                v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-1])
+            v1.apiTrapPDU.setEnterprise(v1Pdu, snmpTrapOIDParam[:-1])
 
         # 3.2.2
         for oid, val in v2VarBinds:

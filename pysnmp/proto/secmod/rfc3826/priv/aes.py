@@ -17,8 +17,6 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 # RFC3826
 
-#
-
 
 class Aes(base.AbstractEncryptionService):
     serviceID: tuple[int, ...] = (1, 3, 6, 1, 6, 3, 10, 1, 2, 4)  # usmAesCfb128Protocol

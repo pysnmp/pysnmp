@@ -9,10 +9,10 @@ from pysnmp.proto import rfc1155
 
 __all__ = [
     "GetNextRequestPDU",
+    "GetRequestPDU",
     "GetResponsePDU",
     "SetRequestPDU",
     "TrapPDU",
-    "GetRequestPDU",
 ]
 
 

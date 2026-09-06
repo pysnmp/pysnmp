@@ -11,7 +11,7 @@ Run from the repository root after generating the module::
     python examples/smi/manager/load-iana-pen-mib.py \
         build/IANA-PEN-MIB.py 20408
 
-"""  #
+"""
 
 import argparse
 from pathlib import Path

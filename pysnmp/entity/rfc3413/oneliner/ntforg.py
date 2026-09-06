@@ -16,7 +16,7 @@ from pysnmp.hlapi.lcd import NotificationOriginatorLcdConfigurator
 from pysnmp.hlapi.varbinds import NotificationOriginatorVarBinds
 from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
 
-__all__ = ["AsynNotificationOriginator", "NotificationOriginator", "MibVariable"]
+__all__ = ["AsynNotificationOriginator", "MibVariable", "NotificationOriginator"]
 
 MibVariable = ObjectIdentity
 

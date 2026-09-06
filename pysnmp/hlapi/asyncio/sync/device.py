@@ -12,7 +12,7 @@ from typing import Any
 
 from pysnmp.hlapi.asyncio import device as _async_device
 
-__all__ = ["get_device_report", "getDeviceReport"]
+__all__ = ["getDeviceReport", "get_device_report"]
 
 
 def get_device_report(

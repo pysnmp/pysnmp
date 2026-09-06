@@ -9,7 +9,7 @@ from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 from pysnmp.proto import errind
 from pysnmp.proto.rfc1905 import endOfMibView
 
-__all__ = ["getCmd", "nextCmd", "setCmd", "bulkCmd"]
+__all__ = ["bulkCmd", "getCmd", "nextCmd", "setCmd"]
 
 
 def _loop() -> asyncio.AbstractEventLoop:

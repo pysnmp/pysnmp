@@ -50,7 +50,7 @@ import argparse
 import sys
 import urllib.request
 
-__all__ = ["parse_iana_pen", "generate_mib_module"]
+__all__ = ["generate_mib_module", "parse_iana_pen"]
 
 # The IANA PEN registry format is a text file where each entry consists
 # of four consecutive lines:

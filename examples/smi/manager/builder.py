@@ -87,7 +87,7 @@ class __AbstractMibSource:
                     )
 
             else:
-                if PY_MAGIC_NUMBER == pycData[:4]:
+                if pycData[:4] == PY_MAGIC_NUMBER:
                     pycData = pycData[4:]
                     pycTime = struct.unpack("<L", pycData[:4])[0]
                     pycData = pycData[4:]
@@ -134,13 +134,13 @@ class __AbstractMibSource:
 
     # Interfaces for subclasses
     def _init(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _listdir(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _getTimestamp(self, f):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _getData(self, f, mode):
         NotImplementedError()

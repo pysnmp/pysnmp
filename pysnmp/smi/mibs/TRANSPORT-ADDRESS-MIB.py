@@ -93,11 +93,10 @@ else:
                         if best_base == -1 or cur_len > best_len:
                             best_base, best_len = cur_base, cur_len
                         cur_base = -1
+                elif cur_base == -1:
+                    cur_base, cur_len = idx, 1
                 else:
-                    if cur_base == -1:
-                        cur_base, cur_len = idx, 1
-                    else:
-                        cur_len += 1
+                    cur_len += 1
 
             if cur_base != -1:
                 if best_base == -1 or cur_len > best_len:

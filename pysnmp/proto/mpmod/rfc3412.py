@@ -317,16 +317,15 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         if pdu.tagSet in rfc3411.unconfirmedClassPDUs:
             securityEngineId = snmpEngineID
 
+        elif peerSnmpEngineData is None:
+            debug.logger & debug.flagMP and debug.logger(
+                "prepareOutgoingMessage: peer SNMP engine is not known"
+            )
+
+            securityEngineId = None
+
         else:
-            if peerSnmpEngineData is None:
-                debug.logger & debug.flagMP and debug.logger(
-                    "prepareOutgoingMessage: peer SNMP engine is not known"
-                )
-
-                securityEngineId = None
-
-            else:
-                securityEngineId = peerSnmpEngineData["securityEngineId"]
+            securityEngineId = peerSnmpEngineData["securityEngineId"]
 
         debug.logger & debug.flagMP and debug.logger(
             f"prepareOutgoingMessage: securityModel {securityModel!r}, securityEngineId {securityEngineId!r}, securityName {securityName!r}, securityLevel {securityLevel!r}"

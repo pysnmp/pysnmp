@@ -40,7 +40,7 @@ from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.hlapi.types import SnmpResponse
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 
-__all__ = ["getCmd", "nextCmd", "setCmd", "bulkCmd", "isEndOfMib"]
+__all__ = ["bulkCmd", "getCmd", "isEndOfMib", "nextCmd", "setCmd"]
 
 vbProcessor = CommandGeneratorVarBinds()
 lcd = CommandGeneratorLcdConfigurator()

@@ -73,4 +73,4 @@ class AbstractTransportTarget(Generic[_TransportAddr]):
             )
 
     def _resolveAddr(self, transportAddr: _TransportAddr) -> _TransportAddr:
-        raise NotImplementedError()
+        raise NotImplementedError

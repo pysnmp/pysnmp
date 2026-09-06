@@ -22,7 +22,7 @@ Either of the following Net-SNMP commands will walk this Agent:
 
 Requires Python 3.4 and later!
 
-"""  #
+"""
 
 import asyncio
 

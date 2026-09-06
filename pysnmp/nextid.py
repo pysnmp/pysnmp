@@ -11,8 +11,7 @@ class Integer:
 
     def __init__(self, maximum, increment=256):
         self.__maximum = maximum
-        if increment >= maximum:
-            increment = maximum
+        increment = min(maximum, increment)
         self.__increment = increment
         self.__threshold = increment // 2
         e = secrets.randbelow(self.__maximum - self.__increment)

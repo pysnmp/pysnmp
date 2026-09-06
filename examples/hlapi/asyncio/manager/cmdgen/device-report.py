@@ -12,7 +12,7 @@ Functionally similar to:
       SNMPv2-MIB::sysObjectID.0 SNMPv2-MIB::sysUpTime.0
 | $ snmpwalk -v2c -c public demo.pysnmp.com SNMPv2-MIB::sysORTable
 
-"""  #
+"""
 
 import asyncio
 
