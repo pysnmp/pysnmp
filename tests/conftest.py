@@ -44,11 +44,15 @@ def snmpsim_endpoint(tmp_path_factory):
         check=False,
     )
     if import_probe.returncode:
-        pytest.fail(f"could not import pysnmp in simulator environment:\n{import_probe.stderr}")
+        pytest.fail(
+            f"could not import pysnmp in simulator environment:\n{import_probe.stderr}"
+        )
 
     imported_package = Path(import_probe.stdout.strip())
     if not imported_package.is_relative_to(repository_root):
-        pytest.fail(f"simulator resolved pysnmp outside this checkout: {imported_package}")
+        pytest.fail(
+            f"simulator resolved pysnmp outside this checkout: {imported_package}"
+        )
 
     with log_path.open("w") as log_file:
         process = subprocess.Popen(

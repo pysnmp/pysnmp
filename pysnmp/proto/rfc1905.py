@@ -85,13 +85,16 @@ class _BindValue(univ.Choice):
 
 class VarBind(univ.Sequence):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType("name", rfc1902.ObjectName()), namedtype.NamedType("", _BindValue())
+        namedtype.NamedType("name", rfc1902.ObjectName()),
+        namedtype.NamedType("", _BindValue()),
     )
 
 
 class VarBindList(univ.SequenceOf):
     componentType = VarBind()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(0, max_bindings)
+    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(
+        0, max_bindings
+    )
 
 
 errorStatus = univ.Integer(
@@ -126,13 +129,17 @@ class PDU(univ.Sequence):
         namedtype.NamedType("error-status", errorStatus),
         namedtype.NamedType(
             "error-index",
-            univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings)),
+            univ.Integer().subtype(
+                subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings)
+            ),
         ),
         namedtype.NamedType("variable-bindings", VarBindList()),
     )
 
 
-nonRepeaters = univ.Integer().subtype(subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings))
+nonRepeaters = univ.Integer().subtype(
+    subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings)
+)
 maxRepetitions = univ.Integer().subtype(
     subtypeSpec=constraint.ValueRangeConstraint(0, max_bindings)
 )
@@ -149,35 +156,51 @@ class BulkPDU(univ.Sequence):
 
 
 class GetRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
+    )
 
 
 class GetNextRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
+    )
 
 
 class ResponsePDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2)
+    )
 
 
 class SetRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3)
+    )
 
 
 class GetBulkRequestPDU(BulkPDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5)
+    )
 
 
 class InformRequestPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 6))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 6)
+    )
 
 
 class SNMPv2TrapPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 7))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 7)
+    )
 
 
 class ReportPDU(PDU):
-    tagSet = PDU.tagSet.tagImplicitly(tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 8))
+    tagSet = PDU.tagSet.tagImplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 8)
+    )
 
 
 class PDUs(univ.Choice):

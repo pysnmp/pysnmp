@@ -45,14 +45,16 @@ mibVar = rfc1902.ObjectIdentity(str(mibVar)).resolveWithMib(mibView)
 print(mibVar.prettyPrint(), tuple(mibVar), str(mibVar))
 
 # Obtain MIB object information by a mix of OID/label parts
-mibVar = rfc1902.ObjectIdentity((1, 3, 6, 1, 2, "mib-2", 1, "sysDescr")).resolveWithMib(mibView)
+mibVar = rfc1902.ObjectIdentity((1, 3, 6, 1, 2, "mib-2", 1, "sysDescr")).resolveWithMib(
+    mibView
+)
 
 print(mibVar.prettyPrint(), tuple(mibVar), str(mibVar))
 
 # Obtain MIB object information by a label
-mibVar = rfc1902.ObjectIdentity("iso.org.dod.internet.mgmt.mib-2.system.sysDescr").resolveWithMib(
-    mibView
-)
+mibVar = rfc1902.ObjectIdentity(
+    "iso.org.dod.internet.mgmt.mib-2.system.sysDescr"
+).resolveWithMib(mibView)
 
 print(mibVar.prettyPrint(), tuple(mibVar), str(mibVar))
 
@@ -96,7 +98,10 @@ varBinds = rfc1902.NotificationType(
 ).resolveWithMib(mibView)
 
 print(
-    [f"{x[0].prettyPrint()} = {x[1].__class__.__name__}({x[1].prettyPrint()})" for x in varBinds]
+    [
+        f"{x[0].prettyPrint()} = {x[1].__class__.__name__}({x[1].prettyPrint()})"
+        for x in varBinds
+    ]
 )
 
 # Create var-binds from MIB notification object (with OBJECTS clause)

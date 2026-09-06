@@ -34,7 +34,9 @@ class AbstractLcdConfigurator:
 class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
     cacheKeys = ["auth", "parm", "tran", "addr"]
 
-    def configure(self, snmpEngine, authData, transportTarget, contextName=b"", **options):
+    def configure(
+        self, snmpEngine, authData, transportTarget, contextName=b"", **options
+    ):
         cache = self._getCache(snmpEngine)
         if isinstance(authData, CommunityData):
             if authData.communityIndex not in cache["auth"]:
@@ -146,11 +148,17 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             if isinstance(authDataX, CommunityData):
                 config.delV1System(snmpEngine, authDataX.communityIndex)
             elif isinstance(authDataX, UsmUserData):
-                config.delV3User(snmpEngine, authDataX.userName, authDataX.securityEngineId)
+                config.delV3User(
+                    snmpEngine, authDataX.userName, authDataX.securityEngineId
+                )
             else:
                 raise error.PySnmpError("Unsupported authentication object")
 
-            paramsKey = (authDataX.securityName, authDataX.securityLevel, authDataX.mpModel)
+            paramsKey = (
+                authDataX.securityName,
+                authDataX.securityLevel,
+                authDataX.mpModel,
+            )
             if paramsKey in cache["parm"]:
                 paramsName, useCount = cache["parm"][paramsKey]
                 useCount -= 1
@@ -192,7 +200,9 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
     cacheKeys = ["auth", "name"]
     _cmdGenLcdCfg = CommandGeneratorLcdConfigurator()
 
-    def configure(self, snmpEngine, authData, transportTarget, notifyType, contextName, **options):
+    def configure(
+        self, snmpEngine, authData, transportTarget, notifyType, contextName, **options
+    ):
         cache = self._getCache(snmpEngine)
         notifyName = None
 
@@ -217,7 +227,9 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
                 cache["name"][notifyNameKey] = notifyName, paramsName, useCount + 1
             else:
                 notifyName = "n%s" % self.nextID()
-                config.addNotificationTarget(snmpEngine, notifyName, paramsName, tag, notifyType)
+                config.addNotificationTarget(
+                    snmpEngine, notifyName, paramsName, tag, notifyType
+                )
                 cache["name"][notifyNameKey] = notifyName, paramsName, 1
         authDataKey = (
             authData.securityName,

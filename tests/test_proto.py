@@ -387,7 +387,9 @@ class TestVerdec:
             pytest.param(b"\x30\x82", id="truncated-length"),
             pytest.param(b"\x30\x80", id="indefinite-length"),
             pytest.param(b"\x30\x02\x00\x00", id="eoo-as-version"),
-            pytest.param(b"\x30\x84\xff\xff\xff\xff\x02\x01\x01", id="oversized-length"),
+            pytest.param(
+                b"\x30\x84\xff\xff\xff\xff\x02\x01\x01", id="oversized-length"
+            ),
         ],
     )
     def test_hostile_substrate_raises_protocol_error(self, substrate):
@@ -533,7 +535,9 @@ class TestProxyRfc2576:
         assert str(errind.deserializationError) == "SNMP message deserialization error"
 
     def test_unsupported_msg_processing_model(self):
-        assert "Unknown SNMP message processing model" in str(errind.unsupportedMsgProcessingModel)
+        assert "Unknown SNMP message processing model" in str(
+            errind.unsupportedMsgProcessingModel
+        )
 
     def test_unknown_pdu_handler(self):
         assert "Unhandled PDU type" in str(errind.unknownPDUHandler)
@@ -677,7 +681,9 @@ class TestProxyRfc2576PduMapping:
     def test_v2_to_v1_get_request(self):
         pdu = rfc1905.GetRequestPDU()
         v2c.apiPDU.setDefaults(pdu)
-        v2c.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.Integer(42))])
+        v2c.apiPDU.setVarBinds(
+            pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.Integer(42))]
+        )
         from pysnmp.proto.proxy import rfc2576
 
         v1pdu = rfc2576.v2ToV1(pdu)
@@ -686,7 +692,9 @@ class TestProxyRfc2576PduMapping:
     def test_v2_to_v1_response(self):
         pdu = rfc1905.ResponsePDU()
         v2c.apiPDU.setDefaults(pdu)
-        v2c.apiPDU.setVarBinds(pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString("test"))])
+        v2c.apiPDU.setVarBinds(
+            pdu, [((1, 3, 6, 1, 2, 1, 1, 1, 0), rfc1902.OctetString("test"))]
+        )
         from pysnmp.proto.proxy import rfc2576
 
         v1pdu = rfc2576.v2ToV1(pdu)

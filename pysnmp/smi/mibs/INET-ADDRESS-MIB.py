@@ -105,7 +105,12 @@ class InetAddressType(TextualConvention, Integer32):
         SingleValueConstraint(0, 1, 2, 3, 4, 16)
     )
     namedValues = NamedValues(
-        ("unknown", 0), ("ipv4", 1), ("ipv6", 2), ("ipv4z", 3), ("ipv6z", 4), ("dns", 16)
+        ("unknown", 0),
+        ("ipv4", 1),
+        ("ipv6", 2),
+        ("ipv4z", 3),
+        ("ipv6z", 4),
+        ("dns", 16),
     )
 
 
@@ -180,7 +185,9 @@ class InetAddress(TextualConvention, OctetString):
             if isinstance(parentIndex, InetAddressType):
                 try:
                     return parentRow.getAsName(
-                        self.typeMap[int(parentIndex)].clone(self.asOctets().decode("ascii")),
+                        self.typeMap[int(parentIndex)].clone(
+                            self.asOctets().decode("ascii")
+                        ),
                         impliedFlag,
                         parentIndices,
                     )
@@ -243,7 +250,9 @@ class InetVersion(TextualConvention, Integer32):
     reference = "RFC 791, RFC 2460"
     description = "A value representing a version of the IP protocol. unknown(0) An unknown or unspecified version of the IP protocol. ipv4(1) The IPv4 protocol as defined in RFC 791 (STD 5). ipv6(2) The IPv6 protocol as defined in RFC 2460. Note that this textual convention SHOULD NOT be used to distinguish different address types associated with IP protocols. The InetAddressType has been designed for this purpose."
     status = "current"
-    subtypeSpec = Integer32.subtypeSpec + ConstraintsUnion(SingleValueConstraint(0, 1, 2))
+    subtypeSpec = Integer32.subtypeSpec + ConstraintsUnion(
+        SingleValueConstraint(0, 1, 2)
+    )
     namedValues = NamedValues(("unknown", 0), ("ipv4", 1), ("ipv6", 2))
 
 

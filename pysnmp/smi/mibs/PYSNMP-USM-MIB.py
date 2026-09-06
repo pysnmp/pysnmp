@@ -152,7 +152,9 @@ pysnmpUsmSecretEntry = MibTableRow(
 if mibBuilder.loadTexts:
     pysnmpUsmSecretEntry.setStatus("current")
 if mibBuilder.loadTexts:
-    pysnmpUsmSecretEntry.setDescription("Information about a particular USM user credentials.")
+    pysnmpUsmSecretEntry.setDescription(
+        "Information about a particular USM user credentials."
+    )
 pysnmpUsmSecretUserName = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 2, 1, 1),
     SnmpAdminString().subtype(subtypeSpec=ValueSizeConstraint(1, 32)),
@@ -211,7 +213,9 @@ pysnmpUsmKeyEntry.setIndexNames(*usmUserEntry.getIndexNames())
 if mibBuilder.loadTexts:
     pysnmpUsmKeyEntry.setStatus("current")
 if mibBuilder.loadTexts:
-    pysnmpUsmKeyEntry.setDescription("Information about a particular USM user credentials.")
+    pysnmpUsmKeyEntry.setDescription(
+        "Information about a particular USM user credentials."
+    )
 pysnmpUsmKeyAuthLocalized = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1, 1),
     OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
@@ -221,7 +225,9 @@ pysnmpUsmKeyAuthLocalized = MibTableColumn(
 if mibBuilder.loadTexts:
     pysnmpUsmKeyAuthLocalized.setStatus("current")
 if mibBuilder.loadTexts:
-    pysnmpUsmKeyAuthLocalized.setDescription("User's localized key used for authentication.")
+    pysnmpUsmKeyAuthLocalized.setDescription(
+        "User's localized key used for authentication."
+    )
 pysnmpUsmKeyPrivLocalized = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1, 2),
     OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
@@ -231,7 +237,9 @@ pysnmpUsmKeyPrivLocalized = MibTableColumn(
 if mibBuilder.loadTexts:
     pysnmpUsmKeyPrivLocalized.setStatus("current")
 if mibBuilder.loadTexts:
-    pysnmpUsmKeyPrivLocalized.setDescription("User's localized key used for encryption.")
+    pysnmpUsmKeyPrivLocalized.setDescription(
+        "User's localized key used for encryption."
+    )
 pysnmpUsmKeyAuth = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1, 3),
     OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(

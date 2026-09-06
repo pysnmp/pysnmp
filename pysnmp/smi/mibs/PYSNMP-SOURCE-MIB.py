@@ -28,7 +28,9 @@ Integer, OctetString, ObjectIdentifier = mibBuilder.importSymbols(
     "ConstraintsUnion",
 )
 (pysnmpModuleIDs,) = mibBuilder.importSymbols("PYSNMP-MIB", "pysnmpModuleIDs")
-(snmpTargetAddrEntry,) = mibBuilder.importSymbols("SNMP-TARGET-MIB", "snmpTargetAddrEntry")
+(snmpTargetAddrEntry,) = mibBuilder.importSymbols(
+    "SNMP-TARGET-MIB", "snmpTargetAddrEntry"
+)
 NotificationGroup, ModuleCompliance = mibBuilder.importSymbols(
     "SNMPv2-CONF", "NotificationGroup", "ModuleCompliance"
 )

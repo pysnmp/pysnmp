@@ -10,8 +10,10 @@ from pysnmp import debug, error
 
 class SnmpContext:
     def __init__(self, snmpEngine, contextEngineId=None):
-        (snmpEngineId,) = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+        (snmpEngineId,) = (
+            snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+            )
         )
         if contextEngineId is None:
             # Default to local snmpEngineId
@@ -21,7 +23,9 @@ class SnmpContext:
         debug.logger & debug.flagIns and debug.logger(
             f'SnmpContext: contextEngineId "{self.contextEngineId!r}"'
         )
-        self.contextNames = {b"": snmpEngine.msgAndPduDsp.mibInstrumController}  # Default name
+        self.contextNames = {
+            b"": snmpEngine.msgAndPduDsp.mibInstrumController
+        }  # Default name
 
     def registerContextName(self, contextName, mibInstrum=None):
         contextName = univ.OctetString(contextName).asOctets()

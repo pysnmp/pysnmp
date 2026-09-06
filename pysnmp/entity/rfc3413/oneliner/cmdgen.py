@@ -78,7 +78,14 @@ class AsynCommandGenerator:
             cbInfo,
         ):
             cbFun, cbCtx = cbInfo
-            cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
+            cbFun(
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
+            )
 
         # for backward compatibility
         if contextName == b"" and authData.contextName:
@@ -117,7 +124,14 @@ class AsynCommandGenerator:
             cbInfo,
         ):
             cbFun, cbCtx = cbInfo
-            cbFun(sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx)
+            cbFun(
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
+            )
 
         # for backward compatibility
         if contextName == b"" and authData.contextName:
@@ -157,7 +171,12 @@ class AsynCommandGenerator:
         ):
             cbFun, cbCtx = cbInfo
             return cbFun(
-                sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
             )
 
         # for backward compatibility
@@ -200,7 +219,12 @@ class AsynCommandGenerator:
         ):
             cbFun, cbCtx = cbInfo
             return cbFun(
-                sendRequestHandle, errorIndication, errorStatus, errorIndex, varBindTable, cbCtx
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
             )
 
         # for backward compatibility
@@ -288,7 +312,13 @@ class CommandGenerator:
         return errorIndication, errorStatus, errorIndex, varBindTable
 
     def bulkCmd(
-        self, authData, transportTarget, nonRepeaters, maxRepetitions, *varNames, **kwargs
+        self,
+        authData,
+        transportTarget,
+        nonRepeaters,
+        maxRepetitions,
+        *varNames,
+        **kwargs,
     ):
         if "lookupNames" not in kwargs:
             kwargs["lookupNames"] = False

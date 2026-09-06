@@ -4,7 +4,9 @@ import importlib.util
 import os
 
 # Import the tool module directly
-_tool_path = os.path.join(os.path.dirname(__file__), "..", "tools", "iana_pen_to_mib.py")
+_tool_path = os.path.join(
+    os.path.dirname(__file__), "..", "tools", "iana_pen_to_mib.py"
+)
 _spec = importlib.util.spec_from_file_location("iana_pen_to_mib", _tool_path)
 iana_pen_to_mib = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(iana_pen_to_mib)
@@ -73,7 +75,9 @@ class TestGenerateMibModule:
 
     def test_generate_contains_module_name(self):
         entries = [(1, "ISO", "", ""), (20408, "PySNMP Project", "", "")]
-        source = iana_pen_to_mib.generate_mib_module(entries, module_name="TEST-PEN-MIB")
+        source = iana_pen_to_mib.generate_mib_module(
+            entries, module_name="TEST-PEN-MIB"
+        )
         assert "TEST-PEN-MIB" in source
 
     def test_generate_contains_enterprise_oids(self):

@@ -1,7 +1,12 @@
 repos:
--   repo: https://github.com/astral-sh/ruff-pre-commit
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.5
     hooks:
-    -   id: ruff-check
+      - id: ruff-check
         args: [--fix]
-    -   id: ruff-format
+      - id: ruff-format
+
+  # pyasn1 and pysmi also run mypy here, over their own package. This
+  # repository does not yet: mypy reports 1339 errors across 68 files against
+  # the configuration already in pyproject.toml, so the hook would fail on
+  # every commit. Tracked in pysnmp/pysnmp#178; add it here once that is closed.

@@ -15,7 +15,10 @@ from pyasn1.type.error import ValueConstraintError
 from pysnmp import debug, error
 from pysnmp.entity import observer
 from pysnmp.proto.acmod import rfc3415, void
-from pysnmp.proto.mpmod.rfc2576 import SnmpV1MessageProcessingModel, SnmpV2cMessageProcessingModel
+from pysnmp.proto.mpmod.rfc2576 import (
+    SnmpV1MessageProcessingModel,
+    SnmpV2cMessageProcessingModel,
+)
 from pysnmp.proto.mpmod.rfc3412 import SnmpV3MessageProcessingModel
 from pysnmp.proto.rfc3412 import MsgAndPduDispatcher
 from pysnmp.proto.secmod.rfc2576 import SnmpV1SecurityModel, SnmpV2cSecurityModel
@@ -59,7 +62,10 @@ class SnmpEngine:
     """
 
     def __init__(
-        self, snmpEngineID: Any = None, maxMessageSize: int = 65507, msgAndPduDsp: Any = None
+        self,
+        snmpEngineID: Any = None,
+        maxMessageSize: int = 65507,
+        msgAndPduDsp: Any = None,
     ) -> None:
         self.cache = {}
 
@@ -93,13 +99,19 @@ class SnmpEngine:
                 "__SNMP-FRAMEWORK-MIB", "snmpEngineMaxMessageSize"
             )
         )
-        snmpEngineMaxMessageSize.syntax = snmpEngineMaxMessageSize.syntax.clone(maxMessageSize)
-        (snmpEngineBoots,) = self.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            "__SNMP-FRAMEWORK-MIB", "snmpEngineBoots"
+        snmpEngineMaxMessageSize.syntax = snmpEngineMaxMessageSize.syntax.clone(
+            maxMessageSize
+        )
+        (snmpEngineBoots,) = (
+            self.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineBoots"
+            )
         )
         snmpEngineBoots.syntax += 1
-        (origSnmpEngineID,) = self.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
-            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+        (origSnmpEngineID,) = (
+            self.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+            )
         )
 
         if snmpEngineID is None:
@@ -109,14 +121,17 @@ class SnmpEngine:
             self.snmpEngineID = origSnmpEngineID.syntax
 
             debug.logger & debug.flagApp and debug.logger(
-                "SnmpEngine: using custom SNMP Engine ID: %s" % self.snmpEngineID.prettyPrint()
+                "SnmpEngine: using custom SNMP Engine ID: %s"
+                % self.snmpEngineID.prettyPrint()
             )
 
             # Attempt to make some of snmp Engine settings persistent.
             # This should probably be generalized as a non-volatile MIB store.
 
             persistentPath = (
-                Path(tempfile.gettempdir()) / "__pysnmp" / self.snmpEngineID.prettyPrint()
+                Path(tempfile.gettempdir())
+                / "__pysnmp"
+                / self.snmpEngineID.prettyPrint()
             )
 
             debug.logger & debug.flagApp and debug.logger(
@@ -163,9 +178,15 @@ class SnmpEngine:
     # Transport dispatcher bindings
 
     def __receiveMessageCbFun(
-        self, transportDispatcher: Any, transportDomain: Any, transportAddress: Any, wholeMsg: Any
+        self,
+        transportDispatcher: Any,
+        transportDomain: Any,
+        transportAddress: Any,
+        wholeMsg: Any,
     ) -> None:
-        self.msgAndPduDsp.receiveMessage(self, transportDomain, transportAddress, wholeMsg)
+        self.msgAndPduDsp.receiveMessage(
+            self, transportDomain, transportAddress, wholeMsg
+        )
 
     def __receiveTimerTickCbFun(self, timeNow: int) -> None:
         self.msgAndPduDsp.receiveTimerTick(self, timeNow)
@@ -174,7 +195,9 @@ class SnmpEngine:
         for smHandler in self.securityModels.values():
             smHandler.receiveTimerTick(self, timeNow)
 
-    def registerTransportDispatcher(self, transportDispatcher: Any, recvId: Any = None) -> None:
+    def registerTransportDispatcher(
+        self, transportDispatcher: Any, recvId: Any = None
+    ) -> None:
         if (
             self.transportDispatcher is not None
             and self.transportDispatcher is not transportDispatcher

@@ -23,7 +23,9 @@ OctetString, Integer, ObjectIdentifier = mibBuilder.importSymbols(
     "ConstraintsIntersection",
     "ValueRangeConstraint",
 )
-(snmpAuthProtocols,) = mibBuilder.importSymbols("SNMP-FRAMEWORK-MIB", "snmpAuthProtocols")
+(snmpAuthProtocols,) = mibBuilder.importSymbols(
+    "SNMP-FRAMEWORK-MIB", "snmpAuthProtocols"
+)
 NotificationGroup, ModuleCompliance = mibBuilder.importSymbols(
     "SNMPv2-CONF", "NotificationGroup", "ModuleCompliance"
 )

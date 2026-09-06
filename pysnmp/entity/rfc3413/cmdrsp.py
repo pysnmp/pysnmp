@@ -33,7 +33,9 @@ class CommandResponderBase:
         )
         self.snmpContext = self.__pendingReqs = None
 
-    def sendVarBinds(self, snmpEngine, stateReference, errorStatus, errorIndex, varBinds):
+    def sendVarBinds(
+        self, snmpEngine, stateReference, errorStatus, errorIndex, varBinds
+    ):
         (
             messageProcessingModel,
             securityModel,
@@ -140,7 +142,10 @@ class CommandResponderBase:
             origPdu = None
 
         # 3.2.1
-        if PDU.tagSet not in rfc3411.readClassPDUs and PDU.tagSet not in rfc3411.writeClassPDUs:
+        if (
+            PDU.tagSet not in rfc3411.readClassPDUs
+            and PDU.tagSet not in rfc3411.writeClassPDUs
+        ):
             raise error.ProtocolError("Unexpected PDU class %s" % PDU.tagSet)
 
         # 3.2.2 --> no-op
@@ -174,7 +179,11 @@ class CommandResponderBase:
 
         try:
             self.handleMgmtOperation(
-                snmpEngine, stateReference, contextName, PDU, (self.__verifyAccess, snmpEngine)
+                snmpEngine,
+                stateReference,
+                contextName,
+                PDU,
+                (self.__verifyAccess, snmpEngine),
             )
 
         # SNMPv2 SMI exceptions
@@ -264,7 +273,9 @@ class CommandResponderBase:
 
     def __verifyAccess(self, name, syntax, idx, viewType, acCtx):
         snmpEngine = acCtx
-        execCtx = snmpEngine.observer.getExecutionContext("rfc3412.receiveMessage:request")
+        execCtx = snmpEngine.observer.getExecutionContext(
+            "rfc3412.receiveMessage:request"
+        )
         (securityModel, securityName, securityLevel, contextName, pduType) = (
             execCtx["securityModel"],
             execCtx["securityName"],
@@ -274,7 +285,13 @@ class CommandResponderBase:
         )
         try:
             snmpEngine.accessControlModel[self.acmID].isAccessAllowed(
-                snmpEngine, securityModel, securityName, securityLevel, viewType, contextName, name
+                snmpEngine,
+                securityModel,
+                securityName,
+                securityLevel,
+                viewType,
+                contextName,
+                name,
             )
         # Map ACM errors onto SMI ones
         except error.StatusInformation as statusInformation:
@@ -330,7 +347,11 @@ class GetCommandResponder(CommandResponderBase):
         # rfc1905: 4.2.1.1
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readVars
         self.sendVarBinds(
-            snmpEngine, stateReference, 0, 0, mgmtFun(v2c.apiPDU.getVarBinds(PDU), (acFun, acCtx))
+            snmpEngine,
+            stateReference,
+            0,
+            0,
+            mgmtFun(v2c.apiPDU.getVarBinds(PDU), (acFun, acCtx)),
         )
         self.releaseStateInformation(stateReference)
 
@@ -420,7 +441,10 @@ class SetCommandResponder(CommandResponderBase):
                 mgmtFun(v2c.apiPDU.getVarBinds(PDU), (acFun, acCtx)),
             )
             self.releaseStateInformation(stateReference)
-        except (pysnmp.smi.error.NoSuchObjectError, pysnmp.smi.error.NoSuchInstanceError) as e:
+        except (
+            pysnmp.smi.error.NoSuchObjectError,
+            pysnmp.smi.error.NoSuchInstanceError,
+        ) as e:
             err = pysnmp.smi.error.NotWritableError()
             err.update(e)
             raise err

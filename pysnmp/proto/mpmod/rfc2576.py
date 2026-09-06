@@ -41,7 +41,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     ):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-        (snmpEngineId,) = mibBuilder.importSymbols("__SNMP-FRAMEWORK-MIB", "snmpEngineID")
+        (snmpEngineId,) = mibBuilder.importSymbols(
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+        )
         snmpEngineId = snmpEngineId.syntax
 
         # rfc3412: 7.1.1b
@@ -74,7 +76,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         msg.setComponentByPosition(0, self.messageProcessingModelID)
         msg.setComponentByPosition(2)
         msg.getComponentByPosition(2).setComponentByType(
-            pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
+            pdu.tagSet,
+            pdu,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
 
         # rfc3412: 7.1.7
@@ -84,7 +90,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         if k in snmpEngine.securityModels:
             smHandler = snmpEngine.securityModels[k]
         else:
-            raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
+            raise error.StatusInformation(
+                errorIndication=errind.unsupportedSecurityModel
+            )
 
         # rfc3412: 7.1.9.a & rfc2576: 5.2.1 --> no-op
 
@@ -168,7 +176,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     ):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
-        (snmpEngineId,) = mibBuilder.importSymbols("__SNMP-FRAMEWORK-MIB", "snmpEngineID")
+        (snmpEngineId,) = mibBuilder.importSymbols(
+            "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+        )
         snmpEngineId = snmpEngineId.syntax
 
         # rfc3412: 7.1.2.b
@@ -220,7 +230,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         msg.setComponentByPosition(0, messageProcessingModel)
         msg.setComponentByPosition(2)
         msg.getComponentByPosition(2).setComponentByType(
-            pdu.tagSet, pdu, verifyConstraints=False, matchTags=False, matchConstraints=False
+            pdu.tagSet,
+            pdu,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
 
         # att: msgId not set back to PDU as it's up to responder app
@@ -232,7 +246,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         if k in snmpEngine.securityModels:
             smHandler = snmpEngine.securityModels[k]
         else:
-            raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
+            raise error.StatusInformation(
+                errorIndication=errind.unsupportedSecurityModel
+            )
 
         # set original request-id right prior to PDU serialization
         pdu.setComponentByPosition(0, reqID)
@@ -272,13 +288,17 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
     # rfc3412: 7.2.1
 
-    def prepareDataElements(self, snmpEngine, transportDomain, transportAddress, wholeMsg):
+    def prepareDataElements(
+        self, snmpEngine, transportDomain, transportAddress, wholeMsg
+    ):
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
         # rfc3412: 7.2.2
         msg, restOfWholeMsg = decoder.decode(wholeMsg, asn1Spec=self._snmpMsgSpec)
 
-        debug.logger & debug.flagMP and debug.logger(f"prepareDataElements: {msg.prettyPrint()}")
+        debug.logger & debug.flagMP and debug.logger(
+            f"prepareDataElements: {msg.prettyPrint()}"
+        )
 
         if eoo.endOfOctets.isSameTypeWith(msg):
             raise error.StatusInformation(errorIndication=errind.parseError)
@@ -304,7 +324,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
                 smHandler = snmpEngine.securityModels[securityModel]
 
             except KeyError:
-                raise error.StatusInformation(errorIndication=errind.unsupportedSecurityModel)
+                raise error.StatusInformation(
+                    errorIndication=errind.unsupportedSecurityModel
+                )
 
             # rfc3412: 7.2.6
             (
@@ -449,7 +471,9 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
             )
 
             # rfc3412: 7.2.13a
-            (snmpEngineId,) = mibBuilder.importSymbols("__SNMP-FRAMEWORK-MIB", "snmpEngineID")
+            (snmpEngineId,) = mibBuilder.importSymbols(
+                "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
+            )
             if securityEngineId != snmpEngineId.syntax:
                 smHandler.releaseStateInformation(securityStateReference)
                 raise error.StatusInformation(errorIndication=errind.engineIDMismatch)

@@ -7,7 +7,13 @@ from pyasn1.type import namedtype, namedval, tag, univ
 
 from pysnmp.proto import rfc1155
 
-__all__ = ["GetNextRequestPDU", "GetResponsePDU", "SetRequestPDU", "TrapPDU", "GetRequestPDU"]
+__all__ = [
+    "GetNextRequestPDU",
+    "GetResponsePDU",
+    "SetRequestPDU",
+    "TrapPDU",
+    "GetRequestPDU",
+]
 
 
 class VarBind(univ.Sequence):

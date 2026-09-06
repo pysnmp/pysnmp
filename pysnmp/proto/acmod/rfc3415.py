@@ -80,7 +80,9 @@ class Vacm:
 
             levels[securityLevel] = viewName
 
-    def _getFamilyViewName(self, groupName, contextName, securityModel, securityLevel, viewType):
+    def _getFamilyViewName(
+        self, groupName, contextName, securityModel, securityLevel, viewType
+    ):
         groups = self._accessMap
 
         try:
@@ -282,12 +284,24 @@ class Vacm:
 
                 self._addAccessEntry(
                     vacmGroupName,
-                    vacmAccessContextPrefix.getNode(vacmAccessContextPrefix.name + instId).syntax,
-                    vacmAccessSecurityModel.getNode(vacmAccessSecurityModel.name + instId).syntax,
-                    vacmAccessSecurityLevel.getNode(vacmAccessSecurityLevel.name + instId).syntax,
-                    vacmAccessContextMatch.getNode(vacmAccessContextMatch.name + instId).syntax,
-                    vacmAccessReadViewName.getNode(vacmAccessReadViewName.name + instId).syntax,
-                    vacmAccessWriteViewName.getNode(vacmAccessWriteViewName.name + instId).syntax,
+                    vacmAccessContextPrefix.getNode(
+                        vacmAccessContextPrefix.name + instId
+                    ).syntax,
+                    vacmAccessSecurityModel.getNode(
+                        vacmAccessSecurityModel.name + instId
+                    ).syntax,
+                    vacmAccessSecurityLevel.getNode(
+                        vacmAccessSecurityLevel.name + instId
+                    ).syntax,
+                    vacmAccessContextMatch.getNode(
+                        vacmAccessContextMatch.name + instId
+                    ).syntax,
+                    vacmAccessReadViewName.getNode(
+                        vacmAccessReadViewName.name + instId
+                    ).syntax,
+                    vacmAccessWriteViewName.getNode(
+                        vacmAccessWriteViewName.name + instId
+                    ).syntax,
                     vacmAccessNotifyViewName.getNode(
                         vacmAccessNotifyViewName.name + instId
                     ).syntax,
@@ -306,13 +320,15 @@ class Vacm:
         )
 
         if self._viewTreeBranchId != vacmViewTreeFamilyViewName.branchVersionId:
-            (vacmViewTreeFamilySubtree, vacmViewTreeFamilyMask, vacmViewTreeFamilyType) = (
-                mibInstrumController.mibBuilder.importSymbols(
-                    "SNMP-VIEW-BASED-ACM-MIB",
-                    "vacmViewTreeFamilySubtree",
-                    "vacmViewTreeFamilyMask",
-                    "vacmViewTreeFamilyType",
-                )
+            (
+                vacmViewTreeFamilySubtree,
+                vacmViewTreeFamilyMask,
+                vacmViewTreeFamilyType,
+            ) = mibInstrumController.mibBuilder.importSymbols(
+                "SNMP-VIEW-BASED-ACM-MIB",
+                "vacmViewTreeFamilySubtree",
+                "vacmViewTreeFamilyMask",
+                "vacmViewTreeFamilyType",
             )
 
             self._viewTreeMap.clear()
@@ -323,7 +339,9 @@ class Vacm:
 
             while True:
                 try:
-                    nextMibNode = vacmViewTreeFamilyViewName.getNextNode(nextMibNode.name)
+                    nextMibNode = vacmViewTreeFamilyViewName.getNextNode(
+                        nextMibNode.name
+                    )
 
                 except NoSuchInstanceError:
                     break
@@ -337,9 +355,13 @@ class Vacm:
                     vacmViewTreeFamilySubtree.name + instId
                 ).syntax
 
-                mask = vacmViewTreeFamilyMask.getNode(vacmViewTreeFamilyMask.name + instId).syntax
+                mask = vacmViewTreeFamilyMask.getNode(
+                    vacmViewTreeFamilyMask.name + instId
+                ).syntax
 
-                mode = vacmViewTreeFamilyType.getNode(vacmViewTreeFamilyType.name + instId).syntax
+                mode = vacmViewTreeFamilyType.getNode(
+                    vacmViewTreeFamilyType.name + instId
+                ).syntax
 
                 mask = mask.asNumbers()
                 maskLength = min(len(mask) * 8, len(subtree))

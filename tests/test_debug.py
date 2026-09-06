@@ -71,6 +71,8 @@ class TestDebug:
 
     def test_null_handler(self):
         handler = debug.NullHandler()
-        record = logging.LogRecord("test", logging.DEBUG, __file__, 1, "msg", None, None)
+        record = logging.LogRecord(
+            "test", logging.DEBUG, __file__, 1, "msg", None, None
+        )
         # Should not raise
         handler.emit(record)

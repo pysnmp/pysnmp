@@ -19,7 +19,10 @@ from pysnmp.proto import errind, error
 from pysnmp.proto.api import v2c
 from pysnmp.proto.mpmod.rfc3412 import SnmpV3MessageProcessingModel
 from pysnmp.proto.rfc3412 import MsgAndPduDispatcher
-from pysnmp.proto.secmod.rfc3414.service import _raise_usm_error, _run_or_raise_serialization_error
+from pysnmp.proto.secmod.rfc3414.service import (
+    _raise_usm_error,
+    _run_or_raise_serialization_error,
+)
 
 
 class _Future:
@@ -123,7 +126,9 @@ def test_callback_unmakes_flat_varbinds():
 
 def test_callback_unmakes_each_table_row():
     future = _Future()
-    callback = make_callback(lambda engine, varBinds, lookupMib: tuple(varBinds), multi_row=True)
+    callback = make_callback(
+        lambda engine, varBinds, lookupMib: tuple(varBinds), multi_row=True
+    )
 
     callback(None, None, None, 0, 0, [[1], [2]], (True, future))
 
@@ -216,7 +221,9 @@ def _record_header_assembly(response):
     max_message_size = SimpleNamespace(syntax=65507)
     mib_builder = SimpleNamespace(importSymbols=lambda *args: (max_message_size,))
     engine = SimpleNamespace(
-        msgAndPduDsp=SimpleNamespace(mibInstrumController=SimpleNamespace(mibBuilder=mib_builder))
+        msgAndPduDsp=SimpleNamespace(
+            mibInstrumController=SimpleNamespace(mibBuilder=mib_builder)
+        )
     )
     security_model = _SecurityModelValue()
     pdu = SimpleNamespace(tagSet=univ.Null().tagSet)
@@ -270,13 +277,19 @@ def _build_v3_request(
     synchronize_time=True,
 ):
     sender = SnmpEngine(snmpEngineID=univ.OctetString(hexValue="80004fb8050102030405"))
-    receiver = SnmpEngine(snmpEngineID=univ.OctetString(hexValue="80004fb805060708090a"))
+    receiver = SnmpEngine(
+        snmpEngineID=univ.OctetString(hexValue="80004fb805060708090a")
+    )
     receiver.transportDispatcher = _RecordingTransportDispatcher()
 
     auth_protocol = (
-        config.usmHMACMD5AuthProtocol if security_level >= 2 else config.usmNoAuthProtocol
+        config.usmHMACMD5AuthProtocol
+        if security_level >= 2
+        else config.usmNoAuthProtocol
     )
-    priv_protocol = config.usmDESPrivProtocol if security_level == 3 else config.usmNoPrivProtocol
+    priv_protocol = (
+        config.usmDESPrivProtocol if security_level == 3 else config.usmNoPrivProtocol
+    )
     config.addV3User(
         sender,
         sender_user,
@@ -302,7 +315,9 @@ def _build_v3_request(
             )
         )
         current_engine_time = engine_time.syntax.clone()
-        sender.securityModels[3]._SnmpUSMSecurityModel__timeline[receiver.snmpEngineID] = (
+        sender.securityModels[3]._SnmpUSMSecurityModel__timeline[
+            receiver.snmpEngineID
+        ] = (
             engine_boots.syntax,
             current_engine_time,
             current_engine_time,
@@ -429,12 +444,16 @@ def test_request_transport_context_is_removed_when_application_raises(monkeypatc
     def fail_processing(*args):
         raise RuntimeError("application failure")
 
-    dispatcher.registerContextEngineId(context_engine_id, (pdu.tagSet,), fail_processing)
+    dispatcher.registerContextEngineId(
+        context_engine_id, (pdu.tagSet,), fail_processing
+    )
     engine = SimpleNamespace(
         messageProcessingSubsystems={3: MessageModel()},
         observer=observer.MetaObserver(),
     )
-    monkeypatch.setattr("pysnmp.proto.rfc3412.verdec.decodeMessageVersion", lambda msg: 3)
+    monkeypatch.setattr(
+        "pysnmp.proto.rfc3412.verdec.decodeMessageVersion", lambda msg: 3
+    )
 
     with pytest.raises(RuntimeError, match="application failure"):
         dispatcher.receiveMessage(engine, "domain", "address", b"message")

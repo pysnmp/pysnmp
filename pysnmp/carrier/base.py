@@ -57,12 +57,16 @@ class AbstractTransportDispatcher:
             raise error.CarrierError(f"Unregistered transport {incomingTransport}")
 
         if self.__routingCbFun:
-            recvId = self.__routingCbFun(transportDomain, transportAddress, incomingMessage)
+            recvId = self.__routingCbFun(
+                transportDomain, transportAddress, incomingMessage
+            )
         else:
             recvId = None
 
         if recvId in self.__recvCallables:
-            self.__recvCallables[recvId](self, transportDomain, transportAddress, incomingMessage)
+            self.__recvCallables[recvId](
+                self, transportDomain, transportAddress, incomingMessage
+            )
         else:
             raise error.CarrierError(
                 f'No callback for "{recvId!r}" found - loosing incoming event'
@@ -124,9 +128,13 @@ class AbstractTransportDispatcher:
 
     def sendMessage(self, outgoingMessage, transportDomain, transportAddress):
         if transportDomain in self.__transports:
-            self.__transports[transportDomain].sendMessage(outgoingMessage, transportAddress)
+            self.__transports[transportDomain].sendMessage(
+                outgoingMessage, transportAddress
+            )
         else:
-            raise error.CarrierError(f"No suitable transport domain for {transportDomain}")
+            raise error.CarrierError(
+                f"No suitable transport domain for {transportDomain}"
+            )
 
     def getTimerResolution(self):
         return self.__timerResolution

@@ -116,7 +116,9 @@ snmpCommunityEntry = MibTableRow(
 if mibBuilder.loadTexts:
     snmpCommunityEntry.setStatus("current")
 if mibBuilder.loadTexts:
-    snmpCommunityEntry.setDescription("Information about a particular community string.")
+    snmpCommunityEntry.setDescription(
+        "Information about a particular community string."
+    )
 snmpCommunityIndex = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 1),
     SnmpAdminString().subtype(subtypeSpec=ValueSizeConstraint(1, 32)),
@@ -125,9 +127,9 @@ if mibBuilder.loadTexts:
     snmpCommunityIndex.setStatus("current")
 if mibBuilder.loadTexts:
     snmpCommunityIndex.setDescription("The unique index value of a row in this table.")
-snmpCommunityName = MibTableColumn((1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 2), OctetString()).setMaxAccess(
-    "readcreate"
-)
+snmpCommunityName = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 2), OctetString()
+).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpCommunityName.setStatus("current")
 if mibBuilder.loadTexts:
@@ -155,7 +157,9 @@ if mibBuilder.loadTexts:
     )
 snmpCommunityContextName = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 5),
-    SnmpAdminString().subtype(subtypeSpec=ValueSizeConstraint(0, 32)).clone(hexValue=""),
+    SnmpAdminString()
+    .subtype(subtypeSpec=ValueSizeConstraint(0, 32))
+    .clone(hexValue=""),
 ).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpCommunityContextName.setStatus("current")
@@ -181,9 +185,9 @@ if mibBuilder.loadTexts:
     snmpCommunityStorageType.setDescription(
         "The storage type for this conceptual row in the snmpCommunityTable. Conceptual rows having the value 'permanent' need not allow write-access to any columnar object in the row."
     )
-snmpCommunityStatus = MibTableColumn((1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 8), RowStatus()).setMaxAccess(
-    "readcreate"
-)
+snmpCommunityStatus = MibTableColumn(
+    (1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 8), RowStatus()
+).setMaxAccess("readcreate")
 if mibBuilder.loadTexts:
     snmpCommunityStatus.setStatus("current")
 if mibBuilder.loadTexts:
@@ -202,12 +206,16 @@ if mibBuilder.loadTexts:
 snmpTargetAddrExtEntry = MibTableRow(
     (1, 3, 6, 1, 6, 3, 18, 1, 2, 1),
 )
-snmpTargetAddrEntry.registerAugmentions(("SNMP-COMMUNITY-MIB", "snmpTargetAddrExtEntry"))
+snmpTargetAddrEntry.registerAugmentions(
+    ("SNMP-COMMUNITY-MIB", "snmpTargetAddrExtEntry")
+)
 snmpTargetAddrExtEntry.setIndexNames(*snmpTargetAddrEntry.getIndexNames())
 if mibBuilder.loadTexts:
     snmpTargetAddrExtEntry.setStatus("current")
 if mibBuilder.loadTexts:
-    snmpTargetAddrExtEntry.setDescription("Information about a particular mask and mms value.")
+    snmpTargetAddrExtEntry.setDescription(
+        "Information about a particular mask and mms value."
+    )
 snmpTargetAddrTMask = MibTableColumn(
     (1, 3, 6, 1, 6, 3, 18, 1, 2, 1, 1),
     OctetString().subtype(subtypeSpec=ValueSizeConstraint(0, 255)).clone(hexValue=""),
@@ -255,23 +263,23 @@ if mibBuilder.loadTexts:
     )
 snmpCommunityMIBCompliances = MibIdentifier((1, 3, 6, 1, 6, 3, 18, 2, 1))
 snmpCommunityMIBGroups = MibIdentifier((1, 3, 6, 1, 6, 3, 18, 2, 2))
-snmpCommunityMIBCompliance = ModuleCompliance((1, 3, 6, 1, 6, 3, 18, 2, 1, 1)).setObjects(
-    ("SNMP-COMMUNITY-MIB", "snmpCommunityTableGroup")
-)
+snmpCommunityMIBCompliance = ModuleCompliance(
+    (1, 3, 6, 1, 6, 3, 18, 2, 1, 1)
+).setObjects(("SNMP-COMMUNITY-MIB", "snmpCommunityTableGroup"))
 if mibBuilder.loadTexts:
     snmpCommunityMIBCompliance.setDescription(
         "The compliance statement for SNMP engines which implement the SNMP-COMMUNITY-MIB."
     )
-snmpProxyTrapForwardCompliance = ModuleCompliance((1, 3, 6, 1, 6, 3, 18, 2, 1, 2)).setObjects(
-    ("SNMP-COMMUNITY-MIB", "snmpProxyTrapForwardGroup")
-)
+snmpProxyTrapForwardCompliance = ModuleCompliance(
+    (1, 3, 6, 1, 6, 3, 18, 2, 1, 2)
+).setObjects(("SNMP-COMMUNITY-MIB", "snmpProxyTrapForwardGroup"))
 if mibBuilder.loadTexts:
     snmpProxyTrapForwardCompliance.setDescription(
         "The compliance statement for SNMP engines which contain a proxy forwarding application which is capable of forwarding SNMPv1 traps using SNMPv2c or SNMPv3."
     )
-snmpCommunityMIBFullCompliance = ModuleCompliance((1, 3, 6, 1, 6, 3, 18, 2, 1, 3)).setObjects(
-    ("SNMP-COMMUNITY-MIB", "snmpCommunityTableGroup")
-)
+snmpCommunityMIBFullCompliance = ModuleCompliance(
+    (1, 3, 6, 1, 6, 3, 18, 2, 1, 3)
+).setObjects(("SNMP-COMMUNITY-MIB", "snmpCommunityTableGroup"))
 if mibBuilder.loadTexts:
     snmpCommunityMIBFullCompliance.setDescription(
         "The compliance statement for SNMP engines which implement the SNMP-COMMUNITY-MIB with full read-create access."
@@ -292,7 +300,8 @@ if mibBuilder.loadTexts:
         "A collection of objects providing for configuration of community strings for SNMPv1 (and SNMPv2c) usage."
     )
 snmpProxyTrapForwardGroup = ObjectGroup((1, 3, 6, 1, 6, 3, 18, 2, 2, 3)).setObjects(
-    ("SNMP-COMMUNITY-MIB", "snmpTrapAddress"), ("SNMP-COMMUNITY-MIB", "snmpTrapCommunity")
+    ("SNMP-COMMUNITY-MIB", "snmpTrapAddress"),
+    ("SNMP-COMMUNITY-MIB", "snmpTrapCommunity"),
 )
 if mibBuilder.loadTexts:
     snmpProxyTrapForwardGroup.setDescription(

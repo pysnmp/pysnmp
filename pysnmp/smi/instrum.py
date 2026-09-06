@@ -14,13 +14,19 @@ __all__ = ["AbstractMibInstrumController", "MibInstrumController"]
 
 
 class AbstractMibInstrumController:
-    def readVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
+    def readVars(
+        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
+    ) -> list[Any]:
         raise error.NoSuchInstanceError(idx=0)
 
-    def readNextVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
+    def readNextVars(
+        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
+    ) -> list[Any]:
         raise error.EndOfMibViewError(idx=0)
 
-    def writeVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
+    def writeVars(
+        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
+    ) -> list[Any]:
         raise error.NoSuchObjectError(idx=0)
 
 
@@ -247,11 +253,17 @@ class MibInstrumController(AbstractMibInstrumController):
                 del origTraceback
         return outputVarBinds
 
-    def readVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
+    def readVars(
+        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
+    ) -> list[Any]:
         return self.flipFlopFsm(self.fsmReadVar, varBinds, acInfo)
 
-    def readNextVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
+    def readNextVars(
+        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
+    ) -> list[Any]:
         return self.flipFlopFsm(self.fsmReadNextVar, varBinds, acInfo)
 
-    def writeVars(self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)) -> list[Any]:
+    def writeVars(
+        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
+    ) -> list[Any]:
         return self.flipFlopFsm(self.fsmWriteVar, varBinds, acInfo)

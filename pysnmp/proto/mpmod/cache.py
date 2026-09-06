@@ -26,7 +26,9 @@ class Cache:
 
     def pushByStateRef(self, stateReference, **msgInfo):
         if stateReference in self.__stateReferenceIndex:
-            raise error.ProtocolError(f"Cache dup for stateReference={stateReference} at {self}")
+            raise error.ProtocolError(
+                f"Cache dup for stateReference={stateReference} at {self}"
+            )
         expireAt = self.__expirationTimer + 600
         self.__stateReferenceIndex[stateReference] = msgInfo, expireAt
 
@@ -41,7 +43,9 @@ class Cache:
         if stateReference in self.__stateReferenceIndex:
             cacheInfo = self.__stateReferenceIndex[stateReference]
         else:
-            raise error.ProtocolError(f"Cache miss for stateReference={stateReference} at {self}")
+            raise error.ProtocolError(
+                f"Cache miss for stateReference={stateReference} at {self}"
+            )
         del self.__stateReferenceIndex[stateReference]
         cacheEntry, expireAt = cacheInfo
         del self.__expirationQueue[expireAt]["stateReference"][stateReference]

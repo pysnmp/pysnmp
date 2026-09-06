@@ -82,7 +82,9 @@ class __AbstractMibSource:
                     )
 
                 else:
-                    raise error.MibLoadError(f"MIB file {f + pycSfx} access error: {why}")
+                    raise error.MibLoadError(
+                        f"MIB file {f + pycSfx} access error: {why}"
+                    )
 
             else:
                 if PY_MAGIC_NUMBER == pycData[:4]:
@@ -95,7 +97,9 @@ class __AbstractMibSource:
                     break
 
                 else:
-                    debug.logger & debug.flagBld and debug.logger("bad magic in %s" % pycPath)
+                    debug.logger & debug.flagBld and debug.logger(
+                        "bad magic in %s" % pycPath
+                    )
 
         for pySfx in SOURCE_SUFFIXES:
             try:
@@ -109,7 +113,9 @@ class __AbstractMibSource:
                     )
 
                 else:
-                    raise error.MibLoadError(f"MIB file {f + pySfx} access error: {why}")
+                    raise error.MibLoadError(
+                        f"MIB file {f + pySfx} access error: {why}"
+                    )
 
             else:
                 debug.logger & debug.flagBld and debug.logger(
@@ -187,7 +193,9 @@ class ZipMibSource(__AbstractMibSource):
         # noinspection PyProtectedMember
         if p in self.__loader._files:
             # noinspection PyProtectedMember
-            return self._parseDosTime(self.__loader._files[p][6], self.__loader._files[p][5])
+            return self._parseDosTime(
+                self.__loader._files[p][6], self.__loader._files[p][5]
+            )
         else:
             raise OSError(ENOENT, "No such file in ZIP archive", p)
 
@@ -310,7 +318,9 @@ class MibBuilder:
             if isinstance(mibSource, DirMibSource):
                 paths += (mibSource.fullPath(),)
             else:
-                raise error.MibLoadError(f"MIB source is not a plain directory: {mibSource}")
+                raise error.MibLoadError(
+                    f"MIB source is not a plain directory: {mibSource}"
+                )
         return paths
 
     def loadModule(self, modName, **userCtx):
@@ -331,13 +341,17 @@ class MibBuilder:
             modPath = mibSource.fullPath(modName, sfx)
 
             if modPath in self.__modPathsSeen:
-                debug.logger & debug.flagBld and debug.logger("loadModule: seen %s" % modPath)
+                debug.logger & debug.flagBld and debug.logger(
+                    "loadModule: seen %s" % modPath
+                )
                 break
 
             else:
                 self.__modPathsSeen.add(modPath)
 
-            debug.logger & debug.flagBld and debug.logger("loadModule: evaluating %s" % modPath)
+            debug.logger & debug.flagBld and debug.logger(
+                "loadModule: evaluating %s" % modPath
+            )
 
             g = {"mibBuilder": self, "userCtx": userCtx}
 
@@ -352,7 +366,9 @@ class MibBuilder:
 
             self.__modSeen[modName] = modPath
 
-            debug.logger & debug.flagBld and debug.logger("loadModule: loaded %s" % modPath)
+            debug.logger & debug.flagBld and debug.logger(
+                "loadModule: loaded %s" % modPath
+            )
 
             break
 
@@ -388,7 +404,9 @@ class MibBuilder:
                     debug.logger & debug.flagBld and debug.logger(
                         "loadModules: calling MIB compiler for %s" % modName
                     )
-                    status = self.__mibCompiler.compile(modName, genTexts=self.loadTexts)
+                    status = self.__mibCompiler.compile(
+                        modName, genTexts=self.loadTexts
+                    )
                     errs = "; ".join(
                         [
                             hasattr(x, "error") and str(x.error) or x
@@ -397,7 +415,9 @@ class MibBuilder:
                         ]
                     )
                     if errs:
-                        raise error.MibNotFoundError(f"{modName} compilation error(s): {errs}")
+                        raise error.MibNotFoundError(
+                            f"{modName} compilation error(s): {errs}"
+                        )
 
                     # compilation succeeded, MIB might load now
                     self.loadModule(modName, **userCtx)
@@ -439,7 +459,8 @@ class MibBuilder:
 
         for symObj in anonymousSyms:
             debug.logger & debug.flagBld and debug.logger(
-                "exportSymbols: anonymous symbol %s::__pysnmp_%ld" % (modName, self._autoName)
+                "exportSymbols: anonymous symbol %s::__pysnmp_%ld"
+                % (modName, self._autoName)
             )
             mibSymbols["__pysnmp_%ld" % self._autoName] = symObj
             self._autoName += 1

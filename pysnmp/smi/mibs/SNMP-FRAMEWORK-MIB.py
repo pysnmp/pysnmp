@@ -172,7 +172,9 @@ snmpFrameworkAdmin = MibIdentifier((1, 3, 6, 1, 6, 3, 10, 1))
 snmpFrameworkMIBObjects = MibIdentifier((1, 3, 6, 1, 6, 3, 10, 2))
 snmpFrameworkMIBConformance = MibIdentifier((1, 3, 6, 1, 6, 3, 10, 3))
 snmpEngine = MibIdentifier((1, 3, 6, 1, 6, 3, 10, 2, 1))
-snmpEngineID = MibScalar((1, 3, 6, 1, 6, 3, 10, 2, 1, 1), SnmpEngineID()).setMaxAccess("readonly")
+snmpEngineID = MibScalar((1, 3, 6, 1, 6, 3, 10, 2, 1, 1), SnmpEngineID()).setMaxAccess(
+    "readonly"
+)
 if mibBuilder.loadTexts:
     snmpEngineID.setStatus("current")
 if mibBuilder.loadTexts:
@@ -229,9 +231,9 @@ if mibBuilder.loadTexts:
     )
 snmpFrameworkMIBCompliances = MibIdentifier((1, 3, 6, 1, 6, 3, 10, 3, 1))
 snmpFrameworkMIBGroups = MibIdentifier((1, 3, 6, 1, 6, 3, 10, 3, 2))
-snmpFrameworkMIBCompliance = ModuleCompliance((1, 3, 6, 1, 6, 3, 10, 3, 1, 1)).setObjects(
-    ("SNMP-FRAMEWORK-MIB", "snmpEngineGroup")
-)
+snmpFrameworkMIBCompliance = ModuleCompliance(
+    (1, 3, 6, 1, 6, 3, 10, 3, 1, 1)
+).setObjects(("SNMP-FRAMEWORK-MIB", "snmpEngineGroup"))
 if mibBuilder.loadTexts:
     snmpFrameworkMIBCompliance.setDescription(
         "The compliance statement for SNMP engines which implement the SNMP Management Framework MIB. "
