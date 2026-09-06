@@ -3,6 +3,12 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is in [CHANGES.md](https://github.com/pysnmp/pysnmp/blob/main/CHANGES.md).
 
+## [6.0.0-rc.8](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.7...v6.0.0-rc.8) (2026-09-06)
+
+### Bug Fixes
+
+* **ci:** publish docs from a branch, not a detached HEAD ([9002196](https://github.com/pysnmp/pysnmp/commit/90021961c9aef4d0f135b5af5c8d9055e238a913))
+
 ## [6.0.0-rc.7](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.6...v6.0.0-rc.7) (2026-09-05)
 
 ### Bug Fixes
