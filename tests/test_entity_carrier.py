@@ -7,7 +7,7 @@ import tempfile
 
 import pytest
 
-from pysnmp.carrier.asyncio.dgram import udp
+from pysnmp.carrier.asyncio.dgram import udp, udp6
 from pysnmp.carrier.asyncio.dispatch import AsyncioDispatcher
 from pysnmp.carrier.base import (
     AbstractTransport,
@@ -414,6 +414,112 @@ class TestUdpTransport:
         transport = udp.UdpAsyncioTransport()
         with pytest.raises(CarrierError, match="Packet-information"):
             transport.enablePktInfo()
+
+
+def _ipv6IsUsable():
+    """Whether this host can actually open an AF_INET6 socket.
+
+    socket.has_ipv6 only reports what Python was built with; a container with
+    IPv6 disabled still fails at socket() time.
+    """
+    if not socket.has_ipv6:
+        return False
+    try:
+        socket.socket(socket.AF_INET6, socket.SOCK_DGRAM).close()
+    except OSError:
+        return False
+    return True
+
+
+class _UnnamedSocketTransport:
+    """asyncio transport whose socket the platform declines to name.
+
+    Windows fails getsockname() on an unbound datagram socket, and asyncio
+    reports that as a None sockname; POSIX answers with the family wildcard.
+    """
+
+    def get_extra_info(self, name, default=None):
+        return None
+
+
+class TestUnboundLocalAddress:
+    """getLocalAddress() on an endpoint opened with no local address.
+
+    openClientMode() with no iface leaves the socket unbound, which the two
+    platform families report differently. See issue #173.
+    """
+
+    def test_udp_reports_the_wildcard_for_an_unnamed_socket(self):
+        transport = udp.UdpAsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        assert transport.getLocalAddress() == ("0.0.0.0", 0)
+
+    def test_udp6_reports_the_wildcard_for_an_unnamed_socket(self):
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        assert transport.getLocalAddress() == ("::", 0, 0, 0)
+
+    def test_closed_transport_still_reports_no_local_address(self):
+        transport = udp.UdpAsyncioTransport()
+        assert transport.getLocalAddress() is None
+
+    def test_udp_normalize_address_stores_the_wildcard(self):
+        transport = udp.UdpAsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = transport.normalizeAddress(("127.0.0.1", 161))
+        assert address.getLocalAddress() == ("0.0.0.0", 0)
+
+    def test_udp6_normalize_address_strips_zone_and_stores_the_wildcard(self):
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = transport.normalizeAddress(("fe80::1%eth0", 161, 0, 0))
+        assert address == ("fe80::1", 161, 0, 0)
+        assert address.getLocalAddress() == ("::", 0, 0, 0)
+
+    def test_udp6_normalize_address_keeps_an_explicit_local_address(self):
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = udp6.Udp6TransportAddress(("fe80::1%eth0", 161, 0, 0))
+        address.setLocalAddress(("::1", 12345, 0, 0))
+        normalized = transport.normalizeAddress(address)
+        assert normalized == ("fe80::1", 161, 0, 0)
+        assert normalized.getLocalAddress() == ("::1", 12345, 0, 0)
+
+    def test_udp_client_mode_reports_the_wildcard(self):
+        loop = asyncio.new_event_loop()
+        transport = udp.UdpAsyncioTransport(loop=loop).openClientMode()
+        try:
+            loop.run_until_complete(asyncio.sleep(0))
+            assert transport.getLocalAddress() == ("0.0.0.0", 0)
+        finally:
+            transport.closeTransport()
+            loop.run_until_complete(asyncio.sleep(0))
+            loop.close()
+
+    @pytest.mark.skipif(not _ipv6IsUsable(), reason="IPv6 is unavailable")
+    def test_udp6_client_mode_reports_the_wildcard(self):
+        loop = asyncio.new_event_loop()
+        transport = udp6.Udp6AsyncioTransport(loop=loop).openClientMode()
+        try:
+            loop.run_until_complete(asyncio.sleep(0))
+            assert transport.getLocalAddress() == ("::", 0, 0, 0)
+        finally:
+            transport.closeTransport()
+            loop.run_until_complete(asyncio.sleep(0))
+            loop.close()
+
+    def test_udp_server_mode_reports_the_bound_address(self):
+        loop = asyncio.new_event_loop()
+        transport = udp.UdpAsyncioTransport(loop=loop).openServerMode(("127.0.0.1", 0))
+        try:
+            loop.run_until_complete(asyncio.sleep(0))
+            host, port = transport.getLocalAddress()
+            assert host == "127.0.0.1"
+            assert port != 0
+        finally:
+            transport.closeTransport()
+            loop.run_until_complete(asyncio.sleep(0))
+            loop.close()
 
 
 @pytest.mark.skipif(
