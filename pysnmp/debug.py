@@ -109,8 +109,10 @@ class Debug:
 
 
 # This will yield false from bitwise and with a flag, and save
-# on unnecessary calls
-logger = 0
+# on unnecessary calls. setLogger() replaces it with a Debug instance, so the
+# annotation has to admit both: without it every `debug.logger(...)` call in
+# the package reads as an attempt to call an int.
+logger: "Debug | int" = 0
 
 
 def setLogger(newLogger):
