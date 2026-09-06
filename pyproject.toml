@@ -129,6 +129,15 @@ warn_redundant_casts = true
 no_implicit_optional = true
 files = ["pysnmp"]
 
+# Generated MIB modules bind mibBuilder and every symbol they use via
+# mibBuilder.importSymbols() at import time, so static analysis cannot see any
+# of it: 1279 of the 1339 errors mypy reported came from here, all of them
+# "Name is not defined". Ruff exempts the same files from F821 for the same
+# reason. These are generated artifacts, not hand-written code.
+[[tool.mypy.overrides]]
+module = ["pysnmp.smi.mibs.*", "pysnmp.smi.mibs.instances.*"]
+ignore_errors = true
+
 [[tool.mypy.overrides]]
 module = "pysnmp.hlapi.*"
 check_untyped_defs = true
