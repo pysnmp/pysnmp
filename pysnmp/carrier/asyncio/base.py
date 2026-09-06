@@ -30,6 +30,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
+import socket
+
 from pysnmp.carrier.asyncio.dispatch import AsyncioDispatcher
 from pysnmp.carrier.base import AbstractTransport
 
@@ -37,3 +39,14 @@ from pysnmp.carrier.base import AbstractTransport
 class AbstractAsyncioTransport(AbstractTransport):
     protoTransportDispatcher = AsyncioDispatcher
     """Base Asyncio Transport, to be used with AsyncioDispatcher"""
+
+    def getLocalAddress(self):
+        if self.transport is not None:
+            localAddress = self.transport.get_extra_info("sockname")
+            if localAddress is not None:
+                return localAddress
+
+        if getattr(self, "sockFamily", None) == socket.AF_INET6:
+            return "::", 0, 0, 0
+
+        return "0.0.0.0", 0

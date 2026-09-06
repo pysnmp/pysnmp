@@ -121,4 +121,8 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     def normalizeAddress(self, transportAddress):
         if not isinstance(transportAddress, self.addressType):
             transportAddress = self.addressType(transportAddress)
+
+        if not transportAddress.getLocalAddress():
+            transportAddress.setLocalAddress(self.getLocalAddress())
+
         return transportAddress
