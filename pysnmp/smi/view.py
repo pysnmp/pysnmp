@@ -378,7 +378,7 @@ class MibViewController:
         :return: list of ``(colId, colName, colNode)`` tuples — one per
             column in the row.  ``colId`` is the column number (last
             sub-OID), ``colName`` is the full OID tuple, and ``colNode``
-            is the :class:`MibTableColumn` instance.
+            is the ``MibTableColumn`` instance.
         :raises SmiError: if the module or symbol is not found.
 
         Examples

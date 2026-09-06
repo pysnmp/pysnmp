@@ -37,7 +37,7 @@ class Null(univ.Null):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -68,7 +68,7 @@ class Integer32(univ.Integer):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -140,7 +140,7 @@ class Integer(Integer32):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -203,7 +203,7 @@ class OctetString(univ.OctetString):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -285,7 +285,7 @@ class ObjectIdentifier(univ.ObjectIdentifier):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -319,7 +319,7 @@ class IpAddress(OctetString):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -377,7 +377,7 @@ class Counter32(univ.Integer):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -417,7 +417,7 @@ class Gauge32(univ.Integer):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -456,7 +456,7 @@ class Unsigned32(univ.Integer):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -495,7 +495,7 @@ class TimeTicks(univ.Integer):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -542,7 +542,7 @@ class Opaque(univ.OctetString):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -585,7 +585,7 @@ class Counter64(univ.Integer):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples
@@ -638,7 +638,7 @@ class Bits(OctetString):
 
     Raises
     ------
-        PyAsn1Error :
+        pyasn1.error.PyAsn1Error
             On constraint violation or bad initializer.
 
     Examples

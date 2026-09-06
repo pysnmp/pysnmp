@@ -48,7 +48,7 @@ jobs:
       # --keep-going lists every warning instead of stopping at the first, so
       # one push fixes them all.
       - name: Build docs
-        run: uv run --locked --group dev sphinx-build -W --keep-going -b html docs/source docs/build
+        run: uv run --locked --group dev sphinx-build -n -W --keep-going -b html docs/source docs/build
       - uses: actions/upload-artifact@v7
         with:
           name: docs-html

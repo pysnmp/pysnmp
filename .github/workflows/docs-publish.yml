@@ -52,7 +52,7 @@ jobs:
         # outside the output tree so the build cache is not published.
         run: >
           uv run --locked --group dev
-          sphinx-build -W --keep-going -b html
+          sphinx-build -n -W --keep-going -b html
           -d "${RUNNER_TEMP}/doctrees" docs/source docs/build
 
       - name: Check out gh-pages

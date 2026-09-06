@@ -72,9 +72,9 @@ class Udp6TransportTarget(AbstractTransportTarget):
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
     This object can be used by
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncCommandGenerator` or
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncNotificationOriginator`
-    and their derevatives for adding new entries to Local Configuration
+    :py:func:`~pysnmp.hlapi.asyncio.getCmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.sendNotification`,
+    for adding new entries to Local Configuration
     Datastore (LCD) managed by :py:class:`~pysnmp.hlapi.SnmpEngine`
     class instance.
 

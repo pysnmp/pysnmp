@@ -102,7 +102,7 @@ async def getCmd(
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
@@ -199,7 +199,7 @@ async def setCmd(
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
@@ -299,7 +299,7 @@ async def nextCmd(
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
@@ -429,7 +429,7 @@ async def bulkCmd(
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 

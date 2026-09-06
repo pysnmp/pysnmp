@@ -34,9 +34,9 @@ class CommunityData:
     """Creates SNMP v1/v2c configuration entry.
 
     This object can be used by
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncCommandGenerator` or
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncNotificationOriginator`
-    and their derivatives for adding new entries to Local Configuration
+    :py:func:`~pysnmp.hlapi.asyncio.getCmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.sendNotification`,
+    for adding new entries to Local Configuration
     Datastore (LCD) managed by :py:class:`~pysnmp.hlapi.SnmpEngine`
     class instance.
 
@@ -88,7 +88,7 @@ class CommunityData:
         refer to :RFC:`3413#section-4.1.1` and :RFC:`2576#section-5.3`
         (e.g. the *snmpCommunityTransportTag* object).
 
-        See also: :py:class:`~pysnmp.hlapi.UdpTransportTarget`
+        See also: :py:class:`~pysnmp.hlapi.asyncio.UdpTransportTarget`
 
     Warnings
     --------
@@ -247,9 +247,9 @@ class UsmUserData:
     """Creates SNMP v3 User Security Model (USM) configuration entry.
 
     This object can be used by
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncCommandGenerator` or
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncNotificationOriginator`
-    and their derivatives for adding new entries to Local Configuration
+    :py:func:`~pysnmp.hlapi.asyncio.getCmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.sendNotification`,
+    for adding new entries to Local Configuration
     Datastore (LCD) managed by :py:class:`~pysnmp.hlapi.SnmpEngine`
     class instance.
 

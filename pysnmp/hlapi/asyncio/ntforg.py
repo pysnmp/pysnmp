@@ -82,7 +82,7 @@ async def sendNotification(
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 

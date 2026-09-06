@@ -28,7 +28,7 @@ class ObjectIdentity:
     to by its MIB name. The *ObjectIdentity* class supports various forms
     of MIB variable identification, providing automatic conversion from
     one to others. At the same time *ObjectIdentity* objects behave like
-    :py:obj:`tuples` of py:obj:`int` sub-OIDs.
+    :py:obj:`tuple` of :py:obj:`int` sub-OIDs.
 
     See :RFC:`1902#section-2` for more information on OBJECT-IDENTITY
     SMI definitions.
@@ -109,7 +109,7 @@ class ObjectIdentity:
 
         Raises
         ------
-        SmiError
+        pysnmp.smi.error.SmiError
             If MIB variable conversion has not been performed.
 
         Examples
@@ -141,7 +141,7 @@ class ObjectIdentity:
 
         Raises
         ------
-        SmiError
+        pysnmp.smi.error.SmiError
            If MIB variable conversion has not been performed.
 
         Examples
@@ -175,7 +175,7 @@ class ObjectIdentity:
 
         Raises
         ------
-        SmiError
+        pysnmp.smi.error.SmiError
            If MIB variable conversion has not been performed.
 
         Notes
@@ -233,7 +233,7 @@ class ObjectIdentity:
         -----
         Please refer to :py:class:`~pysmi.reader.localfile.FileReader`,
         :py:class:`~pysmi.reader.httpclient.HttpReader` and
-        :py:class:`~pysmi.reader.ftpclient.FtpReader` classes for
+        :py:class:`~pysmi.reader.zipreader.ZipReader` classes for
         in-depth information on ASN.1 MIB lookup.
 
         Examples
@@ -333,7 +333,7 @@ class ObjectIdentity:
 
         Raises
         ------
-        SmiError
+        pysnmp.smi.error.SmiError
            In case of fatal MIB hanling errora
 
         Notes
@@ -791,7 +791,7 @@ class ObjectType:
         -----
         Please refer to :py:class:`~pysmi.reader.localfile.FileReader`,
         :py:class:`~pysmi.reader.httpclient.HttpReader` and
-        :py:class:`~pysmi.reader.ftpclient.FtpReader` classes for
+        :py:class:`~pysmi.reader.zipreader.ZipReader` classes for
         in-depth information on ASN.1 MIB lookup.
 
         Examples
@@ -881,7 +881,7 @@ class ObjectType:
 
         Raises
         ------
-        SmiError
+        pysnmp.smi.error.SmiError
            In case of fatal MIB hanling errora
 
         Notes
@@ -985,7 +985,7 @@ class ObjectType:
 
         Raises
         ------
-        SmiError
+        pysnmp.smi.error.SmiError
            If MIB variable conversion has not been performed.
         """
         if self.__state & self.stClean:
@@ -1007,7 +1007,7 @@ class NotificationType:
     containers incorporating :py:class:`~pysnmp.smi.rfc1902.ObjectIdentity`
     class instance (identifying particular notification) and a collection
     of MIB variables IDs that
-    :py:class:`~pysnmp.entity.rfc3413.oneliner.cmdgen.NotificationOriginator`
+    :py:func:`~pysnmp.hlapi.asyncio.sendNotification`
     should gather and put into notification message.
 
     Typical notification is defined like this (from *IF-MIB.txt*):
@@ -1147,7 +1147,7 @@ class NotificationType:
         -----
         Please refer to :py:class:`~pysmi.reader.localfile.FileReader`,
         :py:class:`~pysmi.reader.httpclient.HttpReader` and
-        :py:class:`~pysmi.reader.ftpclient.FtpReader` classes for
+        :py:class:`~pysmi.reader.zipreader.ZipReader` classes for
         in-depth information on ASN.1 MIB lookup.
 
         Examples
@@ -1240,7 +1240,7 @@ class NotificationType:
 
         Raises
         ------
-        SmiError
+        pysnmp.smi.error.SmiError
            In case of fatal MIB hanling errora
 
         Notes

@@ -15,8 +15,8 @@ class ContextData:
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
     This object can be used by
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncCommandGenerator` or
-    :py:class:`~pysnmp.hlapi.asyncio.AsyncNotificationOriginator`
+    :py:func:`~pysnmp.hlapi.asyncio.getCmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.sendNotification`,
     and their derevatives for forming SNMP PDU and also adding new entries to
     Local Configuration Datastore (LCD) in order to support SNMPv1/v2c with
     SNMPv3 interoperability.

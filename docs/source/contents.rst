@@ -55,6 +55,7 @@ Documentation
 
    /docs/tutorial
    /docs/api-reference
+   /docs/api-internals
    /docs/breaking-changes
    /docs/security-considerations
    /docs/smi-table-api
