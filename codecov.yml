@@ -1,0 +1,23 @@
+# Coverage is measured by every job in the test matrix and merged, so a line
+# can move in or out of the merged report between runs without anything in the
+# tree changing. The threshold absorbs that; without one, codecov's default is
+# zero tolerance and a single line fails a pull request that touched no code.
+#
+# target: auto compares against the pull request's base rather than a fixed
+# floor, which is what lets pyasn1, pysmi and pysnmp share this file while
+# sitting at quite different coverage levels.
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+
+ignore:
+  - "tests"
+  - "docs"
+  - "examples"
