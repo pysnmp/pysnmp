@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from typing import Any
+
 from pyasn1.codec.ber import decoder, eoo
 from pyasn1.type import constraint, namedtype, univ
 
@@ -93,7 +95,7 @@ _snmpErrors = {
 
 class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
     messageProcessingModelID = univ.Integer(3)  # SNMPv3
-    snmpMsgSpec = SNMPv3Message
+    snmpMsgSpec: type[Any] = SNMPv3Message
     _emptyStr = univ.OctetString("")
     _msgFlags = {
         0: univ.OctetString("\x00"),

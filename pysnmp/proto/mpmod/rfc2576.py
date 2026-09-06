@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+from typing import Any
+
 from pyasn1.codec.ber import decoder, eoo
 from pyasn1.type import univ
 
@@ -20,7 +22,7 @@ from pysnmp.proto.mpmod.base import AbstractMessageProcessingModel
 
 class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     messageProcessingModelID = univ.Integer(0)  # SNMPv1
-    snmpMsgSpec = v1.Message
+    snmpMsgSpec: type[Any] = v1.Message
 
     # rfc3412: 7.1
     def prepareOutgoingMessage(
@@ -580,4 +582,4 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
 class SnmpV2cMessageProcessingModel(SnmpV1MessageProcessingModel):
     messageProcessingModelID = univ.Integer(1)  # SNMPv2c
-    snmpMsgSpec = v2c.Message
+    snmpMsgSpec: type[Any] = v2c.Message

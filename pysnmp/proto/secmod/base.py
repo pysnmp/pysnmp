@@ -8,7 +8,9 @@ from pysnmp.proto.secmod import cache
 
 
 class AbstractSecurityModel:
-    securityModelID = None
+    #: securityModel value this model answers to (:RFC:`3411#section-4`), e.g. 3
+    #: for USM. None until a concrete model names one.
+    securityModelID: int | None = None
 
     def __init__(self):
         self._cache = cache.Cache()
