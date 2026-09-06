@@ -65,6 +65,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-internals.html">Errors and supporting types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
@@ -159,7 +160,7 @@ operations.</p>
 <h2>Making SNMP query<a class="headerlink" href="#making-snmp-query" title="Link to this heading">¶</a></h2>
 <p>We will send SNMP GET command to read a MIB object from SNMP agent.
 For that purpose we will call synchronous, high-level
-<code class="xref py py-func docutils literal notranslate"><span class="pre">getCmd()</span></code> function.
+<a class="reference internal" href="api-internals.html#pysnmp.hlapi.getCmd" title="pysnmp.hlapi.getCmd"><code class="xref py py-func docutils literal notranslate"><span class="pre">getCmd()</span></code></a> function.
 Other SNMP commands can be used in a vary similar way by calling
 corresponding functions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
@@ -218,8 +219,8 @@ In this example we will query
 <a class="reference external" href="https://pypi.org/project/snmpsim/">public SNMP Simulator</a>
 available over IPv4 on the Internet at <em>localhost</em>. Transport
 configuration is passed to SNMP LCD in form of properly initialized
-<code class="xref py py-class docutils literal notranslate"><span class="pre">UdpTransportTarget</span></code> or
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Udp6TransportTarget</span></code> objects
+<a class="reference internal" href="api-reference.html#pysnmp.hlapi.asyncio.UdpTransportTarget" title="pysnmp.hlapi.asyncio.UdpTransportTarget"><code class="xref py py-class docutils literal notranslate"><span class="pre">UdpTransportTarget</span></code></a> or
+<a class="reference internal" href="api-reference.html#pysnmp.hlapi.asyncio.Udp6TransportTarget" title="pysnmp.hlapi.asyncio.Udp6TransportTarget"><code class="xref py py-class docutils literal notranslate"><span class="pre">Udp6TransportTarget</span></code></a> objects
 respectively.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -458,7 +459,7 @@ them into full OID:</p>
 <p>SNMP allows you to request a MIB object that is “next” to the given
 one. That way you can read MIB objects you are not aware about in
 advance. MIB objects are conceptually sorted by their OIDs.
-This feature is implemented by the <code class="xref py py-func docutils literal notranslate"><span class="pre">nextCmd()</span></code>
+This feature is implemented by the <a class="reference internal" href="api-internals.html#pysnmp.hlapi.nextCmd" title="pysnmp.hlapi.nextCmd"><code class="xref py py-func docutils literal notranslate"><span class="pre">nextCmd()</span></code></a>
 function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">nextCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
@@ -479,7 +480,7 @@ respond a bunch of “next” MIB objects at once. Additional
 non-repeaters and max-repetitions parameters can be used to influence
 MIB objects batching.</p>
 <p>PySNMP hides this <em>GETBULK</em> optimization at the protocol level, the
-<code class="xref py py-func docutils literal notranslate"><span class="pre">bulkCmd()</span></code> function exposes the same generator
+<a class="reference internal" href="api-internals.html#pysnmp.hlapi.bulkCmd" title="pysnmp.hlapi.bulkCmd"><code class="xref py py-func docutils literal notranslate"><span class="pre">bulkCmd()</span></code></a> function exposes the same generator
 API as <em>getNext()</em> for convenience.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -534,7 +535,7 @@ Although its implementation on managed entity’s side proved to be
 somewhat demanding (due to locking and transactional behavior
 requirements). So vendors tend to leave it out thus rendering
 managed entity being read-only.</p>
-<p>PySNMP supports <em>SET</em> uniformly through <code class="xref py py-func docutils literal notranslate"><span class="pre">setCmd()</span></code>
+<p>PySNMP supports <em>SET</em> uniformly through <a class="reference internal" href="api-internals.html#pysnmp.hlapi.setCmd" title="pysnmp.hlapi.setCmd"><code class="xref py py-func docutils literal notranslate"><span class="pre">setCmd()</span></code></a>
 function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt;</span>

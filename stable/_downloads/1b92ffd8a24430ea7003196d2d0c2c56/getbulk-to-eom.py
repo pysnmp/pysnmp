@@ -54,7 +54,6 @@ async def run(varBinds):
         varBinds = varBindTable[-1]
         if isEndOfMib(varBinds):
             break
-    return
 
 
 asyncio.run(

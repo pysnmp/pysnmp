@@ -59,6 +59,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/api-internals.html">Errors and supporting types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/security-considerations.html">Security Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
@@ -127,10 +128,37 @@
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
 <p>Generated from the commit history at release time. The narrative history
 through 5.x is in <a class="reference external" href="https://github.com/pysnmp/pysnmp/blob/main/CHANGES.md">CHANGES.md</a>.</p>
-<section id="rc-8-2026-09-06">
-<h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.7...v6.0.0-rc.8">6.0.0-rc.8</a> (2026-09-06)<a class="headerlink" href="#rc-8-2026-09-06" title="Link to this heading">¶</a></h2>
+<section id="rc-9-2026-09-06">
+<h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.8...v6.0.0-rc.9">6.0.0-rc.9</a> (2026-09-06)<a class="headerlink" href="#rc-9-2026-09-06" title="Link to this heading">¶</a></h2>
+<section id="breaking-changes">
+<h3>⚠ BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>deps:</strong> pysnmp-pyasn1 must now be &gt;=2.0.0,&lt;3.0.0.</p></li>
+</ul>
+</section>
 <section id="bug-fixes">
 <h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>debug:</strong> make the debug switch callable whether or not debugging is on (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/921b720e4958de857037d42b53981b355c060f47">921b720</a>)</p></li>
+<li><p><strong>deps:</strong> track pysmi and pyasn1 release candidates (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/c0a116d555b003f076b4a2df99c04c0b0aca88fb">c0a116d</a>)</p></li>
+<li><p><strong>smi:</strong> make index iteration agree with keys() (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/ac4354d986cf76c995fd20c5bbaa65173d769bab">ac4354d</a>)</p></li>
+<li><p><strong>typing:</strong> declare the carrier, mpmod and secmod base attributes (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/37bbf9a52b17f631917ed06fe7605c643adf1283">37bbf9a</a>)</p></li>
+<li><p><strong>typing:</strong> give abstract base attributes the type their subclasses use (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/6c28cbc30b2d010b38c7a15cd487786f83e8a550">6c28cbc</a>)</p></li>
+<li><p><strong>typing:</strong> stop except: targets shadowing names the function still uses (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/8bec4faba160cbe24d667b9e21117603f79e2cfc">8bec4fa</a>)</p></li>
+<li><p><strong>typing:</strong> type-clean the package and enable the mypy pre-commit hook (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/bbe898392ffd455d66ae4f7ef1ffff6ea8f8ff8a">bbe8983</a>), closes <a class="reference external" href="https://github.com/pysnmp/pyasn1/issues/165">pysnmp/pyasn1#165</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/178">#178</a></p></li>
+</ul>
+</section>
+<section id="miscellaneous-chores">
+<h3>Miscellaneous Chores<a class="headerlink" href="#miscellaneous-chores" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>deps:</strong> bump pysnmp-pyasn1 to 2.0.0 and pysnmp-pysmi to 2.1.0 (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/bd3a7e13fb9b1fea8ec9511809b9bfd80a8a55ae">bd3a7e1</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="rc-8-2026-09-06">
+<h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.7...v6.0.0-rc.8">6.0.0-rc.8</a> (2026-09-06)<a class="headerlink" href="#rc-8-2026-09-06" title="Link to this heading">¶</a></h2>
+<section id="id1">
+<h3>Bug Fixes<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>ci:</strong> publish docs from a branch, not a detached HEAD (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/90021961c9aef4d0f135b5af5c8d9055e238a913">9002196</a>)</p></li>
 </ul>
@@ -138,8 +166,8 @@ through 5.x is in <a class="reference external" href="https://github.com/pysnmp/
 </section>
 <section id="rc-7-2026-09-05">
 <h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.6...v6.0.0-rc.7">6.0.0-rc.7</a> (2026-09-05)<a class="headerlink" href="#rc-7-2026-09-05" title="Link to this heading">¶</a></h2>
-<section id="id1">
-<h3>Bug Fixes<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<section id="id2">
+<h3>Bug Fixes<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>smi:</strong> accept numeric input for integer TCs carrying a DISPLAY-HINT (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/7d98e83463ec293d5887ecfcdc55e9bdf4cca5a4">7d98e83</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/150">#150</a></p></li>
 <li><p><strong>smi:</strong> let transport-address TCs use the TEXTUAL-CONVENTION machinery (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/33c91faad6e2ee74e5e33b16acaac82dd322c542">33c91fa</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/155">#155</a></p></li>

@@ -103,8 +103,8 @@ In this example we will query
 `public SNMP Simulator <https://pypi.org/project/snmpsim/>`__
 available over IPv4 on the Internet at *localhost*. Transport
 configuration is passed to SNMP LCD in form of properly initialized
-:py:class:`~pysnmp.hlapi.UdpTransportTarget` or
-:py:class:`~pysnmp.hlapi.Udp6TransportTarget` objects
+:py:class:`~pysnmp.hlapi.asyncio.UdpTransportTarget` or
+:py:class:`~pysnmp.hlapi.asyncio.Udp6TransportTarget` objects
 respectively.
 
 .. code-block:: python

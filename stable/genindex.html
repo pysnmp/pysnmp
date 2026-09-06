@@ -56,6 +56,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/api-internals.html">Errors and supporting types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/security-considerations.html">Security Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
@@ -126,9 +127,11 @@
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -143,6 +146,8 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.transport.AbstractTransportTarget">AbstractTransportTarget (class in pysnmp.hlapi.transport)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType.addAsn1MibSource">addAsn1MibSource() (pysnmp.smi.rfc1902.NotificationType method)</a>
 
       <ul>
@@ -173,22 +178,28 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="docs/hlapi/asyncio/manager/cmdgen/bulkcmd.html#pysnmp.hlapi.asyncio.bulkCmd">bulkCmd() (in module pysnmp.hlapi.asyncio)</a>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.bulkCmd">bulkCmd() (in module pysnmp.hlapi)</a>
+
+      <ul>
+        <li><a href="docs/hlapi/asyncio/manager/cmdgen/bulkcmd.html#pysnmp.hlapi.asyncio.bulkCmd">(in module pysnmp.hlapi.asyncio)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.error.PySnmpError.cause">cause (pysnmp.error.PySnmpError property)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.OctetString.clone">clone() (pysnmp.proto.rfc1902.OctetString method)</a>
 </li>
       <li><a href="docs/api-reference.html#pysnmp.hlapi.CommunityData">CommunityData (class in pysnmp.hlapi)</a>
 </li>
-      <li><a href="docs/device-report.html#pysnmp.hlapi.DeviceReport.contact">contact (pysnmp.hlapi.DeviceReport attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/device-report.html#pysnmp.hlapi.DeviceReport.contact">contact (pysnmp.hlapi.DeviceReport attribute)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.hlapi.ContextData">ContextData (class in pysnmp.hlapi)</a>
 </li>
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Counter32">Counter32 (class in pysnmp.proto.rfc1902)</a>
@@ -210,6 +221,22 @@
   </ul></td>
 </tr></table>
 
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.proto.rfc1905.endOfMibView">endOfMibView (in module pysnmp.proto.rfc1905)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.types.SnmpResponse.errorIndex">errorIndex (pysnmp.hlapi.types.SnmpResponse attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.types.SnmpResponse.errorIndication">errorIndication (pysnmp.hlapi.types.SnmpResponse attribute)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.types.SnmpResponse.errorStatus">errorStatus (pysnmp.hlapi.types.SnmpResponse attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -217,8 +244,16 @@
 </li>
       <li><a href="docs/device-report.html#pysnmp.hlapi.asyncio.get_device_report">get_device_report() (in module pysnmp.hlapi.asyncio)</a>
 </li>
-      <li><a href="docs/hlapi/asyncio/manager/cmdgen/getcmd.html#pysnmp.hlapi.asyncio.getCmd">getCmd() (in module pysnmp.hlapi.asyncio)</a>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.get_table_cell_info">get_table_cell_info() (pysnmp.smi.view.MibViewController method)</a>
 </li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.get_table_columns">get_table_columns() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.getCmd">getCmd() (in module pysnmp.hlapi)</a>
+
+      <ul>
+        <li><a href="docs/hlapi/asyncio/manager/cmdgen/getcmd.html#pysnmp.hlapi.asyncio.getCmd">(in module pysnmp.hlapi.asyncio)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.getLabel">getLabel() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
@@ -226,6 +261,10 @@
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.getMibSymbol">getMibSymbol() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
 </li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.getOid">getOid() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getTableCellInfo">getTableCellInfo() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getTableColumns">getTableColumns() (pysnmp.smi.view.MibViewController method)</a>
 </li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.getUnits">getUnits() (pysnmp.smi.rfc1902.ObjectType method)</a>
 </li>
@@ -261,8 +300,31 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.smi.builder.MibBuilder.loadModules">loadModules() (pysnmp.smi.builder.MibBuilder method)</a>
+</li>
       <li><a href="docs/device-report.html#pysnmp.hlapi.DeviceReport.location">location (pysnmp.hlapi.DeviceReport attribute)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.smi.builder.MibBuilder">MibBuilder (class in pysnmp.smi.builder)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController">MibViewController (class in pysnmp.smi.view)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    module
+
+      <ul>
+        <li><a href="docs/api-internals.html#module-pysnmp.hlapi">pysnmp.hlapi</a>
+</li>
+        <li><a href="docs/api-internals.html#module-pysnmp.smi.rfc1902">pysnmp.smi.rfc1902</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -271,8 +333,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="docs/device-report.html#pysnmp.hlapi.DeviceReport.name">name (pysnmp.hlapi.DeviceReport attribute)</a>
 </li>
-      <li><a href="docs/hlapi/asyncio/manager/cmdgen/nextcmd.html#pysnmp.hlapi.asyncio.nextCmd">nextCmd() (in module pysnmp.hlapi.asyncio)</a>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.nextCmd">nextCmd() (in module pysnmp.hlapi)</a>
+
+      <ul>
+        <li><a href="docs/hlapi/asyncio/manager/cmdgen/nextcmd.html#pysnmp.hlapi.asyncio.nextCmd">(in module pysnmp.hlapi.asyncio)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType">NotificationType (class in pysnmp.smi.rfc1902)</a>
@@ -288,6 +354,8 @@
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.ObjectIdentifier">ObjectIdentifier (class in pysnmp.proto.rfc1902)</a>
 </li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity">ObjectIdentity (class in pysnmp.smi.rfc1902)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.proto.rfc1902.ObjectName">ObjectName (class in pysnmp.proto.rfc1902)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -305,9 +373,33 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Bits.prettyIn">prettyIn() (pysnmp.proto.rfc1902.Bits method)</a>
 </li>
+      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Bits.prettyOut">prettyOut() (pysnmp.proto.rfc1902.Bits method)</a>
+</li>
+      <li>
+    pysnmp.hlapi
+
+      <ul>
+        <li><a href="docs/api-internals.html#module-pysnmp.hlapi">module</a>
+</li>
+      </ul></li>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT">pysnmp.hlapi.transport.TransportAddrT (class in pysnmp.hlapi)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Bits.prettyOut">prettyOut() (pysnmp.proto.rfc1902.Bits method)</a>
+      <li>
+    pysnmp.smi.rfc1902
+
+      <ul>
+        <li><a href="docs/api-internals.html#module-pysnmp.smi.rfc1902">module</a>
+</li>
+      </ul></li>
+      <li><a href="docs/api-internals.html#pysnmp.error.PySnmpCryptoWarning">PySnmpCryptoWarning</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.error.PySnmpError">PySnmpError</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.error.PySnmpNonStandardCryptoWarning">PySnmpNonStandardCryptoWarning</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.error.PySnmpWeakCryptoWarning">PySnmpWeakCryptoWarning</a>
 </li>
   </ul></td>
 </tr></table>
@@ -315,6 +407,10 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.resolve_cell_oid">resolve_cell_oid() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.resolveCellOid">resolveCellOid() (pysnmp.smi.view.MibViewController method)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType.resolveWithMib">resolveWithMib() (pysnmp.smi.rfc1902.NotificationType method)</a>
 
       <ul>
@@ -430,17 +526,27 @@
 </li>
       <li><a href="docs/device-report.html#pysnmp.hlapi.DeviceReport.services">services (pysnmp.hlapi.DeviceReport attribute)</a>
 </li>
-      <li><a href="docs/hlapi/asyncio/manager/cmdgen/setcmd.html#pysnmp.hlapi.asyncio.setCmd">setCmd() (in module pysnmp.hlapi.asyncio)</a>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.setCmd">setCmd() (in module pysnmp.hlapi)</a>
+
+      <ul>
+        <li><a href="docs/hlapi/asyncio/manager/cmdgen/setcmd.html#pysnmp.hlapi.asyncio.setCmd">(in module pysnmp.hlapi.asyncio)</a>
 </li>
+      </ul></li>
       <li><a href="docs/api-reference.html#pysnmp.hlapi.asyncio.Udp6TransportTarget.setLocalAddress">setLocalAddress() (pysnmp.hlapi.asyncio.Udp6TransportTarget method)</a>
 
       <ul>
         <li><a href="docs/api-reference.html#pysnmp.hlapi.asyncio.UdpTransportTarget.setLocalAddress">(pysnmp.hlapi.asyncio.UdpTransportTarget method)</a>
 </li>
+        <li><a href="docs/api-internals.html#pysnmp.hlapi.transport.AbstractTransportTarget.setLocalAddress">(pysnmp.hlapi.transport.AbstractTransportTarget method)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.smi.error.SmiError">SmiError</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.hlapi.SnmpEngine">SnmpEngine (class in pysnmp.hlapi)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.types.SnmpResponse">SnmpResponse (class in pysnmp.hlapi.types)</a>
 </li>
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.OctetString.subtype">subtype() (pysnmp.proto.rfc1902.OctetString method)</a>
 </li>
@@ -519,6 +625,10 @@
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.types.SnmpResponse.varBinds">varBinds (pysnmp.hlapi.types.SnmpResponse attribute)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="docs/device-report.html#pysnmp.hlapi.DeviceReport.vendor_oid">vendor_oid (pysnmp.hlapi.DeviceReport attribute)</a>
 </li>

@@ -59,6 +59,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-internals.html">Errors and supporting types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">SMI table construction and cell addressing</a><ul>
@@ -135,7 +136,7 @@ OIDs into MIB symbols and typed indices, and declaring columns that may be
 unset when a conceptual row becomes active.</p>
 <section id="addressing-table-cells">
 <h2>Addressing table cells<a class="headerlink" href="#addressing-table-cells" title="Link to this heading">¶</a></h2>
-<p>Create a <code class="xref py py-class docutils literal notranslate"><span class="pre">MibViewController</span></code> from a MIB builder and
+<p>Create a <a class="reference internal" href="api-internals.html#pysnmp.smi.view.MibViewController" title="pysnmp.smi.view.MibViewController"><code class="xref py py-class docutils literal notranslate"><span class="pre">MibViewController</span></code></a> from a MIB builder and
 load the module that defines the table. These operations do not require an
 instrumentation controller or an SNMP engine:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span><span class="p">,</span> <span class="n">view</span>
@@ -155,7 +156,7 @@ instrumentation controller or an SNMP engine:</p>
 </div>
 <p>The column can be identified by its MIB symbol, as above, or by its numeric
 sub-identifier. Unknown columns and an incorrect number of index values raise
-<code class="xref py py-class docutils literal notranslate"><span class="pre">SmiError</span></code> rather than producing an invalid OID.</p>
+<a class="reference internal" href="api-internals.html#pysnmp.smi.error.SmiError" title="pysnmp.smi.error.SmiError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SmiError</span></code></a> rather than producing an invalid OID.</p>
 <p>To split a complete cell OID back into its components:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">moduleName</span><span class="p">,</span> <span class="n">rowName</span><span class="p">,</span> <span class="n">columnName</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">get_table_cell_info</span><span class="p">(</span>
     <span class="n">cellOid</span>

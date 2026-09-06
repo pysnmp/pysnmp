@@ -59,6 +59,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-internals.html">Errors and supporting types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
@@ -207,7 +208,7 @@ the agent’s MIB view are never reported as capabilities.</p>
 </section>
 <section id="synchronous-use">
 <h2>Synchronous use<a class="headerlink" href="#synchronous-use" title="Link to this heading">¶</a></h2>
-<p>The default <code class="xref py py-mod docutils literal notranslate"><span class="pre">pysnmp.hlapi</span></code> facade provides the same operation as a
+<p>The default <a class="reference internal" href="api-internals.html#module-pysnmp.hlapi" title="pysnmp.hlapi"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pysnmp.hlapi</span></code></a> facade provides the same operation as a
 blocking function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CommunityData</span><span class="p">,</span>
