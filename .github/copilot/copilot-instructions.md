@@ -189,16 +189,22 @@ This is a pure-Python SNMP v1/v2c/v3 engine. The package layout mirrors the SNMP
 
 ### Commit message conventions
 
-Releases are cut by semantic-release with the Angular preset: only `feat`, `fix`, `perf` and `BREAKING CHANGE` produce a
-version. `chore`, `ci`, `docs`, `refactor`, `style` and `test` never do.
+Releases are cut by semantic-release with the `conventionalcommits` preset: only `feat`, `fix`, `perf` and a breaking
+change (`!` or a `BREAKING CHANGE:` footer) produce a version. `build`, `chore`, `ci`, `docs`, `refactor`, `style` and
+`test` never do. See [`.github/semantic-release.md`](../semantic-release.md) for the full mapping.
 
-- Runtime dependency changes are **`fix(deps):`**, not `chore(deps):`. Raising a floor in `[project].dependencies`
-  changes what users resolve and install, so it must ship as a release.
+For dependencies the **scope** decides, not the type — `.releaserc` carries explicit `releaseRules` for it:
+
+- Runtime dependency changes are **`fix(deps):`**. Raising a floor in `[project].dependencies` changes what users
+  resolve and install, so it must ship as a release.
   Example: `fix(deps): require pysnmp-pyasn1 >=1.2.0`
-- Development-only dependency changes (`[dependency-groups]`, pre-commit hooks, CI actions) stay `chore(deps):` or `ci:`
-  — they are invisible to installers.
-- A `chore(deps):` runtime bump merged to `next` or `main` will sit unreleased until an unrelated releasable commit
-  lands. Use the correct type up front rather than fixing it after the fact.
+- Development-only dependency changes (`[dependency-groups]`) are **`chore(deps-dev):`** — they are invisible to
+  installers and release nothing. Pre-commit hooks and workflow actions are `ci:` (dependabot writes `ci(actions):`).
+- The `deps` scope releases a patch whatever type it is written with, and the `deps-dev` scope releases nothing
+  whatever type it is written with. That is a backstop, not a licence: the release notes are grouped by type, and a
+  `chore` is not printed in them at all. Use the right type up front.
+- Do not write the scope into a dependabot `commit-message.prefix` — dependabot appends its own, and the message comes
+  out as `chore(deps)(deps): ...`.
 
 ## General Best Practices
 
