@@ -5,7 +5,7 @@ Addressing and decomposing SMI table cells
 Load a MIB, enumerate a conceptual row's columns, construct a cell OID from
 symbolic names and typed indices, then decompose it back into those parts.
 No SNMP engine or network connection is required.
-"""
+"""  #
 
 from pysnmp.smi import builder, view
 

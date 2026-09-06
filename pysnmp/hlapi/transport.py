@@ -14,16 +14,16 @@ __all__ = []
 #: The address shape a concrete target speaks. Each transport has its own --
 #: (host, port) for UDP over IPv4 and IPv6, a path string for Unix domain
 #: sockets -- so the base cannot name one and have the subclasses honour it.
-_TransportAddr = TypeVar("_TransportAddr")
+TransportAddrT = TypeVar("TransportAddrT")
 
 
-class AbstractTransportTarget(Generic[_TransportAddr]):
+class AbstractTransportTarget(Generic[TransportAddrT]):
     transportDomain: Any = None
     protoTransport: Any = AbstractTransport
 
     def __init__(
         self,
-        transportAddr: _TransportAddr,
+        transportAddr: TransportAddrT,
         timeout: int = 1,
         retries: int = 5,
         tagList: Any = b"",
@@ -38,12 +38,12 @@ class AbstractTransportTarget(Generic[_TransportAddr]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.transportAddr!r}, timeout={self.timeout!r}, retries={self.retries!r}, tagList={self.tagList!r})"
 
-    def getTransportInfo(self) -> tuple[Any, _TransportAddr]:
+    def getTransportInfo(self) -> tuple[Any, TransportAddrT]:
         return self.transportDomain, self.transportAddr
 
     def setLocalAddress(
         self, iface: tuple[str, ...] | None
-    ) -> "AbstractTransportTarget[_TransportAddr]":
+    ) -> "AbstractTransportTarget[TransportAddrT]":
         """Set source address.
 
         Parameters
@@ -72,5 +72,5 @@ class AbstractTransportTarget(Generic[_TransportAddr]):
                 f"Transport {self.protoTransport!r} is not compatible with dispatcher {snmpEngine.transportDispatcher!r}"
             )
 
-    def _resolveAddr(self, transportAddr: _TransportAddr) -> _TransportAddr:
+    def _resolveAddr(self, transportAddr: TransportAddrT) -> TransportAddrT:
         raise NotImplementedError

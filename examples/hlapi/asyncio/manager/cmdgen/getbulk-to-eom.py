@@ -17,7 +17,7 @@ Functionally similar to:
 | $ snmpbulkwalk -v3 -lnoAuthNoPriv -u public -Cn0 -Cr50 \
 |                localhost  SNMPv2-MIB::system
 
-"""
+"""  #
 
 import asyncio
 

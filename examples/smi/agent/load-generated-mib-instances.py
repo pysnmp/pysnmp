@@ -11,7 +11,7 @@ Run from the repository root::
     python examples/smi/agent/load-generated-mib-instances.py \
         EXAMPLE-DEVICE-MIB build/EXAMPLE-DEVICE-MIB_instances.py
 
-"""
+"""  #
 
 import argparse
 from pathlib import Path

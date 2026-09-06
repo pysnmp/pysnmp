@@ -17,7 +17,7 @@ Functionally similar to:
 | $ snmpget -v2c -c public localhost:162 SNMPv2-MIB::sysDescr.0
 | $ snmpget -v2c -c public localhost:163 SNMPv2-MIB::sysDescr.0
 
-"""
+"""  #
 
 import asyncio
 

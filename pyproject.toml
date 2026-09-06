@@ -191,7 +191,10 @@ ignore = [
 "**/__init__.py" = ["F401"]
 # Examples are documentation: star imports and binding every interface are
 # what an agent example is showing you how to do.
-"examples/**" = ["F401", "F403", "F405", "F821", "S104"]
+# PLR2044: the `"""  #` that closes an example's prose block is not an empty
+# comment, it is the marker docs/source/examples/**.rst splits on -- the text
+# above it is included as prose, the code below it as a literal block.
+"examples/**" = ["F401", "F403", "F405", "F821", "S104", "PLR2044"]
 # MD5 and SHA-1 are not a choice here: usmHMACMD5AuthProtocol and
 # usmHMACSHAAuthProtocol are what :RFC:`3414#section-6` and #section-7 define,
 # and pysnmp warns at runtime where either is configured.
