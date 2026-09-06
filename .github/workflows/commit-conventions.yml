@@ -1,0 +1,52 @@
+name: Commit conventions
+
+# The version and the release notes are computed from the commit messages, so a
+# message semantic-release cannot read is a defect that only surfaces at release
+# time -- as a release that does not happen, or as notes with a hole in them.
+# This is where it is caught instead, while the message can still be reworded.
+#
+# Only pull requests are checked. Both long-lived branches move by merge, so
+# every commit that reaches them passes through here first.
+on:
+  # `edited` as well as the defaults: retargeting a pull request changes the
+  # base, and so changes the range of commits this lints. Without it a check
+  # that ran against the old base stays on the pull request as its verdict.
+  pull_request:
+    branches: [main, next]
+    types: [opened, synchronize, reopened, edited]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  commitlint:
+    name: commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The default checkout is a single commit and the range below spans
+          # the whole pull request, so its history has to be present.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # commitlint.config.mjs sits at the repository root, and the preset it
+      # extends is resolved from there -- hence an install into the workspace
+      # rather than a bare npx, which would resolve from a cache directory and
+      # fail to find the preset.
+      - name: Install commitlint
+        run: npm install --no-save --no-fund --no-audit @commitlint/cli@21 @commitlint/config-conventional@21
+      # The range is the pull request's own commits: base..head. --verbose
+      # prints each message it accepted, so the log shows what was checked and
+      # not merely that nothing failed. Merge commits, and git's own "Revert
+      # ..." subjects, are ignored by commitlint itself.
+      - name: Check commit messages
+        run: >
+          npx commitlint --verbose
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}

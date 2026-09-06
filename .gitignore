@@ -38,3 +38,7 @@ sonar_plan.md
 .coverage.*
 coverage.xml
 htmlcov/
+
+# Written by the commitlint install in .github/workflows/commit-conventions.yml,
+# and by anyone running that check locally.
+node_modules/

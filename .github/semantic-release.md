@@ -67,3 +67,56 @@ ci(actions): bump actions/checkout from 7 to 8    # nothing
 feat(deps): support the pure-Python crypto backend # minor
 fix(deps)!: drop Python 3.9                       # major
 ```
+
+## Enforcement
+
+None of the above works if the message is not conventional in the first place,
+so the format is checked rather than assumed. Both checks read the same
+[`commitlint.config.mjs`](../commitlint.config.mjs) at the repository root:
+
+| Where | What it checks |
+| --- | --- |
+| the `commit-msg` hook, from [`.pre-commit-config.yaml`](../.pre-commit-config.yaml) | the message being written, before the commit exists |
+| the `Commit conventions` workflow, on every pull request | every commit in the pull request |
+
+Install the hook once per checkout:
+
+```console
+$ pre-commit install
+pre-commit installed at .git/hooks/pre-commit
+pre-commit installed at .git/hooks/commit-msg
+```
+
+`default_install_hook_types` is what adds the second line. A checkout that ran
+`pre-commit install` before that setting existed has to run it again, or the
+`commit-msg` hook is configured and never runs. The hook does not run under
+`pre-commit run --all-files`, so the `pre-commit` CI job does not duplicate the
+workflow.
+
+The rules are `@commitlint/config-conventional` with three deliberate changes:
+
+- the type list is restated in the config, so it cannot drift if the shared
+  preset widens it;
+- body and footer line lengths are unlimited -- the `chore(release):` commit
+  carries the entire release notes, and a dependabot body carries compare
+  links, neither of which wraps to a column;
+- subject case is not checked. `fix: Windows path handling` is prose, not a
+  style error. The *type* is still lower case, because `Fix:` is not what the
+  release rules match on and would release nothing.
+
+Merge commits, `fixup!` commits and git's own `Revert "..."` subjects are
+ignored, as they are by every conventional-commits parser. The pull request
+title is not checked: pull requests here are merged, not squashed, so the title
+never enters the history. Turning squash merging on would make the title the
+commit subject, and would need a check of its own.
+
+To lint a range by hand, the way the workflow does:
+
+```console
+$ npm install --no-save @commitlint/cli@21 @commitlint/config-conventional@21
+$ npx commitlint --verbose --from origin/next --to HEAD
+```
+
+The workflow is the gate only if the branch requires it: add **Commit
+conventions / commitlint** to the required status checks for `main` and `next`
+in the repository's branch protection, or a red check can still be merged past.
