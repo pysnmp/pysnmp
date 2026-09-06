@@ -315,8 +315,13 @@ texinfo_documents = [
 
 
 # Configuration for Intersphinx
+# Nitpicky mode reports every cross-reference that resolves to nothing, so the
+# projects whose names appear in these docstrings have to be resolvable. Python
+# was pinned at 3.4 here, seven releases below the 3.10 this package requires.
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.4/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "pyasn1": ("https://pyasn1.readthedocs.io/en/latest/", None),
+    "pysmi": ("https://www.pysnmp.com/pysmi/", None),
 }
 
 # this merges constructor docstring with class docstring
