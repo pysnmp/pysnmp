@@ -1,0 +1,92 @@
+name: Publish to PyPI
+
+# build-test-release.yml cuts the release on a branch, tags it, and stops.
+# Uploading from the tag rather than from that run means a failed upload can be
+# re-run on its own, without re-running the release that produced it.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      # Prereleases cut from next, e.g. v6.0.0-rc.1. The pattern above is
+      # anchored, so without this one the rc tags land on GitHub and never
+      # reach PyPI.
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+permissions:
+  contents: read
+
+jobs:
+  # Pure-python (py3-none-any) package: one build serves every platform and
+  # version. A tag is all that triggers this, so check that what was built from
+  # it really is that version before any of it is uploaded.
+  build-packages:
+    name: Build package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+      - name: Build package
+        run: uv build
+      # Read off the built distributions rather than out of pyproject.toml: this
+      # checks the artifact that will actually be uploaded, and holds whether
+      # the version is written there or derived. Compared as PEP 440 versions
+      # rather than as strings, since semantic-release tags 6.0.0-rc.1 and
+      # builds 6.0.0rc1 -- one version written two ways.
+      - name: Verify the built version matches the tag
+        run: |
+          uv run --no-project --with packaging python - "${GITHUB_REF#refs/tags/v}" <<'PY'
+          import pathlib
+          import sys
+
+          from packaging.utils import parse_sdist_filename, parse_wheel_filename
+          from packaging.version import Version
+
+          tag = Version(sys.argv[1])
+          dists = sorted(pathlib.Path("dist").glob("*"))
+          if not dists:
+              sys.exit("nothing was built")
+
+          for dist in dists:
+              if dist.name.endswith(".whl"):
+                  built = parse_wheel_filename(dist.name)[1]
+              elif dist.name.endswith(".tar.gz"):
+                  built = parse_sdist_filename(dist.name)[1]
+              else:
+                  continue
+              print(f"{dist.name}: {built} against tag {tag}")
+              if built != tag:
+                  sys.exit(f"{dist.name} is not the tagged version {tag}")
+          PY
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish-to-pypi:
+    name: Publish Release to PyPI
+    needs: [build-packages]
+    runs-on: ubuntu-latest
+    # PyPI Trusted Publishing matches the OIDC claim against owner, repository,
+    # workflow filename and environment. All four must agree with the publisher
+    # registered at https://pypi.org/manage/project/pysnmplib/settings/publishing/
+    environment:
+      name: release
+      url: https://pypi.org/p/pysnmplib
+    permissions:
+      # id-token mints the OIDC token that stands in for the API token.
+      contents: read
+      id-token: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      # Publishes with a short-lived OIDC credential and, because it runs under
+      # Trusted Publishing, attaches PEP 740 attestations by default.
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

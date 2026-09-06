@@ -176,15 +176,10 @@ jobs:
     # them again here: next cuts the rc, main cuts the GA, nothing else runs.
     if: >-
       github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next'
-    permissions:
-      actions: write
-      contents: write
-      issues: write
-      id-token: write
-    # PyPI Trusted Publishing matches the OIDC claim against owner, repository,
-    # workflow filename and environment. All four must agree with the publisher
-    # registered for pysnmplib, so this file cannot be renamed.
-    environment: release
+    # Nothing here reaches PyPI: this job cuts the version, the tag and the
+    # GitHub release and stops, authenticating as SEMREL_TOKEN rather than as
+    # the workflow token. publish-to-pypi.yml uploads off that tag, so a failed
+    # upload is re-runnable without re-running the release.
     env:
       # Releasing is a deliberate act on both branches. Every push — to next as
       # much as to main — rehearses the release and stops; only a dispatch cuts
@@ -252,10 +247,6 @@ jobs:
           uv lock
           uv build
           echo "preview=${preview}" >> "$GITHUB_OUTPUT"
-
-      - name: Publish package distributions to PyPI
-        if: env.DRY != 'true' && steps.semantic.outputs.new_release_published == 'true'
-        uses: pypa/gh-action-pypi-publish@release/v1
 
       - uses: actions/upload-artifact@v7
         if: hashFiles('dist/*') != ''
