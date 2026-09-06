@@ -33,6 +33,37 @@ jobs:
           python-version: "3.10"
       - uses: pre-commit/action@v3.0.1
 
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked
+      # The pre-commit job runs ruff and mypy too, but mypy there sees none of
+      # this package's dependencies -- so anything that turns on a pyasn1 or
+      # pysmi type only fails here. Matches pyasn1's lint job.
+      - name: Run Ruff
+        run: uv run ruff check .
+      - name: Check formatting
+        run: uv run ruff format --check .
+      - name: Run mypy
+        run: uv run mypy
+
+      # Advisory only. ty is pre-1.0 and has no disallow_untyped_defs
+      # equivalent, so mypy above remains the blocking gate. ty catches
+      # things mypy misses, notably Liskov override violations.
+      - name: Run ty (advisory)
+        run: uv run ty check pysnmp
+        continue-on-error: true
+
   docs:
     name: docs
     runs-on: ubuntu-latest
@@ -173,6 +204,7 @@ jobs:
       DRY: ${{ github.event_name != 'workflow_dispatch' }}
     needs:
       - pre-commit
+      - lint
       - docs
       - build
       - run-unit-tests

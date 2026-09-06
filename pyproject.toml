@@ -66,6 +66,7 @@ dev = [
     "coverage[toml] >=7.2.0,<8.0.0",
     "mypy >=1.15.0,<3.0.0",
     "ruff >=0.4.0,<1.0.0",
+    "ty>=0.0.77",
 ]
 
 [tool.pytest.ini_options]
@@ -235,3 +236,10 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = "pysnmp.hlapi.*"
 check_untyped_defs = true
+
+# ty has no per-module equivalent of mypy's ignore_errors, so the generated MIB
+# modules are excluded from its source set for the same reason: they bind every
+# name they use through mibBuilder.importSymbols() at import time, and ty
+# reports 1053 unresolved references across them.
+[tool.ty.src]
+exclude = ["pysnmp/smi/mibs"]
