@@ -188,6 +188,43 @@ jobs:
           # A Codecov outage is not a reason to fail a build.
           fail_ci_if_error: false
 
+  # One check name for the branch ruleset to require, standing in for every
+  # gating job below. The test matrix cannot be named directly: its job names
+  # carry the Python version and the runner, the set of them changes with the
+  # labels on a pull request, and a required check that stops reporting is
+  # indistinguishable -- to a pull request -- from one that is failing. See
+  # .github/rulesets/README.md.
+  ci-gate:
+    name: ci-gate
+    # always(), or a failure anywhere upstream skips this job too, and a
+    # skipped required check never reports: the pull request would just hang.
+    if: always()
+    needs:
+      - pre-commit
+      - lint
+      - docs
+      - build
+      - setup-matrix
+      - run-unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless every gating job succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+
+          results = {name: job["result"] for name, job in json.loads(os.environ["NEEDS"]).items()}
+          for name, result in sorted(results.items()):
+              print(f"{name}: {result}")
+              # Skipped counts as a failure: a job that never ran has not
+              # passed, and a job whose dependency failed is skipped, not red.
+              if result != "success":
+                  print(f"::error::{name} did not succeed ({result})")
+          sys.exit(0 if all(r == "success" for r in results.values()) else 1)
+          PY
+
   publish:
     name: Build Release
     # Semantic release cuts tags from a branch, so keep this to branch refs and

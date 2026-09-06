@@ -56,3 +56,34 @@ jobs:
       - name: Remove the Net-SNMP agent
         if: always()
         run: docker rm --force pysnmp-ci-net-snmp
+
+  # One check name for the branch ruleset to require, standing in for the whole
+  # matrix above. Those job names are built out of the profile list
+  # (`SNMP v3-auth-priv-des`), so naming them in the ruleset would turn adding
+  # or renaming a profile into a change that quietly blocks main and next. See
+  # .github/rulesets/README.md.
+  net-snmp-gate:
+    name: net-snmp-gate
+    # always(), or a failure anywhere upstream skips this job too, and a
+    # skipped required check never reports: the pull request would just hang.
+    if: always()
+    needs:
+      - net-snmp
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless every gating job succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+
+          results = {name: job["result"] for name, job in json.loads(os.environ["NEEDS"]).items()}
+          for name, result in sorted(results.items()):
+              print(f"{name}: {result}")
+              # Skipped counts as a failure: a job that never ran has not
+              # passed, and a job whose dependency failed is skipped, not red.
+              if result != "success":
+                  print(f"::error::{name} did not succeed ({result})")
+          sys.exit(0 if all(r == "success" for r in results.values()) else 1)
+          PY
