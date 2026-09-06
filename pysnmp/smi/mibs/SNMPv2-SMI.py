@@ -294,7 +294,7 @@ NOTIFICATION-TYPE
   DESCRIPTION "{}"
   REFERENCE "{}"
 """.format(
-            ", ".join([x for x in self.getObjects()]),
+            ", ".join(list(self.getObjects())),
             self.getStatus(),
             self.getDescription(),
             self.getReference(),
@@ -729,7 +729,7 @@ class MibScalarInstance(MibTree):
                 f"setValue: {self.name}={value!r} failed with traceback {traceback.format_exception(exc_t, exc_v, exc_tb)}"
             )
             if isinstance(exc_v, error.TableRowManagement):
-                raise exc_v
+                raise
             else:
                 raise error.WrongValueError(idx=idx, name=name, msg=exc_v) from exc_v
 
@@ -803,7 +803,7 @@ class MibScalarInstance(MibTree):
                 # SMI exceptions may carry additional content
                 if "syntax" in why:
                     self.__newSyntax = why["syntax"]
-                    raise why
+                    raise
                 else:
                     raise error.WrongValueError(idx=idx, name=name, msg=why) from why
         else:
@@ -1225,7 +1225,7 @@ class MibTableRow(MibTree):
         if not baseIndices:
             return
 
-        for modName, mibSym in self.augmentingRows.keys():
+        for modName, mibSym in self.augmentingRows:
             (mibObj,) = mibBuilder.importSymbols(modName, mibSym)
             debug.logger & debug.flagIns and debug.logger(
                 f"announceManagementEvent {action} to {mibObj}"
@@ -1436,7 +1436,7 @@ class MibTableRow(MibTree):
     def getInstNamesByIndex(self, *indices):
         """Build column instance names from indices"""
         instNames = []
-        for columnName in self._vars.keys():
+        for columnName in self._vars:
             instNames.append(self.getInstNameByIndex(*(columnName[-1],) + indices))
 
         return tuple(instNames)

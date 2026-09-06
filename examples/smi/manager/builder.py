@@ -143,7 +143,7 @@ class __AbstractMibSource:
         raise NotImplementedError
 
     def _getData(self, f, mode):
-        NotImplementedError()
+        raise NotImplementedError
 
 
 class ZipMibSource(__AbstractMibSource):
@@ -182,7 +182,7 @@ class ZipMibSource(__AbstractMibSource):
     def _listdir(self):
         names = []
         # noinspection PyProtectedMember
-        for f in self.__loader._files.keys():
+        for f in self.__loader._files:
             d, f = os.path.split(f)
             if d == self._srcName:
                 names.append(f)

@@ -512,7 +512,7 @@ class TestAndIncr(TextualConvention, Integer):
     def setValue(self, value):
         if value is not None:
             if value != self:
-                raise InconsistentValueError()
+                raise InconsistentValueError
             value += 1
             if value > 2147483646:
                 value = 0

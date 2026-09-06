@@ -31,7 +31,7 @@ class AbstractAesBlumenthal(aes.Aes):
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
 
         # now extend this key if too short by repeating steps that includes the hashPassphrase step
-        for count in range(1, int(ceil(self.keySize * 1.0 / len(localPrivKey)))):
+        for count in range(1, ceil(self.keySize * 1.0 / len(localPrivKey))):
             localPrivKey += localPrivKey.clone(
                 hashAlgo(localPrivKey.asOctets()).digest()
             )

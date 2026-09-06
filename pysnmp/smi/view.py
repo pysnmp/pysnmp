@@ -104,7 +104,7 @@ class MibViewController:
         labelToOidIdx = self.__mibSymbolsIdx[""]["labelToOidIdx"]
         prevOid = ()
         baseLabel = ()
-        for key in oidToLabelIdx.keys():
+        for key in oidToLabelIdx:
             keydiff = len(key) - len(prevOid)
             if keydiff > 0:
                 if prevOid:
@@ -134,7 +134,7 @@ class MibViewController:
 
         # Build module-scope oid->long-label index
         for mibMod in self.__mibSymbolsIdx.values():
-            for oid in mibMod["oidToLabelIdx"].keys():
+            for oid in mibMod["oidToLabelIdx"]:
                 mibMod["oidToLabelIdx"][oid] = oidToLabelIdx[oid]
                 mibMod["labelToOidIdx"][oidToLabelIdx[oid]] = oid
 

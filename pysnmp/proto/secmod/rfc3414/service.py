@@ -171,7 +171,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
             debug.logger & debug.flagSM and debug.logger(
                 f"_sec2usr: no entry exists for snmpEngineId {securityEngineID!r}, securityName {securityName!r}"
             )
-            raise NoSuchInstanceError() from exc  # emulate MIB lookup
+            raise NoSuchInstanceError from exc  # emulate MIB lookup
 
         debug.logger & debug.flagSM and debug.logger(
             f"_sec2usr: using userName {userName!r} for snmpEngineId {securityEngineID!r}, securityName {securityName!r}"

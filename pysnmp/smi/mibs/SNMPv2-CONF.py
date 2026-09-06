@@ -54,7 +54,7 @@ class ObjectGroup(MibNode):
 OBJECT-GROUP
   OBJECTS {{ {} }}
   DESCRIPTION "{}"
-""".format(", ".join([x for x in self.getObjects()]), self.getDescription())
+""".format(", ".join(list(self.getObjects())), self.getDescription())
 
 
 class NotificationGroup(MibNode):
@@ -99,7 +99,7 @@ class NotificationGroup(MibNode):
 NOTIFICATION-GROUP
   NOTIFICATIONS {{ {} }}
   DESCRIPTION "{}"
-""".format(", ".join([x for x in self.getObjects()]), self.getDescription())
+""".format(", ".join(list(self.getObjects())), self.getDescription())
 
 
 class ModuleCompliance(MibNode):
@@ -144,7 +144,7 @@ class ModuleCompliance(MibNode):
 MODULE-COMPLIANCE
   OBJECT {{ {} }}
   DESCRIPTION "{}"
-""".format(", ".join([x for x in self.getObjects()]), self.getDescription())
+""".format(", ".join(list(self.getObjects())), self.getDescription())
 
 
 class AgentCapabilities(MibNode):

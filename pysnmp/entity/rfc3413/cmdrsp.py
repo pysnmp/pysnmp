@@ -428,7 +428,7 @@ class BulkCommandResponder(CommandResponderBase):
             self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
             self.releaseStateInformation(stateReference)
         else:
-            raise pysnmp.smi.error.SmiError()
+            raise pysnmp.smi.error.SmiError
 
 
 class SetCommandResponder(CommandResponderBase):

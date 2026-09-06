@@ -280,7 +280,7 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
         )
 
         notifyAndParamsNames = [
-            (cache["name"][x], x) for x in cache["name"].keys() if x[0] in paramsNames
+            (cache["name"][x], x) for x in cache["name"] if x[0] in paramsNames
         ]
 
         for (notifyName, paramsName, useCount), notifyNameKey in notifyAndParamsNames:
