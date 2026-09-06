@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Further development &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=f6a572b4" />
+    <script src="_static/documentation_options.js?v=12958129"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Continuous integration and releases" href="ci-and-releases.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="contents.html">
+    <img class="logo" src="_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Further development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pysnmp-library">PySNMP library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stand-alone-pysnmp-based-tools">Stand-alone PySNMP-based tools</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="ci-and-releases.html" title="previous chapter">Continuous integration and releases</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="further-development">
+<h1>Further development<a class="headerlink" href="#further-development" title="Link to this heading">¶</a></h1>
+<p>Although PySNMP is already a mature software and it is being used at many
+places, the ultimate goal of the project is to implement most of the useful
+features that SNMP standards can offer. What follows is a list of most
+prominent missing features that PySNMP developers are planning to put their
+hands on in the future.</p>
+<section id="pysnmp-library">
+<h2>PySNMP library<a class="headerlink" href="#pysnmp-library" title="Link to this heading">¶</a></h2>
+<ol class="arabic">
+<li><p>Built-in MIB parser. PySNMP uses a data model of its own to work with
+information contained in MIB files. To convert ASN.1-based MIB texts
+into Python modules, an off-line, third-party tool is employed. As it
+turns out, this approach has two major drawback: one is that PySNMP
+users may need to pre-process MIB texts to use them with their
+PySNMP-based applications. Another is that LibSMI’s Python driver
+seems to miss some information carried by MIBs. Thus the solution would
+be to write another MIB parser and code generator which would produce
+PySNMP compliant Python code right from MIB text files all by itself.</p>
+<p><strong>Done:</strong> see <a class="reference external" href="https://github.com/pysnmp/pysmi">PySMI project</a> in conjuction with the latest PySNMP codebase.</p>
+</li>
+<li><p>Reverse MIB index. The variable-bindings received by the system whilst
+in Manager role could be post-processed using the information kept in
+MIB files to include human-friendly OIDs names, tables indices and
+values representation. However, there is currently no provisioning in
+the PySNMP system for locating and loading up MIB files containing
+additional information on arbitrary OIDs. So the idea is to maintain
+an OID-to-MIB index to let PySNMP load relevant MIB automatically on
+demand.</p></li>
+<li><p>Stream sockets support. Currently, PySNMP transport subsystem only
+supports datagram-type network sockets. That covers UDP-over-IPv4 and
+UDP-over-IPv6. However, SNMP engine can potentially run over
+stream-oriented protocols what would let it support TCP-over-IPv4,
+TCP-over-IPv6 and SSL/TSL transports. Neither of these is currently
+implemented with PySNMP.</p></li>
+<li><p>AgentX implementation. We anticipate many uses of this. For instance,
+having AgentX protocol support in pure-Python would let us write AgentX
+modules in pure-Python and attach them to high-performance Net-SNMP
+Agent. Or we could build and maintain a fully-featured, stand-alone
+PySNMP-based Agent so that users would write their own AgentX extensions
+what would comprise a complete SNMP Agent solution at lesser effort.</p></li>
+<li><p>A DBMS-based SMI. Currently implemented SMI takes shape of live Python
+objects that let user hook up his own handler on any existing Managed
+Object Instance. That’s flexible and working approach in many cases,
+however sometimes, for instance when Management Instrumentation is
+inherently DBMS-based, it may be more efficient to move the entire
+SMI/MIB subsystem into a database. PySNMP engine would talk to it
+through its simple and well defined SMI API.</p></li>
+</ol>
+</section>
+<section id="stand-alone-pysnmp-based-tools">
+<h2>Stand-alone PySNMP-based tools<a class="headerlink" href="#stand-alone-pysnmp-based-tools" title="Link to this heading">¶</a></h2>
+<ol class="arabic">
+<li><p>SNMP Proxy Forwarder. That would be a stand-alone, application-level
+proxy service supporting all SNMP versions, multiple network transports,
+Command and Notification SNMP message types. Its anticipated features
+include extensive configuration facilities, fine-graned access
+control and logging.</p>
+<p><strong>Done:</strong> see <a class="reference external" href="https://pypi.org/project/snmpclitools/">SNMP Proxy Forwarder</a>.</p>
+</li>
+<li><p>SNMP Trap Receiver. We see this application as a simple yet flexible
+SNMP TRAP collector. It would listen on network sockets of different
+types receiving SNMP TRAP/INFORM notifications over any SNMP version
+and putting all the details into a database and possibly triggering
+external events.</p></li>
+<li><p>Database backend for SNMP Simulator. We have already built a tool for
+simulating SNMP Agents based on a snapshot of their Management
+Instrumentation state. Current implementation uses a plain-text file
+for keeping and possibly managing the snapshot. Many users of the
+Simulator software requested a value variation feature to be supported
+so that simulated Agents would look live, not static. We consider this
+variation and also dependencies features would be best implemented as
+a relational database application. So we are planning to put some more
+efforts into the Simulator project as time permits.</p>
+<p><strong>Done:</strong> since <a class="reference external" href="https://pypi.org/project/snmpsim/">snmpsim-0.2.4</a></p>
+</li>
+</ol>
+<p>If you need some particular feature - please,
+<a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/new">open a feature request</a> . Once we
+see a greater demand in particular area, we would re-arrange our
+development resources to meet it sooner.</p>
+<p>You could greater speed up the development of particular feature by
+sponsoring it. Please get back to us to discuss details.</p>
+<p>Contributions to the PySNMP source code are greatly appreciated as well.
+We require contributed code to run on every supported Python version,
+currently Python 3.10 through 3.14. Contributed code will be redistributed
+under the terms of the same
+<a class="reference internal" href="license.html"><span class="doc">license</span></a> as PySNMP is.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

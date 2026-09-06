@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Common operations &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Library reference" href="api-reference.html" />
+    <link rel="prev" title="PySNMP architecture" href="pysnmp-architecture.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="snmp-history.html">SNMP history</a></li>
+<li class="toctree-l2"><a class="reference internal" href="snmp-design.html">SNMP design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysnmp-architecture.html">PySNMP architecture</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Common operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="tutorial.html">Documentation</a><ul>
+      <li>Previous: <a href="pysnmp-architecture.html" title="previous chapter">PySNMP architecture</a></li>
+      <li>Next: <a href="api-reference.html" title="next chapter">Library reference</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="toctree-wrapper compound">
+</div>
+<section id="common-operations">
+<h1>Common operations<a class="headerlink" href="#common-operations" title="Link to this heading">¶</a></h1>
+<p>In this tutorial we will gradually build and run a few different
+SNMP command requests and notifications. We will be using PySNMP
+synchronous <a class="reference internal" href="api-reference.html"><span class="doc">high-level API</span></a>
+which is the simplest to use.</p>
+<section id="creating-snmp-engine">
+<h2>Creating SNMP Engine<a class="headerlink" href="#creating-snmp-engine" title="Link to this heading">¶</a></h2>
+<p>SNMP engine is a central, umbrella object in PySNMP. All PySNMP
+operations involve <a class="reference internal" href="api-reference.html#pysnmp.hlapi.SnmpEngine" title="pysnmp.hlapi.SnmpEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">SnmpEngine</span></code></a> class
+instance. PySNMP app can run multiple independent SNMP engines each
+guided by its own <em>SnmpEngine</em> object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SnmpEngine</span><span class="p">()</span>
+<span class="go">SnmpEngine(snmpEngineID=OctetString(hexValue='80004fb80567'))</span>
+</pre></div>
+</div>
+<p>SNMP engine has unique identifier that can be assigned automatically
+or administratively. This identifier is used in SNMP protocol
+operations.</p>
+</section>
+<section id="making-snmp-query">
+<h2>Making SNMP query<a class="headerlink" href="#making-snmp-query" title="Link to this heading">¶</a></h2>
+<p>We will send SNMP GET command to read a MIB object from SNMP agent.
+For that purpose we will call synchronous, high-level
+<code class="xref py py-func docutils literal notranslate"><span class="pre">getCmd()</span></code> function.
+Other SNMP commands can be used in a vary similar way by calling
+corresponding functions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">()</span> <span class="k">if</span> <span class="s1">'Cmd'</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+<span class="go">['bulkCmd', 'getCmd', 'nextCmd', 'setCmd']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">getCmd</span>
+<span class="go">&lt;function getCmd at 0x222b330&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="choosing-snmp-protocol-and-credentials">
+<h2>Choosing SNMP protocol and credentials<a class="headerlink" href="#choosing-snmp-protocol-and-credentials" title="Link to this heading">¶</a></h2>
+<p>We have a choice of three SNMP protocol versions. To employ
+SNMP versions 1 or 2c, we pass properly initialized instance of
+<a class="reference internal" href="api-reference.html#pysnmp.hlapi.CommunityData" title="pysnmp.hlapi.CommunityData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommunityData</span></code></a> class. For the third
+SNMP version we pass <a class="reference internal" href="api-reference.html#pysnmp.hlapi.UsmUserData" title="pysnmp.hlapi.UsmUserData"><code class="xref py py-class docutils literal notranslate"><span class="pre">UsmUserData</span></code></a> class
+instance.</p>
+<p>SNMP community name, as well as the choice between SNMP v1 and v2c,
+is conveyed to SNMP LCD via <a class="reference internal" href="api-reference.html#pysnmp.hlapi.CommunityData" title="pysnmp.hlapi.CommunityData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommunityData</span></code></a>
+object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">,</span> <span class="n">mpModel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># SNMPv1</span>
+<span class="go">CommunityData('public')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">,</span> <span class="n">mpModel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># SNMPv2c</span>
+<span class="go">CommunityData('public')</span>
+</pre></div>
+</div>
+<p>Use of <a class="reference internal" href="api-reference.html#pysnmp.hlapi.UsmUserData" title="pysnmp.hlapi.UsmUserData"><code class="xref py py-class docutils literal notranslate"><span class="pre">UsmUserData</span></code></a> object for LCD
+configuration implies using SNMPv3. Besides setting up USM user name,
+<em>UsmUserData</em> object can also carry crypto keys and crypto protocols
+to SNMP engine LCD.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">UsmUserData</span><span class="p">(</span><span class="s1">'testuser'</span><span class="p">,</span> <span class="n">authKey</span><span class="o">=</span><span class="s1">'myauthkey'</span><span class="p">)</span>
+<span class="go">UsmUserData(userName='testuser', authKey=&lt;AUTHKEY&gt;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">UsmUserData</span><span class="p">(</span><span class="s1">'testuser'</span><span class="p">,</span> <span class="n">authKey</span><span class="o">=</span><span class="s1">'myauthkey'</span><span class="p">,</span> <span class="n">privKey</span><span class="o">=</span><span class="s1">'myenckey'</span><span class="p">)</span>
+<span class="go">UsmUserData(userName='testuser', authKey=&lt;AUTHKEY&gt;, privKey=&lt;PRIVKEY&gt;)</span>
+</pre></div>
+</div>
+<p>PySNMP supports MD5 and SHA message authentication algorithms, DES,
+AES128/192/256 and 3DES encryption algoritms.</p>
+<p>For sake of simplicity, let’s use SNMPv2. Although completely
+insecure, it’s still the most popular SNMP version in use.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">getCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span> <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+</section>
+<section id="setting-transport-and-target">
+<h2>Setting transport and target<a class="headerlink" href="#setting-transport-and-target" title="Link to this heading">¶</a></h2>
+<p>PySNMP supports UDP-over-IPv4 and UDP-over-IPv6 network transports.
+In this example we will query
+<a class="reference external" href="https://pypi.org/project/snmpsim/">public SNMP Simulator</a>
+available over IPv4 on the Internet at <em>localhost</em>. Transport
+configuration is passed to SNMP LCD in form of properly initialized
+<code class="xref py py-class docutils literal notranslate"><span class="pre">UdpTransportTarget</span></code> or
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Udp6TransportTarget</span></code> objects
+respectively.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">getCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+</section>
+<section id="addressing-snmp-context">
+<h2>Addressing SNMP context<a class="headerlink" href="#addressing-snmp-context" title="Link to this heading">¶</a></h2>
+<p>SNMP context is a parameter in SNMP (v3) message header that
+addresses specific collection of MIBs served by SNMP engine
+at managed entity. SNMP engine could serve many identical MIB
+objects representing completely different instances of hardware
+or software being managed. This is where SNMP context could
+be used.</p>
+<p>To indicate SNMP context at high-level API a properly initialized
+<a class="reference internal" href="api-reference.html#pysnmp.hlapi.ContextData" title="pysnmp.hlapi.ContextData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContextData</span></code></a> object should be used.
+For this example we will use the ‘empty’ context (default).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">getCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>           <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+</section>
+<section id="specifying-mib-object">
+<h2>Specifying MIB object<a class="headerlink" href="#specifying-mib-object" title="Link to this heading">¶</a></h2>
+<p>Finally, we have to specify the MIB object we want to read.
+On protocol level, MIB objects are identified by OIDs, but
+humans tend to address them by name:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>snmpget<span class="w"> </span>-v2c<span class="w"> </span>-c<span class="w"> </span>public<span class="w"> </span>localhost<span class="w"> </span>SNMPv2-MIB::sysDescr.0
+SNMPv2-MIB::sysDescr.0<span class="w"> </span><span class="o">=</span><span class="w"> </span>STRING:<span class="w"> </span>Linux<span class="w"> </span>localhost
+$
+$<span class="w"> </span>snmpget<span class="w"> </span>-v2c<span class="w"> </span>-c<span class="w"> </span>public<span class="w"> </span>localhost<span class="w"> </span><span class="m">1</span>.3.6.1.2.1.1.1.0
+SNMPv2-MIB::sysDescr.0<span class="w"> </span><span class="o">=</span><span class="w"> </span>STRING:<span class="w"> </span>Linux<span class="w"> </span>localhost
+</pre></div>
+</div>
+<p>Both object name and OID come from MIB. Name and OID linking is done
+by high-level SMI construct called <em>OBJECT-TYPE</em>. Here is an example MIB
+object definition for <em>sysUpTime</em> with OID …mgmt.mib-2.system.3
+and value type <em>TimeTicks</em>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sysUpTime<span class="w"> </span>OBJECT-TYPE
+<span class="w">    </span>SYNTAX<span class="w">      </span>TimeTicks
+<span class="w">    </span>MAX-ACCESS<span class="w">  </span>read-only
+<span class="w">    </span>STATUS<span class="w">      </span>current
+<span class="w">    </span>DESCRIPTION
+<span class="w">            </span><span class="s2">"The time (in hundredths of a second) since</span>
+<span class="s2">            the network management portion of the system</span>
+<span class="s2">            was last re-initialized."</span>
+<span class="w">    </span>::<span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>system<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="o">}</span>
+</pre></div>
+</div>
+<p>In PySNMP we use the <a class="reference internal" href="api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity" title="pysnmp.smi.rfc1902.ObjectIdentity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectIdentity</span></code></a> class
+that is responsible for MIB objects identification. <em>ObjectIdentity</em>
+represents ways to address MIB object from human perspective. It needs
+to consult MIB to enter a fully “resolved” state. ObjectIdentity could
+be initialized with MIB object name, after a MIB look up it starts
+behaving like an OID.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'system'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... calling MIB lookup ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">(1, 3, 6, 1, 2, 1, 1, 1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'iso.org.dod.internet.mgmt.mib-2.system.sysDescr'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... calling MIB lookup ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">'1.3.6.1.2.1.1.1'</span>
+</pre></div>
+</div>
+<p>MIB resolution means the service of MIB object name into OID
+transformation or vice versa.</p>
+<p>The <a class="reference internal" href="api-reference.html#pysnmp.smi.rfc1902.ObjectType" title="pysnmp.smi.rfc1902.ObjectType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectType</span></code></a> class instance
+represents <em>OBJECT-TYPE</em> SMI constuct in PySNMP. ObjectType is a
+container object that references ObjectIdentity and SNMP
+type instances. As a Python object it looks like a tuple of
+(OID, value).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysDescr'</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s1">'Linux i386 box'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... calling MIB lookup ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span>
+<span class="go">'SNMPv2-MIB::sysDescr.0'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span>
+<span class="go">'Linux i386 box'</span>
+</pre></div>
+</div>
+<p>The trailing zero is an indication of MIB object <em>instance</em>. Objects
+described in MIBs are just declarations, they never contain any data.
+Data is stored in MIB object instances addressed by appending extra
+information (known as <em>index</em>) to MIB object identifiers.</p>
+<p>For scalar MIB objects index is ‘0’ by convention. The
+<em>ObjectIdentity</em> class takes indices as its initializers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'system'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... calling MIB lookup ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">(1, 3, 6, 1, 2, 1, 1, 1, 0)</span>
+</pre></div>
+</div>
+<p>We will be reading <em>sysDescr</em> scalar MIB object instance as defined
+in <a class="reference external" href="https://pysnmp.github.io/mibs/asn1/SNMPv2-MIB">SNMPv2-MIB</a> module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">getCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>           <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysDescr'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>By default PySNMP will search your local filesystem for ASN.1 MIB files
+you refer to. It can also be configured to automatically download
+them from remote hosts, as shown in the examples. We maintain a
+<a class="reference external" href="https://pysnmp.github.io/mibs/asn1/">collection</a> of ASN.1 MIB modules
+that you can use in your SNMP projects.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An “ASN.1 MIB” is a plain-text description of identifiers and
+types. It is the common format that is distributed by manufacturers
+to describe their SNMP services, and is the same format used by
+Perl’s Net::SNMP and almost all SNMP tools.</p>
+</div>
+</section>
+<section id="reading-scalar-value">
+<h2>Reading scalar value<a class="headerlink" href="#reading-scalar-value" title="Link to this heading">¶</a></h2>
+<p>We are finally in a position to send SNMP query and hopefully receive
+something meaningful in response.</p>
+<p>The distinctive feature of synchronous API is that it is built around
+the idea of Python generator. Any function invocation ends up with a
+generator object. Iteration over the generator object performs actual
+SNMP communication. On each iteration SNMP message gets built and sent
+out, response is awaited, received and parsed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">getCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>           <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysUpTime'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.3.0'), TimeTicks(44430646))])</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-snmp-tables">
+<h2>Working with SNMP tables<a class="headerlink" href="#working-with-snmp-tables" title="Link to this heading">¶</a></h2>
+<p>SNMP defines a concept of table. Tables are used when a single given
+MIB object may apply to many instances of a property. For example,
+properties of network interfaces are put into SNMP table. Each
+instance of a property is addressed by a suffix appended to base MIB
+object.</p>
+<p>Tables are specified in MIBs, their index (or indices) are declared
+via the <em>INDEX</em> clause. Table index is non-zero integer, or string
+or any base SNMP type.</p>
+<p>At the protocol level all indices take shape of OID parts. For humans
+to work with indices comfortably, SNMP management applications rely on
+DISPLAY-HINT clause for automatic indices conversion between their
+OID and SNMP type-specific, human-friendly representation.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ifEntry<span class="w"> </span>OBJECT-TYPE
+<span class="w">    </span>SYNTAX<span class="w">      </span>IfEntry
+<span class="w">    </span>INDEX<span class="w">   </span><span class="o">{</span><span class="w"> </span>ifIndex<span class="w"> </span><span class="o">}</span>
+::<span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>ifTable<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">}</span>
+
+ifIndex<span class="w"> </span>OBJECT-TYPE
+<span class="w">    </span>SYNTAX<span class="w">      </span>InterfaceIndex
+::<span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>ifEntry<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">}</span>
+
+ifDescr<span class="w"> </span>OBJECT-TYPE
+<span class="w">    </span>SYNTAX<span class="w">      </span>DisplayString<span class="w"> </span><span class="o">(</span>SIZE<span class="w"> </span><span class="o">(</span><span class="m">0</span>..255<span class="o">))</span>
+::<span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>ifEntry<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">}</span>
+
+InterfaceIndex<span class="w"> </span>::<span class="o">=</span><span class="w"> </span>TEXTUAL-CONVENTION
+<span class="w">    </span>DISPLAY-HINT<span class="w"> </span><span class="s2">"d"</span>
+<span class="w">    </span>SYNTAX<span class="w">       </span>Integer32<span class="w"> </span><span class="o">(</span><span class="m">1</span>..2147483647<span class="o">)</span>
+</pre></div>
+</div>
+<p>In PySNMP parlance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'IF-MIB'</span><span class="p">,</span> <span class="s1">'ifDescr'</span><span class="p">,</span> <span class="mi">123</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... calling MIB lookup ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">'1.3.6.1.2.1.2.2.1.2.123'</span>
+</pre></div>
+</div>
+<p>Some SNMP tables are indexed by many indices. Each of these indices
+become parts of OID concatinated to each other and ultimately to
+MIB object OID.</p>
+<p>From semantic standpoint, each index reflects an important and
+distinct property of a MIB object.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tcpConnectionEntry<span class="w"> </span>OBJECT-TYPE
+<span class="w">    </span>SYNTAX<span class="w">  </span>TcpConnectionEntry
+<span class="w">    </span>INDEX<span class="w">   </span><span class="o">{</span><span class="w"> </span>tcpConnectionLocalAddressType,
+<span class="w">              </span>tcpConnectionLocalAddress,
+<span class="w">              </span>tcpConnectionLocalPort,
+<span class="w">              </span>tcpConnectionRemAddressType,
+<span class="w">              </span>tcpConnectionRemAddress,
+<span class="w">              </span>tcpConnectionRemPort<span class="w"> </span><span class="o">}</span>
+::<span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>tcpConnectionTable<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">}</span>
+
+tcpConnectionLocalPort<span class="w"> </span>OBJECT-TYPE
+<span class="w">    </span>SYNTAX<span class="w">     </span>InetPortNumber
+::<span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>tcpConnectionEntry<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="o">}</span>
+</pre></div>
+</div>
+<p>PySNMP’s <a class="reference internal" href="api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity" title="pysnmp.smi.rfc1902.ObjectIdentity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectIdentity</span></code></a> class takes
+any number of indices in human-friendly representation and converts
+them into full OID:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'TCP-MIB'</span><span class="p">,</span> <span class="s1">'tcpConnectionState'</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="s1">'ipv4'</span><span class="p">,</span> <span class="s1">'195.218.254.105'</span><span class="p">,</span> <span class="mi">41511</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="s1">'ipv4'</span><span class="p">,</span> <span class="s1">'194.67.1.250'</span><span class="p">,</span> <span class="mi">993</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... calling MIB lookup ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">'1.3.6.1.2.1.6.19.1.7.1.4.195.218.254.105.41511.1.4.194.67.1.250.993'</span>
+</pre></div>
+</div>
+<p>Let’s read TCP-MIB::tcpConnectionState object for a TCP connection:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">getCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>           <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'TCP-MIB'</span><span class="p">,</span> <span class="s1">'tcpConnectionState'</span><span class="p">,</span>
+<span class="gp">... </span>                                     <span class="s1">'ipv4'</span><span class="p">,</span> <span class="s1">'195.218.254.105'</span><span class="p">,</span> <span class="mi">41511</span><span class="p">,</span>
+<span class="gp">... </span>                                     <span class="s1">'ipv4'</span><span class="p">,</span> <span class="s1">'194.67.1.250'</span><span class="p">,</span> <span class="mi">993</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.6.19.1.7.1.4.195.218.254.105.41511.1.4.194.67.1.250.993')), Integer(5))])</span>
+</pre></div>
+</div>
+</section>
+<section id="snmp-command-operations">
+<h2>SNMP command operations<a class="headerlink" href="#snmp-command-operations" title="Link to this heading">¶</a></h2>
+<p>SNMP allows you to request a MIB object that is “next” to the given
+one. That way you can read MIB objects you are not aware about in
+advance. MIB objects are conceptually sorted by their OIDs.
+This feature is implemented by the <code class="xref py py-func docutils literal notranslate"><span class="pre">nextCmd()</span></code>
+function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">nextCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>            <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>            <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysDescr'</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux localhost'))])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.2.0'), ObjectIdentity(ObjectIdentifier('1.3.6.1.4.1.8072.3.2.10')))])</span>
+</pre></div>
+</div>
+<p>Iteration over the generator object “walk” over SNMP agent’s MIB objects.</p>
+<p>SNMPv2c introduced significant optimization to the <em>GETNEXT</em> command -
+the revised version is called <em>GETBULK</em> and is capable to gather and
+respond a bunch of “next” MIB objects at once. Additional
+non-repeaters and max-repetitions parameters can be used to influence
+MIB objects batching.</p>
+<p>PySNMP hides this <em>GETBULK</em> optimization at the protocol level, the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">bulkCmd()</span></code> function exposes the same generator
+API as <em>getNext()</em> for convenience.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">N</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">bulkCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>            <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>            <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">N</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'1.3.6'</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux localhost'))])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.2.0'), ObjectIdentifier('1.3.6.1.4.1.20408'))])</span>
+</pre></div>
+</div>
+<p>Python generators can not only produce data, but it is also possible
+to send data into running generator object. That feature is used by
+the high-level API to repeat the same SNMP operation for a new set
+of MIB objects.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">nextCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>            <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>            <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>            <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'IF-MIB'</span><span class="p">,</span> <span class="s1">'ifTable'</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">send</span><span class="p">([</span><span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'IF-MIB'</span><span class="p">,</span> <span class="s1">'ifInOctets'</span><span class="p">))])</span>
+<span class="go">(None, 0, 0, [(ObjectType(ObjectIdentity('1.3.6.1.2.1.2.2.1.10.1'), Counter32(284817787))])</span>
+</pre></div>
+</div>
+<p>You could operate on many unrelated MIB object just by listing them in
+a single PDU. Response PDU will carry a list of MIB objects and their
+values in exactly the same order as they were in request message.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">getCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>           <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysDescr'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+<span class="gp">... </span>           <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysUpTime'</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux localhost')), ObjectType(ObjectIdentity('1.3.6.1.2.1.1.3.0'), TimeTicks(44430646))])</span>
+</pre></div>
+</div>
+<p>Configuration management part of SNMP relies on SNMP <em>SET</em> command.
+Although its implementation on managed entity’s side proved to be
+somewhat demanding (due to locking and transactional behavior
+requirements). So vendors tend to leave it out thus rendering
+managed entity being read-only.</p>
+<p>PySNMP supports <em>SET</em> uniformly through <code class="xref py py-func docutils literal notranslate"><span class="pre">setCmd()</span></code>
+function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">setCmd</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>           <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>           <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>           <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysDescr'</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s1">'Linux i386'</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux i386'))])</span>
+</pre></div>
+</div>
+</section>
+<section id="sending-snmp-notifications">
+<h2>Sending SNMP notifications<a class="headerlink" href="#sending-snmp-notifications" title="Link to this heading">¶</a></h2>
+<p>Managed entity could send unsolicited messages to the managing entity.
+That is called notification in SNMP. Notifications help reduce
+polling, what may become a problem for large networks.</p>
+<p>SNMP notifications are enumerated and each has definite semantics.
+This is done through a special, high-level SMI construct called
+<em>NOTIFICATION-TYPE</em>. Like <em>OBJECT-TYPE</em>, that defines a MIB object,
+<em>NOTIFICATION-TYPE</em> has a unique OID, but instead of SNMP value
+references a sequence of other MIB objects. These MIB objects
+are specified with the <em>OBJECTS</em> clause and when notification is being
+sent, their current values are included into the notification message.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>linkUp<span class="w"> </span>NOTIFICATION-TYPE
+<span class="w">    </span>OBJECTS<span class="w"> </span><span class="o">{</span><span class="w"> </span>ifIndex,<span class="w"> </span>ifAdminStatus,<span class="w"> </span>ifOperStatus<span class="w"> </span><span class="o">}</span>
+<span class="w">    </span>STATUS<span class="w">  </span>current
+<span class="w">    </span>DESCRIPTION
+<span class="w">        </span><span class="s2">"..."</span>
+::<span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span>snmpTraps<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="o">}</span>
+</pre></div>
+</div>
+<p>To model <em>NOTIFICATION-TYPE</em> construct in PySNMP, we have the
+<a class="reference internal" href="api-reference.html#pysnmp.smi.rfc1902.NotificationType" title="pysnmp.smi.rfc1902.NotificationType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NotificationType</span></code></a> class that is a
+container object. It is identified by the
+<a class="reference internal" href="api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity" title="pysnmp.smi.rfc1902.ObjectIdentity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectIdentity</span></code></a> class and reference a
+sequence of <a class="reference internal" href="api-reference.html#pysnmp.smi.rfc1902.ObjectType" title="pysnmp.smi.rfc1902.ObjectType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectType</span></code></a> class
+instances.</p>
+<p>From behavior standpoint, <em>NotificationType</em> looks like a sequence of
+<em>ObjectType</em> class instances.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">NotificationType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'IF-MIB'</span><span class="p">,</span> <span class="s1">'linkUp'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... calling MIB lookup ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">&gt;&gt;&gt;</span> <span class="p">[</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">n</span> <span class="p">]</span>
+<span class="go">['SNMPv2-MIB::snmpTrapOID.0 = 1.3.6.1.6.3.1.1.5.3', 'IF-MIB::ifIndex = ', 'IF-MIB::ifAdminStatus = ', 'IF-MIB::ifOperStatus = ']</span>
+</pre></div>
+</div>
+<p>Sending notification with PySNMP is not much different than sending
+SNMP command. The difference is in how PDU var-binds are built.
+There are two different kinds of notifications in SNMP: <em>trap</em> and
+<em>inform</em>.</p>
+<p>With <em>trap</em>, agent-to-manager communication is one-way - no response
+or acknowledgement is sent.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">sendNotification</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>                     <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>                     <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">162</span><span class="p">)),</span>
+<span class="gp">... </span>                     <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>                     <span class="s1">'trap'</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">NotificationType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'IF-MIB'</span><span class="p">,</span> <span class="s1">'linkUp'</span><span class="p">),</span> <span class="n">instanceIndex</span><span class="o">=</span><span class="p">(</span><span class="mi">123</span><span class="p">,))</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [])</span>
+</pre></div>
+</div>
+<p>The <em>inform</em> notification is much like a command. The difference is in
+PDU format. Informs are used for manager-to-manager communication as
+well as for agent-to-manager.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">sendNotification</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>                     <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>                     <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">162</span><span class="p">)),</span>
+<span class="gp">... </span>                     <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>                     <span class="s1">'inform'</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">NotificationType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'IF-MIB'</span><span class="p">,</span> <span class="s1">'linkUp'</span><span class="p">),</span> <span class="n">instanceIndex</span><span class="o">=</span><span class="p">(</span><span class="mi">123</span><span class="p">,))</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.3.0'), TimeTicks(0)), ObjectType(ObjectIdentity('1.3.6.1.6.3.1.1.4.1.0'), ObjectIdentity('1.3.6.1.6.3.1.1.5.4')), ObjectType(ObjectName('1.3.6.1.2.1.2.2.1.1.123'), Null('')), ObjectType(ObjectIdentity('1.3.6.1.2.1.2.2.1.7.123'), Null('')), ObjectType(ObjectIdentity('1.3.6.1.2.1.2.2.1.8.123'), Null(''))])</span>
+</pre></div>
+</div>
+<p>In the latter example you can see MIB objects (ifIndex, ifAdminStatus,
+ifOperStatus) being automatically expanded from IF-MIB::linkUp notification.
+To address specific row of SNMP table objects by index, the index part
+of MIB objects could be passed to <em>NotificationType</em> via
+<em>instanceIndex</em> parameter.</p>
+<p>As you can see, the actual values for expanded MIB objects are NULLs.
+That’s because in these examples our simple scripts do not have access
+to those MIB objects. We can supply that missing information by
+passing <em>NotificationType</em> a dictionary-like object that maps MIB
+object OIDs to current values.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mib</span> <span class="o">=</span> <span class="p">{</span><span class="n">ObjectIdentifier</span><span class="p">(</span><span class="s1">'1.3.6.1.2.1.2.2.1.1.123'</span><span class="p">):</span> <span class="mi">123</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">ObjectIdentifier</span><span class="p">(</span><span class="s1">'1.3.6.1.2.1.2.2.1.7.123'</span><span class="p">):</span> <span class="s1">'testing'</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="n">ObjectIdentifier</span><span class="p">(</span><span class="s1">'1.3.6.1.2.1.2.2.1.8.123'</span><span class="p">):</span> <span class="s1">'up'</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">sendNotification</span><span class="p">(</span><span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>                     <span class="n">CommunityData</span><span class="p">(</span><span class="s1">'public'</span><span class="p">),</span>
+<span class="gp">... </span>                     <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">162</span><span class="p">)),</span>
+<span class="gp">... </span>                     <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>                     <span class="s1">'inform'</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">NotificationType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'IF-MIB'</span><span class="p">,</span> <span class="s1">'linkUp'</span><span class="p">),</span> <span class="n">instanceIndex</span><span class="o">=</span><span class="p">(</span><span class="mi">123</span><span class="p">,),</span> <span class="n">objects</span><span class="o">=</span><span class="n">mib</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="go">(None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.3.0'), TimeTicks(0)), ObjectType(ObjectIdentity('1.3.6.1.6.3.1.1.4.1.0'), ObjectIdentity('1.3.6.1.6.3.1.1.5.4')), ObjectType(ObjectName('1.3.6.1.2.1.2.2.1.1.123'), InterfaceIndex(123)), ObjectType(ObjectIdentity('1.3.6.1.2.1.2.2.1.7.123'), Integer(3)), ObjectType(ObjectIdentity('1.3.6.1.2.1.2.2.1.8.123'), Integer(1))])</span>
+</pre></div>
+</div>
+</section>
+<section id="high-volume-messaging">
+<h2>High-volume messaging<a class="headerlink" href="#high-volume-messaging" title="Link to this heading">¶</a></h2>
+<p>When in comes to managing large network, reading MIB objects
+sequentially introduces latency. By some point the latency becomes
+intolerable. Solutions to parallelize queries are well known - you
+could do that by offloading individual operations into multiple
+processes, or multiple threads of execution or build your application
+around the asynchronous I/O model.</p>
+<p>Compared to other solutions, asynchronous model is most lightweight
+and scalable. The idea is simple: never wait for I/O - do something
+else whenever possible. The back side of this is that execution flow
+becomes non-linear what hurts program analysis by human reader.</p>
+<p>PySNMP high-level API is adapted to work with three popular
+asynchronous I/O frameworks <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>.
+Please, refer to PySNMP <a class="reference internal" href="api-reference.html"><span class="doc">library reference</span></a>
+and <a class="reference internal" href="../examples/contents.html"><span class="doc">examples</span></a> for more information on
+asynchronous API.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>MIB instance generation tools &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Example scripts" href="../examples/contents.html" />
+    <link rel="prev" title="Device details report" href="device-report.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MIB instance generation tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#iana-private-enterprise-numbers">IANA Private Enterprise Numbers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instances-from-an-asn-1-mib">Instances from an ASN.1 MIB</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="device-report.html" title="previous chapter">Device details report</a></li>
+      <li>Next: <a href="../examples/contents.html" title="next chapter">Example scripts</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="mib-instance-generation-tools">
+<h1>MIB instance generation tools<a class="headerlink" href="#mib-instance-generation-tools" title="Link to this heading">¶</a></h1>
+<p>The source distribution contains two standalone tools for creating Python
+MIB instance modules. Run these commands from a PySNMP source checkout.</p>
+<section id="iana-private-enterprise-numbers">
+<h2>IANA Private Enterprise Numbers<a class="headerlink" href="#iana-private-enterprise-numbers" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tools/iana_pen_to_mib.py</span></code> converts the IANA Private Enterprise Numbers
+registry into loadable <code class="docutils literal notranslate"><span class="pre">MibScalarInstance</span></code> objects. Each symbol is
+named <code class="docutils literal notranslate"><span class="pre">pen_&lt;number&gt;</span></code> and has the OID <code class="docutils literal notranslate"><span class="pre">1.3.6.1.4.1.&lt;number&gt;</span></code>. Its
+<code class="docutils literal notranslate"><span class="pre">DisplayString</span></code> value is the registered organization name.</p>
+<p>Download the current registry and generate the module:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>mkdir<span class="w"> </span>-p<span class="w"> </span>build
+<span class="gp">$ </span>python<span class="w"> </span>tools/iana_pen_to_mib.py<span class="w"> </span>--output<span class="w"> </span>build/IANA-PEN-MIB.py
+</pre></div>
+</div>
+<p>For reproducible or offline builds, use a previously downloaded registry:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>tools/iana_pen_to_mib.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input<span class="w"> </span>enterprise-numbers.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>build/IANA-PEN-MIB.py
+</pre></div>
+</div>
+<p>Load the generated module and look up an organization:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>examples/smi/manager/load-iana-pen-mib.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>build/IANA-PEN-MIB.py<span class="w"> </span><span class="m">20408</span>
+<span class="go">1.3.6.1.4.1.20408 = PySNMP Project</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../examples/smi/manager/generated-mib-modules.html#generated-mib-examples"><span class="std std-ref">Generated MIB modules</span></a> for the complete Python example.</p>
+</section>
+<section id="instances-from-an-asn-1-mib">
+<h2>Instances from an ASN.1 MIB<a class="headerlink" href="#instances-from-an-asn-1-mib" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tools/mib_instance_generator.py</span></code> compiles an ASN.1 MIB through PySMI and
+creates a companion Python module containing placeholder instances for its
+scalars and table columns:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>tools/mib_instance_generator.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mib<span class="w"> </span>mibs/EXAMPLE-DEVICE-MIB.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--asn1-source<span class="w"> </span>file:///usr/share/snmp/mibs<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>build/EXAMPLE-DEVICE-MIB_instances.py
+</pre></div>
+</div>
+<p>The compiled definition module (<code class="docutils literal notranslate"><span class="pre">EXAMPLE-DEVICE-MIB.py</span></code>) is written beside
+the requested instances module. Keep both files together when configuring a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MibBuilder</span></code> source.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">--asn1-source</span></code> more than once when imported ASN.1 MIBs live in several
+directories or repositories. Use <code class="docutils literal notranslate"><span class="pre">--mib-source</span></code> for directories containing
+already compiled Python MIB modules. If all dependencies are beside the input
+MIB, neither option is necessary.</p>
+<p>Scalars receive the conventional <code class="docutils literal notranslate"><span class="pre">.0</span></code> suffix. Table-column instances use a
+sample index derived from the row’s INDEX declaration. Placeholder values are
+validated against each object’s syntax where possible; edit the generated
+module to supply real agent data.</p>
+<p>The generated files are regular PySNMP MIB modules:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>examples/smi/agent/load-generated-mib-instances.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>EXAMPLE-DEVICE-MIB<span class="w"> </span>build/EXAMPLE-DEVICE-MIB_instances.py
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../examples/smi/manager/generated-mib-modules.html#generated-mib-examples"><span class="std std-ref">Generated MIB modules</span></a> for the complete loading example.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Example scripts &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Asynchronous: asyncio" href="hlapi/asyncio/contents.html" />
+    <link rel="prev" title="MIB instance generation tools" href="../docs/mib-tools.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#high-level-snmp">High-level SNMP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#native-snmp-api">Native SNMP API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#packet-level-snmp">Packet-level SNMP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#low-level-mib-access">Low-level MIB access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-these-examples">Using these examples</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../docs/mib-tools.html" title="previous chapter">MIB instance generation tools</a></li>
+      <li>Next: <a href="hlapi/asyncio/contents.html" title="next chapter">Asynchronous: asyncio</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="example-scripts">
+<h1>Example scripts<a class="headerlink" href="#example-scripts" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>SNMP is not simple (PySNMP implementation takes over 15K lines of
+Python code), but PySNMP tries to hide the complexities and let you
+carry out typical SNMP operations in a quick and intuitive way.</p>
+<p>PySNMP offers three groups of programming interfaces to deal with
+SNMP protocol. In the order from most concise to most detailed those
+APIs follow.</p>
+<section id="high-level-snmp">
+<h2>High-level SNMP<a class="headerlink" href="#high-level-snmp" title="Link to this heading">¶</a></h2>
+<p>The so called high-level API (hlapi) is designed to be simple, concise and
+suitable for the most frequent operations. For that matter only
+Command Generator and Notification Originator Applications are currently
+wrapped into a nearly one-line Python expression.</p>
+<p>It comes in several flavours: one synchronous and a bunch of bindings to
+popular asynchronous I/O frameworks. Those varieties of APIs bring
+subtile differences, mostly to better match particular I/O framework
+customs. Unless you have a very specific task, the high-level API might
+solve your SNMP needs.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hlapi/asyncio/contents.html">Asynchronous: asyncio</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/walking-operations.html">Walking operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/device-report.html">Device details report</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/advanced-topics.html">Advanced Command Generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/common-notifications.html">Common notifications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/advanced-topics.html">Advanced Notification Originator</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="native-snmp-api">
+<h2>Native SNMP API<a class="headerlink" href="#native-snmp-api" title="Link to this heading">¶</a></h2>
+<p>Complete implementation of all official Standard SNMP Applications. It
+should let you implement any SNMP operation defined in the standard
+at the cost of working at a somewhat low level.</p>
+<p>This API also comes in several transport varieties depending on I/O
+framework being used.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="v3arch/asyncio/contents.html">Asynchronous: asyncio</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="v3arch/asyncio/contents.html#command-responder-applications">Command Responder Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="v3arch/asyncio/contents.html#notification-receiver-applications">Notification Receiver Applications</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="packet-level-snmp">
+<h2>Packet-level SNMP<a class="headerlink" href="#packet-level-snmp" title="Link to this heading">¶</a></h2>
+<p>In cases where performance is your top priority and you only need to
+work with SNMP v1 and v2c systems and you do not mind writing much
+more code, then there is a low-level API to SNMP v1/v2c PDU and
+PySNMP I/O engine. There’s practically no SNMP engine or SMI
+infrastructure involved in the operations of these almost wire-level
+interfaces. Although MIB services can still be used separately.</p>
+<p>A packet-level API-based application typically manages both SNMP
+message building/parsing and network communication via one or more
+transports. It’s fully up to the application to handle failures on
+message and transport levels.</p>
+<p>The packet-level API has been removed in favor of the asyncio-based APIs.
+See the High-level SNMP and Native SNMP API sections above.</p>
+</section>
+<section id="low-level-mib-access">
+<h2>Low-level MIB access<a class="headerlink" href="#low-level-mib-access" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="smi/manager/browsing-mib-tree.html">Manager side</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/browsing-mib-tree.html#pdu-var-binds-to-mib-objects">PDU var-binds to MIB objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/browsing-mib-tree.html#mib-objects-to-pdu-var-binds">MIB objects to PDU var-binds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/browsing-mib-tree.html#snmp-mib-browser">SNMP MIB browser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/browsing-mib-tree.html#addressing-and-decomposing-smi-table-cells">Addressing and decomposing SMI table cells</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="smi/manager/generated-mib-modules.html">Generated MIB modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/generated-mib-modules.html#loading-an-iana-pen-module">Loading an IANA PEN module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/generated-mib-modules.html#load-an-iana-pen-mib-instance-module">Load an IANA PEN MIB instance module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/generated-mib-modules.html#loading-generated-instance-stubs">Loading generated instance stubs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="smi/manager/generated-mib-modules.html#load-generated-mib-instance-stubs">Load generated MIB instance stubs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="smi/agent/implementing-mib-objects.html">Agent side</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="smi/agent/implementing-mib-objects.html#implementing-mib-objects">Implementing MIB objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="smi/agent/implementing-mib-objects.html#agent-operations-on-mib">Agent operations on MIB</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="using-these-examples">
+<h2>Using these examples<a class="headerlink" href="#using-these-examples" title="Link to this heading">¶</a></h2>
+<p>Before doing cut&amp;paste of the code below into your Python interpreter,
+make sure to install pysnmp and its dependencies with pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install pysnmplib
+</pre></div>
+</div>
+<p>There’s a public, multilingual SNMP Command Responder and Notification
+Receiver configured at
+<code class="docutils literal notranslate"><span class="pre">localhost</span></code> to let you run PySNMP examples scripts in a cut&amp;paste fashion. If you
+wish to use your own SNMP Agent with these scripts, make sure to either
+configure your local snmpd and/or snmptrapd or use a valid address and
+SNMP credentials of your SNMP Agent in the examples to let them work.</p>
+<p>Should you want to use a MIB to make SNMP operations more human-friendly,
+you are welcome to search for it and possibly download one from our
+<a class="reference external" href="https://pysnmp.github.io/mibs/asn1/">public MIB repository</a>. Alternatively,
+you can configure PySNMP to fetch and cache required MIBs from there
+automatically.</p>
+<p>If you find your PySNMP application behaving unexpectedly, try to enable
+a /more or less verbose/ built-in PySNMP debugging by adding the
+following snippet of code at the beginning of your application:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp</span><span class="w"> </span><span class="kn">import</span> <span class="n">debug</span>
+
+<span class="c1"># use specific flags or 'all' for full debugging</span>
+<span class="n">debug</span><span class="o">.</span><span class="n">setLogger</span><span class="p">(</span><span class="n">debug</span><span class="o">.</span><span class="n">Debug</span><span class="p">(</span><span class="s1">'dsp'</span><span class="p">,</span> <span class="s1">'msgproc'</span><span class="p">,</span> <span class="s1">'secmod'</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Then run your app and watch stderr. The Debug initializer enables debugging
+for a particular PySNMP subsystem, ‘all’ enables full debugging. More
+specific flags are:</p>
+<ul class="simple">
+<li><p>io</p></li>
+<li><p>dsp</p></li>
+<li><p>msgproc</p></li>
+<li><p>secmod</p></li>
+<li><p>mibbuild</p></li>
+<li><p>mibview</p></li>
+<li><p>mibinstrum</p></li>
+<li><p>acl</p></li>
+<li><p>proxy</p></li>
+<li><p>app</p></li>
+</ul>
+<p>For more details on PySNMP programming model and interfaces, please
+refer to <a class="reference internal" href="../docs/api-reference.html"><span class="doc">library documentation</span></a>.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

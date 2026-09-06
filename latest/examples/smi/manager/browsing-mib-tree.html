@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Manager side &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=f6a572b4" />
+    <script src="../../../_static/documentation_options.js?v=12958129"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Generated MIB modules" href="generated-mib-modules.html" />
+    <link rel="prev" title="Transport tweaks" href="../../v3arch/asyncio/manager/ntfrcv/transport-tweaks.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../contents.html">
+    <img class="logo" src="../../../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../contents.html">Example scripts</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#high-level-snmp">High-level SNMP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#native-snmp-api">Native SNMP API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#packet-level-snmp">Packet-level SNMP</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../contents.html#low-level-mib-access">Low-level MIB access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#using-these-examples">Using these examples</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../contents.html">Documentation overview</a><ul>
+  <li><a href="../../contents.html">Example scripts</a><ul>
+      <li>Previous: <a href="../../v3arch/asyncio/manager/ntfrcv/transport-tweaks.html" title="previous chapter">Transport tweaks</a></li>
+      <li>Next: <a href="generated-mib-modules.html" title="next chapter">Generated MIB modules</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="toctree-wrapper compound">
+</div>
+<section id="manager-side">
+<h1>Manager side<a class="headerlink" href="#manager-side" title="Link to this heading">¶</a></h1>
+<section id="pdu-var-binds-to-mib-objects">
+<h2>PDU var-binds to MIB objects<a class="headerlink" href="#pdu-var-binds-to-mib-objects" title="Link to this heading">¶</a></h2>
+<p>This script explains how Python application could turn SNMP PDU
+variable-bindings into MIB objects or the other way around.</p>
+<p>The code that configures MIB compiler is similar to what
+happens inside the pysnmp.hlapi API.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span><span class="p">,</span> <span class="n">compiler</span><span class="p">,</span> <span class="n">rfc1902</span><span class="p">,</span> <span class="n">view</span>
+
+<span class="c1"># Assemble MIB browser</span>
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+<span class="n">mibViewController</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+<span class="n">compiler</span><span class="o">.</span><span class="n">addMibCompiler</span><span class="p">(</span>
+    <span class="n">mibBuilder</span><span class="p">,</span>
+    <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s2">"file:///usr/share/snmp/mibs"</span><span class="p">,</span> <span class="s2">"https://pysnmp.github.io/mibs/asn1/@mib@"</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># Pre-load MIB modules we expect to work with</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadModules</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"SNMP-COMMUNITY-MIB"</span><span class="p">)</span>
+
+<span class="c1"># This is what we can get in TRAP PDU</span>
+<span class="n">varBinds</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">"1.3.6.1.2.1.1.3.0"</span><span class="p">,</span> <span class="mi">12345</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"1.3.6.1.6.3.1.1.4.1.0"</span><span class="p">,</span> <span class="s2">"1.3.6.1.6.3.1.1.5.2"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"1.3.6.1.6.3.18.1.3.0"</span><span class="p">,</span> <span class="s2">"0.0.0.0"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"1.3.6.1.6.3.18.1.4.0"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"1.3.6.1.6.3.1.1.4.3.0"</span><span class="p">,</span> <span class="s2">"1.3.6.1.4.1.20408.4.1.1.2"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"1.3.6.1.2.1.1.1.0"</span><span class="p">,</span> <span class="s2">"my system"</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Run var-binds through MIB resolver</span>
+<span class="c1"># You may want to catch and ignore resolution errors here</span>
+<span class="n">varBinds</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectType</span><span class="p">(</span><span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span>
+        <span class="n">mibViewController</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">varBinds</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">varBind</span> <span class="ow">in</span> <span class="n">varBinds</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">varBind</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../../_downloads/fc25d97a27c0912b00d11e7a33fa09c7/configure-mib-viewer-and-resolve-pdu-varbinds.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+</section>
+<section id="mib-objects-to-pdu-var-binds">
+<h2>MIB objects to PDU var-binds<a class="headerlink" href="#mib-objects-to-pdu-var-binds" title="Link to this heading">¶</a></h2>
+<p>This script explains how Python application (typically pysnmp-based
+SNMP Manager) could turn SNMP PDU variable-bindings into MIB objects
+or the other way around.</p>
+<p>The code below does not explicitly add MIB compiler - that happens
+behind the scenes. Examples below try to demo different kinds
+of MIB objects to work with.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">rfc1902</span><span class="p">,</span> <span class="n">view</span>
+
+<span class="c1"># MIB Builder manages pysnmp MIBs</span>
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+
+<span class="c1"># MIB View Controller implements various queries to loaded MIBs</span>
+<span class="n">mibView</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+
+<span class="c1"># Obtain MIB object information by MIB object name</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">,</span> <span class="s2">"ifInOctets"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Optionally attach PySMI MIB compiler to MIB Builder that would</span>
+<span class="c1"># create pysnmp MIBs on demand from ASN.1 sources downloaded from</span>
+<span class="c1"># a web site.</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">mibVar</span><span class="o">.</span><span class="n">addAsn1MibSource</span><span class="p">(</span><span class="s2">"https://pysnmp.github.io/mibs/asn1/@mib@"</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">error</span><span class="o">.</span><span class="n">SmiError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"WARNING: not using MIB compiler (PySMI not installed)"</span><span class="p">)</span>
+
+<span class="n">mibVar</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Obtain MIB object information by its [sequence] OID</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Obtain MIB object information by its [string] OID</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Obtain MIB object information by a mix of OID/label parts</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"mib-2"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"sysDescr"</span><span class="p">))</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span>
+    <span class="n">mibView</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Obtain MIB object information by a label</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span>
+    <span class="s2">"iso.org.dod.internet.mgmt.mib-2.system.sysDescr"</span>
+<span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Obtain the first MIB object in given MIB module</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Obtain the last MIB object in given MIB module</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Another way to obtain the first (or last) symbol in MIB module</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Obtain MIB symbol from whatever MIB it is defined at (MIB should be loaded)</span>
+<span class="n">mibVar</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"sysDescr"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mibVar</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mibVar</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mibVar</span><span class="p">))</span>
+
+<span class="c1"># Create an OID-value pair (called variable-binding in SNMP)</span>
+<span class="n">varBind</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectType</span><span class="p">(</span>
+    <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"sysObjectID"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"1.3.6.1"</span>
+<span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">varBind</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="n">varBind</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">varBind</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">())</span>
+
+<span class="c1"># Create just OID</span>
+<span class="n">varBind</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectType</span><span class="p">(</span>
+    <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"sysObjectID"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">varBind</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span> <span class="n">varBind</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">varBind</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">())</span>
+
+<span class="c1"># Create var-binds from MIB notification object (without OBJECTS clause)</span>
+<span class="n">varBinds</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">NotificationType</span><span class="p">(</span>
+    <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"coldStart"</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">varBinds</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Create var-binds from MIB notification object (with OBJECTS clause)</span>
+<span class="n">varBinds</span> <span class="o">=</span> <span class="n">rfc1902</span><span class="o">.</span><span class="n">NotificationType</span><span class="p">(</span>
+    <span class="n">rfc1902</span><span class="o">.</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">,</span> <span class="s2">"linkUp"</span><span class="p">),</span>
+    <span class="n">instanceIndex</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+    <span class="n">objects</span><span class="o">=</span><span class="p">{(</span><span class="s2">"IF-MIB"</span><span class="p">,</span> <span class="s2">"ifOperStatus"</span><span class="p">):</span> <span class="s2">"down"</span><span class="p">},</span>
+<span class="p">)</span><span class="o">.</span><span class="n">resolveWithMib</span><span class="p">(</span><span class="n">mibView</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">varBinds</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../../_downloads/475671d5c0e53b9e3317561adbc3b3f8/convert-between-pdu-varbinds-and-mib-objects.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+</section>
+<section id="snmp-mib-browser">
+<h2>SNMP MIB browser<a class="headerlink" href="#snmp-mib-browser" title="Link to this heading">¶</a></h2>
+<p>This script explains how Python application (typically SNMP Manager)
+could load SNMP MIB modules into memory and introspect Managed Objects
+defined in MIB.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span><span class="p">,</span> <span class="n">compiler</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">view</span>
+
+<span class="c1"># Create MIB loader/builder</span>
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+
+<span class="c1"># Optionally attach PySMI MIB compiler (if installed)</span>
+<span class="c1"># print('Attaching MIB compiler...'),</span>
+<span class="c1"># compiler.addMibCompiler(mibBuilder, sources=['/usr/share/snmp/mibs'])</span>
+<span class="c1"># print('done')</span>
+
+<span class="c1"># Optionally set an alternative path to compiled MIBs</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Setting MIB sources..."</span><span class="p">)</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">addMibSources</span><span class="p">(</span><span class="n">builder</span><span class="o">.</span><span class="n">DirMibSource</span><span class="p">(</span><span class="s2">"/opt/pysnmp_mibs"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mibBuilder</span><span class="o">.</span><span class="n">getMibSources</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Loading MIB modules..."</span><span class="p">),)</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadModules</span><span class="p">(</span>
+    <span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"SNMP-FRAMEWORK-MIB"</span><span class="p">,</span> <span class="s2">"SNMP-COMMUNITY-MIB"</span><span class="p">,</span> <span class="s2">"IP-MIB"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Indexing MIB objects..."</span><span class="p">),)</span>
+<span class="n">mibView</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"MIB symbol name lookup by OID: "</span><span class="p">),)</span>
+<span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNodeName</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"MIB symbol name lookup by label: "</span><span class="p">),)</span>
+<span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNodeName</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"mib-2"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"sysDescr"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"MIB symbol name lookup by symbol description: "</span><span class="p">),)</span>
+<span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNodeName</span><span class="p">((</span><span class="s2">"sysDescr"</span><span class="p">,))</span>
+<span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNodeName</span><span class="p">((</span><span class="s2">"snmpEngineID"</span><span class="p">,),</span> <span class="s2">"SNMP-FRAMEWORK-MIB"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"MIB object value pretty print: "</span><span class="p">),)</span>
+<span class="p">(</span><span class="n">mibNode</span><span class="p">,)</span> <span class="o">=</span> <span class="n">mibBuilder</span><span class="o">.</span><span class="n">importSymbols</span><span class="p">(</span><span class="s2">"SNMP-FRAMEWORK-MIB"</span><span class="p">,</span> <span class="s2">"snmpEngineID"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mibNode</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">())</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"MIB symbol location lookup by name: "</span><span class="p">),)</span>
+<span class="n">modName</span><span class="p">,</span> <span class="n">symName</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNodeLocation</span><span class="p">((</span><span class="s2">"snmpCommunityEntry"</span><span class="p">,))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">symName</span><span class="p">,</span> <span class="n">modName</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"MIB node lookup by location: "</span><span class="p">),)</span>
+<span class="p">(</span><span class="n">rowNode</span><span class="p">,)</span> <span class="o">=</span> <span class="n">mibBuilder</span><span class="o">.</span><span class="n">importSymbols</span><span class="p">(</span><span class="n">modName</span><span class="p">,</span> <span class="n">symName</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rowNode</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Conceptual table index value to oid conversion: "</span><span class="p">),)</span>
+<span class="n">oid</span> <span class="o">=</span> <span class="n">rowNode</span><span class="o">.</span><span class="n">getInstIdFromIndices</span><span class="p">(</span><span class="s2">"router"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Conceptual table index oid to value conversion: "</span><span class="p">),)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rowNode</span><span class="o">.</span><span class="n">getIndicesFromInstId</span><span class="p">(</span><span class="n">oid</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"MIB tree traversal"</span><span class="p">)</span>
+<span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getFirstNodeName</span><span class="p">()</span>
+<span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">modName</span><span class="p">,</span> <span class="n">nodeDesc</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNodeLocation</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">modName</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">nodeDesc</span><span class="si">}</span><span class="s2"> == </span><span class="si">{</span><span class="n">oid</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">oid</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNextNodeName</span><span class="p">(</span><span class="n">oid</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">error</span><span class="o">.</span><span class="n">NoSuchObjectError</span><span class="p">:</span>
+        <span class="k">break</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Modules traversal"</span><span class="p">)</span>
+<span class="n">modName</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getFirstModuleName</span><span class="p">()</span>
+<span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">modName</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">modName</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">modName</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getNextModuleName</span><span class="p">(</span><span class="n">modName</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">error</span><span class="o">.</span><span class="n">SmiError</span><span class="p">:</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../../_downloads/51bf43395e8958b554bf96e6234f10c5/mib-tree-inspection.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+</section>
+<section id="addressing-and-decomposing-smi-table-cells">
+<h2>Addressing and decomposing SMI table cells<a class="headerlink" href="#addressing-and-decomposing-smi-table-cells" title="Link to this heading">¶</a></h2>
+<p>Load a MIB, enumerate a conceptual row’s columns, construct a cell OID from
+symbolic names and typed indices, then decompose it back into those parts.
+No SNMP engine or network connection is required.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span><span class="p">,</span> <span class="n">view</span>
+
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadModules</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">)</span>
+<span class="n">mibView</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"sysORTable columns:"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">columnId</span><span class="p">,</span> <span class="n">columnOid</span><span class="p">,</span> <span class="n">columnNode</span> <span class="ow">in</span> <span class="n">mibView</span><span class="o">.</span><span class="n">get_table_columns</span><span class="p">(</span>
+    <span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"sysOREntry"</span>
+<span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="n">columnId</span><span class="p">,</span> <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">columnOid</span><span class="p">),</span> <span class="n">columnNode</span><span class="o">.</span><span class="n">getMaxAccess</span><span class="p">()</span>
+    <span class="p">)</span>
+
+<span class="n">cellOid</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">resolve_cell_oid</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"sysOREntry"</span><span class="p">,</span> <span class="s2">"sysORID"</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Cell OID:"</span><span class="p">,</span> <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">cellOid</span><span class="p">))</span>
+
+<span class="n">moduleName</span><span class="p">,</span> <span class="n">rowName</span><span class="p">,</span> <span class="n">columnName</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">get_table_cell_info</span><span class="p">(</span><span class="n">cellOid</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Cell name:"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">moduleName</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">rowName</span><span class="si">}</span><span class="s2">::</span><span class="si">{</span><span class="n">columnName</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Indices:"</span><span class="p">,</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../../_downloads/9398541d2abbdf009e020c647b7ff99e/table-cell-api.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+<p>See also: <a class="reference internal" href="../../../docs/api-reference.html"><span class="doc">library reference</span></a>.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

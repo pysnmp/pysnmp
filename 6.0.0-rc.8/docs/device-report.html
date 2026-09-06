@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Device details report &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MIB instance generation tools" href="mib-tools.html" />
+    <link rel="prev" title="SMI table construction and cell addressing" href="smi-table-api.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Device details report</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#asynchronous-use">Asynchronous use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#synchronous-use">Synchronous use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="smi-table-api.html" title="previous chapter">SMI table construction and cell addressing</a></li>
+      <li>Next: <a href="mib-tools.html" title="next chapter">MIB instance generation tools</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="device-details-report">
+<h1>Device details report<a class="headerlink" href="#device-details-report" title="Link to this heading">¶</a></h1>
+<p>The device-report helper collects the standard objects from the
+<code class="docutils literal notranslate"><span class="pre">SNMPv2-MIB::system</span></code> group and walks <code class="docutils literal notranslate"><span class="pre">SNMPv2-MIB::sysORTable</span></code> in one
+operation. It returns a <a class="reference internal" href="#pysnmp.hlapi.DeviceReport" title="pysnmp.hlapi.DeviceReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceReport</span></code></a> containing:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (<code class="docutils literal notranslate"><span class="pre">sysDescr.0</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vendor_oid</span></code> (<code class="docutils literal notranslate"><span class="pre">sysObjectID.0</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">uptime</span></code> (<code class="docutils literal notranslate"><span class="pre">sysUpTime.0</span></code>, in centiseconds)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">contact</span></code>, <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">location</span></code> and <code class="docutils literal notranslate"><span class="pre">services</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">implemented_mibs</span></code>, a list of <a class="reference internal" href="#pysnmp.hlapi.SysOREntry" title="pysnmp.hlapi.SysOREntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">SysOREntry</span></code></a> rows</p></li>
+</ul>
+<p>Unavailable scalar objects are represented by <code class="docutils literal notranslate"><span class="pre">None</span></code>. The table walk is
+bounded to the four <code class="docutils literal notranslate"><span class="pre">sysORTable</span></code> columns, so objects following the table in
+the agent’s MIB view are never reported as capabilities.</p>
+<section id="asynchronous-use">
+<h2>Asynchronous use<a class="headerlink" href="#asynchronous-use" title="Link to this heading">¶</a></h2>
+<p>The asyncio API returns the report directly from a coroutine:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""</span>
+<span class="sd">Device report</span>
+<span class="sd">+++++++++++++</span>
+
+<span class="sd">Query a device via SNMP and print a structured report of its system</span>
+<span class="sd">information, including description, vendor OID, uptime, contact, name,</span>
+<span class="sd">location, services, and implemented MIB modules (sysORTable).</span>
+
+<span class="sd">Functionally similar to:</span>
+
+<span class="sd">| $ snmpget -v2c -c public demo.pysnmp.com SNMPv2-MIB::sysDescr.0 \\</span>
+<span class="sd">      SNMPv2-MIB::sysObjectID.0 SNMPv2-MIB::sysUpTime.0</span>
+<span class="sd">| $ snmpwalk -v2c -c public demo.pysnmp.com SNMPv2-MIB::sysORTable</span>
+
+<span class="sd">"""</span>  <span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CommunityData</span><span class="p">,</span>
+    <span class="n">ContextData</span><span class="p">,</span>
+    <span class="n">SnmpEngine</span><span class="p">,</span>
+    <span class="n">UdpTransportTarget</span><span class="p">,</span>
+    <span class="n">get_device_report</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">():</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_device_report</span><span class="p">(</span>
+        <span class="n">SnmpEngine</span><span class="p">(),</span>
+        <span class="n">CommunityData</span><span class="p">(</span><span class="s2">"public"</span><span class="p">),</span>
+        <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s2">"demo.pysnmp.com"</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+        <span class="n">ContextData</span><span class="p">(),</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"=== Device Report ==="</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Description : </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Vendor OID  : </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">vendor_oid</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Uptime      : </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">uptime</span><span class="si">}</span><span class="s2"> centiseconds"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Contact     : </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">contact</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Name        : </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Location    : </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">location</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Services    : </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">services</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">report</span><span class="o">.</span><span class="n">implemented_mibs</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Implemented MIBs (sysORTable):"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">mib</span> <span class="ow">in</span> <span class="n">report</span><span class="o">.</span><span class="n">implemented_mibs</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  [</span><span class="si">{</span><span class="n">mib</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">mib</span><span class="o">.</span><span class="n">or_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"       </span><span class="si">{</span><span class="n">mib</span><span class="o">.</span><span class="n">or_descr</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"       uptime: </span><span class="si">{</span><span class="n">mib</span><span class="o">.</span><span class="n">or_uptime</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">No sysORTable entries found."</span><span class="p">)</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../_downloads/2eae5b33b082205b1d4127d6578a8384/device-report.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">the</span> <span class="pre">asyncio</span> <span class="pre">example</span></code></a>.</p>
+</section>
+<section id="synchronous-use">
+<h2>Synchronous use<a class="headerlink" href="#synchronous-use" title="Link to this heading">¶</a></h2>
+<p>The default <code class="xref py py-mod docutils literal notranslate"><span class="pre">pysnmp.hlapi</span></code> facade provides the same operation as a
+blocking function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CommunityData</span><span class="p">,</span>
+    <span class="n">ContextData</span><span class="p">,</span>
+    <span class="n">SnmpEngine</span><span class="p">,</span>
+    <span class="n">UdpTransportTarget</span><span class="p">,</span>
+    <span class="n">get_device_report</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">report</span> <span class="o">=</span> <span class="n">get_device_report</span><span class="p">(</span>
+    <span class="n">SnmpEngine</span><span class="p">(),</span>
+    <span class="n">CommunityData</span><span class="p">(</span><span class="s2">"public"</span><span class="p">),</span>
+    <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s2">"demo.pysnmp.com"</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+    <span class="n">ContextData</span><span class="p">(),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">vendor_oid</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The helper uses GETNEXT for <code class="docutils literal notranslate"><span class="pre">sysORTable</span></code> so the same API works with SNMPv1,
+SNMPv2c and SNMPv3 credentials. The legacy spelling <code class="docutils literal notranslate"><span class="pre">getDeviceReport</span></code> is
+retained as an alias.</p>
+</section>
+<section id="api-reference">
+<h2>API reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.get_device_report">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.asyncio.</span></span><span class="sig-name descname"><span class="pre">get_device_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snmpEngine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transportTarget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contextData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pysnmp.hlapi.DeviceReport" title="pysnmp.hlapi.asyncio.device.DeviceReport"><span class="pre">DeviceReport</span></a></span></span><a class="headerlink" href="#pysnmp.hlapi.asyncio.get_device_report" title="Link to this definition">¶</a></dt>
+<dd><p>Query standard system objects and <code class="docutils literal notranslate"><span class="pre">sysORTable</span></code> from an SNMP agent.</p>
+<p>Unavailable scalar objects are represented by <code class="docutils literal notranslate"><span class="pre">None</span></code>. Transport and
+protocol errors also produce a partial report rather than raising.
+<code class="docutils literal notranslate"><span class="pre">lookupMib</span></code> is passed through to the underlying HLAPI commands.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.</span></span><span class="sig-name descname"><span class="pre">DeviceReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vendor_oid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">uptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contact</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">services</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">implemented_mibs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pysnmp.hlapi.SysOREntry" title="pysnmp.hlapi.SysOREntry"><span class="pre">SysOREntry</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.hlapi.DeviceReport" title="Link to this definition">¶</a></dt>
+<dd><p>Structured device details gathered from SNMPv2-MIB.</p>
+<p>Create new instance of DeviceReport(description, vendor_oid, uptime, contact, name, location, services, implemented_mibs)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.description" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.vendor_oid">
+<span class="sig-name descname"><span class="pre">vendor_oid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.vendor_oid" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.uptime">
+<span class="sig-name descname"><span class="pre">uptime</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.uptime" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.contact">
+<span class="sig-name descname"><span class="pre">contact</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.contact" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.name" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.location">
+<span class="sig-name descname"><span class="pre">location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.location" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.services">
+<span class="sig-name descname"><span class="pre">services</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.services" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.DeviceReport.implemented_mibs">
+<span class="sig-name descname"><span class="pre">implemented_mibs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pysnmp.hlapi.SysOREntry" title="pysnmp.hlapi.asyncio.device.SysOREntry"><span class="pre">SysOREntry</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pysnmp.hlapi.DeviceReport.implemented_mibs" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 7</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.hlapi.SysOREntry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.</span></span><span class="sig-name descname"><span class="pre">SysOREntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">or_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">or_descr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">or_uptime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.hlapi.SysOREntry" title="Link to this definition">¶</a></dt>
+<dd><p>A row from SNMPv2-MIB::sysORTable.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

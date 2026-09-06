@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Continuous integration and releases &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=f6a572b4" />
+    <script src="_static/documentation_options.js?v=12958129"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Further development" href="development.html" />
+    <link rel="prev" title="Historical changelog" href="changelog-history.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="contents.html">
+    <img class="logo" src="_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Continuous integration and releases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#branches">Branches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#commit-messages">Commit messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-runs-on-a-pull-request">What runs on a pull request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-test-matrix">The test matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cutting-a-release">Cutting a release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#keeping-next-and-main-in-step">Keeping next and main in step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reaching-pypi">Reaching PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="changelog-history.html" title="previous chapter">Historical changelog</a></li>
+      <li>Next: <a href="development.html" title="next chapter">Further development</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="continuous-integration-and-releases">
+<h1>Continuous integration and releases<a class="headerlink" href="#continuous-integration-and-releases" title="Link to this heading">¶</a></h1>
+<p>This page describes how changes reach a released version of <code class="docutils literal notranslate"><span class="pre">pysnmplib</span></code>.
+The same model is used by
+<a class="reference external" href="https://github.com/pysnmp/pyasn1">pyasn1</a> and
+<a class="reference external" href="https://github.com/pysnmp/pysmi">pysmi</a>, so what follows applies to all
+three projects except where a difference is called out.</p>
+<section id="branches">
+<h2>Branches<a class="headerlink" href="#branches" title="Link to this heading">¶</a></h2>
+<p>There are exactly two long-lived branches.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">next</span></code></dt><dd><p>Where work integrates. Every pull request targets <code class="docutils literal notranslate"><span class="pre">next</span></code>. It is
+normal and expected for <code class="docutils literal notranslate"><span class="pre">next</span></code> to carry commits that <code class="docutils literal notranslate"><span class="pre">main</span></code> does
+not.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">main</span></code></dt><dd><p>What has been released. It moves only when <code class="docutils literal notranslate"><span class="pre">next</span></code> is promoted into
+it.</p>
+</dd>
+</dl>
+<p>Maintenance branches matching <code class="docutils literal notranslate"><span class="pre">N.x</span></code> or <code class="docutils literal notranslate"><span class="pre">N.M.x</span></code> are configured but none
+exist yet. The <code class="docutils literal notranslate"><span class="pre">develop</span></code> branch was a third release channel and is no
+longer one.</p>
+<p>Do not open a pull request against <code class="docutils literal notranslate"><span class="pre">main</span></code>. A fix merged there would be
+released without ever having existed as a release candidate, and <code class="docutils literal notranslate"><span class="pre">next</span></code>
+would not contain it.</p>
+<p>Neither branch releases on push. Both the release candidate and the GA are
+cut by a human dispatching the workflow; see <a class="reference internal" href="#cutting-a-release">Cutting a release</a>.</p>
+</section>
+<section id="commit-messages">
+<h2>Commit messages<a class="headerlink" href="#commit-messages" title="Link to this heading">¶</a></h2>
+<p>Releases are cut by <a class="reference external" href="https://semantic-release.gitbook.io/">semantic-release</a> from the commit history, so the
+subject line of every commit decides whether a release happens and how the
+version changes.</p>
+<p>The <a class="reference external" href="https://www.conventionalcommits.org/">Conventional Commits</a>
+<code class="docutils literal notranslate"><span class="pre">conventionalcommits</span></code> preset is in use:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 20.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Subject</p></th>
+<th class="head"><p>Version change</p></th>
+<th class="head"><p>Appears in release notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fix:</span> <span class="pre">...</span></code></p></td>
+<td><p>patch</p></td>
+<td><p>Bug Fixes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">feat:</span> <span class="pre">...</span></code></p></td>
+<td><p>minor</p></td>
+<td><p>Features</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">perf:</span> <span class="pre">...</span></code></p></td>
+<td><p>patch</p></td>
+<td><p>Performance Improvements</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">feat!:</span> <span class="pre">...</span></code></p></td>
+<td><p><strong>major</strong></p></td>
+<td><p>Features, and BREAKING CHANGES</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">BREAKING</span> <span class="pre">CHANGE:</span></code> footer</p></td>
+<td><p><strong>major</strong></p></td>
+<td><p>BREAKING CHANGES</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">docs:</span></code>, <code class="docutils literal notranslate"><span class="pre">test:</span></code>, <code class="docutils literal notranslate"><span class="pre">ci:</span></code>, <code class="docutils literal notranslate"><span class="pre">chore:</span></code>, <code class="docutils literal notranslate"><span class="pre">refactor:</span></code>, <code class="docutils literal notranslate"><span class="pre">style:</span></code></p></td>
+<td><p>none</p></td>
+<td><p>hidden</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">!</span></code> marker and the <code class="docutils literal notranslate"><span class="pre">BREAKING</span> <span class="pre">CHANGE:</span></code> footer are equivalent. Note
+that the <em>angular</em> preset, which is semantic-release’s default, does not
+parse <code class="docutils literal notranslate"><span class="pre">!</span></code> at all — a <code class="docutils literal notranslate"><span class="pre">feat!:</span></code> commit under that preset silently
+produces a minor release rather than a major one. All three projects set
+<code class="docutils literal notranslate"><span class="pre">conventionalcommits</span></code> explicitly for this reason.</p>
+<p>Reference an issue in the body (<code class="docutils literal notranslate"><span class="pre">Closes</span> <span class="pre">#123</span></code>) rather than in the
+subject, so the generated notes link it.</p>
+</section>
+<section id="what-runs-on-a-pull-request">
+<h2>What runs on a pull request<a class="headerlink" href="#what-runs-on-a-pull-request" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">CI</span></code> workflow (<code class="docutils literal notranslate"><span class="pre">.github/workflows/build-test-release.yml</span></code>) runs on
+every push to <code class="docutils literal notranslate"><span class="pre">main</span></code> and <code class="docutils literal notranslate"><span class="pre">next</span></code> and on every pull request against
+them.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code></dt><dd><p>The repository’s <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> hooks, on every file. This is where
+<code class="docutils literal notranslate"><span class="pre">ruff</span> <span class="pre">check</span></code> and <code class="docutils literal notranslate"><span class="pre">ruff</span> <span class="pre">format</span></code> run.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">security-sast-semgrep</span></code></dt><dd><p>Static analysis for security defects.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">docs</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-W</span> <span class="pre">--keep-going</span></code>. Warnings are errors, and
+<code class="docutils literal notranslate"><span class="pre">--keep-going</span></code> reports all of them rather than stopping at the
+first.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">build</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">build</span></code>, uploading the wheel and sdist as an artifact.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">matrix</span></code></dt><dd><p>Computes the test matrix. See below.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">test-unit</span></code></dt><dd><p>The test suite, once per matrix entry, publishing JUnit results and
+coverage.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Build</span> <span class="pre">Release</span></code></dt><dd><p>Runs semantic-release. On a pull request this job does not run at
+all; on a push it rehearses the release without cutting one.</p>
+</dd>
+</dl>
+<p>Two workflows run alongside it and do not gate a release:
+<code class="docutils literal notranslate"><span class="pre">net-snmp-integration.yml</span></code>, which exercises every SNMP version and USM
+security profile against a real Net-SNMP agent in a container, and
+<code class="docutils literal notranslate"><span class="pre">codeql-analysis.yml</span></code>.</p>
+</section>
+<section id="the-test-matrix">
+<h2>The test matrix<a class="headerlink" href="#the-test-matrix" title="Link to this heading">¶</a></h2>
+<p>Every supported Python runs on Linux on every pull request. macOS and
+Windows run only on the edge Python versions, and only when the run can
+justify the cost: a push to <code class="docutils literal notranslate"><span class="pre">main</span></code> or <code class="docutils literal notranslate"><span class="pre">next</span></code>, a manual dispatch, or a
+pull request carrying the <code class="docutils literal notranslate"><span class="pre">ci:full-matrix</span></code> label.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 25.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Trigger</p></th>
+<th class="head"><p>Linux</p></th>
+<th class="head"><p>macOS and Windows</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Pull request</p></td>
+<td><p>3.10 – 3.14</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pull request labelled <code class="docutils literal notranslate"><span class="pre">ci:full-matrix</span></code></p></td>
+<td><p>3.10 – 3.14</p></td>
+<td><p>3.10 and 3.14</p></td>
+</tr>
+<tr class="row-even"><td><p>Push to <code class="docutils literal notranslate"><span class="pre">main</span></code> or <code class="docutils literal notranslate"><span class="pre">next</span></code></p></td>
+<td><p>3.10 – 3.14</p></td>
+<td><p>3.10 and 3.14</p></td>
+</tr>
+</tbody>
+</table>
+<p>That is five jobs on an ordinary pull request and nine on a broad run.</p>
+<p>The reasoning is worth stating, because it is the opposite of the usual
+“test everything everywhere” instinct. These are pure-Python projects, so
+the interpreter version is where most of the risk lives and the operating
+system mostly is not. Of the platforms, Windows is the one that can
+actually diverge — <code class="docutils literal notranslate"><span class="pre">cp1252</span></code> as the default encoding, path handling, and
+a different asyncio event loop under the transport layer — and until now
+it was not tested at all.</p>
+<p>There is also a concrete failure mode to avoid. Running five macOS jobs
+per pull request sits exactly on GitHub’s free-tier limit of five
+concurrent macOS jobs for public repositories, so two overlapping runs
+queue behind each other until they time out. Two macOS jobs leave
+headroom.</p>
+<p>Windows is currently <code class="docutils literal notranslate"><span class="pre">continue-on-error</span></code>: it reports its result without
+blocking a merge, until it has a track record. Remove that once it has
+one.</p>
+<p>To get the broad matrix on a pull request, add the <code class="docutils literal notranslate"><span class="pre">ci:full-matrix</span></code>
+label. The workflow listens for the <code class="docutils literal notranslate"><span class="pre">labeled</span></code> event, so the run starts
+when the label is applied — no need to push again.</p>
+<p>Tests are run with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">--locked</span></code>, which installs exactly what
+<code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> records and fails rather than re-resolving. A CI failure is
+therefore reproducible locally, and a dependency released upstream cannot
+turn CI red without a commit.</p>
+</section>
+<section id="cutting-a-release">
+<h2>Cutting a release<a class="headerlink" href="#cutting-a-release" title="Link to this heading">¶</a></h2>
+<p>Nothing releases on push. Both kinds of release are cut by dispatching
+the <code class="docutils literal notranslate"><span class="pre">CI</span></code> workflow from the Actions tab and choosing the branch:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">next</span></code></dt><dd><p>Cuts a release candidate, <code class="docutils literal notranslate"><span class="pre">X.Y.Z-rc.N</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">main</span></code></dt><dd><p>Cuts the GA release, <code class="docutils literal notranslate"><span class="pre">X.Y.Z</span></code>.</p>
+</dd>
+</dl>
+<p>semantic-release works out the version from the commits, writes it into
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, <code class="docutils literal notranslate"><span class="pre">pysnmp/__init__.py</span></code> and <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code>, refreshes
+<code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> and builds the distributions, commits all of that as
+<code class="docutils literal notranslate"><span class="pre">chore(release):</span> <span class="pre">X.Y.Z</span></code>, tags it, and publishes a GitHub release. The
+same job then uploads the built distributions to PyPI.</p>
+<p>To ship a GA: promote <code class="docutils literal notranslate"><span class="pre">next</span></code> into <code class="docutils literal notranslate"><span class="pre">main</span></code> with a pull request, wait for
+it to be green, then dispatch the workflow against <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+<p>Every push — to <code class="docutils literal notranslate"><span class="pre">next</span></code> as much as to <code class="docutils literal notranslate"><span class="pre">main</span></code> — is a dry run instead.
+semantic-release computes the version it <em>would</em> cut and tags nothing.
+Because its prepare step never runs, nothing is built either, so the
+workflow builds that version as <code class="docutils literal notranslate"><span class="pre">X.Y.Z.devN</span></code> and keeps it as an
+artifact. Install that artifact and exercise it before dispatching the
+real release.</p>
+<p>Releasing by hand rather than on every merge is deliberate. When <code class="docutils literal notranslate"><span class="pre">next</span></code>
+released automatically, it kept cutting release candidates from whatever
+base its own history reached, which drifts below <code class="docutils literal notranslate"><span class="pre">main</span></code> as soon as a GA
+is cut there — see <a class="reference internal" href="#keeping-next-and-main-in-step">Keeping next and main in step</a>.</p>
+</section>
+<section id="keeping-next-and-main-in-step">
+<h2>Keeping next and main in step<a class="headerlink" href="#keeping-next-and-main-in-step" title="Link to this heading">¶</a></h2>
+<p>Promoting <code class="docutils literal notranslate"><span class="pre">next</span></code> into <code class="docutils literal notranslate"><span class="pre">main</span></code> and then releasing leaves the
+<code class="docutils literal notranslate"><span class="pre">chore(release):</span></code> commit, and the tag on it, on <code class="docutils literal notranslate"><span class="pre">main</span></code> only. <code class="docutils literal notranslate"><span class="pre">next</span></code>
+does not contain them, so as far as semantic-release can see from
+<code class="docutils literal notranslate"><span class="pre">next</span></code>, the newest release is still the last one that branch cut.</p>
+<p>Left alone this drifts. In pysmi it produced <code class="docutils literal notranslate"><span class="pre">2.0.0-rc.15</span></code> and
+<code class="docutils literal notranslate"><span class="pre">2.0.0-rc.16</span></code> on PyPI <em>after</em> <code class="docutils literal notranslate"><span class="pre">2.0.1</span></code> had shipped: release candidates
+numbered below a released version, uploaded after it.</p>
+<p>So after cutting a GA on <code class="docutils literal notranslate"><span class="pre">main</span></code>, merge <code class="docutils literal notranslate"><span class="pre">main</span></code> back into <code class="docutils literal notranslate"><span class="pre">next</span></code>. This
+is the only direction in which <code class="docutils literal notranslate"><span class="pre">main</span></code> should ever be merged into
+<code class="docutils literal notranslate"><span class="pre">next</span></code>, and it carries nothing but the release commit.</p>
+<p>Commits on <code class="docutils literal notranslate"><span class="pre">next</span></code> that are not on <code class="docutils literal notranslate"><span class="pre">main</span></code> are the normal state of
+things and need no action: that is unreleased work waiting for the next
+promotion.</p>
+</section>
+<section id="reaching-pypi">
+<h2>Reaching PyPI<a class="headerlink" href="#reaching-pypi" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Build</span> <span class="pre">Release</span></code> job uploads to PyPI in the same run that cuts the
+tag, using <a class="reference external" href="https://docs.pypi.org/trusted-publishers/">PyPI Trusted Publishing</a>. No API token exists
+anywhere in the repository. PyPI matches four claims from the run’s OIDC
+token — owner, repository, workflow filename, and environment name — and
+mints a credential valid for that run alone. Under Trusted Publishing the
+upload also carries <a class="reference external" href="https://peps.python.org/pep-0740/">PEP 740</a>
+attestations by default.</p>
+<p>The trusted publisher is registered on the PyPI project’s <em>Publishing</em>
+settings page and must name the workflow file exactly:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Claim</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Owner</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pysnmp</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Repository</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pysnmp</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Workflow name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">build-test-release.yml</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Environment name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">release</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Renaming the workflow file or the environment breaks publishing until the
+publisher is re-registered.</p>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
+<p><strong>A run was cancelled and no step failed.</strong> Look at whether the jobs were
+killed part-way through. Runner processes that die mid-suite, with no
+assertion failure in the log, are usually out of memory rather than
+cancelled. A run whose overall conclusion is <code class="docutils literal notranslate"><span class="pre">cancelled</span></code> while
+individual jobs report <code class="docutils literal notranslate"><span class="pre">failure</span></code> with exit code 143 was terminated from
+outside.</p>
+<p><strong>A release did not happen after merging to</strong> <code class="docutils literal notranslate"><span class="pre">next</span></code>. Merging does not
+release; dispatch the workflow. If a dispatch also released nothing, check
+the commit subjects — only <code class="docutils literal notranslate"><span class="pre">fix</span></code>, <code class="docutils literal notranslate"><span class="pre">feat</span></code>, <code class="docutils literal notranslate"><span class="pre">perf</span></code> and breaking
+changes produce a release, so a branch of nothing but <code class="docutils literal notranslate"><span class="pre">docs</span></code> and
+<code class="docutils literal notranslate"><span class="pre">chore</span></code> commits correctly releases nothing. The <code class="docutils literal notranslate"><span class="pre">Build</span> <span class="pre">Release</span></code> job
+log states which commits it analysed and what it concluded.</p>
+<p><strong>PyPI rejected the upload with 403.</strong> The trusted publisher does not
+match. Confirm all four fields on the PyPI publishing settings page
+against the table above; the workflow filename is the one most often
+wrong.</p>
+<p><strong>A test job failed with “The lockfile at uv.lock needs to be updated”.</strong>
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> changed without <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">lock</span></code> being run. Run <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">lock</span></code>
+and commit the result. The release prepare step does this automatically
+after semantic-release rewrites the version.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

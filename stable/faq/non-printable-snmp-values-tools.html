@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Garbaged SNMP values (tools) &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Dealing with the “OID not increasing” error" href="oids-not-increasing.html" />
+    <link rel="prev" title="Garbaged SNMP values (apps)" href="non-printable-snmp-values-apps.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../faq.html">FAQ</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="getting-peer-information.html">Getting peer address information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to-implement-agent-mib.html">How to implement MIB at the Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ignored-snmp-packets.html">Ignored SNMP packets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="listening-on-multiple-interfaces.html">Listening on multiple network interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="non-printable-snmp-values-apps.html">Garbaged SNMP values (apps)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Garbaged SNMP values (tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="oids-not-increasing.html">Dealing with the “OID not increasing” error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pass-custom-mib-to-manager.html">How to pass MIB to the Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="response-values-mib-resolution.html">Resolve response values at MIB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="snmp-data-constraints-verification-failure.html">SNMP data constraints verification error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="walk-whole-mib.html">Walking whole MIB</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="../faq.html">FAQ</a><ul>
+      <li>Previous: <a href="non-printable-snmp-values-apps.html" title="previous chapter">Garbaged SNMP values (apps)</a></li>
+      <li>Next: <a href="oids-not-increasing.html" title="next chapter">Dealing with the “OID not increasing” error</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="garbaged-snmp-values-tools">
+<h1>Garbaged SNMP values (tools)<a class="headerlink" href="#garbaged-snmp-values-tools" title="Link to this heading">¶</a></h1>
+<ol class="upperalpha simple" start="17">
+<li><p>When fetching data with snmp*.py command-line tools, some values
+do not print out nicely:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="w"> </span>$<span class="w"> </span>snmpget.py<span class="w"> </span>-v2c<span class="w"> </span>-c<span class="w"> </span>public<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>.1.3.6.1.4.1.14988.1.1.1.2.1.1.0.23.183.34.8.200.3
+<span class="w"> </span>SNMPv2-SMI::enterprises.14988.1.1.1.2.1.1.0.23.183.34.8.200.3<span class="w"> </span><span class="o">=</span>
+<span class="w"> </span>OctetString:<span class="w"> </span>Ë‡ÄŒ
+
+where<span class="w"> </span>Net-SNMP<span class="w"> </span>gives<span class="w"> </span>nicely<span class="w"> </span>formatted<span class="w"> </span>human-readable<span class="w"> </span>string:
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="w"> </span>$<span class="w"> </span>snmpget<span class="w"> </span>-v2c<span class="w"> </span>-c<span class="w"> </span>public<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>.1.3.6.1.4.1.14988.1.1.1.2.1.1.0.23.183.34.8.200.3
+<span class="w"> </span>SNMPv2-SMI::enterprises.14988.1.1.1.2.1.1.0.23.183.34.8.200.3<span class="w"> </span><span class="o">=</span>
+<span class="w"> </span>Hex-STRING:<span class="w"> </span><span class="m">00</span><span class="w"> </span><span class="m">17</span><span class="w"> </span>B7<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">08</span><span class="w"> </span>C8
+
+What<span class="w"> </span>can<span class="w"> </span>be<span class="w"> </span><span class="k">done</span><span class="w"> </span>to<span class="w"> </span>PySNMP<span class="w"> </span>to<span class="w"> </span>make<span class="w"> </span>it<span class="w"> </span>returning<span class="w"> </span>HEX<span class="w"> </span>data<span class="w"> </span><span class="k">in</span><span class="w"> </span>human-readable?
+</pre></div>
+</div>
+<ol class="upperalpha simple">
+<li><p>The difference is that Net-SNMP prints values into hex by-default,
+whereas pysnmp does not do that. You can force snmpget.py to work
+similarily with the -OT command line parameter.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>snmpget.py<span class="w"> </span>-OT<span class="w"> </span>-v2c<span class="w"> </span>-c<span class="w"> </span>public<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>.1.3.6.1.4.1.14988.1.1.1.2.1.1.0.23.
+<span class="m">183</span>.34.8.200.3
+SNMPv2-SMI::enterprises.14988.1.1.1.2.1.1.0.23.183.34.8.200.3<span class="w"> </span><span class="o">=</span>
+OctetString:<span class="w"> </span><span class="m">00</span><span class="w"> </span><span class="m">17</span><span class="w"> </span>b7<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">08</span><span class="w"> </span>c8
+</pre></div>
+</div>
+<p>Another matter is MIB lookup - when snmp*.py tool can use a MIB to figure
+out what are the display conventions for particular value type, it will
+reformat the value in a human-readable form.</p>
+<p>To let MIB lookup work, please pass appropriate MIB name to snmp*.py
+tool through command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>snmpwalk.py<span class="w"> </span>-m<span class="w"> </span>IP-MIB,IF-MIB<span class="w"> </span>-v2c<span class="w"> </span>-c<span class="w"> </span>public<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>.1.3.6.1.4.1
+</pre></div>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

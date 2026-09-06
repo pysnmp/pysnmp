@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Quick start &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=f6a572b4" />
+    <script src="_static/documentation_options.js?v=12958129"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Documentation" href="docs/tutorial.html" />
+    <link rel="prev" title="SNMP library for Python" href="contents.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="contents.html">
+    <img class="logo" src="_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fetch-snmp-variable">Fetch SNMP variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#send-snmp-trap">Send SNMP TRAP</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="contents.html" title="previous chapter">SNMP library for Python</a></li>
+      <li>Next: <a href="docs/tutorial.html" title="next chapter">Documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="quick-start">
+<h1>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>Once you downloaded and installed PySNMP library on your Linux/Windows/OS X
+system, you should be able to solve the very basic SNMP task right from
+your Python prompt - fetch some data from a remote SNMP Agent (the code on
+this page targets PySNMP 6.0 and later on Python 3.10 or later).</p>
+<section id="fetch-snmp-variable">
+<h2>Fetch SNMP variable<a class="headerlink" href="#fetch-snmp-variable" title="Link to this heading">¶</a></h2>
+<p>So just cut&amp;paste the following code right into your Python prompt. The
+code will performs SNMP GET operation for a sysDescr.0 object at a
+publically available SNMP Command Responder at
+<code class="docutils literal notranslate"><span class="pre">localhost</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">():</span>
+    <span class="n">snmpEngine</span> <span class="o">=</span> <span class="n">SnmpEngine</span><span class="p">()</span>
+    <span class="n">errorIndication</span><span class="p">,</span> <span class="n">errorStatus</span><span class="p">,</span> <span class="n">errorIndex</span><span class="p">,</span> <span class="n">varBinds</span> <span class="o">=</span> <span class="k">await</span> <span class="n">getCmd</span><span class="p">(</span>
+        <span class="n">snmpEngine</span><span class="p">,</span>
+        <span class="n">CommunityData</span><span class="p">(</span><span class="s2">"public"</span><span class="p">,</span> <span class="n">mpModel</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+        <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s2">"localhost"</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+        <span class="n">ContextData</span><span class="p">(),</span>
+        <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"sysDescr"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">errorIndication</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">errorIndication</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">errorStatus</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">{}</span><span class="s2"> at </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">errorStatus</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span>
+                <span class="n">errorIndex</span> <span class="ow">and</span> <span class="n">varBinds</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">errorIndex</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"?"</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">varBind</span> <span class="ow">in</span> <span class="n">varBinds</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">" = "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">varBind</span><span class="p">]))</span>
+
+    <span class="n">snmpEngine</span><span class="o">.</span><span class="n">transportDispatcher</span><span class="o">.</span><span class="n">closeDispatcher</span><span class="p">()</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="_downloads/5d8263b2878b06dcb6b8713d1d306a87/v1-get.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+<p>If everything works as it should you will get:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">SNMPv2</span><span class="o">-</span><span class="n">MIB</span><span class="p">::</span><span class="n">sysDescr</span><span class="o">.</span><span class="s2">"0"</span> <span class="o">=</span> <span class="n">Linux</span> <span class="n">localhost</span> <span class="mf">4.1.3</span><span class="n">_U1</span> <span class="mi">1</span> <span class="n">sun4m</span>
+<span class="o">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>on your console.</p>
+</section>
+<section id="send-snmp-trap">
+<h2>Send SNMP TRAP<a class="headerlink" href="#send-snmp-trap" title="Link to this heading">¶</a></h2>
+<p>To send a trivial TRAP message to our hosted Notification Receiver at
+<code class="docutils literal notranslate"><span class="pre">localhost</span></code>
+, just cut&amp;paste the following code into your interactive Python session:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">():</span>
+    <span class="n">snmpEngine</span> <span class="o">=</span> <span class="n">SnmpEngine</span><span class="p">()</span>
+    <span class="n">errorIndication</span><span class="p">,</span> <span class="n">errorStatus</span><span class="p">,</span> <span class="n">errorIndex</span><span class="p">,</span> <span class="n">varBinds</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sendNotification</span><span class="p">(</span>
+        <span class="n">snmpEngine</span><span class="p">,</span>
+        <span class="n">CommunityData</span><span class="p">(</span><span class="s2">"public"</span><span class="p">,</span> <span class="n">mpModel</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+        <span class="n">UdpTransportTarget</span><span class="p">((</span><span class="s2">"localhost"</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+        <span class="n">ContextData</span><span class="p">(),</span>
+        <span class="s2">"trap"</span><span class="p">,</span>
+        <span class="n">NotificationType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"1.3.6.1.6.3.1.1.5.2"</span><span class="p">))</span><span class="o">.</span><span class="n">addVarBinds</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">"1.3.6.1.6.3.1.1.4.3.0"</span><span class="p">,</span> <span class="s2">"1.3.6.1.4.1.20408.4.1.1.2"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"1.3.6.1.2.1.1.1.0"</span><span class="p">,</span> <span class="n">OctetString</span><span class="p">(</span><span class="s2">"my system"</span><span class="p">)),</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">errorIndication</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">errorIndication</span><span class="p">)</span>
+
+    <span class="n">snmpEngine</span><span class="o">.</span><span class="n">transportDispatcher</span><span class="o">.</span><span class="n">closeDispatcher</span><span class="p">()</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="_downloads/e8144698cc231bc545c7b37075687372/default-v1-trap.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+<p>Many ASN.1 MIB files could be downloaded from
+<a class="reference external" href="https://pysnmp.github.io/mibs/asn1/">pysnmp.github.io</a> or PySNMP could
+be <a class="reference internal" href="docs/api-reference.html"><span class="doc">configured</span></a> to download them automatically.</p>
+<p>For more sophisticated examples and use cases please refer to
+<a class="reference internal" href="examples/contents.html"><span class="doc">examples</span></a> and <a class="reference internal" href="docs/api-reference.html"><span class="doc">library reference</span></a>
+pages.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

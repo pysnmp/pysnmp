@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Listening on multiple network interfaces &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Garbaged SNMP values (apps)" href="non-printable-snmp-values-apps.html" />
+    <link rel="prev" title="Ignored SNMP packets" href="ignored-snmp-packets.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../faq.html">FAQ</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="getting-peer-information.html">Getting peer address information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to-implement-agent-mib.html">How to implement MIB at the Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ignored-snmp-packets.html">Ignored SNMP packets</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Listening on multiple network interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="non-printable-snmp-values-apps.html">Garbaged SNMP values (apps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="non-printable-snmp-values-tools.html">Garbaged SNMP values (tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="oids-not-increasing.html">Dealing with the “OID not increasing” error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pass-custom-mib-to-manager.html">How to pass MIB to the Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="response-values-mib-resolution.html">Resolve response values at MIB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="snmp-data-constraints-verification-failure.html">SNMP data constraints verification error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="walk-whole-mib.html">Walking whole MIB</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="../faq.html">FAQ</a><ul>
+      <li>Previous: <a href="ignored-snmp-packets.html" title="previous chapter">Ignored SNMP packets</a></li>
+      <li>Next: <a href="non-printable-snmp-values-apps.html" title="next chapter">Garbaged SNMP values (apps)</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="listening-on-multiple-network-interfaces">
+<h1>Listening on multiple network interfaces<a class="headerlink" href="#listening-on-multiple-network-interfaces" title="Link to this heading">¶</a></h1>
+<ol class="upperalpha simple" start="17">
+<li><p>I need my receiving entity (CommandResponder or Notification Receiver)
+to listen for SNMP messages on multiple network interfaces. How do
+I do that with pysnmp?</p></li>
+</ol>
+<ol class="upperalpha simple">
+<li><p>Simply register multiple network transports with your SNMP engine.
+Each transport would be bound to an individual local transport
+endpoint (for instance, IP address &amp; UDP port pair).</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="c1"># Security setup would follow</span>
+ <span class="o">...</span>
+ <span class="c1"># Setup first transport endpoint</span>
+ <span class="n">config</span><span class="o">.</span><span class="n">addSocketTransport</span><span class="p">(</span>
+     <span class="n">snmpEngine</span><span class="p">,</span>
+     <span class="n">udp</span><span class="o">.</span><span class="n">domainName</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+     <span class="n">udp</span><span class="o">.</span><span class="n">UdpSocketTransport</span><span class="p">()</span><span class="o">.</span><span class="n">openServerMode</span><span class="p">((</span><span class="s1">'127.0.0.1'</span><span class="p">,</span> <span class="mi">162</span><span class="p">))</span>
+ <span class="p">)</span>
+
+ <span class="c1"># Setup second transport endpoint</span>
+ <span class="n">config</span><span class="o">.</span><span class="n">addSocketTransport</span><span class="p">(</span>
+     <span class="n">snmpEngine</span><span class="p">,</span>
+     <span class="n">udp</span><span class="o">.</span><span class="n">domainName</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span>
+     <span class="n">udp</span><span class="o">.</span><span class="n">UdpSocketTransport</span><span class="p">()</span><span class="o">.</span><span class="n">openServerMode</span><span class="p">((</span><span class="s1">'192.168.1.1'</span><span class="p">,</span> <span class="mi">162</span><span class="p">))</span>
+ <span class="p">)</span>
+ <span class="c1"># Receiver callback function implementation and Dispatcher invocation</span>
+ <span class="c1"># would follow</span>
+ <span class="o">...</span>
+
+<span class="n">Notice</span> <span class="n">extended</span> <span class="n">transport</span> <span class="n">domain</span> <span class="n">specification</span> <span class="p">(</span><span class="n">udp</span><span class="o">.</span><span class="n">domainName</span><span class="p">)</span> <span class="ow">in</span>
+<span class="n">the</span> <span class="n">code</span> <span class="n">above</span><span class="o">.</span> <span class="n">There</span> <span class="n">we</span> <span class="n">register</span> <span class="n">each</span> <span class="n">transport</span> <span class="n">endpoint</span> <span class="n">under</span> <span class="n">distinct</span>
+<span class="n">OID</span><span class="p">,</span> <span class="n">however</span> <span class="n">always</span> <span class="n">within</span> <span class="n">the</span> <span class="n">canonical</span> <span class="n">transport</span> <span class="n">domain</span> <span class="n">OID</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

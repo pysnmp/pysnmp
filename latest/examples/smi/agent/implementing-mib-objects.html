@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Agent side &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=f6a572b4" />
+    <script src="../../../_static/documentation_options.js?v=12958129"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Download PySNMP" href="../../../download.html" />
+    <link rel="prev" title="Generated MIB modules" href="../manager/generated-mib-modules.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../contents.html">
+    <img class="logo" src="../../../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../contents.html">Example scripts</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#high-level-snmp">High-level SNMP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#native-snmp-api">Native SNMP API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#packet-level-snmp">Packet-level SNMP</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../contents.html#low-level-mib-access">Low-level MIB access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contents.html#using-these-examples">Using these examples</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../contents.html">Documentation overview</a><ul>
+  <li><a href="../../contents.html">Example scripts</a><ul>
+      <li>Previous: <a href="../manager/generated-mib-modules.html" title="previous chapter">Generated MIB modules</a></li>
+      <li>Next: <a href="../../../download.html" title="next chapter">Download PySNMP</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="toctree-wrapper compound">
+</div>
+<section id="agent-side">
+<h1>Agent side<a class="headerlink" href="#agent-side" title="Link to this heading">¶</a></h1>
+<section id="implementing-mib-objects">
+<h2>Implementing MIB objects<a class="headerlink" href="#implementing-mib-objects" title="Link to this heading">¶</a></h2>
+<p>This script explains how SNMP Agent application could model
+real-world data as Managed Objects defined in MIB.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span>
+
+<span class="c1"># MIB Builder is normally pre-created by SNMP engine</span>
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+
+<span class="c1">#</span>
+<span class="c1"># This may be done in a stand-alone file and then loaded up</span>
+<span class="c1"># by SNMP Agent</span>
+<span class="c1">#</span>
+
+<span class="c1"># A base class for a custom Managed Object</span>
+<span class="p">(</span><span class="n">MibScalarInstance</span><span class="p">,)</span> <span class="o">=</span> <span class="n">mibBuilder</span><span class="o">.</span><span class="n">importSymbols</span><span class="p">(</span><span class="s2">"SNMPv2-SMI"</span><span class="p">,</span> <span class="s2">"MibScalarInstance"</span><span class="p">)</span>
+
+<span class="c1"># Managed object specification</span>
+<span class="p">(</span><span class="n">sysLocation</span><span class="p">,)</span> <span class="o">=</span> <span class="n">mibBuilder</span><span class="o">.</span><span class="n">importSymbols</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"sysLocation"</span><span class="p">)</span>
+
+
+<span class="c1"># Custom Managed Object</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MySysLocationInstance</span><span class="p">(</span><span class="n">MibScalarInstance</span><span class="p">):</span>
+    <span class="c1"># noinspection PyUnusedLocal</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">readGet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="c1"># Just return a custom value</span>
+        <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="s2">"The Leaky Cauldron"</span><span class="p">)</span>
+
+
+<span class="n">sysLocationInstance</span> <span class="o">=</span> <span class="n">MySysLocationInstance</span><span class="p">(</span><span class="n">sysLocation</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,),</span> <span class="n">sysLocation</span><span class="o">.</span><span class="n">syntax</span><span class="p">)</span>
+
+<span class="c1"># Register Managed Object with a MIB tree</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">exportSymbols</span><span class="p">(</span>
+    <span class="c1"># '__' prefixed MIB modules take precedence on indexing</span>
+    <span class="s2">"__MY-LOCATION-MIB"</span><span class="p">,</span>
+    <span class="n">sysLocationInstance</span><span class="o">=</span><span class="n">sysLocationInstance</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="c1">#</span>
+    <span class="c1"># This is what is done internally by Agent.</span>
+    <span class="c1">#</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">exval</span><span class="p">,</span> <span class="n">instrum</span>
+
+    <span class="n">mibInstrum</span> <span class="o">=</span> <span class="n">instrum</span><span class="o">.</span><span class="n">MibInstrumController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Remote manager read access to MIB instrumentation (table walk)"</span><span class="p">)</span>
+    <span class="n">oid</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="p">(),</span> <span class="kc">None</span>
+    <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">oid</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">mibInstrum</span><span class="o">.</span><span class="n">readNextVars</span><span class="p">(((</span><span class="n">oid</span><span class="p">,</span> <span class="n">val</span><span class="p">),))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">exval</span><span class="o">.</span><span class="n">endOfMib</span><span class="o">.</span><span class="n">isSameTypeWith</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">val</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../../_downloads/b5a926e664836943094e4f8d63752b9c/custom-managed-object.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+</section>
+<section id="agent-operations-on-mib">
+<h2>Agent operations on MIB<a class="headerlink" href="#agent-operations-on-mib" title="Link to this heading">¶</a></h2>
+<p>This script explains how SNMP Agent application manipulates
+its MIB possibly triggered by SNMP Manager’s commands.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="c1"># SNMP agent backend e.g. Agent access to Managed Objects</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span><span class="p">,</span> <span class="n">exval</span><span class="p">,</span> <span class="n">instrum</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Loading MIB modules..."</span><span class="p">),)</span>
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">loadModules</span><span class="p">(</span>
+    <span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"SNMP-FRAMEWORK-MIB"</span><span class="p">,</span> <span class="s2">"SNMP-COMMUNITY-MIB"</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Building MIB tree..."</span><span class="p">),)</span>
+<span class="n">mibInstrum</span> <span class="o">=</span> <span class="n">instrum</span><span class="o">.</span><span class="n">MibInstrumController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Building table entry index from human-friendly representation..."</span><span class="p">),)</span>
+<span class="p">(</span><span class="n">snmpCommunityEntry</span><span class="p">,)</span> <span class="o">=</span> <span class="n">mibBuilder</span><span class="o">.</span><span class="n">importSymbols</span><span class="p">(</span>
+    <span class="s2">"SNMP-COMMUNITY-MIB"</span><span class="p">,</span> <span class="s2">"snmpCommunityEntry"</span>
+<span class="p">)</span>
+<span class="n">instanceId</span> <span class="o">=</span> <span class="n">snmpCommunityEntry</span><span class="o">.</span><span class="n">getInstIdFromIndices</span><span class="p">(</span><span class="s2">"my-router"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Create/update SNMP-COMMUNITY-MIB::snmpCommunityEntry table row: "</span><span class="p">)</span>
+<span class="n">varBinds</span> <span class="o">=</span> <span class="n">mibInstrum</span><span class="o">.</span><span class="n">writeVars</span><span class="p">(</span>
+    <span class="p">(</span>
+        <span class="p">(</span><span class="n">snmpCommunityEntry</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="o">+</span> <span class="n">instanceId</span><span class="p">,</span> <span class="s2">"mycomm"</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">snmpCommunityEntry</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="n">instanceId</span><span class="p">,</span> <span class="s2">"mynmsname"</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">snmpCommunityEntry</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="p">(</span><span class="mi">7</span><span class="p">,)</span> <span class="o">+</span> <span class="n">instanceId</span><span class="p">,</span> <span class="s2">"volatile"</span><span class="p">),</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">for</span> <span class="n">oid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">varBinds</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">"</span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">oid</span><span class="p">]),</span>
+            <span class="ow">not</span> <span class="n">val</span><span class="o">.</span><span class="n">isValue</span> <span class="ow">and</span> <span class="s2">"N/A"</span> <span class="ow">or</span> <span class="n">val</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Read whole MIB (table walk)"</span><span class="p">)</span>
+<span class="n">oid</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="p">(),</span> <span class="kc">None</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">oid</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">mibInstrum</span><span class="o">.</span><span class="n">readNextVars</span><span class="p">(((</span><span class="n">oid</span><span class="p">,</span> <span class="n">val</span><span class="p">),))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">exval</span><span class="o">.</span><span class="n">endOfMib</span><span class="o">.</span><span class="n">isSameTypeWith</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+        <span class="k">break</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">"</span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">oid</span><span class="p">]),</span>
+            <span class="ow">not</span> <span class="n">val</span><span class="o">.</span><span class="n">isValue</span> <span class="ow">and</span> <span class="s2">"N/A"</span> <span class="ow">or</span> <span class="n">val</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">(),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Unloading MIB modules..."</span><span class="p">),)</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">unloadModules</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../../../_downloads/cfe1119d6918bc634a7f0a03fd0dd2e4/operations-on-managed-objects.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span></code></a> script.</p>
+<p>See also: <a class="reference internal" href="../../../docs/api-reference.html"><span class="doc">library reference</span></a>.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

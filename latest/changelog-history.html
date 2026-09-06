@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Historical changelog &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=f6a572b4" />
+    <script src="_static/documentation_options.js?v=12958129"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Continuous integration and releases" href="ci-and-releases.html" />
+    <link rel="prev" title="Changelog" href="changelog.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="contents.html">
+    <img class="logo" src="_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick start</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docs/tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="changelog.html" title="previous chapter">Changelog</a></li>
+      <li>Next: <a href="ci-and-releases.html" title="next chapter">Continuous integration and releases</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="historical-changelog">
+<h1>Historical changelog<a class="headerlink" href="#historical-changelog" title="Link to this heading">¶</a></h1>
+<p>The narrative history of the project through 5.x. From 6.0.0-rc.1 onward see
+the generated <a class="reference internal" href="changelog.html"><span class="doc">Changelog</span></a>.</p>
+<section id="revision-5-0-25-released-2026-08-29">
+<h2>Revision 5.0.25, released 2026-08-29<a class="headerlink" href="#revision-5-0-25-released-2026-08-29" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Moved <cite>Cryptodome.Cipher</cite> imports behind a lazy <cite>pysnmp.proto.secmod.cipherbackend</cite>
+helper; pysnmp now imports and serves SNMPv1, SNMPv2c and the SNMPv3
+noAuthNoPriv/authNoPriv security levels when pycryptodomex is absent, and
+configuring a privacy protocol raises <cite>PySnmpError</cite> naming the missing
+package instead of failing at packet processing time (#40)</p></li>
+<li><p>Added <cite>PySnmpWeakCryptoWarning</cite> for DES, 3DES and HMAC-MD5, and
+<cite>PySnmpNonStandardCryptoWarning</cite> for the Reeder/Blumenthal AES-192/256
+variants, both emitted from <cite>addV3User</cite> at configuration time (#40)</p></li>
+<li><p>Added a Security Considerations documentation page stating the recommended
+AES-128-CFB plus HMAC-SHA-256 configuration and the status of every USM
+protocol (#40)</p></li>
+<li><p>Fixed <cite>pysnmp.smi.builder</cite> relying on another module to import
+<cite>importlib.util</cite> and <cite>importlib.machinery</cite></p></li>
+<li><p>Corrected the README claim that pycryptodomex is optional</p></li>
+<li><p>Removed deprecated <cite>asyncore</cite>/<cite>asynsock</cite> carrier shims and
+<cite>hlapi/asyncore</cite> modules entirely; all transport and HLAPI
+functionality now uses <cite>asyncio</cite> only (#98, #103)</p></li>
+<li><p>Removed all deprecated asyncore example scripts (61 files) and
+associated Sphinx documentation (#98)</p></li>
+<li><p>Migrated build system from poetry to uv with hatchling backend (#93)</p></li>
+<li><p>Added snmpsim integration tests and test infrastructure (#94)</p></li>
+<li><p>Bumped minimum Python version to 3.10; removed dead Python 2-era
+fallbacks (<cite>imp</cite>, <cite>md5</cite>/<cite>sha</cite>, <cite>hashlib</cite> SHA-2, <cite>socket.inet_ntop</cite>,
+<cite>errno.ENOENT</cite>, <cite>Cryptodome</cite>, Python 2.6 compat directory) (#95)</p></li>
+<li><p>Updated pysmi API calls to snake_case names; widened
+<cite>pysnmp-pysmi</cite> pin to allow pysmi 2.x (#95)</p></li>
+<li><p>Replaced asyncore with asyncio; fixed regression where server-mode
+transports ended up on a different event loop than the dispatcher,
+causing SNMPv3 integration to silently time out (#98)</p></li>
+<li><p>Replaced the test suite’s removed asyncore-based <cite>snmpsimd.py</cite> dependency
+with an asyncio-compatible in-tree simulator covering SNMPv1/v2c/v3,
+GETNEXT/GETBULK, and the USM auth/privacy matrix (#54)</p></li>
+<li><p>Fixed SNMP value conversion to always clone proxied values into the
+destination ASN.1 type; allowed empty OctetString SET values when MIB
+syntax permits (#96)</p></li>
+<li><p>Corrected VACM candidate selection for matching/<cite>any</cite> security
+models, permitted security levels, exact contexts, and longest
+prefixes (#96)</p></li>
+<li><p>Implemented RFC 3413 notification filtering mechanism (#102)</p></li>
+<li><p>Added device reporting and MIB instance tools (sync and asyncio
+device-report helpers, IANA PEN MIB instance generation, MIB instance
+stubs from ASN.1 modules) (#104)</p></li>
+<li><p>Added black, isort, ruff, pylint, mypy tooling config; added
+<cite>py.typed</cite> PEP 561 marker; applied auto-fixes; ran pyupgrade
+<cite>–py310-plus</cite>; converted 88 <cite>sys.exc_info()</cite> idioms to modern
+<cite>except … as e:</cite> syntax (#99)</p></li>
+<li><p>Added type annotations to functions across the codebase (#100)</p></li>
+<li><p>Consolidated repeated asyncio callbacks, SNMPv3 message assembly, USM
+error handling, and observer context management; improved cleanup on
+exception paths (#101)</p></li>
+<li><p>Added Python 3.14 to CI matrix; added docs building step to CI (#103,
+#105)</p></li>
+<li><p>Removed all 16 <cite>from __future__ import annotations</cite> imports</p></li>
+<li><p>Removed <cite>hasattr(logging, ‘NullHandler’)</cite> fallback in <cite>debug.py</cite></p></li>
+<li><p>Removed redundant <cite>instanceTypes = (object,)</cite> in <cite>smi/view.py</cite></p></li>
+<li><p>Removed <cite>__nonzero__</cite> method in <cite>ObjectIdentity</cite> (Python 2 only)</p></li>
+<li><p>Replaced all <cite>pyasn1.compat.octets</cite> shim usage with native Python 3
+equivalents across 19 files (Latin-1 encoding for <cite>str2octs</cite>/<cite>octs2str</cite>)</p></li>
+<li><p>Fixed 5 <cite>is null</cite> identity checks → <cite>== b’’</cite> in oneliner command
+generator and notification originator</p></li>
+<li><p>Fixed dangerous old-style ternary expressions in
+<cite>CommunityData.clone()</cite> and <cite>UsmUserData.clone()</cite> (18 instances) that
+silently discarded falsy non-None values (<cite>mpModel=0</cite>, <cite>contextName=’’</cite>,
+<cite>authKey=b’’</cite>, <cite>authKeyType=0</cite>)</p></li>
+<li><p>Fixed <cite>ObjectIdentity.__ge__</cite> and <cite>__le__</cite> bugs (delegated to <cite>&gt;</cite> / <cite>&lt;</cite>
+instead of <cite>&gt;=</cite> / <cite>&lt;=</cite>) by applying <cite>functools.total_ordering</cite></p></li>
+<li><p>Applied <cite>functools.total_ordering</cite> to <cite>ErrorIndication</cite>,
+<cite>TimerCallable</cite>, and <cite>ObjectIdentity</cite></p></li>
+<li><p>Applied <cite>&#64;dataclass(eq=False, repr=False)</cite> to <cite>ContextData</cite></p></li>
+<li><p>Replaced <cite>typing.Callable</cite> with <cite>collections.abc.Callable</cite> in
+<cite>hlapi/asyncio/_callback.py</cite></p></li>
+<li><p>Applied <cite>pathlib.Path</cite> to filesystem operations in <cite>engine.py</cite>,
+<cite>compiler.py</cite>, and <cite>carrier/asyncio/dgram/unix.py</cite></p></li>
+<li><p>Fixed pyc MIB loading to support PEP 552 hash-based invalidation (#90)</p></li>
+<li><p>Fixed deprecated <cite>asyncio.get_event_loop()</cite> calls (#89)</p></li>
+<li><p>Fixed deprecated GitHub Actions versions (#91)</p></li>
+<li><p>Removed references to snmplabs.com (domain now points to phishing
+sites) (#88)</p></li>
+<li><p>Renamed <cite>CHANGES.txt</cite> to <cite>CHANGELOG.md</cite></p></li>
+<li><p>Updated docs version from 4.4 to 5.0.24; updated Python version
+references from 2.4–3.7 to 3.10+</p></li>
+<li><p>Removed <cite>easy_install</cite>/<cite>ez_setup.py</cite> references; updated PyPI URL</p></li>
+<li><p>Removed Python 2 era <cite>py2exe</cite> FAQ</p></li>
+<li><p>Added Python 3.10–3.13 classifiers to <cite>pyproject.toml</cite></p></li>
+<li><p>Fixed stale dependency versions in copilot-instructions.md</p></li>
+<li><p>Updated <cite>runtests.sh</cite> to reference asyncio examples</p></li>
+<li><p>Cleaned <cite>pylint-baseline.json</cite> of 17 asyncore entries</p></li>
+<li><p>Replaced wildcard imports with explicit public dependencies and preserved
+the high-level API re-exports.</p></li>
+<li><p>Improved static-analysis compliance for error handling, no-op extension
+hooks, identifier generation, and protocol salt initialization.</p></li>
+<li><p>Added project-level exclusions for intentional established naming conventions.</p></li>
+</ul>
+</section>
+<section id="revision-5-0-24-released-2026-08-25">
+<h2>Revision 5.0.24, released 2026-08-25<a class="headerlink" href="#revision-5-0-24-released-2026-08-25" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Bumped minimum Python version from 3.8 to 3.10</p></li>
+<li><p>Removed dead <cite>imp</cite> module fallback in MIB builder; <cite>importlib</cite> is now
+used unconditionally (the <cite>imp</cite> module was removed in Python 3.12)</p></li>
+<li><p>Removed deprecated <cite>md5</cite>/<cite>sha</cite> standalone module fallbacks in all SNMPv3
+authentication and privacy modules; <cite>hashlib</cite> is now used directly</p></li>
+<li><p>Updated pysmi API calls in MIB compiler to use snake_case names
+(<cite>get_readers_from_urls</cite>, <cite>smi_v1_relaxed</cite>, <cite>add_sources</cite>,
+<cite>add_searchers</cite>, <cite>add_borrowers</cite>) to eliminate pysmi 2.0
+deprecation warnings</p></li>
+<li><p>Updated <cite>pysnmp-pysmi</cite> dependency pin from <cite>&lt;2.0.0</cite> to <cite>&lt;3.0.0</cite> to
+allow pysmi 2.x</p></li>
+<li><p>Promoted <cite>pyasyncore</cite> from a dev-only dependency to a runtime
+dependency so the <cite>asyncore</cite> backport is available on Python 3.12+
+where the stdlib <cite>asyncore</cite> module has been removed</p></li>
+<li><p>Removed dead <cite>hashlib</cite> SHA-2 fallback in <cite>hmacsha2.py</cite> (SHA-2
+algorithms have been in <cite>hashlib</cite> since Python 3.0)</p></li>
+<li><p>Removed dead <cite>socket.inet_ntop</cite>/<cite>inet_pton</cite> fallback in <cite>SNMPv2-TM.py</cite>
+(available since Python 3.4)</p></li>
+<li><p>Removed dead <cite>errno.ENOENT</cite> fallback in <cite>builder.py</cite></p></li>
+<li><p>Removed dead <cite>import os</cite> fallback in <cite>SNMP-FRAMEWORK-MIB.py</cite></p></li>
+<li><p>Removed dead <cite>Cryptodome.Cipher</cite> <cite>ImportError</cite> fallbacks in <cite>des.py</cite>,
+<cite>aes.py</cite>, and <cite>des3.py</cite> (<cite>pycryptodomex</cite> is a declared dependency)</p></li>
+<li><p>Removed Python 2.6 compatibility directory
+(<cite>hlapi/asyncore/sync/compat/</cite>) and its <cite>try/except SyntaxError</cite>
+guard (dead code on Python 3.10+)</p></li>
+<li><p>Removed stale <cite>asyncio.async()</cite> deprecation comments in asyncio
+transport code</p></li>
+<li><p>Added snmpsim integration tests and renamed CI job to <cite>unit-tests</cite></p></li>
+</ul>
+</section>
+<section id="revision-4-4-12-released-2019-09-24">
+<h2>Revision 4.4.12, released 2019-09-24<a class="headerlink" href="#revision-4-4-12-released-2019-09-24" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed broken SNMPv3 <cite>msgFlag</cite> initialization on authoritative SNMP
+engine ID discovery. This bug causes secure communication with peer
+SNMP engines to stall at SNMP engine ID discovery procedure.</p></li>
+</ul>
+</section>
+<section id="revision-4-4-11-released-2019-08-10">
+<h2>Revision 4.4.11, released 2019-08-10<a class="headerlink" href="#revision-4-4-11-released-2019-08-10" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added SNMPv3 USM master and localized keys support to LCD configuration</p></li>
+<li><p>Improved initial and runtime USM debugging</p></li>
+<li><p>Fixed a bug in USM configuration which did not allow the same user names
+to be added under different security names</p></li>
+</ul>
+</section>
+<section id="revision-4-4-10-released-2019-07-29">
+<h2>Revision 4.4.10, released 2019-07-29<a class="headerlink" href="#revision-4-4-10-released-2019-07-29" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Reworked VACM access control function. Most important changes include:</p>
+<ul class="simple">
+<li><p>Added subtree match negation support (vacmViewTreeFamilyType)</p></li>
+<li><p>Added subtree family mask support (vacmViewTreeFamilyMask)</p></li>
+<li><p>Added prefix content name matching support (vacmAccessContextMatch)</p></li>
+<li><p>Added key VACM tables caching for better <cite>isAccessAllowed</cite> lookup
+performance</p></li>
+</ul>
+<p>One potential incompatibility may be caused by the <cite>addContext()</cite> call
+which now needs to be made explicitly during low-level VACM configuration
+rather than be a side effect of <cite>addVacmAccess()</cite> call.</p>
+</li>
+<li><p>Rebased MIB importing code onto <cite>importlib</cite> because <cite>imp</cite> is long
+deprecated</p></li>
+<li><p>Received MIB objects resolution made more forgiving to errors, added
+optional <cite>ignoreErrors</cite> parameter to <cite>ObjectType.resolveWithMib()</cite> to
+control that behaviour.</p></li>
+<li><p>Fixed asyncore main loop to respect non-default timer resolution</p></li>
+<li><p>Fixed <cite>.setTimerResolution()</cite> behaviour of abstract main loop dispatcher
+to update call intervals of the existing periodic dispatcher jobs</p></li>
+<li><p>Fixed <cite>var-bindings</cite> initialization to prevent pyasn1 encoder failures
+with newer pyasn1 versions where <cite>SequenceOf</cite> type looses its default
+initializer.</p></li>
+<li><p>Fixed crash on uninitialized component serialization left out in
+SNMP v1 TRAP PDU to SNMPv2/3 TRAP PDU proxy translation routine.</p></li>
+</ul>
+</section>
+<section id="revision-4-4-9-released-2019-02-09">
+<h2>Revision 4.4.9, released 2019-02-09<a class="headerlink" href="#revision-4-4-9-released-2019-02-09" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Made MIB loader ignoring file and directory access errors</p></li>
+<li><p>Added missing SNMP PDU error classes and their handling in Command Responder</p></li>
+<li><p>Fixed crash on MIB load failure in case of directory access error</p></li>
+<li><p>Fixed socket transparency option (IPV6_TRANSPARENT) to make IPv6
+transparent operation functional</p></li>
+</ul>
+</section>
+<section id="revision-4-4-8-released-2018-12-30">
+<h2>Revision 4.4.8, released 2018-12-30<a class="headerlink" href="#revision-4-4-8-released-2018-12-30" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed Pythonized MIB load (in the source form) - made sure to turn
+it into a code object prior to its execution</p></li>
+</ul>
+</section>
+<section id="revision-4-4-7-released-2018-12-29">
+<h2>Revision 4.4.7, released 2018-12-29<a class="headerlink" href="#revision-4-4-7-released-2018-12-29" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Copyright notice extended to the year 2019</p></li>
+<li><p>Exposed ASN.1 <cite>Null</cite> type through <cite>rfc1902</cite> module for convenience.</p></li>
+<li><p>Use <cite>compile()</cite> before <cite>exec</cite>’ing MIB modules to attach filename to
+the stack frames (ultimately shown in traceback/debugger)</p></li>
+<li><p>Fixed hlapi/v3arch transport target caching to ensure transport targets
+are different even if just timeout/retries options differ</p></li>
+<li><p>Fixed hlapi LCD configurator to include <cite>contextName</cite>. Prior to this fix
+sending SNMPv3 TRAP with non-default <cite>contextName</cite> would fail.</p></li>
+<li><p>Fixed possible duplicate key occurrence in the <cite>OrderedDict</cite> following
+a race condition</p></li>
+<li><p>Fixed undefined name references in <cite>inet_pton</cite>/<cite>inet_ntop</cite> substitute
+routines for IPv6 in <cite>TRANSPORT-ADDRESS-MIB.py</cite></p></li>
+</ul>
+</section>
+<section id="revision-4-4-6-released-2018-09-13">
+<h2>Revision 4.4.6, released 2018-09-13<a class="headerlink" href="#revision-4-4-6-released-2018-09-13" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Improved package build and dependency tracking</p></li>
+<li><p>Fixed missing LICENSE from the tarball distribution</p></li>
+<li><p>Fixed <cite>CommandGeneratorLcdConfigurator.unconfigure()</cite> to fully clean up
+internal caches, otherwise repetitive attempts to configure the target
+would fail.</p></li>
+<li><p>Fix to tolerate possible duplicate enumerations in <cite>Bits</cite> and <cite>Integer</cite>
+SMI types.</p></li>
+<li><p>Fix to tolerate non-initialised entries in SNMP community table. Once a
+bad entry sneaked into the SNMP community table, all the subsequent
+SNMP v1/v2c operations failed. The fix ignores incomplete SNMP community
+table entries in the course of building indices.</p></li>
+</ul>
+</section>
+<section id="revision-4-4-5-released-2018-08-05">
+<h2>Revision 4.4.5, released 2018-08-05<a class="headerlink" href="#revision-4-4-5-released-2018-08-05" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added PySnmpError.cause attribute holding parent exception tuple</p></li>
+<li><p>Fixed broken InetAddressType rendering caused by a pyasn1 regression</p></li>
+<li><p>Fixed typo in RFC1158 module</p></li>
+<li><p>Fixed possible infinite loop in GETBULK response PDU builder</p></li>
+<li><p>Fixed memory leak in the <cite>config.delContext()</cite> VACM management harness</p></li>
+<li><p>Fixed <cite>Bits</cite> class initialization when enumeration values are given</p></li>
+<li><p>Fixed crash caused by incoming SNMPv3 message requesting SNMPv1/v2c
+security model</p></li>
+<li><p>Fixed out-of-scope OIDs leaking at the end of SNMP table at hlapi
+<cite>nextCmd</cite> and <cite>bulkCmd</cite> calls when <cite>lexicographicMode = False</cite></p></li>
+</ul>
+</section>
+<section id="revision-4-4-4-released-2018-01-03">
+<h2>Revision 4.4.4, released 2018-01-03<a class="headerlink" href="#revision-4-4-4-released-2018-01-03" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Copyright notice extended to the year 2018</p></li>
+<li><p>Fixed short local key expansion at 3DES key localization
+implementation.</p></li>
+</ul>
+</section>
+<section id="revision-4-4-3-released-2017-12-22">
+<h2>Revision 4.4.3, released 2017-12-22<a class="headerlink" href="#revision-4-4-3-released-2017-12-22" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Migrated references from SourceForge</p></li>
+<li><p>Added missing SHA2 support for Blumenthal key localization</p></li>
+<li><p>Fixed named bits handling at rfc1902.Bits</p></li>
+<li><p>Fixed missing SmiError exception class at pysnmp.proto.rfc1155</p></li>
+<li><p>Fixed SNMP v1-&gt;v2c PDU proxy – error-status &amp; error-index fields
+from v1 PDU get copied over to v2c PDU in addition to the exception
+sentinels being set</p></li>
+</ul>
+</section>
+<section id="revision-4-4-2-released-2017-11-11">
+<h2>Revision 4.4.2, released 2017-11-11<a class="headerlink" href="#revision-4-4-2-released-2017-11-11" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>The pysnmp version being used gets exposed to the MIB modules
+via the <cite>MibBuilder</cite> instance</p></li>
+<li><p>The .setObjects() method of the SMI types now accepts
+<cite>append=False</cite> parameter to let the caller adding more
+than 255 elements over the course of multiple calls</p></li>
+<li><p>Added support for some more missing fields of SMIv2 MACRO types</p></li>
+<li><p>Example scripts rearranged in a way that IPv6 requirement is
+clearly encoded in the script’s name</p></li>
+<li><p>Fixed SNMPv2-SMI.NotificationType to expose .set/getReference()
+instead of .set/getRevision() which should not be there in the
+first place</p></li>
+<li><p>Fixed non-implied-OID encoding in SNMP table indices</p></li>
+<li><p>Fixed inconsistent SNMPv3 discovery and retrying algorithm</p></li>
+</ul>
+</section>
+<section id="revision-4-4-1-released-2017-10-23">
+<h2>Revision 4.4.1, released 2017-10-23<a class="headerlink" href="#revision-4-4-1-released-2017-10-23" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>HMAC-SHA-2 Authentication Protocols support added (RFC-7860)</p></li>
+<li><p>The pycryptodome dependency replaced with pycryptodomex as
+it is recommended by the upstream to avoid unwanted interference
+with PyCrypto package should it also be installed</p></li>
+<li><p>Sphinx theme changed to Alabaster in the documentation</p></li>
+<li><p>Minor adjustments towards pyasn1 0.4.x compatibility</p></li>
+<li><p>Fixed ObjectIdentifier-into-ObjectIdentity casting at
+rfc1902.ObjectType MIB resolution harness</p></li>
+<li><p>Fixed NetworkAddress object handling in SNMP table indices</p></li>
+<li><p>Fixed MIB lookup by module:object.indices MIB object with
+InetAddressIPv{4,6} objects being in the index</p></li>
+<li><p>Fixed non-translated PDU being retries at CommandGenerator what
+leads to wrong PDU version being sent and even a crash on
+incompatible PDU/SNMP message combination</p></li>
+</ul>
+</section>
+<section id="revision-4-3-10-released-2017-10-06">
+<h2>Revision 4.3.10, released 2017-10-06<a class="headerlink" href="#revision-4-3-10-released-2017-10-06" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Refactored partial SNMP message decoding to make it less dependent
+on unpublished pyasn1 API features.</p></li>
+<li><p>Fix to MibTableRow.setFromName() to keep the input parameter type when
+it propagates to the return value. Before this fix
+ObjectIdentity.prettyPrint() may crash when rendering malformed SNMP
+table indices.</p></li>
+<li><p>Fixed NotificationReceiver to include SNMPv1 TRAP Message community
+string into SNMPv2c/v3 TRAP PDU</p></li>
+<li><p>Fixed multiple bugs in SNMP table indices rendering, especially
+the InetAddressIPv6 type which was severely broken.</p></li>
+<li><p>Fixed crashing Bits.prettyPrint() implementation</p></li>
+<li><p>Fixed crashing Bits.clone()/subtype() implementation</p></li>
+<li><p>Fixed leaking exceptions bubbling up from the asyncio and Twisted adapters</p></li>
+</ul>
+</section>
+<section id="revision-4-3-9-released-2017-07-26">
+<h2>Revision 4.3.9, released 2017-07-26<a class="headerlink" href="#revision-4-3-9-released-2017-07-26" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Deprecated UsmUserData initializaton parameters removed</p></li>
+<li><p>Adapted to pyasn1 API changes introduced by release 0.3.1</p></li>
+<li><p>Fix to a crash happening on inbound SNMP message having non-initialized fields</p></li>
+<li><p>Fix to (persistent SNMP engine ID) file writing on Windows</p></li>
+</ul>
+</section>
+<section id="revision-4-3-8-released-2017-06-15">
+<h2>Revision 4.3.8, released 2017-06-15<a class="headerlink" href="#revision-4-3-8-released-2017-06-15" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Security fix to the bug introduced in 4.3.6: msgAuthoritativeEngineTime
+stopped changing over time and was returning the same timestamp (process
+start time). This fix makes it growing as it should.</p></li>
+</ul>
+</section>
+<section id="revision-4-3-7-released-2017-05-29">
+<h2>Revision 4.3.7, released 2017-05-29<a class="headerlink" href="#revision-4-3-7-released-2017-05-29" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fixed import error in legacy NotificationOriginator implementation</p></li>
+</ul>
+</section>
+<section id="revision-4-3-6-released-2017-05-28">
+<h2>Revision 4.3.6, released 2017-05-28<a class="headerlink" href="#revision-4-3-6-released-2017-05-28" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>More instrumentation hooks added addressing security failures
+auditing needs.</p></li>
+<li><p>SNMP table indices correlation implemented within SMI framework.
+The opaque InetAddress type implemented. INET-ADDRESS-MIB included
+into the distribution.</p></li>
+<li><p>SNMP table indices resolution logic made more robust against
+malformed indices.</p></li>
+<li><p>Fixes to <em>lexicographicMode</em> option documentation to make it
+unambiguous.</p></li>
+<li><p>The <cite>ErrorIndication</cite> object is now derived from <cite>Exception</cite> so
+that it could be raised in exceptions.</p></li>
+<li><p>The <cite>errorIndication</cite> values produced by various parts of
+SNMP engine unified to be <cite>ErrorIndication</cite> instances. This fixes
+an issue with Twisted.</p></li>
+<li><p>Embedded MIB modules rebuilt with the latest pysmi adding previously
+missing attributes like <cite>status</cite>, <cite>description</cite> etc.</p></li>
+<li><p>Fixed potential SNMP engine crash on handling incoming message
+at unsupported security level</p></li>
+</ul>
+</section>
+<section id="revision-4-3-5-released-2017-03-24">
+<h2>Revision 4.3.5, released 2017-03-24<a class="headerlink" href="#revision-4-3-5-released-2017-03-24" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>The getNext() and getBulk() calls of Twisted interface.
+now support ignoreNonIncreasingOid option.</p></li>
+<li><p>TextualConvention is now a new-style class.</p></li>
+<li><p>Fix to accidentally reset error-status when building confirmed class
+SNMPv1 PDU.</p></li>
+<li><p>Fix to possible infinite recursion in TextualConvention.prettyIn().</p></li>
+<li><p>Fixed crash when attempting to report unsupported request/notification
+PDU back to sender.</p></li>
+</ul>
+</section>
+<section id="revision-4-3-4-released-2017-03-01">
+<h2>Revision 4.3.4, released 2017-03-01<a class="headerlink" href="#revision-4-3-4-released-2017-03-01" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix to low-level SNMP API example to accommodate changed pyasn1
+SEQUENCE supporting iterator protocol.</p></li>
+<li><p>The pyasn1 version dependency bumped (0.2.3), SEQUENCE/SEQUENCE OF
+API calls adjusted to accommodate changed pyasn1 API (in part
+of .setComponentBy*() kw flags).</p></li>
+<li><p>Fixed crash on SNMP engine’s invalid message counter increment.</p></li>
+</ul>
+</section>
+<section id="revision-4-3-3-released-2017-02-04">
+<h2>Revision 4.3.3, released 2017-02-04<a class="headerlink" href="#revision-4-3-3-released-2017-02-04" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Switched from now unmaintained PyCrypto to PyCryptodome.</p></li>
+<li><p>Switched to new-style classes.</p></li>
+<li><p>NotificationType now allows additional var-binds specified as
+MIB objects. A side effect of this change is that additional
+var-binds can only be added prior to .resolveMibObjects() is
+run.</p></li>
+<li><p>Non-standard (but apparently used by many vendors) Reeder AES192/256
+key localization algorithm implemented and set as default for
+usmAesCfb192Protocol and usmAesCfb256Protocol identifiers.
+Original and more standard implementation can still be used
+with the usmAesBlumenthalCfb192Protocol and
+usmAesBlumenthalCfb192Protocol IDs respectively.</p></li>
+<li><p>TextualConvention.prettyOut() improved to produce prettier and
+more SMI-compliant output.</p></li>
+<li><p>TextualConvention.prettyIn() implemented to handle DISPLAY-HINT
+based value parsing.</p></li>
+<li><p>Fix to NotificationType to make additional var-binds overriding
+MIB objects implicitly included through NOTIFICATION-TYPE OBJECTS.</p></li>
+<li><p>Fix to SNMP engine boots counter persistence on Python 3.</p></li>
+<li><p>Fix to Pythonized MIBs loading when only .pyc files are
+present (e.g. py2exe/cx_freeze environments).</p></li>
+<li><p>Fix broken 3DES key localization and encryption procedures.</p></li>
+<li><p>Updated IP address for demo.snmplabs.com in examples.</p></li>
+<li><p>Missing index added to bundled RFC1213::atEntry MIB table.</p></li>
+<li><p>Twisted integration made Python3 compatible.</p></li>
+<li><p>Accommodated ASN.1 SEQUENCE iteration rules change in upcoming pyasn1 version.</p></li>
+<li><p>Author’s email changed, copyright extended to 2017.</p></li>
+</ul>
+</section>
+<section id="revision-4-3-2-released-2016-02-12">
+<h2>Revision 4.3.2, released 2016-02-12<a class="headerlink" href="#revision-4-3-2-released-2016-02-12" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Copyright notice added to non-trivial source code files.</p></li>
+<li><p>SNMP table row consistency check added. This change may break
+valid SNMP SET operations on tables if RowStatus column is not
+passed at the very end of var-binds.</p></li>
+<li><p>All SNMP counters now incremented via ‘+= 1’ rather than ‘x = x + 1’
+to simplify their tracking by third-party code.</p></li>
+<li><p>Notification originator examples re-pointed to Notification Receiver
+at demo.snmplabs.com.</p></li>
+<li><p>Two more execution observer points added: rfc2576.processIncomingMsg
+and rfc3414.processIncomingMsg to give an insignt on security modules
+internals.</p></li>
+<li><p>TEXTUAL-CONVENTION’s DISPLAY-HINT text formatting reworked for better
+performance and encoding accurancy of ‘a’ and ‘t’ formats.</p></li>
+<li><p>WARNING: security fix to USM - extra user entry clone removed on
+incoming message processing. It made USM accepting SNMPv3 TRAPs
+from unknown SNMP engine IDs.</p></li>
+<li><p>Fix to snmpInvalidMsgs and snmpUnknownSecurityModels MIB symbols
+import at SNMPv3 MP model.</p></li>
+<li><p>Fix to NotificationOriginator to cope with unspecified user callable.</p></li>
+<li><p>Fix to OctetString.prettyOut() to pretty-print Python 3 bytes without
+‘b’ qualifier.</p></li>
+<li><p>Fix to better pysmi import errors handling.</p></li>
+<li><p>Fix to missing next() in Python 2.5 at pysnmp.hlapi</p></li>
+</ul>
+</section>
+<section id="revision-4-3-1-released-2015-11-12">
+<h2>Revision 4.3.1, released 2015-11-12<a class="headerlink" href="#revision-4-3-1-released-2015-11-12" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added recursive resolution of ObjectIdentifier values at ObjectType
+by converting it to ObjectIdentity.</p></li>
+<li><p>A bunch of convenience shortcuts to rfc1902.ObjectIdentity added
+from rfc1902.ObjectType and rfc1902.NotificationType
+(.addAsn1MibSource(), .addMibSource(), .loadMibs())</p></li>
+<li><p>When pretty printing indices at rfc1902.ObjectType, quote only strings.</p></li>
+<li><p>SNMP overview and PySNMP hlapi tutorial added to documentation.</p></li>
+<li><p>Fix to __doc__ use in setup.py to make -O0 installation mode working.</p></li>
+<li><p>Fix to ObjectIdentity-&gt;ObjectIdentifier attributes handover</p></li>
+<li><p>Fixed crash at oneliner compatibility code on EOM response.</p></li>
+<li><p>Fixed crash in hlapi.transport module.</p></li>
+<li><p>Fixed OID resolution issues that roots at node 0 and 2.</p></li>
+<li><p>Fix to MIB builder to fail gracefully on corrupted MIB package encounter.</p></li>
+<li><p>Fix to docs distribution – now the are Sphinx-buildable out-of-the-box.</p></li>
+<li><p>Source code re-linted</p></li>
+</ul>
+</section>
+<section id="revision-4-3-0-released-2015-09-28">
+<h2>Revision 4.3.0, released 2015-09-28<a class="headerlink" href="#revision-4-3-0-released-2015-09-28" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Critical error fixed in key localization procedure for AES192/AES256/3DES
+cyphers. Previous versions might never worked properly in this respect.</p></li>
+<li><p>Initial PySMI integration. Original ASN.1 MIBs could now be parsed, stored
+at a local pysnmp MIBs repository and loaded into SNMP Engine. Relevant
+example scripts added. Obsolete libsmi-based scripts removed.</p></li>
+<li><p>Major rewrite of native SNMPv3 CommandGenerator and NotificationOriginator
+applications towards the following goals:</p>
+<ul>
+<li><p>avoid binding to specific SNMP engine instance to promote single
+SNMP app instance using many SNMP engine instances</p></li>
+<li><p>support two APIs for working with request data: one operates on the
+whole PDU object while the other on PDU contents</p></li>
+<li><p>keep callback context data in stack rather than in stateful application
+cache</p></li>
+<li><p>newly introduced sendVarBinds() method offers a more functional and
+logical signatures.</p></li>
+<li><p>Promote the use of dedicated classes for dealing with OID-value pairs.
+Instances of those classes resemble OBJECT-IDENTITY, OBJECT-TYPE and
+NOTIFICATION-TYPE MIB structures.</p></li>
+<li><p>Oneliner API reworked to become more generic: its LCD configuration
+shortcuts and and var-bindings processing code split off SNMP apps
+classes to stand-alone objects. The whole API also moved up in package
+naming hierarchy and becomes ‘pysnmp.hlapi.asyncore’ (hlapi is
+apparently an African fish). Old oneliner API remains fully operational
+at its original location.</p></li>
+<li><p>Synchronous oneliner apps redesigned to offer Python generator-based
+API along with a more comprehensive set of accepted parameters.</p></li>
+<li><p>Asyncore-based asynchronous apps reworked to become functions.</p></li>
+<li><p>Twisted API moved entirely into high-level domain to be aligned with
+other high-level APIs. This WILL BREAK backward compatibility for
+those apps that use Twisted API.</p></li>
+<li><p>Keep backward compatibility for all existing major/documented interfaces</p></li>
+</ul>
+</li>
+<li><p>Sphinx documentation added to source code and example scripts. Library
+documentation converted from .html into RsT markup.</p></li>
+<li><p>Execution Observer facility implemented to give app an inside view
+of SNMP engine inner workings. This is thought to be a generic
+framework for viewing (and modifying) various internal states
+of pysnmp engine. Previously introduced non-standard APIs (like
+getting peer’s transport endpoint which is not suggested in RFCs)
+will be gradually migrated to this new framework.</p></li>
+<li><p>Initial support for the asyncio &amp; Trollius frameworks and
+coroutines-based SNMP Applications interfaces added. Both IPv4 and IPv6
+datagram transports are currently supported.</p></li>
+<li><p>Original asynsock transport and AsyncsockDispatcher renamed into
+asyncore and AsyncoreDispatcher respectively to provide better hint
+to fellow devs on the underlying transport being used. Backward
+compatibility preserved.</p></li>
+<li><p>The asyncore-based transport subsystem extended to support POSIX
+sendmsg()/recvmsg() based socket communication what could be used,
+among other things, in the context of a transparent SNMP proxy
+application. Technically, the following features were brought
+into pysnmp with this update:</p>
+<ul>
+<li><p>Sending SNMP packets from a non-local IP address</p></li>
+<li><p>Receiving IP packets for non-local IP addresses</p></li>
+<li><p>Responding to SNMP requests from exactly the same IP address
+the query was sent to. This proves to be useful when listening
+on both primary and secondary IP interfaces.</p></li>
+</ul>
+</li>
+<li><p>Internal oneliner apps configuration cache moved from respective
+apps objects to [a singular] snmpEngine “user context” object.
+That would allow for better cache reuse and allow for a single app
+working with many snmpEngine instances.</p></li>
+<li><p>Oneliner GETBULK Command Generator now strips possible excessive OIDs
+off the bottom of returned var-binds table.</p></li>
+<li><p>Constraints assignment shortcut added to some base rfc1902 types (Integer,
+Integer32, OctetString, Bits). That formally constitutes ASN.1 sub-typing.</p></li>
+<li><p>Built-in debugging is now based on Python logging module.</p></li>
+<li><p>Examples on a single Transport Dispatcher use with multiple SnmpEngine
+instances applicatons added.</p></li>
+<li><p>Example script on transport timeout &amp; retries manipulation added.</p></li>
+<li><p>Example script explaining incoming message’s communityName re-mapping added.</p></li>
+<li><p>Broadcast socket option can now be enabled with the .enableBroadcast()
+call for any datagram-based transport (namely, UDP and UDP6).</p></li>
+<li><p>AbstractTransportDispatcher’s jobStarted() and jobFinished() methods
+now accept optional ‘count’ parameter which is a way for an app to indicate
+how many responses are expected or have been processed in bulk.</p></li>
+<li><p>Example script on SNMP Agents UDP broadcast-based discovery added.</p></li>
+<li><p>Oneliner transport object now supports setLocalAddress() method to
+force socket binding to specified local interface.</p></li>
+<li><p>New public DgramSocketTransport.getLocalAddress() returns local endpoint
+address underlying BSD socket is currently bound to.</p></li>
+<li><p>Passing request details to access control callback at CommandResponder
+reworked towards more robust and simple design with the execution observer
+facility.</p></li>
+<li><p>All MIBs rebuilt with pysmi.</p></li>
+<li><p>MIB instrumentation example improved to cover table index building facility.</p></li>
+<li><p>Handle the case of null writer at Debug printer.</p></li>
+<li><p>Do not cache snmpEngineId &amp; snmpAdminString at CommandGenerator to let it
+be reused with many different snmpEngines.</p></li>
+<li><p>TRAP PDU agent address evaluation at proto.api made lazy to improve
+startup time.</p></li>
+<li><p>Multiple fixes to verify pyasn1 decoder.decode() return to withstand
+broken SNMP messages or its components.</p></li>
+<li><p>First attempt made to make some of SNMP Engine settings persistent
+across reboots.</p></li>
+<li><p>Make config.delTransport() returning detached transport object. Asyncio
+examples now use this facility to explicitly shutdown transport object.</p></li>
+<li><p>Parts of SMIv1 remnant MIBs (RFC1213-MIB, RFC1158-MIB) added to provide
+complete compatibility with SMIv1. Symbols defined in these MIBs only
+present in SMIv1 so they can’t be substituted with their SMIv2 analogues.</p></li>
+<li><p>MibBuilder.addMibSources() convenience method added.</p></li>
+<li><p>The smi.MibBuilder() will now raise more specific exceptions (MibLoadError,
+MibNotFoundError) on MIB loading problems rather than more generic
+SmiError.</p></li>
+<li><p>The oneliner’s MibVariable MIB lookup subsystem redesigned for more
+generality to mimic OBJECT-TYPE macro capabilities related to SNMP
+PDU handling. The two new classed are ObjectIdentity and ObjectType.
+The ObjectIdentity class additionally supports just a MIB module name
+initializer in which case if resolves into either first or last symbol
+in given MIB. Another option is just a MIB symbol initializer without
+specifying MIB module.
+This new subsystem is moved from the scope of oneliner to more common
+pysnmp.smi.rfc1903 scope to more naturally invoke it from whatever
+part of pysnmp requires MIB services.</p></li>
+<li><p>MibBuilder now prepends the contents of environment variables it
+recognizes (PYSNMP_MIB_DIR, PYSNMP_MIB_DIRS, PYSNMP_MIB_PKGS) rather
+than using them instead of its default core MIBs.</p></li>
+<li><p>Removed RowStatus default value as it may collide with possible subclass
+constraints.</p></li>
+<li><p>A few additional MIB tree management methods added to MibViewController
+to better address ordered nature of MIB tree nodes (namely, getFirst*,
+getLast* family of methods).</p></li>
+<li><p>Wheel distribution format now supported.</p></li>
+<li><p>Fix to authoritative engine side snmpEngineID discovery procedure:
+respond with notInTimeWindows rather then with unsupportedSecurityLevel
+at time synchronization phase.</p></li>
+<li><p>Fix to rfc1902.Bits type to make it accepting hex and binary initializers,
+cope with missing bits identifieirs at prettyPrint().</p></li>
+<li><p>Memory leak fixed in CommandForwarder examples.</p></li>
+<li><p>Fix to BULK CommandGenerator to use the same nonRepeaters OIDs across
+multiple GETBULK iterations so returned table for nonRepeaters columns
+would hold the same var-bind.</p></li>
+<li><p>Fix to CommandGenerator to make sendRequestHandle persistent across
+multiple iterations of GETNEXT/GETBULK queries.</p></li>
+<li><p>Fix to sendNotification() error handling at NotificationOriginator.</p></li>
+<li><p>Fix to preserve possible ‘fixed length’ setting atrfc1902.OctetString
+on clone()’ing and subtype()’ing.</p></li>
+<li><p>Fix to rfc1902.OctetString &amp; Bits to base them on OctetString class to
+make the ‘fixed length’ property working.</p></li>
+<li><p>Fix to .clone() method of rfc1902.Bits class to make its signature
+matching the rest of classes. This may broke code which used to pass
+namedValue parameter positionally rather than binding it by name.</p></li>
+<li><p>Fix to PDU translation service (proto.proxy.rfc2576) to make it
+initializing errorIndex &amp; errorStatus components of the resulting PDU.</p></li>
+<li><p>Fix to MsgAndPduDispatcher.sendPdu() to clean up request queue on
+pysnmp-level processing failure.</p></li>
+<li><p>Fix to SNMPv1/v2c message processing subsystem to make it serving
+unique PDU request-id’s in both outgoing and incoming confirmed
+and response PDU types. Duplicate request-id’s in unrelated PDUs may
+cause cache errors otherwise.</p></li>
+<li><p>Fix to licensing terms of multiple twisted backend modules to make
+the whole pysnmp package licensed under BSD 2-Clause license. This
+change has been explicitly permitted by the original modules authors.</p></li>
+<li><p>Fix to asyncore-based transport not to use asyncore’s cheap inheritance
+from socket object what caused warnings.</p></li>
+<li><p>Fix at NotificationOriginator to make is using MibInstrumentationController
+when expanding Notification OBJECTS into Managed Objects Instances.</p></li>
+<li><p>Missing wrongLength and wrongEncoding SMI errors added.</p></li>
+<li><p>Fix to file descriptor leak at MibBuilder.</p></li>
+<li><p>Fix to rfc2576.v2ToV1() to ignore impossible errorStatus.</p></li>
+<li><p>Fix to rfc2576.v1ToV2() to reset ErrorStatus==noSuchName on proxying.</p></li>
+<li><p>Fix to smi.builder to explicitly fail on any MIB file access error
+(but ENOENT) and raise IOError uniformly on any directory/egg access
+failure.</p></li>
+<li><p>Fix to infinite loop at config.delV3User().</p></li>
+</ul>
+</section>
+<section id="revision-4-2-5-released-2013-10-02">
+<h2>Revision 4.2.5, released 2013-10-02<a class="headerlink" href="#revision-4-2-5-released-2013-10-02" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>License updated to vanilla BSD 2-Clause to ease package use
+(<a class="reference external" href="http://opensource.org/licenses/BSD-2-Clause">http://opensource.org/licenses/BSD-2-Clause</a>).</p></li>
+<li><p>A dozen of lightweight Twisted-based example scripts replaced more
+complex example implementations used previously.</p></li>
+<li><p>SNMP Proxy example apps separated into a larger set of more specialized
+ones.</p></li>
+<li><p>Most of Command Generator examples re-pointed to a live SNMP Agent
+at demo.snmplabs.com to ease experimentation and adoption.</p></li>
+<li><p>Multithreaded oneliner CommandGenerator example added.</p></li>
+<li><p>Packet-level SNMP API (pysnmp.proto.api) getErrorIndex() method can now
+be instructed to ignore portentially malformed errorIndex SNMP packet
+value what sometimes happens with buggy SNMP implementations.</p></li>
+<li><p>Standard SNMP Apps and built-in proxy now ignores malformed errorIndex
+value.</p></li>
+<li><p>Built-in logging now includes timestamps.</p></li>
+<li><p>Multi-lingual capabilities of all CommandGenerator &amp; NotificationOriginator
+apps re-worked and improved. For instance it is now it’s possible to run
+getBulk() against a SNMPv1 Agent invoking built-in SNMP Proxy behind the
+scene.</p></li>
+<li><p>The $PYSNMP_MIB_DIR &amp; $PYSNMP_MIB_DIRS &amp; $PYSNMP_MIB_PKGS path separator
+made platform-specific.</p></li>
+<li><p>Change to rfc2576.v1tov2() logic: errorStatus = noSuchName is now
+translated into rfc1905.noSuchObject exception value for <em>all</em> var-bindings
+at once. Although RFC2576 does not suggest error-status -&gt; v2c exception
+translation, historically pysnmp used to perform it for a long time so we
+can’t easily stop doing that.</p></li>
+<li><p>Exception re-raising improved at MibInstrumController.flipFlopFsm() and
+asynsock/twisted dispatchers so that original traceback is preserved.</p></li>
+<li><p>A single instance of transport dispatcher can now serve multiple
+receivers (identified by IDs) chosen by a public data routing method.</p></li>
+<li><p>SnmpEngine.[un]registerTransportDispatcher() methods now accept optional
+receiver ID token to be used by transport dispatcher’s data router. This
+allows for multiple SNMP engines registration with a single transport
+dispatcher.</p></li>
+<li><p>Distribute is gone, switched to setuptools completely.</p></li>
+<li><p>The snmpCommunityTable row selection improved to follow RFC2576, clause
+5.2.1.</p></li>
+<li><p>Asyncore-based dispatcher attempts to use poll() whenever available
+on the platform. It would help handling a really large number (&gt;1024)
+of file descriptors.</p></li>
+<li><p>AsynCommandGenerator.makeReadVarBinds() generalized into a new
+makeVarBinds() method which replaces somewhat redundant code at setCmd()
+and AsynNotificationOriginator.sendNotification().</p></li>
+<li><p>AsynCommandGenerator.uncfgCmdGen() &amp; AsynNotificationOriginator.uncfgCmdGen()
+methods now accept optional authData parameter to remove specific entries
+from LCD. This can be useful for modifying security parameters for
+specific securityName.</p></li>
+<li><p>SNMP credentials management reworked to separate userName from securityName
+in snmpCommunityEntry and usmUserEntry tables. Changes made to addV1System(),
+addV3User() functions as well as to their oneliner’s wrappers.</p></li>
+<li><p>The contextEngineId parameter of config.addV3User() and auth.UsmUserData()
+renamed into securityEngineId as it’s semantically correct</p></li>
+<li><p>Oneliner UsmUserData() and CommunityData() classes now support clone()’ing
+to facilitate authentication data management in user applications.</p></li>
+<li><p>Oneliner transport target classes now support the getTransportInfo()
+method that returns network addresses used on protocol level.</p></li>
+<li><p>Oneliner CommandGenerator.getNext() &amp; .getBulk() methods now support the
+maxCalls kwarg to limit the maximum number of iterations to perform.</p></li>
+<li><p>The config.addSocketTransport() helper renamed into config.addTransport()
+and improved by automatically instantiating compatible TransportDispatcher
+making it dispatcher-agnostic. As an additional bonus, application may not
+call registerTransportDispatcher() as it would be called by addTransport().</p></li>
+<li><p>The SnmpV3MessageProcessingModel.getPeerEngineInfo() method is implemented
+to communicate discovered peer SNMP engine information to SNMP apps what
+can be used for fine usmUserTable configuration.</p></li>
+<li><p>AsynNotificationOriginator.cfgCmdGen() does not take into account
+securityModel &amp; securityLevel when reducing LCD access via addTrapUser().
+This improves LCD consistency on sparse add/del operatons but also
+does not let you to configure different securityModels per securityname
+at VACM though the cfgCmdGen() wrapper.</p></li>
+<li><p>MIB builder traceback formatting and reporting improved.</p></li>
+<li><p>SNMP Engine object now has a snmpEngineID attribute exposed.</p></li>
+<li><p>Fix to inet_ntop()/inet_pton() support on Windows at TRANSPORT-ADDRESS-MIB.</p></li>
+<li><p>Fix to usmUserSecurityName table column implementation – automatic value
+generation from index value removed.</p></li>
+<li><p>Fix and significant logic rework of snmpCommunityTable to make it working
+in both Generator and Responder modes and better follow RFC2576
+requirements on sequential entries lookup and selection. As a side effect,
+untagged snmpCommunityTable entries will <em>not</em> match tagged
+snmpTargetAddrTable entries and vice versa.</p></li>
+<li><p>Fix to Twisted-based NotificationOriginator to make it serving INFORMs again.</p></li>
+<li><p>Fix to rfc2576.v1tov2() logic: errorStatus = noSuchName is now translated
+into rfc1905.noSuchObject exception value for <em>all</em> var-bindings. Although
+this is not mentioned in RFC, it looks as a more consistent approach.</p></li>
+<li><p>Fix of rounding error to base I/O dispatcher’s next timer call calculation.</p></li>
+<li><p>Explicit twisted dispatcher’s timer resolution (of 1 sec) removed to make
+use of global default of 0.5 sec.</p></li>
+<li><p>Fix to twisted/udp non-default local endpoint binding features. Common
+socket (‘host’, port) notation is now supported.</p></li>
+<li><p>Fix to Twisted-based transport to make it closing UDP port / UNIX pipe
+on shutdown.</p></li>
+<li><p>Fix to Twisted-based dispatcher not to close transport on unregistration
+at dispatcher as transports can potentially be reused elsewhere.</p></li>
+<li><p>Fix to asyncore-based transport to work only with AsynsockDispatcher’s
+socket map and not to touch default asyncore’s one. The latter have caused
+dispatcher/transport restarting issues.</p></li>
+<li><p>The delV3User() function improved to drop all rows from USM table that
+were cloned from the target one.</p></li>
+<li><p>Fix to exceptions handling at MsgAndPduDispatcher.sendPdu() to avoid
+sendPduHandle miss (followed by system crash) on cache expiration run.</p></li>
+<li><p>Break cyclic references at CommandResponder and NotificationReceiver apps
+through close() method.</p></li>
+<li><p>Fix to octet string typing at 3DES codec (used to throw an exception).</p></li>
+<li><p>Fix to SnmpAdminString, SnmpTagList, SnmpTagValue types to make them
+supporting UTF-8 initializers.</p></li>
+<li><p>Fix to v1/v2c message processing module which used to refer to a
+bogus stateReference in some cases what causes SNMP engine crashes.</p></li>
+<li><p>Fix to IPv6 transport to zero ZoneID, FlowID and ScopeID components
+sometimes coming along with incoming packet.</p></li>
+<li><p>Fix to SNMPv1 MP module to pass stateReference to registered app on
+unconfirmed notifications reception (to let NotificationReceiver
+Apps browsing request details).
+(transport information at the moment) at SNMP engine.</p></li>
+<li><p>Asyncsock sockets now configured with SO_REUSEADDR option to fix possible
+Windows error 10048.</p></li>
+<li><p>Gracefully handle malformed SnmpEngineID at USM coming from SNMPv3 header.</p></li>
+<li><p>Typos fixed in error-status constants at CommandResponder</p></li>
+<li><p>Missing import added to oneliner auth module.</p></li>
+<li><p>Cosmetic changes to v3arch example scripts.</p></li>
+</ul>
+</section>
+<section id="revision-4-2-4-released-2013-01-30">
+<h2>Revision 4.2.4, released 2013-01-30<a class="headerlink" href="#revision-4-2-4-released-2013-01-30" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>SNMPv3 high-level and native API examples reworked and extended to cover
+many use cases.</p></li>
+<li><p>The missing functionality of NOTIFICATION-TYPE objects being looked up
+at local Management Instrumentation and attached to TRAP/INFORM message
+by Notification Originator is now fully implemented.</p></li>
+<li><p>The missing functionality of passing Response PDU contents of INFORM
+request is now implemented at Notification Originator app. The return
+value of NotificationOriginator.sendNotification is now a composite object
+that includes errorStatus, errorIndex and varBinds.</p></li>
+<li><p>The missing functionality of passing lookupNames &amp; lookupValues params
+to Notification Originator is now implemented. It may make sense for
+INFORMs.</p></li>
+<li><p>The missing functionality of passing contextName to oneliner
+version of NotificationOriginator.sendNotification is now implemented.</p></li>
+<li><p>Oneliner example apps now include cases where non-default SNMP
+ContextEngineId/ContextName/SecurityEngineId is used.</p></li>
+<li><p>The contextName parameter of SnmpContext.getMibInstrum made optional.</p></li>
+<li><p>AbstractMibInstrumController class added as a base class for all possible
+kinds of Management Instrumentation controllers.</p></li>
+<li><p>Report package version on debugging code initialization.</p></li>
+<li><p>MibInstrumController.getMibBuilder() added.</p></li>
+<li><p>I/O sockets buffer sizes made configurable, minimum default is now
+forced to be no less than 2**17 (to fit two huge datagrams).</p></li>
+<li><p>Catch possible exceptions on pyasn1 encoder invocation.</p></li>
+<li><p>VACM modules converted from a function into an object to let it keep
+state (caches) in the future.</p></li>
+<li><p>Unnecessary MibSource explicit initialization calls removed at MibBuilder.</p></li>
+<li><p>Example configuration for Net-SNMP’s snmptrapd added.</p></li>
+<li><p>Cast additionalVarBinds into ObjectIdentifier type at
+NotificationOriginator.sendNotification()</p></li>
+<li><p>Standard SNMPv3 Apps hardened to catch protocol-related exceptions and
+report them as errorIndication’s.</p></li>
+<li><p>Catch and mute possible failure of getsockname(), that seems to happen
+on Windows only so far.</p></li>
+<li><p>Memory leak fixed at oneliner cache of already configured targets.</p></li>
+<li><p>Fixes to at AsynNotificationOriginator.sendNotification() to make
+a) the notificationType param mandatory b)t e varBinds param really
+optional</p></li>
+<li><p>Fixes to ContextEngineId/ContextName support at the oneliner API: now
+both items should be passed to request PDU through Cmd() request
+initiation method, the items of authData object should be used only for
+LCD configuration.</p></li>
+<li><p>Fix to MibVariable handling of the MIB, &lt;empty-symbol&gt; initializers.</p></li>
+<li><p>Fix to outgoing queue processing order at socket transport. Now
+it’s a FIFO discipline rather than LIFO.</p></li>
+<li><p>Fix to NotificationOriginator’s additionalVarBinds parameter - it is
+not mandatory anymore with the oneliner API. Also additionalVarBinds
+defaulted value changed from None to () meaning no var-binds.</p></li>
+<li><p>Attempt to convert Windows style EOL into UNIX ones in MIB source
+modules appeared to be unnecessary and even destructive to modules
+data in some cases. So the conversion code removed altogether.</p></li>
+<li><p>Fix to isAccessAllowed() error handling at NotificationOriginator. System
+used to crash on access denied condition.</p></li>
+<li><p>Fix to NotificationOriginator to make it use system uptime and trap OID
+values from SNMP engine’s instrumentation rather then from SNMP context.</p></li>
+<li><p>Fix a couple of bugs at MibTable* logic involved for table instances
+creation.</p></li>
+<li><p>Fix to Management Instrumentation code to handle cases of non-initialized
+or not-compliant-to-constraints Managed Objects Instances.</p></li>
+<li><p>Fix to Management Instrumentation code to make table row removal through
+SNMP working again. Wrong method (instumClone) was probed at terminal
+MIB nodes values instead of the right one (setValue).</p></li>
+</ul>
+</section>
+<section id="revision-4-2-3-released-2012-09-06">
+<h2>Revision 4.2.3, released 2012-09-06<a class="headerlink" href="#revision-4-2-3-released-2012-09-06" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>SECURITY FIX: USM subsystem did not verify securityLevel of a request
+to an authoritative SNMP engine against auth/priv protocols
+configured for the user in question. That allowed unauthenticated/unciphered
+access to pysnmp-based Agent even if USM user is configured to provide one.</p></li>
+<li><p>Oneliner [Asyn]CommandGenerator now supports optional keyword args
+lookupNames, lookupValues that enable response OID / value looked up at
+MIB and reported as a MibVariable container object carrying relevant
+MIB info.</p></li>
+<li><p>Oneliner [Asyn]CommandGenerator now supports symbolic MIB object names to be
+passed within a MibVariable container object which would do a deferred
+MIB lookup for name resolution. This is a new and preferred API which
+obsoletes the tuple-based one (it is still suppored though).</p></li>
+<li><p>Oneliner CommandGenerator’s class attributes lexicographicMode, maxRows
+and ignoreNonIncreasingOid moved to optional keyword args of nextGen()
+and bulkGen() methods.</p></li>
+<li><p>IPv6/UDP and Local Domain Socket transport interfaces added to the
+oneliner API.</p></li>
+<li><p>Mib Instrumentation subsystem re-worked to replace excessive
+MibNode’s smiCreate()/smiWrite()/smiDestroy() methods with
+MibScalarInstance’s getValue()/setValue()</p></li>
+<li><p>MibTree.readTest[Get]Next() reworked to be called uniformely so
+user could tap on these methods at any level of the MIB tree.</p></li>
+<li><p>MibTableColumn.getNextNodeWithValue() unpublished API method obsoleted
+and removed for clarity.</p></li>
+<li><p>Hex dumps of binary parts of the protocol added to ease system
+operations analysis.</p></li>
+<li><p>SnmpEngineId autogeneration does not call DNS resolver but uses
+local hostname not to depend upon local IP availability and performance.</p></li>
+<li><p>Example apps reworked, additional SNMPv3 auth/priv protocols and transports
+added.</p></li>
+<li><p>Package version is now available as __init__.__version__ and it is
+in-sync with distutils.</p></li>
+<li><p>Package meta-information updated.</p></li>
+<li><p>The __init__.py’s made non-empty (rumors are that they may be optimized
+out by package managers).</p></li>
+<li><p>Multiple fixes to UNIX domain socket transport to make it fully
+operational again.</p></li>
+<li><p>Use sysUpTime value whenever it is included in Notification PDU, otheriwese
+resort to SNMP engine uptime reading.</p></li>
+<li><p>SNMPv2c Message is now defined in rfc1901.py what matches standard
+definition.</p></li>
+<li><p>Types defined within SNMPv1/v2c data structures (rfc1157.py/rfc1905.py)
+moved to module scope to become accessible by wrapper routines
+(v1.py/v2c.py). This is used for setting strictly typed default values
+to corresponding SNMP data structures.</p></li>
+<li><p>The obsolete and unpublished MibInstrumController.readVarsFast() method
+removed for API clarity.</p></li>
+<li><p>MibBuilder now distinguishes case of MIB modules filenames even if
+underlying OS does not.</p></li>
+<li><p>LCD configuration caching is implemented at pysnmp.entity.rfc3413.config
+that improves performance of repetitive calls by 10% and might hugely
+improve NotificationOriginator’s performance when working on a large
+number of targets.</p></li>
+<li><p>A caching maps implemented at rfc2576 subsystem to speed-up communityName
+to/from securityName resolution. The also makes transport tags processing
+better compliant to the standard.</p></li>
+<li><p>Community and Transport tags processing changed at the oneliner interface
+to make the whole mechanism more compliant with the standard. Most
+importantly, it is now possible to tag authentication and transport
+information separately.</p></li>
+<li><p>The NoSuchInstanceError exception class is no more inherits from
+NoSuchObjectError to make class hierarchy closer to SNMP specification
+which states that these errors are separate and independent.</p></li>
+<li><p>The Next &amp; BulkCommandGenerator’s split onto single-run and iterative
+impementations. The former just process a single interaction and complete
+while the latter run as many interactions as user callback function
+indicates to.</p></li>
+<li><p>The pysnmp.entity.rfc3413.mibvar module is now obsolete by
+pysnmp.entity.rfc3413.oneliner.mibvar featuring basically the same
+features but within a stateful, dedicated object.</p></li>
+<li><p>Auth &amp; target configuration container classes moved to their separate
+modules at oneliner API.</p></li>
+<li><p>The notificationType parameter of AsynNotificationOriginator.sendNotification
+made defaulted to reflect its optional nature.</p></li>
+<li><p>Oneliner UsmUserData, UdpTransportTarget, Udp6TransportTarget instances
+are not hashable anymore as they are intended to act more like a data
+structure than object.</p></li>
+<li><p>Built-in debugger now supports negating debugging categories.</p></li>
+<li><p>An async/getgen.py example script added.</p></li>
+<li><p>Fix to MIB data reading routine to make it working with possible
+Windows end-of-line’s.</p></li>
+<li><p>Fix to CommandGenerator’s SNMPv3 engine autodiscovery algorithm
+when retryCount is administratively set to 0.</p></li>
+<li><p>Fix to Notification Originator to make it communicating a single
+sendPduHandle to an application even when multiple INFORMs are triggered
+and processed by a single call by way of transport tagging feature.</p></li>
+<li><p>Fix to rfc2576:processIncomingMessage() to take SecurityModel into account
+when lookup up SecurityName by CommunityName. This allows mixed SNMPv1/v2c
+communication with the same target.</p></li>
+<li><p>Fix to internal MessageProcessing and SecurityModel timers so they become
+dependant on system timer resolution.</p></li>
+<li><p>Fix to v1.PDUAPI.setDefaults() method that used to set wrongly typed
+time-stamp component.</p></li>
+<li><p>Fix to IPv6 address handling to prevent system from crashing whilst
+running Python3.</p></li>
+<li><p>Fix to SNMPv2 exception objects translation into SNMPv1 PDU and NEXT
+OIDs calculation.</p></li>
+<li><p>Fix to MibTree class to properly report noSuchObject &amp; noSuchInstance
+SNMP special values.</p></li>
+<li><p>Fix to libsmi2pysnmp tool to make it working again in Python &lt; 2.7</p></li>
+<li><p>Fix to exception handling at decodeMessageVersion() caller to prevent
+ASN.1 parsing errors crashing the whole app.</p></li>
+<li><p>Fix to GenericTrap type processing at rfc2576:v1Tov2c() which used to
+crash the whole SNMP engine.</p></li>
+<li><p>Fix to [possibly uninizilaized] pyasn1 objects printouts at
+MibInstrumController.__indexMib()</p></li>
+<li><p>Fix to maxSizeResponseScopedPDU calculation at rfc3414/service.py.</p></li>
+<li><p>Dedicated ‘withmib’ example set is obsolete and removed.</p></li>
+<li><p>Another SNMP proxy example app added (1to3.py).</p></li>
+<li><p>Fix to MIB modules loading code to make it using __import__() properly.
+This also makes pysnmp working again with Python 3.3rc0.</p></li>
+<li><p>Typo fix to snmpInASNParseErrs MIB instance object.</p></li>
+<li><p>Typo fix to errind.EngineIdMismatch class and its instance.</p></li>
+</ul>
+</section>
+<section id="revision-4-2-2-released-2012-04-21">
+<h2>Revision 4.2.2, released 2012-04-21<a class="headerlink" href="#revision-4-2-2-released-2012-04-21" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Oneliner CommandGenerator can now limit the number of SNMP table
+rows returned by nextCmd()/bulkCmd() methods.</p></li>
+<li><p>Oneliner CommunityData configuration object can now be initialized
+with community name only, security name will be chosen automatically.</p></li>
+<li><p>Oneliner LCD configuration routines reworked towards clarity. The
+side-effect of this change is that repetitive oneliner call with the same
+securityName and different configuration options will only honor
+the first settings. Previous implementation would override older settings.</p></li>
+<li><p>Transport dispatcher now provides its own time expressed in
+fractions of second. SNMP engine uses this notion of time for
+handling requests timeout to make packet flow time bound
+to async I/O core operations rather than to real time.</p></li>
+<li><p>The libsmi2pysnmp tool improved to handle incomplete SMI v1-&gt;v2
+conversion performed by smidump. The remaining core SMIv1 modules
+excluded from the core MIB set.</p></li>
+<li><p>The pyasn1 constraint and enumeration objects put into ASN1-*
+MIB modules what appears to be more in-line with SMI. Existing
+MIB modules as well as libsmi2pysnmp tool corrected accordingly.</p></li>
+<li><p>SMIv1 MIB modules (including RFC1155 and RFC1213) were moved to
+pysnmp-mibs as pysnmp is SMIv2-based.</p></li>
+<li><p>The MibBuilder.importSymbols() now takes optional kwargs and
+push them into MIB modules globals(). This is to facilitate
+passing user infomation, such as DB connection handler, to MIB
+module namespace so it could be used by ManagedObjects implementations.</p></li>
+<li><p>When running on Python3, SMI will re-raise exceptions with the original
+traceback for easier diagnostics.</p></li>
+<li><p>Out of PYTHONPATH MIB paths now supported.</p></li>
+<li><p>Added pyasn1 decoder failures diagnistics in debug mode.</p></li>
+<li><p>Fix to non-MT-safe class attributes at SNMPv3 MP &amp; SEC modules.</p></li>
+<li><p>Fix to ContextName handling in bytes form whilst running Python3. Data
+mismatch error would return otherwise.</p></li>
+<li><p>Fix to SNMPv3 MP peer engine ID discovery not to learn and use
+user-specified ContextEngineId.</p></li>
+<li><p>Fix to socket.error processing at Py3 on Windows.</p></li>
+<li><p>Fix to oneliner GETNEXT/GETBULK implementation to properly support
+ignoreNonIncreasingOIDs option.</p></li>
+<li><p>Fix to setEndOfMibError()/setNoSuchInstanceError() at v1 PDU not to
+loose errorIndex.</p></li>
+<li><p>Fix to api.v2c.getVarBindTable() to ignore possible non-rectangular GETBULK
+response tables.</p></li>
+<li><p>Fix to oneliner getnext/getbulk response table rectangulation procedure
+to gracefully handle an empty column condition.</p></li>
+<li><p>Fix to legacy MibBuilder.getMibPath() to prevent it from missing
+.egg-based components in path.</p></li>
+<li><p>Fix to oneliner configuration routine that used to implicitly
+tag SNMPv1/v2c auth and transport LCD rows what resulted in
+huge delays when processing incoming messages with large number
+of peers configured.</p></li>
+<li><p>Fix to UDP6 transport handling at rfc2576 security module.</p></li>
+<li><p>Fix to SnmpEngineID value autogeneration (used to fail on Mac).</p></li>
+<li><p>SNMPv2-SMI.ObjectType.__repr__() fixed to do a repr() on its components.</p></li>
+<li><p>All SNMPv2-SMI.MibNode-based objects, once exported to a mibBuilder, will
+carry an embedded label symbol.</p></li>
+<li><p>Exlicit repr() calls replaced with ‘%r’</p></li>
+<li><p>Fix to error processing at GETNEXT &amp; GETBULK apps response handlers.</p></li>
+<li><p>Fix to libsmi2pysnmp to make it supporting long (256+) list of function
+params.</p></li>
+<li><p>Fix to libsmi2pysnmp to support inheritance of MIB types.</p></li>
+</ul>
+</section>
+<section id="revision-4-2-1-released-2011-11-07">
+<h2>Revision 4.2.1, released 2011-11-07<a class="headerlink" href="#revision-4-2-1-released-2011-11-07" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Support string OIDs at one-liner API.</p></li>
+<li><p>Code quality of libsmi2pysnmp tool improved, MIBs re-built.</p></li>
+<li><p>SNMP-PROXY-MIB &amp; SNMP-USER-BASED-SM-3DES-MIB added</p></li>
+<li><p>v1arch bulkgen.py example added</p></li>
+<li><p>Major overhawl for Python 2.4 – 3.2 compatibility:</p>
+<ul>
+<li><p>get rid of old-style types</p></li>
+<li><p>drop string module usage</p></li>
+<li><p>switch to rich comparation</p></li>
+<li><p>drop explicit long integer type use</p></li>
+<li><p>map()/filter() replaced with list comprehension</p></li>
+<li><p>apply() replaced with var-args</p></li>
+<li><p>dictionary operations made 2K/3K compatible</p></li>
+<li><p>division operator made 2K/3K compatible</p></li>
+<li><p>sorting function now operates on key</p></li>
+<li><p>iterators returned by some funcs in py3k converted to lists</p></li>
+<li><p>exception syntax made 2K/3K compatible</p></li>
+<li><p>tuple function arguments resolved to scalars to become py3k compatible</p></li>
+<li><p>BER octetstream is now of type bytes (Py3k) or still string (Py2k)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="revision-4-1-16d-released-2011-09-22">
+<h2>Revision 4.1.16d, released 2011-09-22<a class="headerlink" href="#revision-4-1-16d-released-2011-09-22" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix to SNMPv1 Trap PDU agentAddress setter shortcut method.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-16c-released-2011-08-14">
+<h2>Revision 4.1.16c, released 2011-08-14<a class="headerlink" href="#revision-4-1-16c-released-2011-08-14" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Missing module import fixed in privacy subsystem</p></li>
+</ul>
+</section>
+<section id="revision-4-1-16b-released-2011-08-13">
+<h2>Revision 4.1.16b, released 2011-08-13<a class="headerlink" href="#revision-4-1-16b-released-2011-08-13" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Oneliner CommandGenerator can now optionally ignore non-increasing OIDs.</p></li>
+<li><p>Default CommandResponder now skips non-compliant (Counter64) values
+when responding to a v1 Manager.</p></li>
+<li><p>Fix to state information handling at CommandResponder app.</p></li>
+<li><p>Fix to Twisted reactor shutdown condition.</p></li>
+<li><p>Fix to distutils dependencies syntax.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-16a-released-2011-03-17">
+<h2>Revision 4.1.16a, released 2011-03-17<a class="headerlink" href="#revision-4-1-16a-released-2011-03-17" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Extended Security Options (3DESEDE, AES192, AES256) privacy
+protocols implemented.</p></li>
+<li><p>The error-indication codes moved from literals to objects for reliability
+and clarity</p></li>
+<li><p>Fix to v1.TrapPDUAPI.getVarBinds() to address PDU component at the right
+position.</p></li>
+<li><p>Fix to rfc1902.Bits initialization from named bits sequence.</p></li>
+<li><p>Fix to MIB builder by-extension module filtering code to cope with .pyw
+files.</p></li>
+<li><p>Internal caches structure improved.</p></li>
+<li><p>Sync versions of oneliner apps split off async implementation for clarity.</p></li>
+<li><p>Randomize initial in various numeric sequences.</p></li>
+<li><p>MsgAndPduDsp expectResponse parameters passing reworked.</p></li>
+<li><p>GetNext/GetBulk response processing logic moved to getNextVarBinds()</p></li>
+<li><p>Changes towards performance improvement:</p>
+<ul>
+<li><p>all dict.has_key() &amp; dict.get() invocations replaced with modern syntax
+(this breaks compatibility with Python 2.1 and older).</p></li>
+<li><p>introduce the MibInstrumControlle.readVarsFast() method (which skips
+the “testing” phase of MIB value readin) for dealing with internal
+configuration (LCD).</p></li>
+<li><p>default debug.logger is now just a zero value instead of an object
+what saves big on frequent calls</p></li>
+<li><p>SNMPv2-SMI columnar indices &lt;-&gt; index values conversion code optimized.</p></li>
+<li><p>pre-compute and re-use some of ASN.1 structures.</p></li>
+<li><p>avoid setting PDU defaults to save on unnecessary initialization.</p></li>
+<li><p>skip ASN.1 types verification where possible.</p></li>
+<li><p>at oneliner Command Generator, avoid looking up pure OID arguments
+at MIB as it’s pointless but takes time.</p></li>
+<li><p>cache MIB columnar objects instance ID &lt;-&gt; symbolic index representation
+mapping</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="revision-4-1-15a-released-2010-12-13">
+<h2>Revision 4.1.15a, released 2010-12-13<a class="headerlink" href="#revision-4-1-15a-released-2010-12-13" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>SNMP Proxy example added.</p></li>
+<li><p>End-of-MIB condition detection reworked what caused backward
+incompatibility at v1arch GETNEXT API. Previous pysnmp versions
+used value = None in var-binds as returned by getVarBindTable()
+API method. This version uses rfc1905 exception values (v2c/v3)
+or pyasn1 Null (v1).
+Built-in GETNEXT/GETBULK apps now do not require user to track
+end-of-mib conditions anymore – this is now done automatically.</p></li>
+<li><p>CommandResponder API now supports async mode of operation.</p></li>
+<li><p>SNMP exception values now exported from rfc1905 module, and made
+pretty printable.</p></li>
+<li><p>Lexicographic walking mode is now supported at oneliner CommandGenerator.</p></li>
+<li><p>ContextEngineId&amp;ContextName parameters passing implemented at
+v3arch oneliner API.</p></li>
+<li><p>Multiple instances of the same transport domain now supported.</p></li>
+<li><p>Initial snmpEngineId value generation improved not to accidentally
+collide within an administrative domain.</p></li>
+<li><p>MibTableColumn instances now build value-to-column-instance map
+to speedup by-value search.</p></li>
+<li><p>SNMPv2-CONF::AgentCapabilities macro implemented.</p></li>
+<li><p>The libsmi2pysnmp tool handles some more MACROs.</p></li>
+<li><p>Void access control module implemented to let apps disabling [default] VACM.</p></li>
+<li><p>Allow standard SNMP apps to choose access control method to use.</p></li>
+<li><p>Twisted-based CommandResponder example added.</p></li>
+<li><p>Fix/rework of Twisted GETNEXT/BULK CommandGenerator callback API to
+make it simpler and uniform with other CommandGenerators</p></li>
+<li><p>Fix to SNMPv3 security module to store peer SNMP engine timeline
+only if taken from an authenticated message. Prior to this fix
+SNMP engine was not been protected from spoofing.</p></li>
+<li><p>Fix to $SMIPATH initialization at build-pysnmp-mib.</p></li>
+<li><p>Fix to maxSizeResponseScopedPDU calculation.</p></li>
+<li><p>Fix to Next/Bulk CommandGenerators to catch a non-increasing OID
+error condition (what prevents looping).</p></li>
+<li><p>Fix to Opaque value tagging at rfc1155.Opaque type.</p></li>
+<li><p>Fix to handle (fail gracefully) zero-length user password.</p></li>
+<li><p>Fix to SNMP error propagation at Twisted driver (SF tracker ID #3054505).</p></li>
+<li><p>Fix to Agent-role snmpEngineId discovery procedure that allows
+authenticated ReportPDU generation.</p></li>
+<li><p>Fix to SNMPv1 PDU handling at CommandResponder &amp; NotificationReceiver
+apps.</p></li>
+<li><p>Fix to CommandResponder app to skip Counter64 SMI values when responding
+to SNMPv1 Manager.</p></li>
+<li><p>Fix to protocol translator code (rfc2576) to handle Counter64 type
+in v2c-to-v1 PDU translation.</p></li>
+<li><p>Fix to non-response var-binds translation in rfc2576.v2ToV1().</p></li>
+<li><p>Fix to wrong exceptions used in pysnmp/entity modules.</p></li>
+<li><p>Fix to noauth/nopriv security module so that it would not crash SNMP
+engine if called accidentally.</p></li>
+<li><p>Fix to CommandResponder not to return out-of-range errorIndex along
+with genErr</p></li>
+<li><p>Fix to GETBULK CommandResponder to do a by-column MIB walk, not by-raw.</p></li>
+<li><p>Fix to getVarBindTable() API function logic.</p></li>
+<li><p>Fix to example Manager scripts to use errorIndex when available.</p></li>
+<li><p>Fix to dummy encryptData()/decryptData() API</p></li>
+<li><p>Fix to oneliner GETBULK table collection code to make it stripping
+uneven rows off table tail.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-14a-released-2010-07-15">
+<h2>Revision 4.1.14a, released 2010-07-15<a class="headerlink" href="#revision-4-1-14a-released-2010-07-15" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix to maxSizeResponseScopedPDU calculation at USM security module: now
+more precise and robust against screwed values on input.</p></li>
+<li><p>Fix to MIB loading logic that used to load same-name modules at
+disticts search paths on each loadModules() call.</p></li>
+<li><p>Fix to AsynsockDispatcher.runDispatcher() to make use of optional
+non-default select() timeout value.</p></li>
+<li><p>AbstractTransportDispatcher now allows user application registering
+multiple timer callbacks each with dedicated call period.</p></li>
+<li><p>Asynsock mainloop default idle period reduced to 0.5 sec for better
+timer resolution.</p></li>
+<li><p>Fix to SNMPv1-&gt;SNMPv2c error status handling at proxy module. This
+defect may have caused an infinite loop on a multiple var-bind
+SNMPv1 GetNext operation.</p></li>
+<li><p>Fix to contextName processing at config.addV1System – typo rendered
+passed contextName not committed into LCD.</p></li>
+<li><p>Fix to unknown ContextName exception handling at CommandResponder App.</p></li>
+<li><p>config.addVacmUser() now accepts an optional contextName what makes
+it usable for configuring multiple contextName-bound bases of Managed
+Objects to SnmpEngine.</p></li>
+<li><p>MP pending states cache management re-worked so that SNMP engine will
+now handle an unlimited number of pending request/responses.</p></li>
+<li><p>Fix to SNMP discovery procedure: include ContentName in SNMP discovery
+messaging.</p></li>
+<li><p>Many fixes to AES crypto code that makes it actually working.</p></li>
+<li><p>Fix to SNMPv2-SMI createUndo operations.</p></li>
+<li><p>Fix to INFORM sending error handling at oneliner.</p></li>
+<li><p>Fix to mismatched response PDU handling at CommandGenerator application.</p></li>
+<li><p>Debug category ‘app’ (for Application) added to facilitate
+Standard SNMP Applications debugging.</p></li>
+<li><p>The retryCount semantic of CommandGenerator application changed to include
+sole retries and do not include initial request. Thus, retryCount=1 will
+now send up to two packets, not just one as it used to be.</p></li>
+<li><p>Debugging printout now escapes non-printable characters.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-13a-released-2010-02-09">
+<h2>Revision 4.1.13a, released 2010-02-09<a class="headerlink" href="#revision-4-1-13a-released-2010-02-09" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UDP over IPv6 transport implemented.</p></li>
+<li><p>Fix to MIB tree walking code that used to fail on table columns where
+indices have identical leading parts.</p></li>
+<li><p>SNMPv1/v2c snmpCommunityTransportTag-based imcoming message filtering
+implemented (rfc2576).</p></li>
+</ul>
+</section>
+<section id="revision-4-1-12a-released-2009-12-03">
+<h2>Revision 4.1.12a, released 2009-12-03<a class="headerlink" href="#revision-4-1-12a-released-2009-12-03" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>API versioning retired (pysnmp.v4 -&gt; pysnmp).</p></li>
+<li><p>MIB loading mechanics re-designed to allow ZIP import.</p></li>
+<li><p>MIB loader supports code objects (py[co])</p></li>
+<li><p>Installer now uses setuptools for package management whenever available.</p></li>
+<li><p>The libsmi2pysnmp tool improved to build constraints of more than
+256 items (Python has a limit on the number of function params).</p></li>
+<li><p>Missing SNMPTrap PDU API implemented at proto.api.v2c, RFC2576 proxy
+code reworked.</p></li>
+<li><p>Fix to sysUpTime OID at SNMPv2 TRAP PDU.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-11a-released-2009-08-21">
+<h2>Revision 4.1.11a, released 2009-08-21<a class="headerlink" href="#revision-4-1-11a-released-2009-08-21" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Twisted integration implemented.</p></li>
+<li><p>Attempt to use hashlib whenever available.</p></li>
+<li><p>Fix to oneliner Manager code on &lt; Python 2.4.</p></li>
+<li><p>Let NotificationReceiver and CommandResponder Apps browsing request details
+(transport information at the moment) at SNMP engine.</p></li>
+<li><p>Fix to config.addV1System() to allow multiple systems to co-exist in LCD.</p></li>
+<li><p>Fix to wrongly succeeding user-parameters-by-community-name searching code
+in rfc2576 processIncomingMsg() method.</p></li>
+<li><p>Do sanity checking on PYSNMP_MODULE_ID, Groups and Notifications in
+libsmi2pysnmp (SF bug #2122489).</p></li>
+<li><p>Fix to oneliner Notification Originator that sometimes used to send multiple
+requests at once.</p></li>
+<li><p>Oneliners LCD names generation code reworked to avoid accidental clashes.</p></li>
+<li><p>Fix and re-work of sysUpTime value management in LCD.</p></li>
+<li><p>Fix to pending inform request data caching in mpmod/rfc2576.py – previous
+code led to cache data corruption on multple outstanding requests.</p></li>
+<li><p>In SMI configuration wrapper functions, catch access to non-configured
+entries and raise an exception.</p></li>
+<li><p>Allow multuple callback timer functions in all transport dispatchers.</p></li>
+<li><p>Fix to libsmi2pysnmp code to preserve more underscored object names and
+to guess the right type between indistinguishable ObjectGroup &amp;
+NotificationGroup</p></li>
+<li><p>Fix to MibScalarInstance value setting logic - previous code failed
+when modifying the same OID multiple times within a single SET operation.</p></li>
+<li><p>Minor usability improvements to tools/build-pysnmp-mib.</p></li>
+<li><p>Made MIB objects unexport feature operational.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-10a-released-2008-05-25">
+<h2>Revision 4.1.10a, released 2008-05-25<a class="headerlink" href="#revision-4-1-10a-released-2008-05-25" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Internal MIB indexing method __indexMib() unmangled to facilitate
+setting up mutex there for sharing MIB stuff between threads.</p></li>
+<li><p>Fixed broken IpAddress value handling in SET operation.</p></li>
+<li><p>Broken MibBuilder.unloadModules() method now works.</p></li>
+<li><p>Use getLabel() SMI object method when building MIB tree (in builder.py)
+in addition to direct attribute access for clearer object protocol.</p></li>
+<li><p>The MIB building tools updated to match significantly improved
+smidump tool (libsmi version &gt; 0.4.5).</p></li>
+<li><p>Made libsmi2pysnmp tool optionally building MIB text fields into pysnmp
+MIB code (enabled by default) and MibBuilder conditionally loading them
+up (disabled by default).</p></li>
+<li><p>SnmpEngine and MsgAndPduDispatcher constructors now optionally
+take msgAndPduDspr and mibInstrumController class instances
+respectively to facilitate these objects sharing within a process.</p></li>
+<li><p>Unique integers, for various parts of the system, are now generated
+by a nextid.py module. This fixes possible issues with duplicate
+request IDs and handlers.</p></li>
+<li><p>Built-in MIBs re-generated to include text fields.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-9a-released-2007-11-28">
+<h2>Revision 4.1.9a, released 2007-11-28<a class="headerlink" href="#revision-4-1-9a-released-2007-11-28" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>At onliner CommandGenerator, close transport on destruction to
+prevent socket leak. Implicit async transports registration at
+default asyncore’s socket map has been disabled to avoid side
+effects.</p></li>
+<li><p>Fix to rfc2576.v1ToV2c() PDU converter to perform noSuchName error code
+translation.</p></li>
+<li><p>Fixes to Notification PDU conversion code at rfc2576 in part of
+snmpTrapOID handling.</p></li>
+<li><p>Fix to nonRepeaters object use as sequence slicer (must be int) at
+cmdrsp.CommandResponderApplication</p></li>
+<li><p>Make AsynsockDispatcher using its own socket map by default for
+threading safety. This will break asyncore apps that rely on pysnmp
+sharing the same socket map with them. A solution would  be to either
+set asyncore map to pysnmp (AsynsockDispatcher.setSocketMap()) or pass
+pysnmp map (AsynsockDispatcher.getSocketMap()) to asyncore.</p></li>
+<li><p>Fix to response timeout roundup bug at CommandGenerator and
+NotificationOriginator code.</p></li>
+<li><p>Oneline configuration classes made hashable to prevent memory leaks
+when committing them into CommandGenerator/NotificationOriginator
+internal repository.</p></li>
+<li><p>Security information is now released properly in all MP modules.
+This might fix a significant memory leak.</p></li>
+<li><p>Typo fix to rfc3411 confirmed class PDU members.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-8a-released-2007-08-14">
+<h2>Revision 4.1.8a, released 2007-08-14<a class="headerlink" href="#revision-4-1-8a-released-2007-08-14" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>SMI/dispatcher timeout conversion multiplier is actually 100 (1/100 sec)
+rather than 1/1000. This fix affects timeouts specified through SMI.</p></li>
+<li><p>__repr__() implemented for UdpTransportTarget, CommunityData, UsmUserData
+in oneliner module.</p></li>
+<li><p>Automatically initialize table index values on table management
+operations (SF bug ID #1671989).</p></li>
+<li><p>Fix to carrier code: ignore BADFD socket error as it may happen upon
+FD closure on n-1 select() event.</p></li>
+<li><p>Fix to MibBuilder.setMibPath() to preserve previously loaded modules
+intact. Otherwise loadModules() called after setMibPath() might fail
+with ‘MIB file not found in search path’ exception.</p></li>
+<li><p>Fix to oneliner classes that now invoke unconfiguration methods on
+destruction. This might have caused memory leaks.</p></li>
+<li><p>Automatically initialize SNMP-USER-BASED-SM-MIB::UsmUserSecurityName
+columnar object instance on creation, as stated in DESCRIPTION (SF
+tracker ID #1620392).</p></li>
+<li><p>Fix to USM timeframe arithmetics (SF bug #1649032).</p></li>
+<li><p>VACM shortcuts merged into universal add/delVacmUser() to let notifications
+and requests to co-exist for the same user.</p></li>
+<li><p>At oneliners, build LCD tables keys from a hashed mix of input parameters
+to make sure these automatic entries won’t interfere or exceed constraints
+on keys values.</p></li>
+<li><p>Made use of notificationType parameter of the sendNotification method
+in NotificationOriginator applications. This parameter used to be
+ignored in the past. Note, that previously used (and ignored) syntax
+has been changed in an incompatible way.</p></li>
+<li><p>Allow plain Python values in setCmd() and sendNotification()
+methods in CommandGenerator and NotificationOriginator applications
+respectively.</p></li>
+<li><p>Multi-target oneliner API-based example script added.</p></li>
+<li><p>Ignore more socket errors in datagram-type async socket code.</p></li>
+<li><p>AES cipher now supported (rfc3826).</p></li>
+<li><p>Fix to messed up tagIDs of noSuchInstance and noSuchObject types.</p></li>
+<li><p>SET Command Responder fixed to obscure access to non-existing variables
+by returning notWritable error (SF bug #1764839).</p></li>
+<li><p>AsynsockDispatcher.setSocketMap() method added to facilitate pysnmp
+transport integration into third-party asyncore-based applications.</p></li>
+<li><p>Fix to errorIndex generation at CommandResponder application, the value
+should be a one-based.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-7a-released-2007-02-19">
+<h2>Revision 4.1.7a, released 2007-02-19<a class="headerlink" href="#revision-4-1-7a-released-2007-02-19" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>Low-level debugging facility implemented.</p></li>
+<li><p>Support UdpTransportTarget timeout and retries parameters in oneliner API.</p></li>
+<li><p>Fix to snmpTrapOID construction at …proxy.rfc2576.v1ToV2()
+function.</p></li>
+<li><p>Fix to MibViewController.getNodeName() to take MIB module name
+into account (SF bug #1505847).</p></li>
+<li><p>Do explicit check for Counter32,Unsigned32,TimeTicks,Counter64 value types
+in MibTableRow index conversion and in TextualConvention.prettyPrint()
+methods (SF bug #1506341). Handle Bits in indices as RFC2578 suggests.</p></li>
+<li><p>Apply read-create column status to libsmi2pysnmp-generated code
+whenever MIB text specifies that (SF bug #1508955).</p></li>
+<li><p>Honor and apply DISPLAY-HINT specification when building TextualConvention
+class at libsmi2pysnmp.</p></li>
+<li><p>Managed Objects Instances files (smi/mibs/instances/) are now
+double-underscore prefixed to make them imported explicitly by these
+prefixed names. They used to be imported as a side-effect of
+Managed Objects files import what is way too hackerish.</p></li>
+<li><p>The libsmi2pysnmp now supports future libsmi bugfix that would generate
+“ranges” subtree along with the legacy and ambiguous “range” one.</p></li>
+<li><p>SMI support for fixed-length string indices implemented (SF bug #1584799,
+#1653908).</p></li>
+<li><p>Managed Object Instances may now have smiRead, smiWrite, smiCreate methods
+to support specific value mangling. These methods, if present, would be
+invoked from SNMP [Agent] core instead of conventional clone() method.
+The reason is to separate trivial value duplication from specific
+Instance value mangling that may have Agent-specific side effects
+(such as RowStatus).</p></li>
+<li><p>MIB table row destruction now works (SF bug #1555010).</p></li>
+<li><p>LCD unconfiguration functions for oneliners implemented (SF bug #1635270).</p></li>
+<li><p>unloadModules() and unexportSymbols() implemented at MibBuilder</p></li>
+<li><p>Notification type PDU proxy code fixed to produce symmetrical
+conversion.</p></li>
+<li><p>Various SNMP engine-internal caches expiration implemented.</p></li>
+<li><p>SMI-level access control now takes effect only if AC object is
+passed to MIB instrumentation API.</p></li>
+<li><p>LCD management code now uses generic MIB instrumentation features.</p></li>
+<li><p>Fix to oneliner manager code to have individual UdpSocketTransport
+instance per each SnmpEngine. Multithreaded apps might fail otherwise.
+(SF bug ID #1586420).</p></li>
+<li><p>Exclude the PYSNMP_MODULE_ID symbol from MIB view index, as it may get
+resolved into OID label instead of actual MIB object name.</p></li>
+<li><p>Memory leak fixed in indices.OidOrderedDict implementation.</p></li>
+<li><p>Fix to VACM shortcuts to let notifications and requests to co-exist
+for the same user otherwise.</p></li>
+<li><p>Fix to …oneliner.cmdgen.UsmUserData to support non-default ciphers.</p></li>
+<li><p>USM now uses local notion of snmpEngineBoots/Time when authoritative
+and cached estimate otherwise. Also, a security fix applied to to USM
+time-window verification (SF bug #1649032).</p></li>
+<li><p>Fix to notification objects resolution code at
+NotificationOriginator.sendNotification()</p></li>
+<li><p>Do not raise securityLevel for USM error reports that lacks user
+information, as these reports could never be ciphered (SF bug #1624720).</p></li>
+<li><p>Non-default BULK PDU params now actually applied.</p></li>
+<li><p>SnmpEngineID default value generation algorithmic function changed
+to allow multiple SNMP engines running on the same host.</p></li>
+<li><p>Documentation updated.</p></li>
+<li><p>A handful of minor fixes applied (SourceForge tracker IDs #1537592,
+#1537600, #1537659, #1548208, #1560939, #1563715, #1575697, #1599220,
+#1615077, #1615365, #1616579).</p></li>
+</ul>
+</section>
+<section id="revision-4-1-6a-released-2006-05-25">
+<h2>Revision 4.1.6a, released 2006-05-25<a class="headerlink" href="#revision-4-1-6a-released-2006-05-25" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>pysnmpUsmSecretAuthKey and pysnmpUsmSecretPrivKey length increased
+up to 256 octets. There seems no limit on this in RFC, though.</p></li>
+<li><p>A workaround for probably broken Agents: SNMPv3 Manager code defaults
+ContextEngineId to SecurityEngineId whenever ContextEngineId is not
+reported by authoritative SNMP engine on discovery.</p></li>
+<li><p>Use empty PDU in engine-discovery report at mpmod/rfc3412.py.</p></li>
+<li><p>MibBuilder.loadModules() now fails on missing MIB files.</p></li>
+<li><p>MibBuilder.exportSymbols() now accepts unnamed objects (likely Managed
+Objects Instances)</p></li>
+<li><p>SNMPv2-SMI.MibScalarInstance objects now support create*/destroy*
+Management Instrumentation methods to pass Columnar Object creation and
+removal events. MibTableColumn class invoke these methods accordingly.</p></li>
+<li><p>Fix to AsynNotificationOriginator.asyncSendNotification() callback
+formal parameters</p></li>
+<li><p>Initial VACM configuration implemented according to rfc3415 Appendix 1</p></li>
+<li><p>tools/buildmibs.sh split-up and re-implemented as tools/build-pysnmp-mib
+and pysnmp-mibs/tools/rebuild-pysnmp-mibs for better usability. These
+and libsmi2pysnmp scripts made installable.</p></li>
+<li><p>Types/Notifications/Groups exportSymbols() call chunking implemented
+in tools/libsmi2pysnmp</p></li>
+<li><p>Initial values specified to pyasn1 types to comply with latest pyasn1 API.</p></li>
+<li><p>Documentation improved</p></li>
+<li><p>Minor fixes towards Python 1.5 compatibility</p></li>
+</ul>
+</section>
+<section id="revision-4-1-5a-released-2005-11-04">
+<h2>Revision 4.1.5a, released 2005-11-04<a class="headerlink" href="#revision-4-1-5a-released-2005-11-04" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>Multi-lingual SNMP Trap/Inform Applications completed; examples added</p></li>
+<li><p>SMI model re-designed to make a clear separation between
+Managed Objects and their specification (AKA Agent and Manager side)</p></li>
+<li><p>SNMP SET Application support completed</p></li>
+<li><p>Minor, though backward incompatible, changes to one-liner API</p></li>
+<li><p>Many bugfixes</p></li>
+</ul>
+</section>
+<section id="revision-4-1-4a-released-2005-08-16">
+<h2>Revision 4.1.4a, released 2005-08-16<a class="headerlink" href="#revision-4-1-4a-released-2005-08-16" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>SHA-based authentication fixed and privacy implemented</p></li>
+<li><p>…oneliner.cmdgen.UsmUserData constructor now takes
+authProtocol and privProtocol parameters in a backward incompatible
+manner.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-3a-released-2005-07-28">
+<h2>Revision 4.1.3a, released 2005-07-28<a class="headerlink" href="#revision-4-1-3a-released-2005-07-28" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>rfc3413 applications API changes (related to callback function
+behaviour).</p></li>
+<li><p>TransportDispatcher now provides “jobs” interface to clients
+for better control of dispatcher’s execution.</p></li>
+<li><p>Many minor fixes.</p></li>
+</ul>
+</section>
+<section id="revision-4-1-2a-released-2005-07-12">
+<h2>Revision 4.1.2a, released 2005-07-12<a class="headerlink" href="#revision-4-1-2a-released-2005-07-12" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>Top-level application classes renamed into longer, self descripting names
+for clarity.</p></li>
+<li><p>CommandResponder &amp; NotificationOriginator applications now uses
+stand-alone SnmpContext for application registration.</p></li>
+<li><p>Many minor fixes (inspired by testing on WinXP)</p></li>
+</ul>
+</section>
+<section id="revision-4-1-1a-released-2005-06-29">
+<h2>Revision 4.1.1a, released 2005-06-29<a class="headerlink" href="#revision-4-1-1a-released-2005-06-29" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE ALPHA RELEASE.</p></li>
+<li><p>SNMPv3 code first published</p></li>
+<li><p>SNMP engine and applications implemented on library level</p></li>
+<li><p>Major re-design towards SNMPv3-style API.</p></li>
+</ul>
+</section>
+<section id="revision-4-0-2a-released-2005-03-01">
+<h2>Revision 4.0.2a, released 2005-03-01<a class="headerlink" href="#revision-4-0-2a-released-2005-03-01" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Adopted to slightly changed asyncore API (as shipped with python 2,4)</p></li>
+</ul>
+</section>
+<section id="revision-4-0-1a-released-2004-11-18">
+<h2>Revision 4.0.1a, released 2004-11-18<a class="headerlink" href="#revision-4-0-1a-released-2004-11-18" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Minor bug/typo fixes, mostly in example/ scripts.</p></li>
+</ul>
+</section>
+<section id="revision-4-0-0a-released-2004-11-15">
+<h2>Revision 4.0.0a, released 2004-11-15<a class="headerlink" href="#revision-4-0-0a-released-2004-11-15" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>UNSTABLE EARLY ALPHA RELEASE.</p></li>
+<li><p>Major re-design and re-implementation.</p></li>
+<li><p>Rudimental API versioning implemented to let incompatible package
+branches to co-exist within the same Python installation.</p></li>
+<li><p>SMI framework designed and implemented. This framework provides
+1) various access to MIB data 2) a way to implement custom MIB
+instrumentation objects. There’s also a tool for building SMI classes
+from libsmi(3) output (smidump -f python).</p></li>
+<li><p>ASN.1 subtyping machinery implemented. Now dynamic ASN.1 instances
+subtyping and quering becomes available. Previously, this has been done
+through Python classes inheritance what proved to be a wrong concept.</p></li>
+<li><p>ASN.1 codecs framework re-designed and re-implemented aimed at a more
+consistent design and better performance. Highlights include abstract
+codec interface and serialized data caching (at encoder).</p></li>
+<li><p>Asn1Item constraints machinery re-implemented based on Mike C. Fletcher’s
+design and code. Now various constrains are implemented as stand-alone
+objects serving interested Asn1Object derivatives through some abstract
+protocol (that’s probably the Decorator design pattern).</p></li>
+<li><p>ASN.1 tagging facility re-implemented along the client-server design
+pattern. Besides this seems to be a more appropriate design, it allows
+an easier way for dynamic subtyping.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
