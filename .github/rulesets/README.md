@@ -47,6 +47,17 @@ The pull request rule is set for a single maintainer:
 - **`require_last_push_approval: false`.** With one maintainer this would be
   the same deadlock as requiring an approval.
 
+## Repository settings
+
+`repo-settings.json` carries the two repository settings that go with a
+pull-request-only workflow, applied by the same script:
+
+- **`allow_auto_merge`.** With merging gated on checks rather than on a review,
+  auto-merge is what makes that bearable alone: open the pull request, arm it,
+  and it lands when CI goes green instead of being watched.
+- **`delete_branch_on_merge`.** Branches cannot be deleted while a ruleset
+  protects them, so the ones that are not protected should not accumulate.
+
 ## Required checks
 
 | Check | Workflow | Covers |

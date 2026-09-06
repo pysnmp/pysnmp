@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Apply every ruleset in this directory to the repository on GitHub.
+# Apply every ruleset in this directory to the repository on GitHub, and the
+# repository settings in repo-settings.json alongside them.
 #
 # Rulesets are matched to what is already on the repository by name: a ruleset
 # whose name is not there yet is created, one that is gets overwritten. Running
@@ -94,6 +95,9 @@ existing="$(api GET "repos/$REPO/rulesets?per_page=100")"
 managed=()
 for file in "$DIR"/*.json; do
   [ -e "$file" ] || continue
+  # Everything here is a ruleset except the repository settings, applied below
+  # against a different endpoint.
+  [ "$(basename "$file")" = repo-settings.json ] && continue
   name="$(jq -r '.name' "$file")"
   managed+=("$name")
   id="$(jq -r --arg n "$name" 'map(select(.name == $n)) | first | .id // empty' <<<"$existing")"
@@ -113,6 +117,16 @@ for file in "$DIR"/*.json; do
     api POST "repos/$REPO/rulesets" "$file" | jq -r '"created  \(.name) (id \(.id), \(.enforcement))"'
   fi
 done
+
+settings="$DIR/repo-settings.json"
+if [ -f "$settings" ]; then
+  if [ "$DRY_RUN" = 1 ]; then
+    echo "would set repository settings $(jq -c . "$settings")"
+  else
+    api PATCH "repos/$REPO" "$settings" |
+      jq -r '"settings delete_branch_on_merge=\(.delete_branch_on_merge) allow_auto_merge=\(.allow_auto_merge)"'
+  fi
+fi
 
 # Anything else on the repository was made by hand and is not tracked here.
 # Left alone rather than deleted -- say so, and let a human decide.
