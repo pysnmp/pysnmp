@@ -59,7 +59,11 @@ jobs:
         run: |
           git fetch origin gh-pages --depth=1 || true
           if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-            git worktree add ../site origin/gh-pages
+            # -B puts the worktree on a local gh-pages branch reset to the
+            # remote one. Without it `git worktree add <path> origin/gh-pages`
+            # checks out a detached HEAD, the commit below lands on no branch,
+            # and `git push origin gh-pages` has no such local ref to push.
+            git worktree add -B gh-pages ../site origin/gh-pages
           else
             git worktree add --detach ../site
             git -C ../site checkout --orphan gh-pages
