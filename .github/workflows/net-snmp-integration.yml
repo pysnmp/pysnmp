@@ -49,7 +49,7 @@ jobs:
           --env SNMP_PROFILE=${{ matrix.profile }}
           pysnmp-ci-net-snmp:local
       - name: Exercise the selected SNMP version and security profile
-        run: uv run --locked --extra dev pytest tests/test_netsnmp_integration.py -v -s
+        run: uv run --locked --group dev pytest tests/test_netsnmp_integration.py -v -s
       - name: Show agent logs on completion
         if: always()
         run: docker logs pysnmp-ci-net-snmp

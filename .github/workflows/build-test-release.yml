@@ -59,11 +59,11 @@ jobs:
       # --keep-going lists every warning instead of stopping at the first, so
       # one push fixes them all.
       - name: Build docs
-        run: uv run --locked --extra dev sphinx-build -W --keep-going -b html docs/source docs/build/html
+        run: uv run --locked --group dev sphinx-build -W --keep-going -b html docs/source docs/build
       - uses: actions/upload-artifact@v7
         with:
           name: docs-html
-          path: docs/build/html
+          path: docs/build
 
   build:
     name: build
@@ -146,13 +146,13 @@ jobs:
         # Windows runners default to pwsh; this block is bash on every platform.
         shell: bash
         run: >
-          uv run --locked --extra dev --python ${{ matrix.python }}
+          uv run --locked --group dev --python ${{ matrix.python }}
           coverage run -m pytest --junitxml=test-results/results.xml tests
       - name: Coverage report
         shell: bash
         run: |
-          uv run --locked --extra dev --python ${{ matrix.python }} coverage report
-          uv run --locked --extra dev --python ${{ matrix.python }} coverage xml
+          uv run --locked --group dev --python ${{ matrix.python }} coverage report
+          uv run --locked --group dev --python ${{ matrix.python }} coverage xml
       - uses: actions/upload-artifact@v7
         # Results are most wanted when the suite failed.
         if: always()
