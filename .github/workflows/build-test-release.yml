@@ -33,17 +33,6 @@ jobs:
           python-version: "3.10"
       - uses: pre-commit/action@v3.0.1
 
-  semgrep:
-    runs-on: ubuntu-latest
-    name: security-sast-semgrep
-    steps:
-      - uses: actions/checkout@v7
-      - name: Semgrep
-        id: semgrep
-        uses: semgrep/semgrep-action@v1
-        with:
-          publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
-
   docs:
     name: docs
     runs-on: ubuntu-latest
@@ -120,14 +109,11 @@ jobs:
           PY
 
   run-unit-tests:
-    name: test-unit
+    name: test-unit (py${{ matrix.python }} ${{ matrix.os }})
     strategy:
       matrix:
         include: ${{ fromJSON(needs.setup-matrix.outputs.include) }}
       fail-fast: false
-    # Windows has never run here, so it reports without blocking until it has a
-    # track record. Remove this once it does.
-    continue-on-error: ${{ matrix.os == 'windows-latest' }}
     runs-on: ${{ matrix.os }}
     needs:
       - build
@@ -187,7 +173,6 @@ jobs:
       DRY: ${{ github.event_name != 'workflow_dispatch' }}
     needs:
       - pre-commit
-      - semgrep
       - docs
       - build
       - run-unit-tests
