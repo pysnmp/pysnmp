@@ -191,6 +191,23 @@ class ZipMibSource(__AbstractMibSource):
             # Dir relative to CWD
             return DirMibSource(self._srcName).init()
 
+    def fullPath(self, *args: Any) -> str:
+        """Qualify the archive member with the archive it lives in.
+
+        ``_init`` rewrites ``_srcName`` to the member path -- ``pysmi/mibs/
+        pysnmp`` -- which on its own names no file on disk and is ambiguous
+        between two archives holding the same package. Prefixing the archive
+        makes it locate the module, and makes it comparable with what
+        ``importlib`` reports for the same package.
+        """
+        archive = getattr(self.__loader, "archive", "")
+
+        return (
+            os.path.join(archive, super().fullPath(*args))
+            if archive
+            else super().fullPath(*args)
+        )
+
     @staticmethod
     def _parseDosTime(dosdate: int, dostime: int) -> float:
         t = (

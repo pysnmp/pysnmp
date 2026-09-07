@@ -14,6 +14,7 @@ that has a MODULE-IDENTITY (pysnmp/pysmi#205), and `builder.revisionOf` reads it
 off the compiled module without running it. See pysnmp/pysnmp#198.
 """
 
+import pathlib
 import warnings
 
 import pytest
@@ -222,3 +223,53 @@ class TestAnAlreadyLoadedModuleIsStable:
             mibBuilder.loadModules("TEST-MIB")
 
         assert mibBuilder.mibSymbols["TEST-MIB"]["PYSNMP_MODULE_ID"] == "newer"
+
+
+class TestAZipInstalledSourceReportsWhereItCameFrom:
+    """`getModulePath` has to name a module a zip-imported package supplied.
+
+    `ZipMibSource._init` rewrites `_srcName` to the archive member path --
+    ``pysmi/mibs/pysnmp`` -- which names no file on disk and is ambiguous
+    between two archives holding the same package. A wheel installs as a
+    directory, so `_init` hands back a `DirMibSource` and nothing here is
+    exercised by an ordinary install; a zip or egg install is what reaches it.
+    """
+
+    @staticmethod
+    def _archive(tmp_path):
+        """A zip holding one importable package with one MIB module in it."""
+        import zipfile
+
+        archive = tmp_path / "mibs.zip"
+        module = (
+            f"PYSNMP_MODULE_REVISION = {NEWER!r}\n"
+            "mibBuilder.exportSymbols('ZIP-MIB', PYSNMP_MODULE_ID='from-zip')\n"
+        )
+        with zipfile.ZipFile(archive, "w") as zf:
+            zf.writestr("zipped/__init__.py", "")
+            zf.writestr("zipped/mibs/__init__.py", "")
+            zf.writestr("zipped/mibs/ZIP-MIB.py", module)
+
+        return archive
+
+    def test_the_path_names_the_archive_it_came_from(self, tmp_path, monkeypatch):
+        import importlib
+        import importlib.util
+
+        archive = self._archive(tmp_path)
+        monkeypatch.syspath_prepend(str(archive))
+        importlib.invalidate_caches()
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            mibBuilder = builder.MibBuilder()
+            mibBuilder.setMibSources(builder.ZipMibSource("zipped.mibs").init())
+            mibBuilder.loadModules("ZIP-MIB")
+
+        assert mibBuilder.mibSymbols["ZIP-MIB"]["PYSNMP_MODULE_ID"] == "from-zip"
+
+        origin = pathlib.Path(mibBuilder.getModulePath("ZIP-MIB"))
+        package = importlib.util.find_spec("zipped.mibs").submodule_search_locations[0]
+
+        assert str(origin.parent) == package
+        assert str(archive) in str(origin)
