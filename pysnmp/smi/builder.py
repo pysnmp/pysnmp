@@ -71,6 +71,16 @@ class __AbstractMibSource:
         return self._listdir()
 
     def read(self, f: str) -> Any:
+        """The compiled module named ``f``, with the suffix it was found under.
+
+        Prefers a ``.pyc`` when one is present and no older than the source,
+        and falls back to compiling the ``.py``. Returns ``(code, suffix)`` --
+        the suffix rather than a path, because the caller composes the module's
+        location itself with ``fullPath(modName, sfx)``.
+
+        Raises ``OSError(ENOENT)`` when neither form of the module is present,
+        and ``error.MibLoadError`` when one is present but unreadable.
+        """
         pycTime: float = -1
         pyTime: float = -1
 
@@ -191,6 +201,14 @@ class ZipMibSource(__AbstractMibSource):
         return getattr(loader, "_files", None)
 
     def _init(self) -> Any:
+        """Resolve ``_srcName`` to whichever source can actually serve it.
+
+        A package name names a zip source only when the interpreter imported it
+        through ``zipimporter``. An ordinary install is a directory -- which is
+        what a wheel unpacks to -- so this hands back a ``DirMibSource`` for
+        both the installed and the relative-to-CWD case, and answers with
+        itself only for a genuine archive.
+        """
         try:
             p = __import__(self._srcName, globals(), locals(), ["__init__"])
             if (
@@ -245,6 +263,12 @@ class ZipMibSource(__AbstractMibSource):
         return time.mktime(t)
 
     def _listdir(self) -> tuple[str, ...]:
+        """The module names the archive holds directly under ``_srcName``.
+
+        The archive directory is flat and keyed by full member path, so a
+        member belongs to this source only when its directory part matches
+        exactly -- a nested package is not a member of its parent here.
+        """
         names = []
         # noinspection PyProtectedMember
         for f in self._archiveFiles(self.__loader):
@@ -254,6 +278,13 @@ class ZipMibSource(__AbstractMibSource):
         return tuple(self._uniqNames(names))
 
     def _getTimestamp(self, f: str) -> float:
+        """The archive member's modification time, as a Unix timestamp.
+
+        A zip records the DOS date and time fields its directory carries rather
+        than a Unix timestamp, so ``_parseDosTime`` converts them. Raises
+        ``OSError(ENOENT)`` when the archive holds no such member, which is
+        what ``read`` reads as "this form of the module is absent".
+        """
         p = os.path.join(self._srcName, f)
         # noinspection PyProtectedMember
         files = self._archiveFiles(self.__loader)
