@@ -55,6 +55,7 @@ def resolve(name, *directories):
 
 @pytest.fixture
 def two(tmp_path):
+    """Two source directories, to be searched in whatever order a test gives."""
     first = tmp_path / "first"
     second = tmp_path / "second"
     first.mkdir()
@@ -65,6 +66,7 @@ def two(tmp_path):
 
 class TestNewestRevisionWins:
     def test_the_newer_copy_wins_from_the_last_source(self, two):
+        """The arrangement first-source-wins got wrong."""
         first, second = two
         write(first, "TEST-MIB", OLDER, "older")
         write(second, "TEST-MIB", NEWER, "newer")
@@ -122,6 +124,7 @@ class TestSourceOrderBreaksTies:
         assert resolve("TEST-MIB", second, first) == "dated"
 
     def test_equal_revisions_leave_it_to_source_order(self, two):
+        """Nothing to choose between them, so the caller's order stands."""
         first, second = two
         write(first, "TEST-MIB", NEWER, "first")
         write(second, "TEST-MIB", NEWER, "second")
@@ -130,6 +133,7 @@ class TestSourceOrderBreaksTies:
         assert resolve("TEST-MIB", second, first) == "second"
 
     def test_a_single_source_is_used_whatever_it_states(self, two):
+        """One candidate is never compared against anything."""
         first, _ = two
         write(first, "TEST-MIB", None, "only")
 
@@ -158,13 +162,63 @@ class TestTheRevisionIsReadWithoutRunningTheModule:
         assert resolve("TEST-MIB", first, second) == "newer"
 
     def test_revision_of_reads_a_compiled_module(self, tmp_path):
+        """Straight from the code object, which is what `read` returns."""
         path = write(tmp_path, "TEST-MIB", NEWER, "probe")
         codeObj = compile(path.read_text(), str(path), "exec")
 
         assert builder.revisionOf(codeObj) == NEWER
 
     def test_revision_of_answers_none_without_the_constant(self, tmp_path):
+        """Absent is not an error: it means source order decides."""
         path = write(tmp_path, "TEST-MIB", None, "probe")
         codeObj = compile(path.read_text(), str(path), "exec")
 
         assert builder.revisionOf(codeObj) is None
+
+
+class TestAnAlreadyLoadedModuleIsStable:
+    """Selection decides what to load, not what to reload.
+
+    Loading is not idempotent -- a MIB registers its symbols as it runs -- so
+    executing a second copy over the first raises out of `exportSymbols` on the
+    first symbol they share.
+
+    Before selection stopped following source order this could not be reached:
+    `addMibSources` appends, so the copy already loaded was still found first
+    and the `modPathsSeen` check caught it. Best match puts a newer copy ahead
+    of it, and a newer copy is a different path.
+    """
+
+    def test_adding_a_newer_source_does_not_disturb_a_loaded_module(self, two):
+        first, second = two
+        write(first, "TEST-MIB", OLDER, "older")
+        write(second, "TEST-MIB", NEWER, "newer")
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            mibBuilder = builder.MibBuilder()
+            mibBuilder.setMibSources(builder.DirMibSource(str(first)).init())
+            mibBuilder.loadModules("TEST-MIB")
+
+            mibBuilder.addMibSources(builder.DirMibSource(str(second)))
+            mibBuilder.loadModules("TEST-MIB")
+
+        assert mibBuilder.mibSymbols["TEST-MIB"]["PYSNMP_MODULE_ID"] == "older"
+
+    def test_unloading_first_picks_up_the_newer_copy(self, two):
+        """The way to take a replacement, and it still selects by best match."""
+        first, second = two
+        write(first, "TEST-MIB", OLDER, "older")
+        write(second, "TEST-MIB", NEWER, "newer")
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            mibBuilder = builder.MibBuilder()
+            mibBuilder.setMibSources(builder.DirMibSource(str(first)).init())
+            mibBuilder.loadModules("TEST-MIB")
+
+            mibBuilder.addMibSources(builder.DirMibSource(str(second)))
+            mibBuilder.unloadModules("TEST-MIB")
+            mibBuilder.loadModules("TEST-MIB")
+
+        assert mibBuilder.mibSymbols["TEST-MIB"]["PYSNMP_MODULE_ID"] == "newer"

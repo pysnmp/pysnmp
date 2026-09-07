@@ -478,6 +478,21 @@ class MibBuilder:
 
     def loadModule(self, modName: str, **userCtx: Any) -> Any:
         """Load and execute MIB modules as Python code"""
+        if modName in self.__modSeen:
+            # Already loaded, and loading is not idempotent: a MIB registers
+            # its symbols as it runs, so executing a second copy over the first
+            # raises out of `exportSymbols` on the first symbol they share.
+            #
+            # This became reachable when selection stopped following source
+            # order. Before, a source added after the fact was appended, so the
+            # copy already loaded was still found first and the `modPathsSeen`
+            # check below caught it. Best match will now put a newer copy
+            # ahead of it, and a newer copy is a different path.
+            #
+            # Picking up a replacement therefore means `unloadModules()` first,
+            # which is what it meant before as well.
+            return self
+
         for mibSource, codeObj, sfx in self._candidates(modName):
             modPath = mibSource.fullPath(modName, sfx)
 
