@@ -59,7 +59,7 @@ readme = "README.md"
 # floors back on a GA before cutting the 6.0.0 GA, or a released pysnmplib lets
 # an installer resolve a sibling release candidate.
 dependencies = [
-    "pysnmp-pysmi >=2.4.0rc1,<3.0.0",
+    "pysnmp-pysmi >=2.4.0rc2,<3.0.0",
     "pycryptodomex >=3.11.0,<4.0.0",
     "pysnmp-pyasn1 >=2.0.0rc2,<3.0.0",
 ]

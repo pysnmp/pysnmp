@@ -4,6 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+import dis
 import importlib
 import importlib.machinery
 import importlib.util
@@ -275,9 +276,59 @@ class DirMibSource(__AbstractMibSource):
         raise OSError(ENOENT, msg)
 
 
+#: The constant pysmi writes into every generated module that has a
+#: MODULE-IDENTITY, holding its LAST-UPDATED as ``YYYYMMDDHHMMZ``. See
+#: pysnmp/pysmi#205.
+MODULE_REVISION = "PYSNMP_MODULE_REVISION"
+
+
+def revisionOf(codeObj: Any) -> str | None:
+    """A generated module's MODULE-IDENTITY revision, without running it.
+
+    Read from the compiled module rather than from its text: the code object
+    is what :py:meth:`__AbstractMibSource.read` already hands back, so this
+    costs no second read and works for a module distributed as bytecode with
+    no ``.py`` beside it.
+
+    Executing the module is not an option. A pysnmp MIB registers its symbols
+    into the builder as it runs, so running every candidate to find out which
+    one to keep would load all of them. Pattern-matching the source is not one
+    either -- ``dis`` reports what the module actually assigns, where a regex
+    reports what its text looks like.
+
+    Returns:
+        The timestamp, or ``None`` for a module that states no revision --
+        every SMIv1 module, and the SMI modules themselves.
+    """
+    constant = None
+
+    for instruction in dis.get_instructions(codeObj):
+        if instruction.opname == "LOAD_CONST":
+            constant = instruction.argval
+
+        elif (
+            instruction.opname in ("STORE_NAME", "STORE_GLOBAL")
+            and instruction.argval == MODULE_REVISION
+        ):
+            return constant if isinstance(constant, str) else None
+
+    return None
+
+
 class MibBuilder:
     defaultCoreMibs = os.pathsep.join(("pysnmp.smi.mibs.instances", "pysnmp.smi.mibs"))
     defaultMiscMibs = "pysnmp_mibs"
+
+    #: The modules pysmi generates into every wheel pysnmp already depends on.
+    #:
+    #: Searched last, which under :py:meth:`MibBuilder._candidates` decides
+    #: nothing on its own: a module here still wins wherever it states a newer
+    #: MODULE-IDENTITY revision than the copy that was searched first. Position
+    #: settles only what the revisions cannot -- a module that states none, or
+    #: two copies stating the same one -- where the more specific source, the
+    #: one a caller went out of their way to register, is the better guess at
+    #: what they meant.
+    defaultGeneratedMibs = "pysmi.mibs.pysnmp"
 
     moduleID = "PYSNMP_MODULE_ID"
 
@@ -312,6 +363,9 @@ class MibBuilder:
                 sources.append(ZipMibSource(m))
         for m in self.defaultCoreMibs.split(os.pathsep):
             sources.insert(0, ZipMibSource(m))
+        if self.defaultGeneratedMibs:
+            for m in self.defaultGeneratedMibs.split(os.pathsep):
+                sources.append(ZipMibSource(m))
         self.mibSymbols: dict[str, dict[str, Any]] = {}
         self.__mibSources: list[MibSource] = []
         self.__modSeen: dict[str, str] = {}
@@ -361,8 +415,29 @@ class MibBuilder:
                 )
         return paths
 
-    def loadModule(self, modName: str, **userCtx: Any) -> Any:
-        """Load and execute MIB modules as Python code"""
+    def _candidates(self, modName: str) -> list[tuple[Any, Any, str]]:
+        """Every source that can supply *modName*, best match first.
+
+        Source order does not decide. Two sources offering a module are
+        offering the same specification at two revisions, and the newer one is
+        the answer wherever it is found -- so the newest MODULE-IDENTITY
+        revision wins and source order only breaks the tie. A caller who
+        registers an older copy of a module does not thereby change behaviour,
+        which is the whole point: precedence by position would make that a
+        silent downgrade.
+
+        Source order settles it when the revisions cannot: when any candidate
+        states none -- every SMIv1 module, and the SMI modules themselves --
+        or when they all state the same one. An undated copy cannot be placed
+        against a dated one, so a single undated candidate leaves the whole
+        decision to order.
+
+        Unlike :py:meth:`pysmi.compiler.MibCompiler._candidate_sources`, this
+        is not restricted to a set of names pysmi claims authority over: any
+        module found in more than one source is decided this way.
+        """
+        candidates: list[tuple[Any, Any, str]] = []
+
         for mibSource in self.__mibSources:
             debug.logger & debug.flagBld and debug.logger(
                 f"loadModule: trying {modName} at {mibSource}"
@@ -376,6 +451,49 @@ class MibBuilder:
                 )
                 continue
 
+            candidates.append((mibSource, codeObj, sfx))
+
+        if len(candidates) < 2:
+            return candidates
+
+        revisions = [revisionOf(codeObj) for _, codeObj, _ in candidates]
+
+        if not all(revisions) or len(set(revisions)) == 1:
+            debug.logger & debug.flagBld and debug.logger(
+                f"loadModule: {modName} left in source order; revisions {revisions}"
+            )
+            return candidates
+
+        # Stable, so candidates sharing the newest revision keep the order
+        # they were searched in.
+        ordered = sorted(
+            zip(revisions, candidates), key=lambda pair: pair[0] or "", reverse=True
+        )
+
+        debug.logger & debug.flagBld and debug.logger(
+            f"loadModule: {modName} resolved by newest revision {ordered[0][0]}"
+        )
+
+        return [candidate for _, candidate in ordered]
+
+    def loadModule(self, modName: str, **userCtx: Any) -> Any:
+        """Load and execute MIB modules as Python code"""
+        if modName in self.__modSeen:
+            # Already loaded, and loading is not idempotent: a MIB registers
+            # its symbols as it runs, so executing a second copy over the first
+            # raises out of `exportSymbols` on the first symbol they share.
+            #
+            # This became reachable when selection stopped following source
+            # order. Before, a source added after the fact was appended, so the
+            # copy already loaded was still found first and the `modPathsSeen`
+            # check below caught it. Best match will now put a newer copy
+            # ahead of it, and a newer copy is a different path.
+            #
+            # Picking up a replacement therefore means `unloadModules()` first,
+            # which is what it meant before as well.
+            return self
+
+        for mibSource, codeObj, sfx in self._candidates(modName):
             modPath = mibSource.fullPath(modName, sfx)
 
             if modPath in self.__modPathsSeen:
