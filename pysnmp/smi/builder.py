@@ -71,6 +71,16 @@ class __AbstractMibSource:
         return self._listdir()
 
     def read(self, f: str) -> Any:
+        """The compiled module named ``f``, with the suffix it was found under.
+
+        Prefers a ``.pyc`` when one is present and no older than the source,
+        and falls back to compiling the ``.py``. Returns ``(code, suffix)`` --
+        the suffix rather than a path, because the caller composes the module's
+        location itself with ``fullPath(modName, sfx)``.
+
+        Raises ``OSError(ENOENT)`` when neither form of the module is present,
+        and ``error.MibLoadError`` when one is present but unreadable.
+        """
         pycTime: float = -1
         pyTime: float = -1
 
@@ -141,7 +151,13 @@ class __AbstractMibSource:
 
         if pyTime != -1:
             modData, pyPath = self._getData(f + pySfx, "r")
-            return compile(modData, pyPath, "exec"), pyPath
+            # The suffix, to match the bytecode branch above. `_getData` hands
+            # back a full path, and returning that made `loadModule` compose
+            # `fullPath(modName, sfx)` out of a directory, a module name and a
+            # second absolute path -- unique per source and module, so dedup
+            # worked, but never a path. It reached every `MibLoadError`, and
+            # now `getModulePath` answers with it.
+            return compile(modData, pyPath, "exec"), pySfx
 
         raise OSError(ENOENT, "No suitable module found", f)
 
@@ -160,16 +176,45 @@ class __AbstractMibSource:
 
 
 class ZipMibSource(__AbstractMibSource):
-    # zipimport.zipimporter carries the archive directory as the private
-    # `_files`, which is what this class reads; typeshed describes neither it
-    # nor the loader `__import__` hands back, so there is nothing narrower to
-    # say here than what the hasattr() guard below already checks.
+    # zipimport.zipimporter carries the archive directory privately, and
+    # typeshed describes neither it nor the loader `__import__` hands back, so
+    # there is nothing narrower to say here than what `_archiveFiles` checks.
     __loader: Any
 
+    @staticmethod
+    def _archiveFiles(loader: Any) -> Any:
+        """The archive directory, under whichever name this Python has for it.
+
+        `zipimporter` exposed it as `_files` until Python 3.14 replaced that
+        with `_get_files()`. Both are private, and neither has a public
+        equivalent -- the loader offers no way to list an archive's members --
+        but without one a zip-installed MIB package cannot be enumerated at
+        all, so it is read rather than done without.
+
+        Returns:
+            The mapping of member path to archive entry, or ``None`` for a
+            loader that is not a zipimporter.
+        """
+        if hasattr(loader, "_get_files"):
+            return loader._get_files()
+
+        return getattr(loader, "_files", None)
+
     def _init(self) -> Any:
+        """Resolve ``_srcName`` to whichever source can actually serve it.
+
+        A package name names a zip source only when the interpreter imported it
+        through ``zipimporter``. An ordinary install is a directory -- which is
+        what a wheel unpacks to -- so this hands back a ``DirMibSource`` for
+        both the installed and the relative-to-CWD case, and answers with
+        itself only for a genuine archive.
+        """
         try:
             p = __import__(self._srcName, globals(), locals(), ["__init__"])
-            if hasattr(p, "__loader__") and hasattr(p.__loader__, "_files"):
+            if (
+                hasattr(p, "__loader__")
+                and self._archiveFiles(p.__loader__) is not None
+            ):
                 self.__loader = p.__loader__
                 self._srcName = self._srcName.replace(".", os.sep)
                 return self
@@ -184,6 +229,23 @@ class ZipMibSource(__AbstractMibSource):
         except ImportError:
             # Dir relative to CWD
             return DirMibSource(self._srcName).init()
+
+    def fullPath(self, *args: Any) -> str:
+        """Qualify the archive member with the archive it lives in.
+
+        ``_init`` rewrites ``_srcName`` to the member path -- ``pysmi/mibs/
+        pysnmp`` -- which on its own names no file on disk and is ambiguous
+        between two archives holding the same package. Prefixing the archive
+        makes it locate the module, and makes it comparable with what
+        ``importlib`` reports for the same package.
+        """
+        archive = getattr(self.__loader, "archive", "")
+
+        return (
+            os.path.join(archive, super().fullPath(*args))
+            if archive
+            else super().fullPath(*args)
+        )
 
     @staticmethod
     def _parseDosTime(dosdate: int, dostime: int) -> float:
@@ -201,22 +263,33 @@ class ZipMibSource(__AbstractMibSource):
         return time.mktime(t)
 
     def _listdir(self) -> tuple[str, ...]:
+        """The module names the archive holds directly under ``_srcName``.
+
+        The archive directory is flat and keyed by full member path, so a
+        member belongs to this source only when its directory part matches
+        exactly -- a nested package is not a member of its parent here.
+        """
         names = []
         # noinspection PyProtectedMember
-        for f in self.__loader._files:
+        for f in self._archiveFiles(self.__loader):
             d, f = os.path.split(f)
             if d == self._srcName:
                 names.append(f)
         return tuple(self._uniqNames(names))
 
     def _getTimestamp(self, f: str) -> float:
+        """The archive member's modification time, as a Unix timestamp.
+
+        A zip records the DOS date and time fields its directory carries rather
+        than a Unix timestamp, so ``_parseDosTime`` converts them. Raises
+        ``OSError(ENOENT)`` when the archive holds no such member, which is
+        what ``read`` reads as "this form of the module is absent".
+        """
         p = os.path.join(self._srcName, f)
         # noinspection PyProtectedMember
-        if p in self.__loader._files:
-            # noinspection PyProtectedMember
-            return self._parseDosTime(
-                self.__loader._files[p][6], self.__loader._files[p][5]
-            )
+        files = self._archiveFiles(self.__loader)
+        if p in files:
+            return self._parseDosTime(files[p][6], files[p][5])
         else:
             raise OSError(ENOENT, "No such file in ZIP archive", p)
 
@@ -399,6 +472,16 @@ class MibBuilder:
 
     def getMibSources(self) -> tuple[Any, ...]:
         return tuple(self.__mibSources)
+
+    def getModulePath(self, modName: str) -> str | None:
+        """Where a loaded module came from, or ``None`` if it is not loaded.
+
+        Which source answered is not decoration now that more than one can:
+        the same name may be present in several, and best match decides. A
+        caller -- or a test -- wanting to know which copy it got had no way to
+        ask.
+        """
+        return self.__modSeen.get(modName)
 
     # Legacy/compatibility methods (won't work for .eggs)
     def setMibPath(self, *mibPaths: str) -> None:

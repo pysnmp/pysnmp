@@ -4,16 +4,26 @@
 regenerated since. pysmi ships current ones in every wheel we already depend on,
 which ``MibBuilder`` ignores. pysnmp/pysnmp#198 is about consuming those instead.
 
-A blind swap is not safe, so this lands first: it loads each module both ways --
-the frozen copy, and the generated copy with ``pysmi.mibs.pysnmp`` registered
-ahead of our own sources -- and compares what the issue asks for: the exported
-symbol set, and per symbol the OID, syntax, constraints, MAX-ACCESS, STATUS,
-UNITS, INDEX/AUGMENTS wiring and OBJECTS list.
+The swap has happened. Best-match selection would have picked pysmi's copies on
+revision alone, except that the frozen ones state no revision at all -- pysmi
+0.1.3 emitted ``setRevisions`` under ``loadTexts`` and no module-level constant
+-- so the tie rule kept handing them the win until they were deleted.
 
-Every difference the sweep finds today is pinned below, classified, and checked
-against the MIB that declares it. The point is not that the two agree -- they do
-not -- but that we know exactly where, and that an *unclassified* difference
-fails. When the repoint happens, this is what says nothing else moved.
+Deleting them removes the evidence of what they said, so it was taken first:
+``tests/data/base-layer-2017.json`` holds every symbol of all eleven as the
+frozen files defined them, captured at the commit before the deletion. This
+compares what loads now against that record -- the exported symbol set, and per
+symbol the OID, syntax, constraints, MAX-ACCESS, STATUS, UNITS, INDEX/AUGMENTS
+wiring and OBJECTS list.
+
+Every difference is pinned below, classified, and checked against the MIB that
+declares it. The point is not that the two agree -- they do not -- but that we
+know exactly where, and that an *unclassified* difference fails. It keeps
+saying so: a pysmi upgrade that changes one of these modules lands here.
+
+The snapshot is a historical record and nothing can regenerate it, which is the
+point -- it is the only remaining account of what the base layer was, and it is
+what makes the deletion reviewable rather than a leap.
 
 Two normalizations, because they are spelling rather than substance:
 
@@ -54,17 +64,29 @@ CONVERGENCE_SET = (
     "SNMP-USER-BASED-SM-MIB",
     "SNMP-USM-AES-MIB",
     "SNMP-USM-HMAC-SHA2-MIB",
-    "SNMP-VIEW-BASED-ACM-MIB",
     "SNMPv2-MIB",
 )
+
+#: The twelfth module both trees carry, and the one that did not converge.
+#:
+#: ``pysnmp/smi/mibs/SNMP-VIEW-BASED-ACM-MIB.py`` is not a generated module. It
+#: carries a hand-added ``vacmContextStatus`` RowStatus column at
+#: ``1.3.6.1.6.3.16.1.1.1.2``, under a comment in the file saying so outright --
+#: *"The RowStatus column is not present in the MIB"*. RFC 3415's
+#: vacmContextTable has one column, ``vacmContextName``, and is read-only;
+#: ``pysnmp.entity.config.addContext`` creates its rows by writing
+#: ``createAndGo`` to the fabricated one, addressing it by sub-identifier.
+#:
+#: That is engine behaviour, so it stays here by the same rule that keeps
+#: SNMP-FRAMEWORK-MIB and the rest. It converges once the engine stops needing
+#: a column no MIB declares -- pysnmp/pysnmp#205.
+HELD_BACK = "SNMP-VIEW-BASED-ACM-MIB"
 
 #: Symbols the frozen copy exports that the generated one does not. Each is an
 #: artifact of the 2017 run rather than something a MIB declares. That is not
 #: taken on trust: ``test_no_dropped_symbol_is_declared_by_its_mib`` parses each
 #: MIB and asserts the symbol is absent from the declared model.
 #:
-#: ``vacmContextStatus``   RFC 3415's vacmContextTable has one column,
-#:                         vacmContextName. There is no such object.
 #: ``TtcpInSegs``          A stray leading capital. The frozen module exports it
 #:                         bound to tcpInSegs; no ASN.1 anywhere declares the
 #:                         name. The generated copy exports tcpInSegs.
@@ -72,7 +94,6 @@ CONVERGENCE_SET = (
 #: ``snmpOutReadOnlys``    is an SMIv1 anchor stub carrying DisplayString and
 #:                         the SMI roots, not the whole of RFC 1158.
 DROPPED = {
-    "SNMP-VIEW-BASED-ACM-MIB": {"vacmContextStatus"},
     "RFC1213-MIB": {"TtcpInSegs"},
     "RFC1158-MIB": {"snmpInBadTypes", "snmpOutReadOnlys"},
 }
@@ -91,13 +112,6 @@ ACCESS_CORRECTIONS = {
     ("SNMP-PROXY-MIB", "snmpProxyName"),
     ("SNMP-USER-BASED-SM-MIB", "usmUserEngineID"),
     ("SNMP-USER-BASED-SM-MIB", "usmUserName"),
-    ("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessContextPrefix"),
-    ("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessSecurityLevel"),
-    ("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessSecurityModel"),
-    ("SNMP-VIEW-BASED-ACM-MIB", "vacmSecurityModel"),
-    ("SNMP-VIEW-BASED-ACM-MIB", "vacmSecurityName"),
-    ("SNMP-VIEW-BASED-ACM-MIB", "vacmViewTreeFamilySubtree"),
-    ("SNMP-VIEW-BASED-ACM-MIB", "vacmViewTreeFamilyViewName"),
     ("SNMPv2-MIB", "sysORIndex"),
 }
 
@@ -118,9 +132,9 @@ SYNTAX_CHANGES = {
     ("RFC1213-MIB", "atNetAddress"): ("NetworkAddress", "IpAddress"),
 }
 
-GENERATED = pathlib.Path(
-    importlib.util.find_spec("pysmi.mibs.pysnmp").submodule_search_locations[0]
-)
+#: Facts extracted from ``pysnmp/smi/mibs/`` at the commit before the frozen
+#: modules were deleted. See the module docstring.
+SNAPSHOT = pathlib.Path(__file__).parent / "data" / "base-layer-2017.json"
 
 
 def _declared(name):
@@ -146,17 +160,27 @@ def _declared(name):
     return {key for key in documents.get(name, {}) if key not in ("meta", "imports")}
 
 
-def _load(name, generated):
+def _load(name):
+    """The module a plain builder resolves, with no source coaxing.
+
+    Nothing is prepended: this asks what a caller actually gets. If the frozen
+    copies came back the sweep would compare the snapshot against itself, the
+    classified drops would vanish, and ``TestSymbolSets`` would fail.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         mibBuilder = builder.MibBuilder()
-        if generated:
-            mibBuilder.setMibSources(
-                builder.DirMibSource(str(GENERATED)), *mibBuilder.getMibSources()
-            )
         mibBuilder.loadModules(name)
 
         return mibBuilder.mibSymbols[name]
+
+
+def _jsonable(value):
+    """Tuples and lists compare equal only once both are lists."""
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(item) for item in value]
+
+    return value
 
 
 def _leaves(constraint):
@@ -218,13 +242,20 @@ def _facts(node):
 
 @pytest.fixture(scope="module")
 def sweep():
-    """Every module compared both ways, once."""
+    """Every module measured against the 2017 record, once."""
+    frozen_modules = json.loads(SNAPSHOT.read_text())["modules"]
+
+    assert sorted(frozen_modules) == sorted((*CONVERGENCE_SET, HELD_BACK)), (
+        "the snapshot and the convergence set have drifted apart"
+    )
+
     result = {}
     for name in CONVERGENCE_SET:
-        frozen, generated = _load(name, False), _load(name, True)
+        frozen, generated = frozen_modules[name], _load(name)
         differences = {}
         for symbol in sorted(set(frozen) & set(generated)):
-            before, after = _facts(frozen[symbol]), _facts(generated[symbol])
+            before = frozen[symbol]
+            after = {k: _jsonable(v) for k, v in _facts(generated[symbol]).items()}
             changed = {
                 key: (before.get(key), after.get(key))
                 for key in set(before) | set(after)
@@ -245,6 +276,11 @@ class TestSymbolSets:
     """What appears and disappears."""
 
     def test_only_the_classified_symbols_disappear(self, sweep):
+        """Nothing vanishes that `DROPPED` does not already account for.
+
+        Equality rather than containment, so a symbol that stops disappearing
+        fails here too and the record cannot drift ahead of the code.
+        """
         dropped = {
             name: sorted(set(data["frozen"]) - set(data["generated"]))
             for name, data in sweep.items()
@@ -298,6 +334,12 @@ class TestFieldDifferences:
     """Every per-symbol difference is one of the classified kinds."""
 
     def test_no_unclassified_difference_exists(self, sweep):
+        """Every field that changed is a correction this branch reasoned about.
+
+        The MAX-ACCESS and STATUS corrections are pinned per symbol, so a
+        difference in any other field -- or in one of those on a symbol not
+        listed -- is unaccounted for and fails.
+        """
         unclassified = {}
         for name, data in sweep.items():
             for symbol, changed in data["differences"].items():
@@ -353,6 +395,12 @@ class TestOidsAreStable:
     """The one thing convergence must not change."""
 
     def test_no_shared_symbol_moves_oid(self, sweep):
+        """A symbol both layers define keeps its OID.
+
+        Access, status and syntax are corrections a caller can absorb. An OID
+        that moved would silently redirect every request naming that symbol,
+        so there is no acceptable count here other than zero.
+        """
         moved = {}
         for name, data in sweep.items():
             for symbol, changed in data["differences"].items():
@@ -360,3 +408,77 @@ class TestOidsAreStable:
                     moved[f"{name}::{symbol}"] = changed["oid"]
 
         assert moved == {}
+
+
+class TestTheFreezeIsGone:
+    """The deletion itself, so it cannot be quietly undone."""
+
+    def test_no_converged_module_is_shipped_by_pysnmp(self):
+        """Re-freezing one would take the tie and shadow pysmi's copy.
+
+        A generated ``.py`` committed back here states no revision, so best
+        match cannot separate it from pysmi's and source order hands it the
+        win -- silently, and for good. That is how the base layer stayed on
+        2017 in the first place.
+        """
+        shipped = pathlib.Path(builder.__file__).parent / "mibs"
+        refrozen = sorted(
+            name for name in CONVERGENCE_SET if (shipped / f"{name}.py").is_file()
+        )
+
+        assert refrozen == []
+
+    def test_every_converged_module_loads_from_pysmi(self):
+        """Not merely absent from our tree -- actually resolved from pysmi's."""
+        generated = pathlib.Path(
+            importlib.util.find_spec("pysmi.mibs.pysnmp").submodule_search_locations[0]
+        )
+        for name in CONVERGENCE_SET:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                mibBuilder = builder.MibBuilder()
+                mibBuilder.loadModules(name)
+
+            origin = pathlib.Path(mibBuilder.getModulePath(name))
+
+            assert origin.parent == generated, f"{name} loaded from {origin}"
+
+
+class TestTheOneThatDidNotConverge:
+    """Why SNMP-VIEW-BASED-ACM-MIB is still ours, checked rather than asserted
+    in a comment."""
+
+    def test_our_copy_exports_a_column_no_mib_declares(self):
+        """If a MIB ever did declare it, the reason would evaporate."""
+        assert "vacmContextStatus" in _load(HELD_BACK)
+        assert "vacmContextStatus" not in _declared(HELD_BACK)
+
+    def test_the_generated_table_has_only_the_column_rfc_3415_defines(self):
+        """And the engine writes to the one it does not have.
+
+        `addContext` addresses the column by sub-identifier rather than by
+        name, which is why searching for the symbol finds nothing outside the
+        MIB itself.
+        """
+        generated = pathlib.Path(
+            importlib.util.find_spec("pysmi.mibs.pysnmp").submodule_search_locations[0]
+        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            mibBuilder = builder.MibBuilder()
+            mibBuilder.setMibSources(
+                builder.DirMibSource(str(generated)), *mibBuilder.getMibSources()
+            )
+            mibBuilder.loadModules(HELD_BACK)
+
+        (entry,) = mibBuilder.importSymbols(HELD_BACK, "vacmContextEntry")
+        root = entry.getName()
+        columns = {
+            node.getName()[len(root)]
+            for node in mibBuilder.mibSymbols[HELD_BACK].values()
+            if getattr(node, "getName", None)
+            and node.getName()[: len(root)] == root
+            and len(node.getName()) == len(root) + 1
+        }
+
+        assert columns == {1}

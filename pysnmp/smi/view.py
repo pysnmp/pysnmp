@@ -388,7 +388,11 @@ class MibViewController:
         >>> mibView = MibViewController(mibBuilder)
         >>> cols = mibView.getTableColumns('SNMPv2-MIB', 'sysOREntry')
         >>> [(colId, colNode.getMaxAccess()) for colId, colName, colNode in cols]
-        [(1, 'readonly'), (2, 'readonly'), (3, 'readonly'), (4, 'readonly')]
+        [(1, 'notaccessible'), (2, 'readonly'), (3, 'readonly'), (4, 'readonly')]
+
+        Column 1 is ``sysORIndex``, the table's INDEX. RFC 3418 declares it
+        not-accessible; this example said ``readonly`` while the base layer was
+        a 2017 freeze that got it wrong (pysnmp/pysnmp#198).
         """
         (MibTableRow,) = self.mibBuilder.importSymbols("SNMPv2-SMI", "MibTableRow")
         (rowNode,) = self.mibBuilder.importSymbols(modName, rowSymName)
