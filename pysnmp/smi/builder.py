@@ -286,6 +286,20 @@ class MibBuilder:
     # MIB modules can use this to select the features they can use
     version = pysnmp_version
 
+    #: What a generated MIB module may assume when this builder loads it: which
+    #: SMI classes exist, which setters each provides, and what they accept.
+    #:
+    #: A code generator targets a declared contract version instead of guessing
+    #: from ``version``. That guessing is what produced the
+    #: ``getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0)`` branches in
+    #: generated output, and a stale belief that three conformance classes lack
+    #: ``setReference()`` -- which silently drops MIB text (pysnmp/pysmi#194).
+    #:
+    #: Bumped only when the contract changes, which is far less often than
+    #: ``version``. ``docs/source/docs/loader-contract.rst`` states what each
+    #: version covers, and ``tests/test_loader_contract.py`` enforces it.
+    loaderContract = (1, 0)
+
     def __init__(self) -> None:
         self.lastBuildId = self._autoName = 0
         sources = []

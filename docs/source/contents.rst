@@ -61,6 +61,7 @@ Documentation
    /docs/smi-table-api
    /docs/device-report
    /docs/mib-tools
+   /docs/loader-contract
 
 Examples
 --------
