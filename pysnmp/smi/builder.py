@@ -166,16 +166,37 @@ class __AbstractMibSource:
 
 
 class ZipMibSource(__AbstractMibSource):
-    # zipimport.zipimporter carries the archive directory as the private
-    # `_files`, which is what this class reads; typeshed describes neither it
-    # nor the loader `__import__` hands back, so there is nothing narrower to
-    # say here than what the hasattr() guard below already checks.
+    # zipimport.zipimporter carries the archive directory privately, and
+    # typeshed describes neither it nor the loader `__import__` hands back, so
+    # there is nothing narrower to say here than what `_archiveFiles` checks.
     __loader: Any
+
+    @staticmethod
+    def _archiveFiles(loader: Any) -> Any:
+        """The archive directory, under whichever name this Python has for it.
+
+        `zipimporter` exposed it as `_files` until Python 3.14 replaced that
+        with `_get_files()`. Both are private, and neither has a public
+        equivalent -- the loader offers no way to list an archive's members --
+        but without one a zip-installed MIB package cannot be enumerated at
+        all, so it is read rather than done without.
+
+        Returns:
+            The mapping of member path to archive entry, or ``None`` for a
+            loader that is not a zipimporter.
+        """
+        if hasattr(loader, "_get_files"):
+            return loader._get_files()
+
+        return getattr(loader, "_files", None)
 
     def _init(self) -> Any:
         try:
             p = __import__(self._srcName, globals(), locals(), ["__init__"])
-            if hasattr(p, "__loader__") and hasattr(p.__loader__, "_files"):
+            if (
+                hasattr(p, "__loader__")
+                and self._archiveFiles(p.__loader__) is not None
+            ):
                 self.__loader = p.__loader__
                 self._srcName = self._srcName.replace(".", os.sep)
                 return self
@@ -226,7 +247,7 @@ class ZipMibSource(__AbstractMibSource):
     def _listdir(self) -> tuple[str, ...]:
         names = []
         # noinspection PyProtectedMember
-        for f in self.__loader._files:
+        for f in self._archiveFiles(self.__loader):
             d, f = os.path.split(f)
             if d == self._srcName:
                 names.append(f)
@@ -235,11 +256,9 @@ class ZipMibSource(__AbstractMibSource):
     def _getTimestamp(self, f: str) -> float:
         p = os.path.join(self._srcName, f)
         # noinspection PyProtectedMember
-        if p in self.__loader._files:
-            # noinspection PyProtectedMember
-            return self._parseDosTime(
-                self.__loader._files[p][6], self.__loader._files[p][5]
-            )
+        files = self._archiveFiles(self.__loader)
+        if p in files:
+            return self._parseDosTime(files[p][6], files[p][5])
         else:
             raise OSError(ENOENT, "No such file in ZIP archive", p)
 
