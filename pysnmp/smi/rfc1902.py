@@ -13,7 +13,6 @@ from pysnmp import debug
 from pysnmp.proto import rfc1902, rfc1905
 from pysnmp.proto.api import v2c
 from pysnmp.smi.builder import ZipMibSource
-from pysnmp.smi.compiler import addMibCompiler
 from pysnmp.smi.error import SmiError
 
 __all__ = ["NotificationType", "ObjectIdentity", "ObjectType"]
@@ -362,6 +361,15 @@ class ObjectIdentity:
         >>>
 
         """
+        # Imported here rather than at module level: pysnmp.smi.compiler imports
+        # pysmi, which transitively pulls in requests, urllib3, certifi, idna,
+        # charset_normalizer, ssl and socket, plus pysmi's lexer and parser
+        # tables -- 251 modules and ~136 ms measured at pysmi 2.0.1. Nothing at
+        # import time uses addMibCompiler; this method is its only caller, so
+        # every manager and trap receiver that never compiles a MIB was paying
+        # for it on `import pysnmp.smi.rfc1902`. See pysnmp/pysnmp#140.
+        from pysnmp.smi.compiler import addMibCompiler
+
         if self.__mibSourcesToAdd is not None:
             debug.logger & debug.flagMIB and debug.logger(
                 "adding MIB sources {}".format(", ".join(self.__mibSourcesToAdd))
