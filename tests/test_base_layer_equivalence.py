@@ -48,12 +48,13 @@ from pysmi.parser import SmiV1CompatParser
 from pysmi.reader import PackageReader
 from pysmi.writer import CallbackWriter
 
+from pysnmp.entity import config
 from pysnmp.smi import builder
 
 #: Modules the frozen tree and pysmi's bundle both carry, minus the ones
-#: pysnmp/pysnmp#198 keeps hand-written because they carry real behaviour
-#: (INET-ADDRESS-MIB, SNMP-FRAMEWORK-MIB, SNMP-TARGET-MIB, SNMPv2-TM,
-#: TRANSPORT-ADDRESS-MIB). These eleven are the convergence candidates.
+#: pysnmp/pysnmp#198 keeps in this repository because they carry engine
+#: behaviour (INET-ADDRESS-MIB, SNMP-FRAMEWORK-MIB, SNMP-TARGET-MIB,
+#: SNMPv2-TM, TRANSPORT-ADDRESS-MIB). All eleven have now converged.
 CONVERGENCE_SET = (
     "RFC1158-MIB",
     "RFC1213-MIB",
@@ -64,23 +65,9 @@ CONVERGENCE_SET = (
     "SNMP-USER-BASED-SM-MIB",
     "SNMP-USM-AES-MIB",
     "SNMP-USM-HMAC-SHA2-MIB",
+    "SNMP-VIEW-BASED-ACM-MIB",
     "SNMPv2-MIB",
 )
-
-#: The twelfth module both trees carry, and the one that did not converge.
-#:
-#: ``pysnmp/smi/mibs/SNMP-VIEW-BASED-ACM-MIB.py`` is not a generated module. It
-#: carries a hand-added ``vacmContextStatus`` RowStatus column at
-#: ``1.3.6.1.6.3.16.1.1.1.2``, under a comment in the file saying so outright --
-#: *"The RowStatus column is not present in the MIB"*. RFC 3415's
-#: vacmContextTable has one column, ``vacmContextName``, and is read-only;
-#: ``pysnmp.entity.config.addContext`` creates its rows by writing
-#: ``createAndGo`` to the fabricated one, addressing it by sub-identifier.
-#:
-#: That is engine behaviour, so it stays here by the same rule that keeps
-#: SNMP-FRAMEWORK-MIB and the rest. It converges once the engine stops needing
-#: a column no MIB declares -- pysnmp/pysnmp#205.
-HELD_BACK = "SNMP-VIEW-BASED-ACM-MIB"
 
 #: Symbols the frozen copy exports that the generated one does not. Each is an
 #: artifact of the 2017 run rather than something a MIB declares. That is not
@@ -93,9 +80,16 @@ HELD_BACK = "SNMP-VIEW-BASED-ACM-MIB"
 #: ``snmpInBadTypes``      Declared in no bundled ASN.1. The bundled RFC1158-MIB
 #: ``snmpOutReadOnlys``    is an SMIv1 anchor stub carrying DisplayString and
 #:                         the SMI roots, not the whole of RFC 1158.
+#: ``vacmContextStatus``  A RowStatus column the frozen module added at
+#:                         1.3.6.1.6.3.16.1.1.1.2 under a comment saying so --
+#:                         *"The RowStatus column is not present in the MIB"*.
+#:                         RFC 3415's vacmContextTable has one column and is
+#:                         read-only. pysnmp/pysnmp#205 removed the engine's
+#:                         dependency on it; see TestTheContextTableIsRfc3415.
 DROPPED = {
     "RFC1213-MIB": {"TtcpInSegs"},
     "RFC1158-MIB": {"snmpInBadTypes", "snmpOutReadOnlys"},
+    "SNMP-VIEW-BASED-ACM-MIB": {"vacmContextStatus"},
 }
 
 #: MAX-ACCESS corrections. Every one is an INDEX column that the 2017 run
@@ -112,6 +106,13 @@ ACCESS_CORRECTIONS = {
     ("SNMP-PROXY-MIB", "snmpProxyName"),
     ("SNMP-USER-BASED-SM-MIB", "usmUserEngineID"),
     ("SNMP-USER-BASED-SM-MIB", "usmUserName"),
+    ("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessContextPrefix"),
+    ("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessSecurityLevel"),
+    ("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessSecurityModel"),
+    ("SNMP-VIEW-BASED-ACM-MIB", "vacmSecurityModel"),
+    ("SNMP-VIEW-BASED-ACM-MIB", "vacmSecurityName"),
+    ("SNMP-VIEW-BASED-ACM-MIB", "vacmViewTreeFamilySubtree"),
+    ("SNMP-VIEW-BASED-ACM-MIB", "vacmViewTreeFamilyViewName"),
     ("SNMPv2-MIB", "sysORIndex"),
 }
 
@@ -245,7 +246,7 @@ def sweep():
     """Every module measured against the 2017 record, once."""
     frozen_modules = json.loads(SNAPSHOT.read_text())["modules"]
 
-    assert sorted(frozen_modules) == sorted((*CONVERGENCE_SET, HELD_BACK)), (
+    assert sorted(frozen_modules) == sorted(CONVERGENCE_SET), (
         "the snapshot and the convergence set have drifted apart"
     )
 
@@ -444,41 +445,102 @@ class TestTheFreezeIsGone:
             assert origin.parent == generated, f"{name} loaded from {origin}"
 
 
-class TestTheOneThatDidNotConverge:
-    """Why SNMP-VIEW-BASED-ACM-MIB is still ours, checked rather than asserted
-    in a comment."""
+class TestTheContextTableIsRfc3415:
+    """The last module to converge, and what let it.
 
-    def test_our_copy_exports_a_column_no_mib_declares(self):
-        """If a MIB ever did declare it, the reason would evaporate."""
-        assert "vacmContextStatus" in _load(HELD_BACK)
-        assert "vacmContextStatus" not in _declared(HELD_BACK)
+    `vacmContextTable` was the one place the frozen tree declared something no
+    MIB does. `pysnmp.entity.config.addContext` created rows by writing
+    `createAndGo` to that column, addressing it by sub-identifier rather than
+    by name -- which is why searching for the symbol found nothing outside the
+    MIB itself, and why the dependency survived unnoticed.
+    """
 
-    def test_the_generated_table_has_only_the_column_rfc_3415_defines(self):
-        """And the engine writes to the one it does not have.
+    def test_no_mib_declares_the_column_the_frozen_copy_added(self):
+        """The premise for dropping it, parsed rather than asserted here."""
+        assert "vacmContextStatus" not in _declared("SNMP-VIEW-BASED-ACM-MIB")
 
-        `addContext` addresses the column by sub-identifier rather than by
-        name, which is why searching for the symbol finds nothing outside the
-        MIB itself.
-        """
-        generated = pathlib.Path(
-            importlib.util.find_spec("pysmi.mibs.pysnmp").submodule_search_locations[0]
-        )
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            mibBuilder = builder.MibBuilder()
-            mibBuilder.setMibSources(
-                builder.DirMibSource(str(generated)), *mibBuilder.getMibSources()
-            )
-            mibBuilder.loadModules(HELD_BACK)
-
-        (entry,) = mibBuilder.importSymbols(HELD_BACK, "vacmContextEntry")
+    def test_the_table_has_only_the_column_rfc_3415_defines(self):
+        """One column, `vacmContextName`, at sub-identifier 1."""
+        entry = _load("SNMP-VIEW-BASED-ACM-MIB")["vacmContextEntry"]
         root = entry.getName()
         columns = {
             node.getName()[len(root)]
-            for node in mibBuilder.mibSymbols[HELD_BACK].values()
+            for node in _load("SNMP-VIEW-BASED-ACM-MIB").values()
             if getattr(node, "getName", None)
             and node.getName()[: len(root)] == root
             and len(node.getName()) == len(root) + 1
         }
 
         assert columns == {1}
+
+    def test_the_column_is_read_only(self):
+        """Which is why a row cannot be created by writing to it.
+
+        RFC 3415 says the table "is read-only. It cannot be configured via
+        SNMP", so `addContext` registers the row on the column as a managed
+        object instance instead of going through the SET machinery.
+        """
+        column = _load("SNMP-VIEW-BASED-ACM-MIB")["vacmContextName"]
+
+        assert column.maxAccess == "readonly"
+
+
+class TestContextsStillWork:
+    """`addContext` and `delContext` against the converged module."""
+
+    @staticmethod
+    def _contexts(snmpEngine):
+        """Every context name the table currently holds, walked as VACM does.
+
+        `pysnmp.proto.acmod.rfc3415` reads the table only this way -- stepping
+        `vacmContextName` with `getNextNode` -- so this is the view that has to
+        be right.
+        """
+        mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
+        (column,) = mibBuilder.importSymbols(
+            "SNMP-VIEW-BASED-ACM-MIB", "vacmContextName"
+        )
+
+        found, node = [], column
+        while True:
+            try:
+                node = column.getNextNode(node.name)
+
+            except Exception:
+                break
+
+            found.append(node.syntax.prettyPrint())
+
+        return found
+
+    @pytest.fixture
+    def engine(self):
+        from pysnmp.entity import engine as engine_module
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+
+            return engine_module.SnmpEngine()
+
+    def test_an_added_context_is_visible_to_the_walk(self, engine):
+        config.addContext(engine, "watermelon")
+
+        assert "watermelon" in self._contexts(engine)
+
+    def test_adding_the_same_context_twice_is_not_an_error(self, engine):
+        """The RowStatus sequence this replaces destroyed before creating, so
+        re-adding was already supported and stays supported."""
+        config.addContext(engine, "watermelon")
+        config.addContext(engine, "watermelon")
+
+        assert self._contexts(engine).count("watermelon") == 1
+
+    def test_a_deleted_context_is_gone(self, engine):
+        config.addContext(engine, "watermelon")
+        config.delContext(engine, "watermelon")
+
+        assert "watermelon" not in self._contexts(engine)
+
+    def test_deleting_a_context_that_was_never_added_is_silent(self, engine):
+        """As writing `destroy` to a non-existent row was."""
+        config.delContext(engine, "never-added")

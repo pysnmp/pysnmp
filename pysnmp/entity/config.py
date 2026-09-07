@@ -16,6 +16,7 @@ from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha, noauth
 from pysnmp.proto.secmod.rfc3414.priv import des, nopriv
 from pysnmp.proto.secmod.rfc3826.priv import aes
 from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
+from pysnmp.smi import error as smi_error
 
 # A shortcut to popular constants
 
@@ -622,35 +623,72 @@ delSocketTransport = delTransport
 # VACM shortcuts
 
 
-def __cookVacmContextInfo(snmpEngine: Any, contextName: Any) -> tuple[Any, Any]:
+def __cookVacmContextInfo(snmpEngine: Any, contextName: Any) -> tuple[Any, Any, Any]:
+    """The `vacmContextName` column, the row's instance identifier, and its OID.
+
+    RFC 3415's `vacmContextTable` has one column and is read-only, so unlike
+    every other VACM table there is no RowStatus to drive row creation through.
+    Rows are registered on the column directly instead, which is what the
+    caller needs these three things for.
+    """
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
-    (vacmContextEntry,) = mibBuilder.importSymbols(
-        "SNMP-VIEW-BASED-ACM-MIB", "vacmContextEntry"
+    vacmContextEntry, vacmContextName = mibBuilder.importSymbols(
+        "SNMP-VIEW-BASED-ACM-MIB", "vacmContextEntry", "vacmContextName"
     )
     tblIdx = vacmContextEntry.getInstIdFromIndices(contextName)
-    return vacmContextEntry, tblIdx
+
+    return vacmContextName, tblIdx, vacmContextName.name + tblIdx
+
+
+def __delVacmContextInstance(vacmContextName: Any, instName: Any) -> bool:
+    """Drop the row named by `instName`, reporting whether one was there.
+
+    `unregisterSubtrees` raises on a name it does not hold, and both callers
+    have to tolerate that: `addContext` replaces whatever is registered, and
+    `delContext` is called for contexts that may never have been added.
+    """
+    try:
+        vacmContextName.getBranch(instName, None)
+
+    except smi_error.NoSuchInstanceError:
+        return False
+
+    vacmContextName.unregisterSubtrees(instName)
+
+    return True
 
 
 def addContext(snmpEngine: Any, contextName: Any) -> None:
-    vacmContextEntry, tblIdx = __cookVacmContextInfo(snmpEngine, contextName)
+    """Make `contextName` visible in `vacmContextTable`.
 
-    snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
-        ((vacmContextEntry.name + (2,) + tblIdx, "destroy"),)
-    )
-    snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
-        (
-            (vacmContextEntry.name + (1,) + tblIdx, contextName),
-            (vacmContextEntry.name + (2,) + tblIdx, "createAndGo"),
+    The table is read-only per RFC 3415, so the row is registered on the
+    `vacmContextName` column as a managed object instance rather than written
+    through the SET machinery. Re-adding an existing context replaces the row,
+    matching what the previous RowStatus destroy-then-create sequence did.
+    """
+    vacmContextName, tblIdx, instName = __cookVacmContextInfo(snmpEngine, contextName)
+
+    mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
+    (MibScalarInstance,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalarInstance")
+
+    __delVacmContextInstance(vacmContextName, instName)
+
+    vacmContextName.registerSubtrees(
+        MibScalarInstance(
+            vacmContextName.name, tblIdx, vacmContextName.syntax.clone(contextName)
         )
     )
 
 
 def delContext(snmpEngine: Any, contextName: Any) -> None:
-    vacmContextEntry, tblIdx = __cookVacmContextInfo(snmpEngine, contextName)
+    """Remove `contextName` from `vacmContextTable`, if it is there.
 
-    snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
-        ((vacmContextEntry.name + (2,) + tblIdx, "destroy"),)
-    )
+    Silent on a context that was never added, as the RowStatus `destroy` this
+    replaces was.
+    """
+    vacmContextName, _, instName = __cookVacmContextInfo(snmpEngine, contextName)
+
+    __delVacmContextInstance(vacmContextName, instName)
 
 
 def __cookVacmGroupInfo(
