@@ -191,6 +191,12 @@ class TestAnAlreadyLoadedModuleIsStable:
     """
 
     def test_adding_a_newer_source_does_not_disturb_a_loaded_module(self, two):
+        """A second `loadModules` after the newer source is added is a no-op.
+
+        Best match would otherwise resolve the name to the newer copy and
+        re-export its symbols over the ones already in the builder, which
+        raises `MibLoadError` on the duplicates.
+        """
         first, second = two
         write(first, "TEST-MIB", OLDER, "older")
         write(second, "TEST-MIB", NEWER, "newer")
@@ -253,6 +259,14 @@ class TestAZipInstalledSourceReportsWhereItCameFrom:
         return archive
 
     def test_the_path_names_the_archive_it_came_from(self, tmp_path, monkeypatch):
+        """`getModulePath` locates a zip-installed module, archive included.
+
+        Builds a real archive and imports through it rather than faking the
+        loader, because the archive directory is what `ZipMibSource` reads and
+        the attribute holding it differs by Python version. The member path on
+        its own names no file and is ambiguous between two archives holding the
+        same package, so it is compared against what `importlib` reports.
+        """
         import importlib
         import importlib.util
 

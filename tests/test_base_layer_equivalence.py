@@ -276,6 +276,11 @@ class TestSymbolSets:
     """What appears and disappears."""
 
     def test_only_the_classified_symbols_disappear(self, sweep):
+        """Nothing vanishes that `DROPPED` does not already account for.
+
+        Equality rather than containment, so a symbol that stops disappearing
+        fails here too and the record cannot drift ahead of the code.
+        """
         dropped = {
             name: sorted(set(data["frozen"]) - set(data["generated"]))
             for name, data in sweep.items()
@@ -329,6 +334,12 @@ class TestFieldDifferences:
     """Every per-symbol difference is one of the classified kinds."""
 
     def test_no_unclassified_difference_exists(self, sweep):
+        """Every field that changed is a correction this branch reasoned about.
+
+        The MAX-ACCESS and STATUS corrections are pinned per symbol, so a
+        difference in any other field -- or in one of those on a symbol not
+        listed -- is unaccounted for and fails.
+        """
         unclassified = {}
         for name, data in sweep.items():
             for symbol, changed in data["differences"].items():
@@ -384,6 +395,12 @@ class TestOidsAreStable:
     """The one thing convergence must not change."""
 
     def test_no_shared_symbol_moves_oid(self, sweep):
+        """A symbol both layers define keeps its OID.
+
+        Access, status and syntax are corrections a caller can absorb. An OID
+        that moved would silently redirect every request naming that symbol,
+        so there is no acceptable count here other than zero.
+        """
         moved = {}
         for name, data in sweep.items():
             for symbol, changed in data["differences"].items():
