@@ -141,7 +141,13 @@ class __AbstractMibSource:
 
         if pyTime != -1:
             modData, pyPath = self._getData(f + pySfx, "r")
-            return compile(modData, pyPath, "exec"), pyPath
+            # The suffix, to match the bytecode branch above. `_getData` hands
+            # back a full path, and returning that made `loadModule` compose
+            # `fullPath(modName, sfx)` out of a directory, a module name and a
+            # second absolute path -- unique per source and module, so dedup
+            # worked, but never a path. It reached every `MibLoadError`, and
+            # now `getModulePath` answers with it.
+            return compile(modData, pyPath, "exec"), pySfx
 
         raise OSError(ENOENT, "No suitable module found", f)
 
@@ -399,6 +405,16 @@ class MibBuilder:
 
     def getMibSources(self) -> tuple[Any, ...]:
         return tuple(self.__mibSources)
+
+    def getModulePath(self, modName: str) -> str | None:
+        """Where a loaded module came from, or ``None`` if it is not loaded.
+
+        Which source answered is not decoration now that more than one can:
+        the same name may be present in several, and best match decides. A
+        caller -- or a test -- wanting to know which copy it got had no way to
+        ask.
+        """
+        return self.__modSeen.get(modName)
 
     # Legacy/compatibility methods (won't work for .eggs)
     def setMibPath(self, *mibPaths: str) -> None:

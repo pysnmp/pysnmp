@@ -1,0 +1,7399 @@
+{
+ "_meta": {
+  "extracted_from": "ab8864e6af3ec1a58751c4f704ab329d07e14a2c",
+  "fields": "as produced by tests/test_base_layer_equivalence.py::_facts",
+  "what": "Facts extracted from pysnmp/smi/mibs/, the base-layer modules pysmi 0.1.2/0.1.3 generated in April 2017.",
+  "why": "Those files were deleted when best-match selection made pysmi's copies reachable (pysnmp/pysnmp#198). They stated no revision, so the tie rule kept handing them the win until they were gone. This is the baseline the equivalence harness compares against, so the characterization survives the deletion. Historical record: nothing regenerates it."
+ },
+ "modules": {
+  "RFC1158-MIB": {
+   "snmpInBadTypes": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     7
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutReadOnlys": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     23
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   }
+  },
+  "RFC1213-MIB": {
+   "DisplayString": {
+    "class": "type"
+   },
+   "PhysAddress": {
+    "class": "type"
+   },
+   "TtcpInSegs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     10
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "at": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     3
+    ]
+   },
+   "atEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "RFC1213-MIB",
+      "atIfIndex"
+     ],
+     [
+      0,
+      "RFC1213-MIB",
+      "atNetAddress"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     3,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "atIfIndex": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     3,
+     1,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "atNetAddress": {
+    "class": "MibTableColumn",
+    "constraints": "1",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     3,
+     1,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "NetworkAddress"
+   },
+   "atPhysAddress": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     3,
+     1,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "PhysAddress"
+   },
+   "atTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     3,
+     1
+    ],
+    "status": "current"
+   },
+   "egp": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8
+    ]
+   },
+   "egpAs": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     6
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "egpInErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     2
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpInMsgs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     1
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighAddr": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "egpNeighAs": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "egpNeighEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "RFC1213-MIB",
+      "egpNeighAddr"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1
+    ],
+    "status": "current"
+   },
+   "egpNeighEventTrigger": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     15
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "egpNeighInErrMsgs": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighInErrs": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighInMsgs": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighIntervalHello": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     12
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "egpNeighIntervalPoll": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     13
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "egpNeighMode": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     14
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "egpNeighOutErrMsgs": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     9
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighOutErrs": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighOutMsgs": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighState": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "egpNeighStateDowns": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     11
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighStateUps": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5,
+     1,
+     10
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpNeighTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     5
+    ],
+    "status": "current"
+   },
+   "egpOutErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "egpOutMsgs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     8,
+     3
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInAddrMaskReps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     13
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInAddrMasks": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     12
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInDestUnreachs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     3
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInEchoReps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     9
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInEchos": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     8
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     2
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInMsgs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     1
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInParmProbs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     5
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInRedirects": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     7
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInSrcQuenchs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     6
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInTimeExcds": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInTimestampReps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     11
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpInTimestamps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     10
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutAddrMaskReps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     26
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutAddrMasks": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     25
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutDestUnreachs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     16
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutEchoReps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     22
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutEchos": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     21
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     15
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutMsgs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     14
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutParmProbs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     18
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutRedirects": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     20
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutSrcQuenchs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     19
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutTimeExcds": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     17
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutTimestampReps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     24
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "icmpOutTimestamps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     5,
+     23
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipAdEntAddr": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     20,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "ipAdEntBcastAddr": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     20,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipAdEntIfIndex": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     20,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipAdEntNetMask": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     20,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "ipAdEntReasmMaxSize": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     20,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipAddrEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "RFC1213-MIB",
+      "ipAdEntAddr"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     20,
+     1
+    ],
+    "status": "current"
+   },
+   "ipAddrTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     20
+    ],
+    "status": "current"
+   },
+   "ipDefaultTTL": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipForwDatagrams": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     6
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipForwarding": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     1
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipFragCreates": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     19
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipFragFails": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     18
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipFragOKs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     17
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipInAddrErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     5
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipInDelivers": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     9
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipInDiscards": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     8
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipInHdrErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipInReceives": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     3
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipInUnknownProtos": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     7
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipNetToMediaEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "RFC1213-MIB",
+      "ipNetToMediaIfIndex"
+     ],
+     [
+      0,
+      "RFC1213-MIB",
+      "ipNetToMediaNetAddress"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     22,
+     1
+    ],
+    "status": "current"
+   },
+   "ipNetToMediaIfIndex": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     22,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipNetToMediaNetAddress": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     22,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "ipNetToMediaPhysAddress": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     22,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "PhysAddress"
+   },
+   "ipNetToMediaTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     22
+    ],
+    "status": "current"
+   },
+   "ipNetToMediaType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     22,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipOutDiscards": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     11
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipOutNoRoutes": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     12
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipOutRequests": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     10
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipReasmFails": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     16
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipReasmOKs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     15
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipReasmReqds": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     14
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "ipReasmTimeout": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     13
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteAge": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     10
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteDest": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "ipRouteEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "RFC1213-MIB",
+      "ipRouteDest"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1
+    ],
+    "status": "current"
+   },
+   "ipRouteIfIndex": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteInfo": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     13
+    ],
+    "status": "current",
+    "syntax": "ObjectIdentifier"
+   },
+   "ipRouteMask": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     11
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "ipRouteMetric1": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteMetric2": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteMetric3": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteMetric4": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteMetric5": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     12
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteNextHop": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "ipRouteProto": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 10 | 11 | 12 | 13 | 14 | 2 | 2147483647 | 3 | 4 | 5 | 6 | 7 | 8 | 9",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     9
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRouteTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21
+    ],
+    "status": "current"
+   },
+   "ipRouteType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     21,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "ipRoutingDiscards": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     4,
+     23
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "mib-2": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1
+    ]
+   },
+   "tcpActiveOpens": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     5
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpAttemptFails": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     7
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpConnEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "RFC1213-MIB",
+      "tcpConnLocalAddress"
+     ],
+     [
+      0,
+      "RFC1213-MIB",
+      "tcpConnLocalPort"
+     ],
+     [
+      0,
+      "RFC1213-MIB",
+      "tcpConnRemAddress"
+     ],
+     [
+      0,
+      "RFC1213-MIB",
+      "tcpConnRemPort"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     13,
+     1
+    ],
+    "status": "current"
+   },
+   "tcpConnLocalAddress": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     13,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "tcpConnLocalPort": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     13,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "tcpConnRemAddress": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     13,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "tcpConnRemPort": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     13,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "tcpConnState": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 10 | 11 | 12 | 2 | 2147483647 | 3 | 4 | 5 | 6 | 7 | 8 | 9",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     13,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "tcpConnTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     13
+    ],
+    "status": "current"
+   },
+   "tcpCurrEstab": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     9
+    ],
+    "status": "current",
+    "syntax": "Gauge32"
+   },
+   "tcpEstabResets": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     8
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpInErrs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     14
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpMaxConn": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     4
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "tcpOutRsts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     15
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpOutSegs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     11
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpPassiveOpens": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     6
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpRetransSegs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     12
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "tcpRtoAlgorithm": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     1
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "tcpRtoMax": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     3
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "tcpRtoMin": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     6,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "udpEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "RFC1213-MIB",
+      "udpLocalAddress"
+     ],
+     [
+      0,
+      "RFC1213-MIB",
+      "udpLocalPort"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     5,
+     1
+    ],
+    "status": "current"
+   },
+   "udpInDatagrams": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     1
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "udpInErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     3
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "udpLocalAddress": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     5,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "udpLocalPort": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     5,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "udpNoPorts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     2
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "udpOutDatagrams": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "udpTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     7,
+     5
+    ],
+    "status": "current"
+   }
+  },
+  "SNMP-COMMUNITY-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18
+    ],
+    "status": "current"
+   },
+   "snmpCommunityContextEngineID": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 32 | 5 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "SnmpEngineID"
+   },
+   "snmpCommunityContextName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpCommunityEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      1,
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityIndex"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpCommunityIndex": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpCommunityMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18
+    ],
+    "status": "current"
+   },
+   "snmpCommunityMIBCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityTableGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpCommunityMIBCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2,
+     1
+    ]
+   },
+   "snmpCommunityMIBConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2
+    ]
+   },
+   "snmpCommunityMIBFullCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityTableGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpCommunityMIBGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2,
+     2
+    ]
+   },
+   "snmpCommunityMIBObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1
+    ]
+   },
+   "snmpCommunityName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "OctetString"
+   },
+   "snmpCommunitySecurityName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpCommunityStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "snmpCommunityStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "snmpCommunityTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpCommunityTableGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityName"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunitySecurityName"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityContextEngineID"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityContextName"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityTransportTag"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityStorageType"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpCommunityStatus"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpTargetAddrTMask"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpTargetAddrMMS"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpCommunityTransportTag": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     1,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "SnmpTagValue"
+   },
+   "snmpProxyTrapForwardCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpProxyTrapForwardGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpProxyTrapForwardGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpTrapAddress"
+     ],
+     [
+      "SNMP-COMMUNITY-MIB",
+      "snmpTrapCommunity"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     2,
+     2,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpTargetAddrExtEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      1,
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpTargetAddrExtTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpTargetAddrMMS": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647 | 484",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "snmpTargetAddrTMask": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "OctetString"
+   },
+   "snmpTrapAddress": {
+    "class": "MibScalar",
+    "constraints": "0 | 4 | 65535",
+    "maxaccess": "accessiblefornotify",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "IpAddress"
+   },
+   "snmpTrapCommunity": {
+    "class": "MibScalar",
+    "constraints": "0 | 65535",
+    "maxaccess": "accessiblefornotify",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     18,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "OctetString"
+   }
+  },
+  "SNMP-MPD-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11
+    ],
+    "status": "current"
+   },
+   "snmpInvalidMsgs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpMPDAdmin": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     1
+    ]
+   },
+   "snmpMPDCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-MPD-MIB",
+      "snmpMPDGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     3,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpMPDGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-MPD-MIB",
+      "snmpUnknownSecurityModels"
+     ],
+     [
+      "SNMP-MPD-MIB",
+      "snmpInvalidMsgs"
+     ],
+     [
+      "SNMP-MPD-MIB",
+      "snmpUnknownPDUHandlers"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     3,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpMPDMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11
+    ],
+    "status": "current"
+   },
+   "snmpMPDMIBCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     3,
+     1
+    ]
+   },
+   "snmpMPDMIBConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     3
+    ]
+   },
+   "snmpMPDMIBGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     3,
+     2
+    ]
+   },
+   "snmpMPDMIBObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     2
+    ]
+   },
+   "snmpMPDStats": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     2,
+     1
+    ]
+   },
+   "snmpUnknownPDUHandlers": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpUnknownSecurityModels": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     11,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   }
+  },
+  "SNMP-NOTIFICATION-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13
+    ],
+    "status": "current"
+   },
+   "snmpNotificationMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13
+    ],
+    "status": "current"
+   },
+   "snmpNotifyBasicCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetBasicGroup"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpNotifyBasicFiltersCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetBasicGroup"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyGroup"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpNotifyCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3,
+     1
+    ]
+   },
+   "snmpNotifyConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3
+    ]
+   },
+   "snmpNotifyEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      1,
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpNotifyFilterEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterProfileName"
+     ],
+     [
+      1,
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterSubtree"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     3,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpNotifyFilterGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterProfileName"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterProfileStorType"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterProfileRowStatus"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterMask"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterType"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterStorageType"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterRowStatus"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3,
+     2,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpNotifyFilterMask": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 16 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     3,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "OctetString"
+   },
+   "snmpNotifyFilterProfileEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      1,
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpNotifyFilterProfileName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpNotifyFilterProfileRowStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "snmpNotifyFilterProfileStorType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "snmpNotifyFilterProfileTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpNotifyFilterRowStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     3,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "snmpNotifyFilterStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     3,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "snmpNotifyFilterSubtree": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     3,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "ObjectIdentifier"
+   },
+   "snmpNotifyFilterTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpNotifyFilterType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     3,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "snmpNotifyFullCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetBasicGroup"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetResponseGroup"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyGroup"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyFilterGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpNotifyGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyTag"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyType"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyStorageType"
+     ],
+     [
+      "SNMP-NOTIFICATION-MIB",
+      "snmpNotifyRowStatus"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpNotifyGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     3,
+     2
+    ]
+   },
+   "snmpNotifyName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     1,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpNotifyObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1
+    ]
+   },
+   "snmpNotifyRowStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     1,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "snmpNotifyStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     1,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "snmpNotifyTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpNotifyTag": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     1,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "SnmpTagValue"
+   },
+   "snmpNotifyType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     13,
+     1,
+     1,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   }
+  },
+  "SNMP-PROXY-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14
+    ],
+    "status": "current"
+   },
+   "snmpProxyCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetBasicGroup"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetResponseGroup"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     3,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpProxyCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     3,
+     1
+    ]
+   },
+   "snmpProxyConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     3
+    ]
+   },
+   "snmpProxyContextEngineID": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 32 | 5 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "SnmpEngineID"
+   },
+   "snmpProxyContextName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpProxyEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      1,
+      "SNMP-PROXY-MIB",
+      "snmpProxyName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpProxyGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyType"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyContextEngineID"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyContextName"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyTargetParamsIn"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxySingleTargetOut"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyMultipleTargetOut"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyStorageType"
+     ],
+     [
+      "SNMP-PROXY-MIB",
+      "snmpProxyRowStatus"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     3,
+     2,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpProxyGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     3,
+     2
+    ]
+   },
+   "snmpProxyMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14
+    ],
+    "status": "current"
+   },
+   "snmpProxyMultipleTargetOut": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "SnmpTagValue"
+   },
+   "snmpProxyName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpProxyObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1
+    ]
+   },
+   "snmpProxyRowStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     9
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "snmpProxySingleTargetOut": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpProxyStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "snmpProxyTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpProxyTargetParamsIn": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpProxyType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     14,
+     1,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   }
+  },
+  "SNMP-USER-BASED-SM-MIB": {
+   "KeyChange": {
+    "class": "type"
+   },
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15
+    ],
+    "status": "current"
+   },
+   "snmpUsmMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15
+    ],
+    "status": "current"
+   },
+   "usmDESPrivProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     2,
+     2
+    ],
+    "status": "current"
+   },
+   "usmHMACMD5AuthProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "usmHMACSHAAuthProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "usmMIBBasicGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmStatsUnsupportedSecLevels"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmStatsNotInTimeWindows"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmStatsUnknownUserNames"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmStatsUnknownEngineIDs"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmStatsWrongDigests"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmStatsDecryptionErrors"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserSpinLock"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserSecurityName"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserCloneFrom"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserAuthProtocol"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserAuthKeyChange"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserOwnAuthKeyChange"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserPrivProtocol"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserPrivKeyChange"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserOwnPrivKeyChange"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserPublic"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserStorageType"
+     ],
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserStatus"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     2,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "usmMIBCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-USER-BASED-SM-MIB",
+      "usmMIBBasicGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     2,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "usmMIBCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     2,
+     1
+    ]
+   },
+   "usmMIBConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     2
+    ]
+   },
+   "usmMIBGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     2,
+     2
+    ]
+   },
+   "usmMIBObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1
+    ]
+   },
+   "usmNoAuthProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "usmNoPrivProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "usmStats": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     1
+    ]
+   },
+   "usmStatsDecryptionErrors": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "usmStatsNotInTimeWindows": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "usmStatsUnknownEngineIDs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "usmStatsUnknownUserNames": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "usmStatsUnsupportedSecLevels": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "usmStatsWrongDigests": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "usmUser": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2
+    ]
+   },
+   "usmUserAuthKeyChange": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "KeyChange"
+   },
+   "usmUserAuthProtocol": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "AutonomousType"
+   },
+   "usmUserCloneFrom": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "RowPointer"
+   },
+   "usmUserEngineID": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 32 | 5 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpEngineID"
+   },
+   "usmUserEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserEngineID"
+     ],
+     [
+      0,
+      "SNMP-USER-BASED-SM-MIB",
+      "usmUserName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "usmUserName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "usmUserOwnAuthKeyChange": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "KeyChange"
+   },
+   "usmUserOwnPrivKeyChange": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     10
+    ],
+    "status": "current",
+    "syntax": "KeyChange"
+   },
+   "usmUserPrivKeyChange": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     9
+    ],
+    "status": "current",
+    "syntax": "KeyChange"
+   },
+   "usmUserPrivProtocol": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "AutonomousType"
+   },
+   "usmUserPublic": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     11
+    ],
+    "status": "current",
+    "syntax": "OctetString"
+   },
+   "usmUserSecurityName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "usmUserSpinLock": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     1
+    ],
+    "status": "current",
+    "syntax": "TestAndIncr"
+   },
+   "usmUserStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     13
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "usmUserStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2,
+     1,
+     12
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "usmUserTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     15,
+     1,
+     2,
+     2
+    ],
+    "status": "current"
+   }
+  },
+  "SNMP-USM-AES-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     20
+    ],
+    "status": "current"
+   },
+   "snmpUsmAesMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     20
+    ],
+    "status": "current"
+   },
+   "usmAesCfb128Protocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     2,
+     4
+    ],
+    "status": "current"
+   }
+  },
+  "SNMP-USM-HMAC-SHA2-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     235
+    ],
+    "status": "current"
+   },
+   "snmpUsmHmacSha2MIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     235
+    ],
+    "status": "current"
+   },
+   "usmHMAC128SHA224AuthProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1,
+     4
+    ],
+    "status": "current"
+   },
+   "usmHMAC192SHA256AuthProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1,
+     5
+    ],
+    "status": "current"
+   },
+   "usmHMAC256SHA384AuthProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1,
+     6
+    ],
+    "status": "current"
+   },
+   "usmHMAC384SHA512AuthProtocol": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1,
+     7
+    ],
+    "status": "current"
+   }
+  },
+  "SNMP-VIEW-BASED-ACM-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16
+    ],
+    "status": "current"
+   },
+   "snmpVacmMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16
+    ],
+    "status": "current"
+   },
+   "vacmAccessContextMatch": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "vacmAccessContextPrefix": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "vacmAccessEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmGroupName"
+     ],
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessContextPrefix"
+     ],
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessSecurityModel"
+     ],
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessSecurityLevel"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1
+    ],
+    "status": "current"
+   },
+   "vacmAccessNotifyViewName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "vacmAccessReadViewName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "vacmAccessSecurityLevel": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "SnmpSecurityLevel"
+   },
+   "vacmAccessSecurityModel": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "SnmpSecurityModel"
+   },
+   "vacmAccessStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     9
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "vacmAccessStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "vacmAccessTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4
+    ],
+    "status": "current"
+   },
+   "vacmAccessWriteViewName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     4,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "vacmBasicGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmContextName"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmGroupName"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmSecurityToGroupStorageType"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmSecurityToGroupStatus"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessContextMatch"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessReadViewName"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessWriteViewName"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessNotifyViewName"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessStorageType"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmAccessStatus"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmViewSpinLock"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmViewTreeFamilyMask"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmViewTreeFamilyType"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmViewTreeFamilyStorageType"
+     ],
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmViewTreeFamilyStatus"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     2,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "vacmContextEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmContextName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "vacmContextName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     1,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "vacmContextStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     1,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "vacmContextTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "vacmGroupName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "vacmMIBCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmBasicGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     2,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "vacmMIBCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     2,
+     1
+    ]
+   },
+   "vacmMIBConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     2
+    ]
+   },
+   "vacmMIBGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     2,
+     2
+    ]
+   },
+   "vacmMIBObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1
+    ]
+   },
+   "vacmMIBViews": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5
+    ]
+   },
+   "vacmSecurityModel": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpSecurityModel"
+   },
+   "vacmSecurityName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "vacmSecurityToGroupEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmSecurityModel"
+     ],
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmSecurityName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "vacmSecurityToGroupStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     2,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "vacmSecurityToGroupStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     2,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "vacmSecurityToGroupTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "vacmViewSpinLock": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     1
+    ],
+    "status": "current",
+    "syntax": "TestAndIncr"
+   },
+   "vacmViewTreeFamilyEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmViewTreeFamilyViewName"
+     ],
+     [
+      0,
+      "SNMP-VIEW-BASED-ACM-MIB",
+      "vacmViewTreeFamilySubtree"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "vacmViewTreeFamilyMask": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 16 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "OctetString"
+   },
+   "vacmViewTreeFamilyStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "vacmViewTreeFamilyStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "vacmViewTreeFamilySubtree": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "ObjectIdentifier"
+   },
+   "vacmViewTreeFamilyTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2
+    ],
+    "status": "current"
+   },
+   "vacmViewTreeFamilyType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "vacmViewTreeFamilyViewName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     16,
+     1,
+     5,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   }
+  },
+  "SNMPv2-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1
+    ],
+    "status": "current"
+   },
+   "authenticationFailure": {
+    "class": "NotificationType",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     5,
+     5
+    ],
+    "status": "current"
+   },
+   "coldStart": {
+    "class": "NotificationType",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     5,
+     1
+    ],
+    "status": "current"
+   },
+   "snmp": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11
+    ]
+   },
+   "snmpBasicCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "snmpGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpSetGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "systemGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpBasicNotificationsGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpCommunityGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpBasicComplianceRev2": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "snmpGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpSetGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "systemGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpBasicNotificationsGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpCommunityGroup"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpWarmStartNotificationGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpBasicNotificationsGroup": {
+    "class": "NotificationGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "coldStart"
+     ],
+     [
+      "SNMPv2-MIB",
+      "authenticationFailure"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     7
+    ],
+    "status": "current"
+   },
+   "snmpCommunityGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "snmpInBadCommunityNames"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInBadCommunityUses"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     9
+    ],
+    "status": "current"
+   },
+   "snmpEnableAuthenTraps": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     30
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "snmpGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "snmpInPkts"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInBadVersions"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInASNParseErrs"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpSilentDrops"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpProxyDrops"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpEnableAuthenTraps"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     8
+    ],
+    "status": "current"
+   },
+   "snmpInASNParseErrs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     6
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInBadCommunityNames": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInBadCommunityUses": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     5
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInBadValues": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     10
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInBadVersions": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     3
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInGenErrs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     12
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInGetNexts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     16
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInGetRequests": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     15
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInGetResponses": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     18
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInNoSuchNames": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     9
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInPkts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     1
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInReadOnlys": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     11
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInSetRequests": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     17
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInTooBigs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     8
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInTotalReqVars": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     13
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInTotalSetVars": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     14
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpInTraps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     19
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpMIBCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     1
+    ]
+   },
+   "snmpMIBConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2
+    ]
+   },
+   "snmpMIBGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2
+    ]
+   },
+   "snmpMIBObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1
+    ]
+   },
+   "snmpNotificationGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "snmpTrapOID"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpTrapEnterprise"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     12
+    ],
+    "status": "current"
+   },
+   "snmpObsoleteGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "snmpOutPkts"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInTooBigs"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInNoSuchNames"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInBadValues"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInReadOnlys"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInGenErrs"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInTotalReqVars"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInTotalSetVars"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInGetRequests"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInGetNexts"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInSetRequests"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInGetResponses"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpInTraps"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutTooBigs"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutNoSuchNames"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutBadValues"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutGenErrs"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutGetRequests"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutGetNexts"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutSetRequests"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutGetResponses"
+     ],
+     [
+      "SNMPv2-MIB",
+      "snmpOutTraps"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     10
+    ],
+    "status": "current"
+   },
+   "snmpOutBadValues": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     22
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutGenErrs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     24
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutGetNexts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     26
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutGetRequests": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     25
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutGetResponses": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     28
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutNoSuchNames": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     21
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutPkts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     2
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutSetRequests": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     27
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutTooBigs": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     20
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpOutTraps": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     29
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpProxyDrops": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     32
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpSet": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     6
+    ]
+   },
+   "snmpSetGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "snmpSetSerialNo"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     5
+    ],
+    "status": "current"
+   },
+   "snmpSetSerialNo": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     6,
+     1
+    ],
+    "status": "current",
+    "syntax": "TestAndIncr"
+   },
+   "snmpSilentDrops": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     11,
+     31
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpTrap": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     4
+    ]
+   },
+   "snmpTrapEnterprise": {
+    "class": "MibScalar",
+    "constraints": "",
+    "maxaccess": "accessiblefornotify",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     4,
+     3
+    ],
+    "status": "current",
+    "syntax": "ObjectIdentifier"
+   },
+   "snmpTrapOID": {
+    "class": "MibScalar",
+    "constraints": "",
+    "maxaccess": "accessiblefornotify",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     4,
+     1
+    ],
+    "status": "current",
+    "syntax": "ObjectIdentifier"
+   },
+   "snmpTraps": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     5
+    ]
+   },
+   "snmpWarmStartNotificationGroup": {
+    "class": "NotificationGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "warmStart"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     11
+    ],
+    "status": "current"
+   },
+   "sysContact": {
+    "class": "MibScalar",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "DisplayString"
+   },
+   "sysDescr": {
+    "class": "MibScalar",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "DisplayString"
+   },
+   "sysLocation": {
+    "class": "MibScalar",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "DisplayString"
+   },
+   "sysName": {
+    "class": "MibScalar",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "DisplayString"
+   },
+   "sysORDescr": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     9,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "DisplayString"
+   },
+   "sysOREntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      0,
+      "SNMPv2-MIB",
+      "sysORIndex"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     9,
+     1
+    ],
+    "status": "current"
+   },
+   "sysORID": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     9,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "ObjectIdentifier"
+   },
+   "sysORIndex": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     9,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "sysORLastChange": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "TimeStamp"
+   },
+   "sysORTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     9
+    ],
+    "status": "current"
+   },
+   "sysORUpTime": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     9,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "TimeStamp"
+   },
+   "sysObjectID": {
+    "class": "MibScalar",
+    "constraints": "",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "ObjectIdentifier"
+   },
+   "sysServices": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 0 | 127 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "sysUpTime": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "TimeTicks"
+   },
+   "system": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     1
+    ]
+   },
+   "systemGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMPv2-MIB",
+      "sysDescr"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysObjectID"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysUpTime"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysContact"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysName"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysLocation"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysServices"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysORLastChange"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysORID"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysORUpTime"
+     ],
+     [
+      "SNMPv2-MIB",
+      "sysORDescr"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     2,
+     2,
+     6
+    ],
+    "status": "current"
+   },
+   "warmStart": {
+    "class": "NotificationType",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     1,
+     1,
+     5,
+     2
+    ],
+    "status": "current"
+   }
+  }
+ }
+}
