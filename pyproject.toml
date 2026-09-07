@@ -27,26 +27,25 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 readme = "README.md"
-# The two sibling floors name a release candidate on purpose, and naming one is
-# the only way to say this: dependabot offers a prerelease when the current
-# version is already one OR when a requirement string names one, and there is no
+# The pyasn1 floor names a release candidate on purpose, and naming one is the
+# only way to say this: dependabot offers a prerelease when the current version
+# is already one OR when a requirement string names one, and there is no
 # configuration key for it (dependabot/dependabot-core#1926, closed as not
-# planned). PEP 440 admits prereleases per specifier, so this puts pysmi and
-# pyasn1 -- and only them, pycryptodomex keeps its stable floor -- on the rc
-# stream, and this repository integrates against the siblings it is released
-# alongside instead of against their last GA.
+# planned). PEP 440 admits prereleases per specifier, so this puts pyasn1 -- and
+# only pyasn1, pysmi and pycryptodomex keep stable floors -- on the rc stream,
+# and this repository integrates against the sibling rc it is released alongside
+# instead of against its last GA.
 #
-# Each floor names the last rc of the line its GA is on, so it sits one hair
-# below the GA rather than above it. Resolution takes the newest allowed
-# version regardless, so today these still resolve to pysmi 2.1.0 and pyasn1
-# 2.0.0; the rc floors only start to matter once a sibling publishes an rc
-# ahead of its next GA.
+# The floor names the last rc of the line its GA is on, so it sits one hair
+# below the GA rather than above it. Resolution takes the newest allowed version
+# regardless, so today this still resolves to pyasn1 2.0.0; the rc floor only
+# starts to matter once pyasn1 publishes an rc ahead of its next GA.
 #
-# This belongs to the 6.0.0 rc cycle, not to the package forever. Put both
-# floors back on a GA before cutting the 6.0.0 GA, or a released pysnmplib
-# lets an installer resolve sibling release candidates.
+# This belongs to the 6.0.0 rc cycle, not to the package forever. Put the floor
+# back on a GA before cutting the 6.0.0 GA, or a released pysnmplib lets an
+# installer resolve a sibling release candidate.
 dependencies = [
-    "pysnmp-pysmi >=2.1.0rc3,<3.0.0",
+    "pysnmp-pysmi >=2.3.0,<3.0.0",
     "pycryptodomex >=3.11.0,<4.0.0",
     "pysnmp-pyasn1 >=2.0.0rc2,<3.0.0",
 ]
