@@ -3,6 +3,48 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is in [CHANGES.md](https://github.com/pysnmp/pysnmp/blob/main/CHANGES.md).
 
+## [6.0.0-rc.10](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.9...v6.0.0-rc.10) (2026-09-08)
+
+### ⚠ BREAKING CHANGES
+
+* **entity:** seven INDEX columns of SNMP-VIEW-BASED-ACM-MIB report
+not-accessible where the 2017 copy said read-only, per RFC 2578 section 7.3:
+vacmAccessContextPrefix, vacmAccessSecurityLevel, vacmAccessSecurityModel,
+vacmSecurityModel, vacmSecurityName, vacmViewTreeFamilySubtree and
+vacmViewTreeFamilyViewName. Nothing becomes unobtainable -- an index
+column's value travels in the OID suffix of every row it appears in. The
+fabricated vacmContextStatus column is gone; nothing outside this repository
+could have addressed it by name, since it was never in the MIB.
+* **smi:** INDEX columns report `not-accessible` where the 2017 base layer
+reported `read-only`, which RFC 2578 section 7.3 requires; sixteen columns
+across six modules, SNMPv2-MIB::sysORIndex among them. Nothing becomes
+unobtainable -- an index column's value travels in the OID suffix of every row
+it appears in, so a manager reading the column can read it out of the row
+identifier instead. `RFC1213-MIB::TtcpInSegs` (a misspelling of tcpInSegs),
+`RFC1158-MIB::snmpInBadTypes` and `RFC1158-MIB::snmpOutReadOnlys` are gone, none
+of them declared by any published ASN.1. `SNMPv2-MIB::snmpBasicCompliance` is
+now `deprecated` and `snmpObsoleteGroup` `obsolete`, per RFC 3418, and
+`RFC1213-MIB::atNetAddress` has syntax `IpAddress` rather than `NetworkAddress`,
+the single arm RFC 1155 defines that CHOICE to have.
+
+### Features
+
+* **entity:** create VACM context rows without a column RFC 3415 omits ([e9563a6](https://github.com/pysnmp/pysnmp/commit/e9563a69b8ec500b013f9e5a644b8d75e3264ee2)), closes [#198](https://github.com/pysnmp/pysnmp/issues/198) [#205](https://github.com/pysnmp/pysnmp/issues/205)
+* **smi:** delete the 2017 base layer so pysmi's modules are the ones that load ([59e68ba](https://github.com/pysnmp/pysnmp/commit/59e68bad713bbf585fa12b463ee9ce61a24dde9a)), closes [#205](https://github.com/pysnmp/pysnmp/issues/205) [#198](https://github.com/pysnmp/pysnmp/issues/198) [#205](https://github.com/pysnmp/pysnmp/issues/205)
+* **smi:** publish and version the MIB module loader contract ([e044df2](https://github.com/pysnmp/pysnmp/commit/e044df24a33b5d25579a30e624295da1478cf0d3)), closes [#197](https://github.com/pysnmp/pysnmp/issues/197)
+* **smi:** resolve a module by best match, not by which source answers first ([f380447](https://github.com/pysnmp/pysnmp/commit/f380447264222e1926c916fe031340be0b4aaad4)), closes [#198](https://github.com/pysnmp/pysnmp/issues/198)
+
+### Bug Fixes
+
+* **carrier:** report the family wildcard for an unbound datagram socket ([ab23e50](https://github.com/pysnmp/pysnmp/commit/ab23e505ddb53f8a76cc95c24a078c33333bcfcc)), closes [#173](https://github.com/pysnmp/pysnmp/issues/173)
+* **smi:** do not reload a module a newer source appeared for ([b954c75](https://github.com/pysnmp/pysnmp/commit/b954c7579ac70f38cdb1e486668472d6fa94d067)), closes [#198](https://github.com/pysnmp/pysnmp/issues/198)
+* **smi:** name the archive a zip-imported MIB module came from ([a9b19ba](https://github.com/pysnmp/pysnmp/commit/a9b19ba2d88aa64e636727e0338159809579fb86)), closes [#198](https://github.com/pysnmp/pysnmp/issues/198)
+* **smi:** read a zip archive's directory under its 3.14 name ([62237aa](https://github.com/pysnmp/pysnmp/commit/62237aa1e468c2867293545db4420d990252b93c))
+
+### Performance Improvements
+
+* import the MIB compiler when it is used, not when rfc1902 is imported ([102833b](https://github.com/pysnmp/pysnmp/commit/102833b0cd44c1682ca2e8b07983d8550676a5bb)), closes [#140](https://github.com/pysnmp/pysnmp/issues/140)
+
 ## [6.0.0-rc.9](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.8...v6.0.0-rc.9) (2026-09-06)
 
 ### ⚠ BREAKING CHANGES
