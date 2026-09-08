@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>MIB module loader contract &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Example scripts" href="../examples/contents.html" />
+    <link rel="prev" title="MIB instance generation tools" href="mib-tools.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-internals.html">Errors and supporting types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MIB module loader contract</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contract-v1">Contract v1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-deliberately-not-in-the-contract">What is deliberately not in the contract</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#for-generator-authors">For generator authors</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="mib-tools.html" title="previous chapter">MIB instance generation tools</a></li>
+      <li>Next: <a href="../examples/contents.html" title="next chapter">Example scripts</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="mib-module-loader-contract">
+<h1>MIB module loader contract<a class="headerlink" href="#mib-module-loader-contract" title="Link to this heading">¶</a></h1>
+<p>A generated MIB module is Python that calls into <code class="docutils literal notranslate"><span class="pre">MibBuilder</span></code> and the SMI
+classes. This page states what those calls may assume.</p>
+<p>It exists because the assumptions were previously undocumented, so a code
+generator had to infer them. Generated output carries the evidence:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">,</span> <span class="s1">'version'</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="n">ifStackGroup</span> <span class="o">=</span> <span class="n">ifStackGroup</span><span class="o">.</span><span class="n">setStatus</span><span class="p">(</span><span class="s1">'deprecated'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">getattr</span></code> default exists because the generator could not assume the
+attribute is present. The version comparison exists because it could not assume
+the setter is available. Neither assumption was ever wrong; both were unstated,
+so the generator hedged.</p>
+<p>Inference also goes stale silently. pysmi carries a list of classes it believes
+do not implement <code class="docutils literal notranslate"><span class="pre">setReference()</span></code>, and suppresses REFERENCE text for them. All
+three implement it, so REFERENCE clauses are dropped from generated modules for
+no reason (pysnmp/pysmi#194).</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#versioning" id="id1">Versioning</a></p></li>
+<li><p><a class="reference internal" href="#contract-v1" id="id2">Contract v1</a></p></li>
+<li><p><a class="reference internal" href="#what-is-deliberately-not-in-the-contract" id="id3">What is deliberately not in the contract</a></p></li>
+<li><p><a class="reference internal" href="#for-generator-authors" id="id4">For generator authors</a></p></li>
+</ul>
+</nav>
+<section id="versioning">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Versioning</a><a class="headerlink" href="#versioning" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi.builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">MibBuilder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MibBuilder</span><span class="o">.</span><span class="n">loaderContract</span>
+<span class="go">(1, 0)</span>
+</pre></div>
+</div>
+<p>A generator targets a contract version rather than a pysnmp version. The two
+move at different rates: <code class="docutils literal notranslate"><span class="pre">version</span></code> changes every release, <code class="docutils literal notranslate"><span class="pre">loaderContract</span></code>
+only when this page changes.</p>
+<p>The minor part increases when something is <strong>added</strong> – a new class, a new
+setter, a new accepted argument form. A generator written against <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">0)</span></code>
+keeps working against <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">5)</span></code>.</p>
+<p>The major part increases when something is <strong>removed or changed</strong>: a setter
+withdrawn, an argument shape altered, a return contract broken. That is a
+breaking change and is released as one.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tests/test_loader_contract.py</span></code> asserts everything on this page. A change that
+breaks it is a contract change, not an implementation detail.</p>
+</section>
+<section id="contract-v1">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Contract v1</a><a class="headerlink" href="#contract-v1" title="Link to this heading">¶</a></h2>
+<section id="builder-attributes">
+<h3>Builder attributes<a class="headerlink" href="#builder-attributes" title="Link to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Guarantee</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">version</span></code></p></td>
+<td><p>Always present, always a tuple of integers. <code class="docutils literal notranslate"><span class="pre">getattr</span></code> with
+a default is unnecessary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">loaderContract</span></code></p></td>
+<td><p>Always present, <code class="docutils literal notranslate"><span class="pre">(major,</span> <span class="pre">minor)</span></code> tuple.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">moduleID</span></code></p></td>
+<td><p>The string <code class="docutils literal notranslate"><span class="pre">&quot;PYSNMP_MODULE_ID&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">loadTexts</span></code></p></td>
+<td><p>Boolean, <code class="docutils literal notranslate"><span class="pre">False</span></code> on a fresh builder.</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">loadTexts</span></code> is the flag a generated module guards its text setters with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadTexts</span><span class="p">:</span>
+    <span class="n">ifIndex</span><span class="o">.</span><span class="n">setDescription</span><span class="p">(</span><span class="s1">'A unique value, greater than zero...'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When it is false the setter is skipped, so a text setter must never carry
+information the module needs in order to resolve.</p>
+</section>
+<section id="symbol-exchange">
+<h3>Symbol exchange<a class="headerlink" href="#symbol-exchange" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">importSymbols(modName,</span> <span class="pre">*symNames)</span></code> returns a tuple of objects in the order
+requested, loading <code class="docutils literal notranslate"><span class="pre">modName</span></code> if it is not loaded. It raises
+<code class="docutils literal notranslate"><span class="pre">MibNotFoundError</span></code> when the module cannot be found, and <code class="docutils literal notranslate"><span class="pre">SmiError</span></code> when the
+module loads but does not define a requested symbol, or when <code class="docutils literal notranslate"><span class="pre">modName</span></code> is
+empty.</p>
+<p><code class="docutils literal notranslate"><span class="pre">exportSymbols(modName,</span> <span class="pre">**namedSyms)</span></code> publishes what the module defines.
+Three behaviours a generator relies on:</p>
+<ul class="simple">
+<li><p>exporting a name twice under one module raises <code class="docutils literal notranslate"><span class="pre">SmiError</span></code>. A generated
+module must therefore export each symbol once</p></li>
+<li><p>every exported symbol except <code class="docutils literal notranslate"><span class="pre">PYSNMP_MODULE_ID</span></code> is renamed to its label when
+it has one, and given the export key as its label when it does not</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PYSNMP_MODULE_ID</span></code> is exempt from that rewriting and keeps the key it was
+exported under</p></li>
+</ul>
+</section>
+<section id="smi-classes-and-setters">
+<h3>SMI classes and setters<a class="headerlink" href="#smi-classes-and-setters" title="Link to this heading">¶</a></h3>
+<p>Every setter listed here exists at contract v1 and may be called without a
+version guard. Each returns the node, so calls chain.</p>
+<p>From <code class="docutils literal notranslate"><span class="pre">SNMPv2-SMI</span></code>:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 26.0%" />
+<col style="width: 74.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Setters</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MibScalar</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">setDescription</span></code>, <code class="docutils literal notranslate"><span class="pre">setLabel</span></code>, <code class="docutils literal notranslate"><span class="pre">setMaxAccess</span></code>, <code class="docutils literal notranslate"><span class="pre">setReference</span></code>,
+<code class="docutils literal notranslate"><span class="pre">setStatus</span></code>, <code class="docutils literal notranslate"><span class="pre">setSyntax</span></code>, <code class="docutils literal notranslate"><span class="pre">setUnits</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MibTable</span></code></p></td>
+<td><p>as <code class="docutils literal notranslate"><span class="pre">MibScalar</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MibTableRow</span></code></p></td>
+<td><p>as <code class="docutils literal notranslate"><span class="pre">MibScalar</span></code>, plus <code class="docutils literal notranslate"><span class="pre">setIndexNames</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MibTableColumn</span></code></p></td>
+<td><p>as <code class="docutils literal notranslate"><span class="pre">MibScalar</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MibIdentifier</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">setLabel</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ObjectIdentity</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">setDescription</span></code>, <code class="docutils literal notranslate"><span class="pre">setLabel</span></code>, <code class="docutils literal notranslate"><span class="pre">setReference</span></code>, <code class="docutils literal notranslate"><span class="pre">setStatus</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NotificationType</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">setDescription</span></code>, <code class="docutils literal notranslate"><span class="pre">setLabel</span></code>, <code class="docutils literal notranslate"><span class="pre">setObjects</span></code>, <code class="docutils literal notranslate"><span class="pre">setReference</span></code>,
+<code class="docutils literal notranslate"><span class="pre">setStatus</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ModuleIdentity</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">setContactInfo</span></code>, <code class="docutils literal notranslate"><span class="pre">setDescription</span></code>, <code class="docutils literal notranslate"><span class="pre">setLabel</span></code>, <code class="docutils literal notranslate"><span class="pre">setLastUpdated</span></code>,
+<code class="docutils literal notranslate"><span class="pre">setOrganization</span></code>, <code class="docutils literal notranslate"><span class="pre">setReference</span></code>, <code class="docutils literal notranslate"><span class="pre">setRevisions</span></code>, <code class="docutils literal notranslate"><span class="pre">setStatus</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>From <code class="docutils literal notranslate"><span class="pre">SNMPv2-CONF</span></code>:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 26.0%" />
+<col style="width: 74.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Setters</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ObjectGroup</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">setDescription</span></code>, <code class="docutils literal notranslate"><span class="pre">setLabel</span></code>, <code class="docutils literal notranslate"><span class="pre">setObjects</span></code>, <code class="docutils literal notranslate"><span class="pre">setReference</span></code>,
+<code class="docutils literal notranslate"><span class="pre">setStatus</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">NotificationGroup</span></code></p></td>
+<td><p>as <code class="docutils literal notranslate"><span class="pre">ObjectGroup</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ModuleCompliance</span></code></p></td>
+<td><p>as <code class="docutils literal notranslate"><span class="pre">ObjectGroup</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">AgentCapabilities</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">setDescription</span></code>, <code class="docutils literal notranslate"><span class="pre">setLabel</span></code>, <code class="docutils literal notranslate"><span class="pre">setProductRelease</span></code>,
+<code class="docutils literal notranslate"><span class="pre">setReference</span></code>, <code class="docutils literal notranslate"><span class="pre">setStatus</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>``setReference`` is available on every class that carries it above, including
+the four conformance classes.</strong> RFC 2580 permits REFERENCE on those macros, and
+pysnmp accepts it. A generator must not suppress REFERENCE for them.</p>
+</section>
+<section id="argument-shapes">
+<h3>Argument shapes<a class="headerlink" href="#argument-shapes" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">setObjects(*pairs)</span></code></dt><dd><p>Each pair is <code class="docutils literal notranslate"><span class="pre">(module,</span> <span class="pre">symbol)</span></code>. <code class="docutils literal notranslate"><span class="pre">getObjects()</span></code> returns them in order.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">setIndexNames(*triples)</span></code></dt><dd><p>Each triple is <code class="docutils literal notranslate"><span class="pre">(implied,</span> <span class="pre">module,</span> <span class="pre">symbol)</span></code> – <strong>implied first</strong>, as an
+integer 0 or 1, not a boolean. <code class="docutils literal notranslate"><span class="pre">getIndexNames()</span></code> returns them in order.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">setLastUpdated(stamp)</span></code> and <code class="docutils literal notranslate"><span class="pre">setRevisions(stamps)</span></code></dt><dd><p>ASN.1 UTC time strings, stored verbatim and returned unchanged. pysnmp does
+not parse or normalize them; a caller that needs a date parses the string.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">setStatus(status)</span></code></dt><dd><p>The SMI status token as a string. pysnmp does not translate between the
+SMIv1 and SMIv2 vocabularies, so a module’s own is preserved.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="what-is-deliberately-not-in-the-contract">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">What is deliberately not in the contract</a><a class="headerlink" href="#what-is-deliberately-not-in-the-contract" title="Link to this heading">¶</a></h2>
+<p>Not stated here, and therefore not something a generator may rely on:</p>
+<ul class="simple">
+<li><p>the class hierarchy above these classes, and any method not listed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MibScalarInstance</span></code>, which is for instrumentation rather than generated
+translation modules</p></li>
+<li><p>internal state – <code class="docutils literal notranslate"><span class="pre">mibSymbols</span></code>, <code class="docutils literal notranslate"><span class="pre">lastBuildId</span></code>, anything underscored</p></li>
+<li><p>the order in which a module’s symbols are exported</p></li>
+<li><p>anything about how a module is located on disk, which is
+<code class="docutils literal notranslate"><span class="pre">MibSource</span></code> behaviour rather than loader behaviour</p></li>
+</ul>
+</section>
+<section id="for-generator-authors">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">For generator authors</a><a class="headerlink" href="#for-generator-authors" title="Link to this heading">¶</a></h2>
+<p>Targeting contract v1 means:</p>
+<ul class="simple">
+<li><p>read <code class="docutils literal notranslate"><span class="pre">MibBuilder.loaderContract</span></code> rather than <code class="docutils literal notranslate"><span class="pre">version</span></code>, and guard on the
+contract only when you support more than one</p></li>
+<li><p>emit setter calls from the tables above with no version guard</p></li>
+<li><p>emit REFERENCE wherever the MIB declares it, for every class listed</p></li>
+<li><p>guard text setters on <code class="docutils literal notranslate"><span class="pre">mibBuilder.loadTexts</span></code> and nothing else</p></li>
+<li><p>export each symbol exactly once, and export the module identity as
+<code class="docutils literal notranslate"><span class="pre">PYSNMP_MODULE_ID</span></code></p></li>
+</ul>
+<p>If something you need is not on this page, it is not in the contract. Ask for it
+to be added rather than inferring it from the implementation – that inference is
+what this page replaces.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

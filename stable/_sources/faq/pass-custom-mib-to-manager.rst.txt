@@ -10,8 +10,16 @@ A. Starting from PySNMP 4.3.x, plain-text (ASN.1) MIBs can be
    automatically, parsed PySNMP MIB will be cached in
    $HOME/.pysnmp/mibs/ (default location).
 
+   PySMI bundles the standard MIB set -- ``SNMPv2-SMI``, ``IF-MIB`` and the
+   rest of what a vendor MIB imports -- and searches it alongside whatever
+   sources you configure, so a MIB that only imports standard modules
+   compiles with no source configured at all and no network. Where a copy
+   you configure carries a newer ``MODULE-IDENTITY`` revision than the
+   bundled one, yours is used.
+
    MIB compiler could be configured to search for plain-text
-   MIBs at multiple local and remote locations. As for remote
+   MIBs at multiple local and remote locations, which is what a MIB
+   importing something outside that set needs. As for remote
    MIB repos, you are welcome to use our collection of ASN.1
    MIB files at
    `https://pysnmp.github.io/mibs/asn1/ <https://pysnmp.github.io/mibs/asn1/>`_

@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../docs/device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../docs/mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/loader-contract.html">MIB module loader contract</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
@@ -150,8 +151,15 @@ automatically parsed into PySNMP form by the
 <a class="reference external" href="https://github.com/pysnmp/pysmi">PySMI</a> tool.  PySNMP will call PySMI
 automatically, parsed PySNMP MIB will be cached in
 $HOME/.pysnmp/mibs/ (default location).</p>
+<p>PySMI bundles the standard MIB set – <code class="docutils literal notranslate"><span class="pre">SNMPv2-SMI</span></code>, <code class="docutils literal notranslate"><span class="pre">IF-MIB</span></code> and the
+rest of what a vendor MIB imports – and searches it alongside whatever
+sources you configure, so a MIB that only imports standard modules
+compiles with no source configured at all and no network. Where a copy
+you configure carries a newer <code class="docutils literal notranslate"><span class="pre">MODULE-IDENTITY</span></code> revision than the
+bundled one, yours is used.</p>
 <p>MIB compiler could be configured to search for plain-text
-MIBs at multiple local and remote locations. As for remote
+MIBs at multiple local and remote locations, which is what a MIB
+importing something outside that set needs. As for remote
 MIB repos, you are welcome to use our collection of ASN.1
 MIB files at
 <a class="reference external" href="https://pysnmp.github.io/mibs/asn1/">https://pysnmp.github.io/mibs/asn1/</a>

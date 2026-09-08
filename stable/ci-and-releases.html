@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/loader-contract.html">MIB module loader contract</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="examples/contents.html">Example scripts</a></li>
@@ -215,6 +216,19 @@ produces a minor release rather than a major one. All three projects set
 <code class="docutils literal notranslate"><span class="pre">conventionalcommits</span></code> explicitly for this reason.</p>
 <p>Reference an issue in the body (<code class="docutils literal notranslate"><span class="pre">Closes</span> <span class="pre">#123</span></code>) rather than in the
 subject, so the generated notes link it.</p>
+<p>The format is checked rather than assumed. <a class="reference external" href="https://commitlint.js.org/">commitlint</a> reads <code class="docutils literal notranslate"><span class="pre">commitlint.config.mjs</span></code> at the
+repository root from two places: the <code class="docutils literal notranslate"><span class="pre">commit-msg</span></code> hook installed by
+<code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code> checks a message as it is written, and the
+<code class="docutils literal notranslate"><span class="pre">Commit</span> <span class="pre">conventions</span></code> workflow checks every commit in a pull request.
+Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code> once per checkout — a checkout made before
+the hook was added has to run it again, because installing the
+<code class="docutils literal notranslate"><span class="pre">commit-msg</span></code> hook type is what makes the check run at all.</p>
+<p>Merge commits, <code class="docutils literal notranslate"><span class="pre">fixup!</span></code> commits and the subjects git writes for a
+revert are ignored. The pull request title is not checked: pull requests
+here are merged rather than squashed, so the title never enters the
+history. What the config changes relative to
+<code class="docutils literal notranslate"><span class="pre">&#64;commitlint/config-conventional</span></code>, and how to lint a range by hand, is
+in <code class="docutils literal notranslate"><span class="pre">.github/semantic-release.md</span></code>.</p>
 </section>
 <section id="what-runs-on-a-pull-request">
 <h2>What runs on a pull request<a class="headerlink" href="#what-runs-on-a-pull-request" title="Link to this heading">¶</a></h2>
@@ -246,6 +260,10 @@ all; on a push it rehearses the release without cutting one.</p>
 <code class="docutils literal notranslate"><span class="pre">net-snmp-integration.yml</span></code>, which exercises every SNMP version and USM
 security profile against a real Net-SNMP agent in a container, and
 <code class="docutils literal notranslate"><span class="pre">codeql-analysis.yml</span></code>.</p>
+<p>A third, <code class="docutils literal notranslate"><span class="pre">commit-conventions.yml</span></code>, lints the commit messages of a pull
+request against the conventions above. It runs on pull requests only, so
+it is not part of the release path, but it does gate a merge wherever
+branch protection names it as a required check.</p>
 </section>
 <section id="the-test-matrix">
 <h2>The test matrix<a class="headerlink" href="#the-test-matrix" title="Link to this heading">¶</a></h2>
