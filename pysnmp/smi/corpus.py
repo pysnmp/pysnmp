@@ -259,6 +259,7 @@ class MibCorpus:
     )
 
     def __init__(self, path: str):
+        """Open the corpus at *path*, refusing one this pysnmp cannot read."""
         if not os.path.exists(path):
             raise error.SmiError(f"no MIB corpus at {path}")
 
