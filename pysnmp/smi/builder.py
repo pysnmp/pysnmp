@@ -444,7 +444,93 @@ class MibBuilder:
         self.__modSeen: dict[str, str] = {}
         self.__modPathsSeen: set[str] = set()
         self.__mibCompiler: Any = None
+        self.__mibCorpus: Any = None
         self.setMibSources(*sources)
+
+    # MIB corpus management
+
+    def getMibCorpus(self) -> Any:
+        """The corpus this builder falls back to, or ``None``.
+
+        Returns:
+            The :py:class:`~pysnmp.smi.corpus.MibCorpus`, or ``None`` when
+            none is configured -- which is the default and means this builder
+            resolves exactly as it always has.
+        """
+        return self.__mibCorpus
+
+    def setMibCorpus(self, mibCorpus: Any) -> Any:
+        """Resolve from a corpus what the MIB sources do not carry.
+
+        A corpus is a SQLite database pysmi produces, holding the SMI model as
+        data rather than as Python. Configuring one **adds a place to look**;
+        it does not replace the MIB sources, reorder them, or change what a
+        module already on disk resolves to. A module found by the ordinary
+        search is loaded the ordinary way, so an existing deployment that
+        configures a corpus keeps every answer it had and gains answers for
+        the modules it did not ship.
+
+        That ordering is the whole compatibility story, and it is deliberate:
+        the corpus is where a module is found when nothing else has it, which
+        is what makes this opt-in rather than a migration.
+
+        Args:
+            mibCorpus: an open
+                :py:class:`~pysnmp.smi.corpus.MibCorpus`, or ``None`` to stop
+                using one
+
+        Returns:
+            This builder.
+
+        Raises:
+            SmiError: ``loadTexts`` is set and the corpus carries no prose.
+                Refused rather than silently satisfied: a caller that asked
+                for descriptions and got a module with none has no way to
+                tell that from a MIB that declares none.
+        """
+        if (
+            mibCorpus is not None
+            and self.loadTexts
+            and not getattr(mibCorpus, "loadTexts", False)
+        ):
+            raise error.SmiError(
+                f"loadTexts is set but the corpus at {mibCorpus} carries no "
+                f"texts; load descriptions from the published json/ tree, or "
+                f"clear loadTexts"
+            )
+
+        self.__mibCorpus = mibCorpus
+
+        return self
+
+    def _loadModuleFromCorpus(self, modName: str) -> bool:
+        """Build a module out of the corpus, if one is configured and has it.
+
+        Args:
+            modName: the module to build
+
+        Returns:
+            Whether it was built.
+        """
+        if self.__mibCorpus is None:
+            return False
+
+        from pysnmp.smi import synthesis
+
+        if not synthesis.load_module(self, self.__mibCorpus, modName):
+            return False
+
+        # Recorded under a path no MIB source can produce, so that
+        # unloadModules() and the already-loaded check treat a synthesized
+        # module exactly like a loaded one.
+        self.__modSeen[modName] = f"corpus:{self.__mibCorpus.path}/{modName}"
+        self.__modPathsSeen.add(self.__modSeen[modName])
+
+        debug.logger & debug.flagBld and debug.logger(
+            f"loadModule: {modName} built from corpus {self.__mibCorpus.path}"
+        )
+
+        return True
 
     # MIB compiler management
 
@@ -613,7 +699,7 @@ class MibBuilder:
 
             break
 
-        if modName not in self.__modSeen:
+        if modName not in self.__modSeen and not self._loadModuleFromCorpus(modName):
             raise error.MibNotFoundError(
                 'MIB file "{}" not found in search path ({})'.format(
                     modName and modName + ".py[co]",
