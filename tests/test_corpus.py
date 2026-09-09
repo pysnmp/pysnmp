@@ -192,7 +192,17 @@ class TestCorpusOpen:
         finally:
             os.chmod(directory, 0o700)
 
-    @pytest.mark.parametrize("directory", ["we?ird", "ha#sh", "sp ace", "per%cent"])
+    # "?" is the character that motivated the escaping and the only one here
+    # Windows will not accept in a filename -- mkdir fails with WinError 123
+    # before any of this is reached. It is parametrized wherever a directory
+    # can be named that, which is every platform but Windows; the other three
+    # run everywhere. Nothing is lost by the skip: pathname2url escapes on the
+    # character, not on the platform, and the case it guards cannot arise
+    # where the name cannot exist.
+    @pytest.mark.parametrize(
+        "directory",
+        (["we?ird"] if os.name != "nt" else []) + ["ha#sh", "sp ace", "per%cent"],
+    )
     def test_opens_from_a_path_needing_uri_escaping(
         self, corpus_path, tmp_path, directory
     ):
