@@ -103,6 +103,65 @@ selectively:
 
     warnings.filterwarnings('ignore', category=PySnmpWeakCryptoWarning)
 
+Turning SNMPv1 and SNMPv2c off
+------------------------------
+
+SNMPv1 and SNMPv2c authenticate with a community string sent in the clear.
+There is no cipher to be weak here and nothing to configure better: the
+credential is readable by anyone who can see the packet, and a request carrying
+the right string is honoured whoever sent it.
+
+Regulated environments generally have to do more than avoid using them. They
+have to be able to say the engine *cannot* use them, which is a different
+claim, and one that a code review of the calling application does not settle.
+Build the engine without them:
+
+.. code-block:: python
+
+    from pysnmp.entity.engine import SnmpEngine
+
+    snmpEngine = SnmpEngine(enableLegacyVersions=False)
+
+Or, for an application that offers no way to pass the argument, set the
+environment variable and leave the application alone:
+
+.. code-block:: bash
+
+    export PYSNMP_DISABLE_V1_V2C=1
+
+An explicit ``enableLegacyVersions`` argument always wins over the variable, so
+a process that deliberately builds a legacy engine — a proxy translating v2c to
+v3, say — still can.
+
+What the guarantee rests on
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The v1 and v2c message processing and security models are not registered on the
+engine at all. Enforcement is subtraction rather than a check, which matters
+for what you can claim about it:
+
+* **Inbound.** :RFC:`3412#section-4.2.1.2` says a message whose ``msgVersion``
+  has no message processing model is counted in ``snmpInBadVersions`` and
+  dropped. A v3-only engine rejects a v1 message exactly as it rejects a
+  version that does not exist. The message is never dispatched, no community
+  is ever compared, and the drop is counted where an audit can read it.
+* **Outbound.** ``MsgAndPduDispatcher.sendPdu()`` raises
+  ``unsupportedMsgProcessingModel``. Nothing community-authenticated can leave
+  the engine.
+* **Configuration.** ``pysnmp.entity.config.addV1System()`` raises
+  :class:`pysnmp.error.PySnmpError` rather than building a row that could
+  never be used, so a mistake surfaces at the line that made it. Anything
+  reaching pysnmp through :class:`~pysnmp.hlapi.auth.CommunityData` reaches
+  this function, so the high-level API fails the same way.
+
+There is no configuration that re-enables a version on an engine already built
+without it. Rebuild the engine.
+
+Configuring a community on an engine that *does* allow it emits
+:class:`pysnmp.error.PySnmpWeakCryptoWarning`, the same way a weak cipher does.
+The default is unchanged — every engine still speaks all three versions unless
+told otherwise — and the warning is silenced the same way as the others.
+
 Cipher backend
 --------------
 

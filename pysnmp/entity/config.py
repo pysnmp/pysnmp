@@ -104,6 +104,56 @@ def __warnAboutProtocol(protocol: Any, stacklevel: int) -> None:
         )
 
 
+#: Why v1/v2c is worth warning about, said once so both callers say the same
+#: thing. Not a cryptographic weakness in the sense the other entries in
+#: `WEAK_PROTOCOLS` are -- there is no cipher here to be weak. The community
+#: string is the credential and it crosses the wire in the clear, which is the
+#: same class of problem and is what a reader of this warning needs told.
+LEGACY_VERSION_WARNING = (
+    "SNMPv1 and SNMPv2c authenticate with a community string sent in "
+    "cleartext, offering no authentication, integrity or confidentiality. "
+    "Prefer SNMPv3 with authPriv. To guarantee an engine cannot use them, "
+    "build it with SnmpEngine(enableLegacyVersions=False) or set "
+    "PYSNMP_DISABLE_V1_V2C=1."
+)
+
+
+def __warnAboutLegacyVersion(stacklevel: int) -> None:
+    warnings.warn(
+        LEGACY_VERSION_WARNING, error.PySnmpWeakCryptoWarning, stacklevel=stacklevel
+    )
+
+
+def __checkLegacyVersions(snmpEngine: Any) -> None:
+    """Refuse community configuration on an engine that cannot use it.
+
+    Failing here rather than at the first send is the whole reason this
+    exists. Without it a v3-only engine accepts `addV1System()` quietly, builds
+    the row, and then fails at send time with
+    `unsupportedMsgProcessingModel` -- which names the dispatcher's problem
+    rather than the caller's, at a point in the program far from the line that
+    caused it.
+
+    Args:
+        snmpEngine: the engine being configured
+
+    Raises:
+        PySnmpError: the engine was built with v1/v2c disabled.
+    """
+    # getattr, because an engine is duck-typed in places and a caller may pass
+    # something that predates the attribute. Absent means the old behaviour:
+    # legacy versions are on.
+    if getattr(snmpEngine, "enableLegacyVersions", True):
+        return
+
+    raise error.PySnmpError(
+        "This SnmpEngine was built with SNMPv1/v2c disabled, so a community "
+        "cannot be configured on it. Build it with "
+        "SnmpEngine(enableLegacyVersions=True), or unset "
+        "PYSNMP_DISABLE_V1_V2C, if this engine is meant to speak v1 or v2c."
+    )
+
+
 def __checkPrivBackend(privProtocol: Any) -> None:
     if privProtocol not in privServices:
         raise error.PySnmpError(f"Unknown privacy protocol {privProtocol}")
@@ -167,6 +217,9 @@ def addV1System(
     transportTag: Any | None = None,
     securityName: Any | None = None,
 ) -> None:
+    __checkLegacyVersions(snmpEngine)
+    __warnAboutLegacyVersion(stacklevel=3)
+
     (snmpCommunityEntry, tblIdx, snmpEngineID) = __cookV1SystemInfo(
         snmpEngine, communityIndex
     )
