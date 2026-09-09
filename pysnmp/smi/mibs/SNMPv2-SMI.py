@@ -430,7 +430,7 @@ class MibTree(ObjectType):
     #
 
     def getBranch(self, name, idx):
-        """Return a branch of this tree where the 'name' OID may reside"""
+        """Return a branch of this tree where the 'name' OID may reside."""
         for keyLen in self._vars.getKeysLens():
             subName = name[:keyLen]
             if subName in self._vars:
@@ -454,14 +454,14 @@ class MibTree(ObjectType):
                 raise error.NoSuchObjectError(idx=idx, name=name) from exc
 
     def getNode(self, name, idx=None):
-        """Return tree node found by name"""
+        """Return tree node found by name."""
         if name == self.name:
             return self
         else:
             return self.getBranch(name, idx).getNode(name, idx)
 
     def getNextNode(self, name, idx=None):
-        """Return tree node next to name"""
+        """Return tree node next to name."""
         try:
             nextNode = self.getBranch(name, idx)
         except (error.NoSuchInstanceError, error.NoSuchObjectError):
@@ -1119,8 +1119,9 @@ class MibTableColumn(MibScalar):
 
 
 class MibTableRow(MibTree):
-    """MIB table row (SMI 'Entry'). Manages a set of table columns.
-    Implements row creation/destruction.
+    """MIB table row (SMI 'Entry').
+
+    Manages a set of table columns and implements row creation/destruction.
     """
 
     def __init__(self, name):
@@ -1375,7 +1376,7 @@ class MibTableRow(MibTree):
     # Table index management
 
     def getIndicesFromInstId(self, instId):
-        """Return index values for instance identification"""
+        """Return index values for instance identification."""
         if instId in self.__idToIdxCache:
             return self.__idToIdxCache[instId]
 
@@ -1407,7 +1408,7 @@ class MibTableRow(MibTree):
         return indices
 
     def getInstIdFromIndices(self, *indices):
-        """Return column instance identification from indices"""
+        """Return column instance identification from indices."""
         try:
             return self.__idxToIdCache[indices]
         except TypeError:
@@ -1430,11 +1431,11 @@ class MibTableRow(MibTree):
     # Table access by index
 
     def getInstNameByIndex(self, colId, *indices):
-        """Build column instance name from components"""
+        """Build column instance name from components."""
         return self.name + (colId,) + self.getInstIdFromIndices(*indices)
 
     def getInstNamesByIndex(self, *indices):
-        """Build column instance names from indices"""
+        """Build column instance names from indices."""
         instNames = []
         for columnName in self._vars:
             instNames.append(self.getInstNameByIndex(*(columnName[-1],) + indices))
@@ -1513,7 +1514,7 @@ class MibTableRow(MibTree):
 
 
 class MibTable(MibTree):
-    """MIB table. Manages a set of TableRow's"""
+    """MIB table. Manages a set of TableRow's."""
 
     def __init__(self, name):
         MibTree.__init__(self, name)

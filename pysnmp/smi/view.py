@@ -165,7 +165,7 @@ class MibViewController:
     # MIB tree node management
 
     def __getOidLabel(self, nodeName, oidToLabelIdx, labelToOidIdx):
-        """getOidLabel(nodeName) -> (oid, label, suffix)"""
+        """getOidLabel(nodeName) -> (oid, label, suffix)."""
         if not nodeName:
             return nodeName, nodeName, ()
         if nodeName in labelToOidIdx:

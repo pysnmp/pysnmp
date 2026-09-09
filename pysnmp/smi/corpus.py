@@ -108,10 +108,12 @@ def oid_key(oid: Union[str, "tuple[int, ...]"]) -> bytes:
     Args:
         oid: dotted decimal, or arcs as integers
 
-    Returns:
+    Returns
+    -------
         The sort key.
 
-    Raises:
+    Raises
+    ------
         SmiError: the OID is not one, or an arc is out of range.
     """
     if isinstance(oid, str):
@@ -146,10 +148,12 @@ def oid_from_key(key: bytes) -> str:
     Args:
         key: the sort key
 
-    Returns:
+    Returns
+    -------
         The OID, dotted decimal.
 
-    Raises:
+    Raises
+    ------
         SmiError: the key is truncated.
     """
     arcs: list[str] = []
@@ -180,7 +184,8 @@ def subtree_bound(key: bytes) -> bytes:
     Args:
         key: an encoded OID
 
-    Returns:
+    Returns
+    -------
         The first key sorting above every descendant.
     """
     out = bytearray(key)
@@ -202,7 +207,8 @@ class MibCorpus:
     Args:
         path: the ``core.db`` to open
 
-    Raises:
+    Raises
+    ------
         SmiError: the file is missing, is not a corpus, or carries a schema
             version this pysnmp cannot read.
     """
@@ -354,7 +360,8 @@ class MibCorpus:
             key: ``schema_version``, ``corpus_version``, ``corpus_id``,
                 ``texts``, or one of the counts
 
-        Returns:
+        Returns
+        -------
             The value as a string, or ``None`` when the corpus carries none.
         """
         row = self._db.execute(self.QUERIES["meta"], (key,)).fetchone()
@@ -388,7 +395,8 @@ class MibCorpus:
         Args:
             name: the module's descriptor
 
-        Returns:
+        Returns
+        -------
             Its tier, MODULE-IDENTITY OID, revision, content hash and node
             count, or ``None`` when the corpus does not carry it.
         """
@@ -413,7 +421,8 @@ class MibCorpus:
         Args:
             identifier: ``type.id``, or ``None``
 
-        Returns:
+        Returns
+        -------
             The specification, or ``None``.
         """
         if identifier is None:
@@ -452,7 +461,8 @@ class MibCorpus:
         Args:
             oid: the OID to resolve
 
-        Returns:
+        Returns
+        -------
             The module name, or ``None`` when nothing claims a prefix of it.
             A miss is not an error: an unresolved OID still decodes
             structurally as far as the longest known prefix reaches.
@@ -481,7 +491,8 @@ class MibCorpus:
             module: which module's definition to take, where more than one
                 defines the OID. The first by name otherwise.
 
-        Returns:
+        Returns
+        -------
             The node, or ``None``.
         """
         key = oid_key(oid)
@@ -505,7 +516,8 @@ class MibCorpus:
             module: the module's descriptor
             name: the symbol's descriptor
 
-        Returns:
+        Returns
+        -------
             The node, or ``None``.
         """
         return self._node(
@@ -518,7 +530,8 @@ class MibCorpus:
         Args:
             oid: where to start, exclusive
 
-        Returns:
+        Returns
+        -------
             The next node, or ``None`` at the end of the corpus, which is
             ``endOfMibView`` and not an error.
         """
@@ -532,7 +545,8 @@ class MibCorpus:
         Args:
             oid: the subtree root
 
-        Returns:
+        Returns
+        -------
             The nodes, root first.
         """
         low = oid_key(oid)
@@ -550,7 +564,8 @@ class MibCorpus:
         Args:
             module: the module's descriptor
 
-        Returns:
+        Returns
+        -------
             The nodes.
         """
         return [
@@ -559,13 +574,15 @@ class MibCorpus:
         ]
 
     def symbols_of(self, module: str) -> list[dict[str, Any]]:
-        """Every type a module declares -- its TEXTUAL-CONVENTIONs and type
-        assignments -- in name order.
+        """Every type a module declares, in name order.
+
+        That is its TEXTUAL-CONVENTIONs and its type assignments.
 
         Args:
             module: the module's descriptor
 
-        Returns:
+        Returns
+        -------
             The symbols, each with its specification decoded.
         """
         return [
@@ -586,7 +603,8 @@ class MibCorpus:
             module: the module's descriptor
             name: the type's descriptor
 
-        Returns:
+        Returns
+        -------
             The symbol, or ``None``.
         """
         row = self._db.execute(self.QUERIES["symbol"], (module, name)).fetchone()
@@ -608,7 +626,8 @@ class MibCorpus:
         Args:
             module: the module's descriptor
 
-        Returns:
+        Returns
+        -------
             Symbol name to source module.
         """
         return dict(self._db.execute(self.QUERIES["imports_of"], (module,)))

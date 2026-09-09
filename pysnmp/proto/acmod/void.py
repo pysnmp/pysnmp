@@ -10,7 +10,7 @@ from pysnmp.proto import errind, error
 # rfc3415 3.2
 # noinspection PyUnusedLocal
 class Vacm:
-    """Void Access Control Model"""
+    """Void Access Control Model."""
 
     accessModelID = 0
 

@@ -10,7 +10,7 @@ from pysnmp.smi.error import NoSuchInstanceError
 
 # 3.2
 class Vacm:
-    """View-based Access Control Model"""
+    """View-based Access Control Model."""
 
     accessModelID = 3
 

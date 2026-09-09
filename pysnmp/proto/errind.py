@@ -9,7 +9,7 @@ import functools
 
 @functools.total_ordering
 class ErrorIndication(Exception):
-    """SNMPv3 error-indication values"""
+    """SNMPv3 error-indication values."""
 
     def __init__(self, descr=None):
         self.__value = self.__descr = (

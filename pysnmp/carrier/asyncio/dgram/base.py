@@ -39,7 +39,7 @@ from pysnmp.carrier.asyncio.base import AbstractAsyncioTransport
 
 
 class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
-    """Base Asyncio datagram Transport, to be used with AsyncioDispatcher"""
+    """Base Asyncio datagram Transport, to be used with AsyncioDispatcher."""
 
     #: Address family this transport opens sockets in. None where the
     #: platform has no such family -- AF_UNIX on Windows, AF_INET6 on a build

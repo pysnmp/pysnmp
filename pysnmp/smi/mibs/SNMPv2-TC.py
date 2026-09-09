@@ -74,7 +74,7 @@ class TextualConvention:
         return self.clone(value)
 
     def prettyOut(self, value):  # override asn1 type method
-        """Implements DISPLAY-HINT evaluation"""
+        """Implements DISPLAY-HINT evaluation."""
         if self.displayHint and (
             self.__integer.isSuperTypeOf(self, matchConstraints=False)
             and not self.namedValues
@@ -215,7 +215,7 @@ class TextualConvention:
         raise SmiError("TEXTUAL-CONVENTION has no underlying SNMP base type")
 
     def prettyIn(self, value):  # override asn1 type method
-        """Implements DISPLAY-HINT parsing into base SNMP value
+        """Implements DISPLAY-HINT parsing into base SNMP value.
 
         Proper parsing seems impossible due to ambiguities.
         Here we are trying to do our best, but be prepared
@@ -542,8 +542,9 @@ class RowPointer(TextualConvention, ObjectIdentifier):
 
 
 class RowStatus(TextualConvention, Integer):
-    """A special kind of scalar MIB variable responsible for
-    MIB table row creation/destruction.
+    """A special kind of scalar MIB variable.
+
+    Responsible for MIB table row creation/destruction.
     """
 
     description = "The RowStatus textual convention is used to manage the creation and deletion of conceptual rows, and is used as the value of the SYNTAX clause for the status column of a conceptual row (as described in Section 7.7.1 of [2].)..."

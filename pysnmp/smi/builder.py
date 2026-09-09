@@ -192,7 +192,8 @@ class ZipMibSource(__AbstractMibSource):
         but without one a zip-installed MIB package cannot be enumerated at
         all, so it is read rather than done without.
 
-        Returns:
+        Returns
+        -------
             The mapping of member path to archive entry, or ``None`` for a
             loader that is not a zipimporter.
         """
@@ -370,7 +371,8 @@ def revisionOf(codeObj: Any) -> str | None:
     either -- ``dis`` reports what the module actually assigns, where a regex
     reports what its text looks like.
 
-    Returns:
+    Returns
+    -------
         The timestamp, or ``None`` for a module that states no revision --
         every SMIv1 module, and the SMI modules themselves.
     """
@@ -454,7 +456,8 @@ class MibBuilder:
     def getMibCorpus(self) -> Any:
         """The corpus this builder falls back to, or ``None``.
 
-        Returns:
+        Returns
+        -------
             The :py:class:`~pysnmp.smi.corpus.MibCorpus`, or ``None`` when
             none is configured -- which is the default and means this builder
             resolves exactly as it always has.
@@ -481,10 +484,12 @@ class MibBuilder:
                 :py:class:`~pysnmp.smi.corpus.MibCorpus`, or ``None`` to stop
                 using one
 
-        Returns:
+        Returns
+        -------
             This builder.
 
-        Raises:
+        Raises
+        ------
             SmiError: ``loadTexts`` is set and the corpus carries no prose.
                 Refused rather than silently satisfied: a caller that asked
                 for descriptions and got a module with none has no way to
@@ -507,7 +512,8 @@ class MibBuilder:
         Args:
             mibCorpus: the corpus about to be used, or ``None``
 
-        Raises:
+        Raises
+        ------
             SmiError: texts were asked for and the corpus has none.
         """
         if (
@@ -527,7 +533,8 @@ class MibBuilder:
         Args:
             modName: the module to build
 
-        Returns:
+        Returns
+        -------
             Whether it was built.
         """
         if self.__mibCorpus is None:
@@ -692,7 +699,7 @@ class MibBuilder:
         return [candidate for _, candidate in ordered]
 
     def loadModule(self, modName: str, **userCtx: Any) -> Any:
-        """Load and execute MIB modules as Python code"""
+        """Load and execute MIB modules as Python code."""
         if modName in self.__modSeen:
             # Already loaded, and loading is not idempotent: a MIB registers
             # its symbols as it runs, so executing a second copy over the first
@@ -767,7 +774,7 @@ class MibBuilder:
         return self
 
     def loadModules(self, *modNames: str, **userCtx: Any) -> Any:
-        """Load (optionally, compiling) pysnmp MIB modules"""
+        """Load (optionally, compiling) pysnmp MIB modules."""
         # Build a list of available modules. A dict rather than a set: it
         # de-duplicates across sources while keeping the order they were
         # searched in.

@@ -138,9 +138,8 @@ extend-exclude = [".eggs", ".git", ".hg", ".mypy_cache", ".tox", ".venv", "_buil
 
 [tool.ruff.lint]
 # The rule set pyasn1 and pysmi share, so a contributor moving between the
-# three repositories meets the same lint. The docstring family (D) is the one
-# deliberate gap: pysnmp has some 800 undocumented public classes and methods,
-# which is a documentation project rather than a lint fix. Tracked in #186.
+# three repositories meets the same lint -- the docstring family (D) included,
+# as of #186. Which parts of D are on is settled in the ignore list below.
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -159,6 +158,7 @@ select = [
     "RUF",    # ruff-specific rules
     "PL",     # pylint
     "TRY",    # tryceratops
+    "D",      # pydocstyle
 ]
 ignore = [
     # Shared with pyasn1 and pysmi.
@@ -199,12 +199,56 @@ ignore = [
     # runtime where a weak one is configured (see pysnmp/error.py).
     "S508",     # snmp-insecure-version
     "S509",     # snmp-weak-cryptography
+
+    # The docstring family, adopted in stages -- see #186. What is on now is
+    # the shape of the docstrings that exist: summary line, section headings,
+    # punctuation. What is still off is the requirement that every public
+    # thing have one, which is ~790 items across the package and is a
+    # documentation project rather than a lint fix. Writing 347 method
+    # docstrings mechanically produces noise, not documentation.
+    #
+    # These come off one rule at a time, each its own reviewable change:
+    #   D100/D104  108 modules and packages
+    #   D101       183 classes
+    #   D103/D107  104 functions and constructors
+    #   D102       347 methods, probably by subpackage
+    #   D105        55 magic methods
+    "D100",     # undocumented-public-module
+    "D101",     # undocumented-public-class
+    "D102",     # undocumented-public-method
+    "D103",     # undocumented-public-function
+    "D104",     # undocumented-public-package
+    "D105",     # undocumented-magic-method
+    "D107",     # undocumented-public-init
+
+    # The one rule pyasn1 keeps that this does not, and the only place the two
+    # rule sets differ. Every third-person summary it caught -- "Returns the",
+    # "Adds a", "Creates a" -- has been fixed. What is left is 25 accessors
+    # and properties whose summary is a noun phrase naming what you get back:
+    # "The corpus this builder falls back to, or ``None``." Rewriting those as
+    # "Return the corpus..." is longer and says less, and for a property it
+    # describes a call that the reader does not make. D401 also misfires on an
+    # imperative that opens with an adverb ("Synchronously call ...").
+    "D401",     # non-imperative-mood
 ]
+
+[tool.ruff.lint.pydocstyle]
+# What pyasn1 uses, and what the Sphinx build already assumes -- conf.py sets
+# napoleon_numpy_docstring. Picking it here rather than leaving ruff on its
+# default also settles D203/D211 and D212/D213, which are mutually exclusive
+# pairs that ruff warns about when both are selected.
+convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 # Generated MIB modules bind their names via mibBuilder.importSymbols() at
 # import time, so static analysis cannot see them.
-"pysnmp/smi/mibs/**" = ["F821"]
+# D: most modules here are generated, and their prose is the MIB's own
+# DESCRIPTION clauses rendered by pysmi's code generator -- nobody writes it
+# here and tools/regenerate_mibs.py would overwrite an edit made to satisfy a
+# lint. The hand-written ones in this directory (SNMPv2-SMI, SNMPv2-TC,
+# SNMPv2-CONF, the ASN1 modules) satisfy the enabled D rules anyway, so this
+# is not load-bearing for them.
+"pysnmp/smi/mibs/**" = ["F821", "D"]
 # Package __init__ modules re-export the public API.
 "**/__init__.py" = ["F401"]
 # Examples are documentation: star imports and binding every interface are
@@ -212,7 +256,12 @@ ignore = [
 # PLR2044: the `"""  #` that closes an example's prose block is not an empty
 # comment, it is the marker docs/source/examples/**.rst splits on -- the text
 # above it is included as prose, the code below it as a literal block.
-"examples/**" = ["F401", "F403", "F405", "F821", "S104", "PLR2044"]
+# D: an example's module docstring is reStructuredText that
+# docs/source/examples/**.rst includes verbatim, so its first two lines are a
+# title and its `+++++` underline -- not a summary line. Applying D400 to one
+# appends a period to the underline and breaks the title. pyasn1 exempts its
+# examples for the same reason.
+"examples/**" = ["F401", "F403", "F405", "F821", "S104", "PLR2044", "D"]
 # MD5 and SHA-1 are not a choice here: usmHMACMD5AuthProtocol and
 # usmHMACSHAAuthProtocol are what :RFC:`3414#section-6` and #section-7 define,
 # and pysnmp warns at runtime where either is configured.
@@ -223,9 +272,13 @@ ignore = [
 # implicit __context__ chaining is the thing under test.
 # S105/S108/S603: fixed passphrases, a fixed socket path and subprocess calls
 # with a literal argv are what a test harness is made of.
+# D: a test's docstring says what the test establishes and why it is worth
+# establishing, and a fixture's names what it hands back. Neither is an
+# imperative-mood summary of a public API, which is what D is shaped for.
+# pyasn1 exempts its tests the same way.
 "tests/**" = [
     "S101", "S102", "S104", "S105", "S108", "S603",
-    "B017", "B904", "BLE", "PL", "RUF", "TRY",
+    "B017", "B904", "BLE", "PL", "RUF", "TRY", "D",
 ]
 
 [tool.ruff.lint.isort]

@@ -47,7 +47,7 @@ OUTPUT_DIR = os.path.join(_ROOT, "pysnmp", "smi", "mibs")
 
 
 def _dependency_asn1() -> str:
-    """pysmi's bundled ASN.1, for the standard modules these import from."""
+    """Pysmi's bundled ASN.1, for the standard modules these import from."""
     return os.path.join(os.path.dirname(pysmi.__file__), "mibs", "asn1")
 
 
@@ -57,10 +57,12 @@ def render(*modules: str) -> dict[str, str]:
     Args:
         modules: module names; defaults to :py:data:`MODULES`
 
-    Returns:
+    Returns
+    -------
         Module name to rendered Python.
 
-    Raises:
+    Raises
+    ------
         RuntimeError: a module did not compile.
     """
     wanted = modules or MODULES

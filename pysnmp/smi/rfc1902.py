@@ -50,7 +50,7 @@ class ObjectIdentity:
           :py:obj:`int` values representing MIB variable instance
           identification.
 
-    Other parameters
+    Other Parameters
     ----------------
     kwargs
         MIB resolution options(object):
@@ -95,7 +95,7 @@ class ObjectIdentity:
         self.__mibNode = None
 
     def getMibSymbol(self):
-        """Returns MIB variable symbolic identification.
+        """Return MIB variable symbolic identification.
 
         Returns
         -------
@@ -131,7 +131,7 @@ class ObjectIdentity:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def getOid(self):
-        """Returns OID identifying MIB variable.
+        """Return OID identifying MIB variable.
 
         Returns
         -------
@@ -161,7 +161,7 @@ class ObjectIdentity:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def getLabel(self):
-        """Returns symbolic path to this MIB variable.
+        """Return symbolic path to this MIB variable.
 
         Meaning a sequence of symbolic identifications for each of parent
         MIB objects in MIB tree.
@@ -213,7 +213,7 @@ class ObjectIdentity:
     #
 
     def addAsn1MibSource(self, *asn1Sources, **kwargs):
-        """Adds path to a repository to search ASN.1 MIB files.
+        """Add path to a repository to search ASN.1 MIB files.
 
         Parameters
         ----------
@@ -253,7 +253,7 @@ class ObjectIdentity:
         return self
 
     def addMibSource(self, *mibSources):
-        """Adds path to repository to search PySNMP MIB files.
+        """Add path to repository to search PySNMP MIB files.
 
         Parameters
         ----------
@@ -764,7 +764,7 @@ class ObjectType:
         return self.__state & self.stClean
 
     def addAsn1MibSource(self, *asn1Sources, **kwargs):
-        """Adds path to a repository to search ASN.1 MIB files.
+        """Add path to a repository to search ASN.1 MIB files.
 
         Parameters
         ----------
@@ -797,7 +797,7 @@ class ObjectType:
         return self
 
     def addMibSource(self, *mibSources):
-        """Adds path to repository to search PySNMP MIB files.
+        """Add path to repository to search PySNMP MIB files.
 
         Parameters
         ----------
@@ -962,7 +962,7 @@ class ObjectType:
         return self
 
     def getUnits(self):
-        """Returns UNITS clause value from the resolved MIB node.
+        """Return UNITS clause value from the resolved MIB node.
 
         Returns
         -------
@@ -1078,7 +1078,7 @@ class NotificationType:
         return f"{self.__class__.__name__}({self.__objectIdentity!r}, {self.__instanceIndex!r}, {self.__objects!r})"
 
     def addVarBinds(self, *varBinds):
-        """Appends variable-binding to notification.
+        """Append variable-binding to notification.
 
         Parameters
         ----------
@@ -1115,7 +1115,7 @@ class NotificationType:
         return self
 
     def addAsn1MibSource(self, *asn1Sources, **kwargs):
-        """Adds path to a repository to search ASN.1 MIB files.
+        """Add path to a repository to search ASN.1 MIB files.
 
         Parameters
         ----------
@@ -1148,7 +1148,7 @@ class NotificationType:
         return self
 
     def addMibSource(self, *mibSources):
-        """Adds path to repository to search PySNMP MIB files.
+        """Add path to repository to search PySNMP MIB files.
 
         Parameters
         ----------
