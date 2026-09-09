@@ -498,7 +498,6 @@ class TestBundledMibs:
         "SNMP-NOTIFICATION-MIB",
         "SNMP-PROXY-MIB",
         "SNMP-USER-BASED-SM-MIB",
-        "SNMP-USER-BASED-SM-3DES-MIB",
         "SNMP-USM-AES-MIB",
         "SNMP-USM-HMAC-SHA2-MIB",
         "SNMP-VIEW-BASED-ACM-MIB",
