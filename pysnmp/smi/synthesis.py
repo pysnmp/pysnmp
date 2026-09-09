@@ -118,6 +118,7 @@ class _Resolver:
     """
 
     def __init__(self, builder: Any, corpus: Any, module: str):
+        """Resolve types for ``module``, against ``corpus`` and ``builder``."""
         self._builder = builder
         self._corpus = corpus
         self._module = module
@@ -536,6 +537,14 @@ def load_module(builder: Any, corpus: Any, modName: str) -> bool:
     building: set[str] = set()
 
     def declare(name: str) -> Any:
+        """Build this module's type ``name``, and whatever it is defined on.
+
+        Corpus symbols come back ordered by name rather than by declaration, so
+        a TEXTUAL-CONVENTION whose base is declared later in that order is
+        built on demand here instead of being assumed present. ``building``
+        makes a type defined in terms of itself an error rather than a
+        recursion.
+        """
         existing = resolver.declared(name)
 
         if existing is not None:
