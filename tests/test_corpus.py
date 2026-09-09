@@ -24,6 +24,16 @@ import os
 
 import pytest
 
+# Imported rather than skipped over. This was a ``pytest.importorskip``, and
+# because the dev group's pysmi floor still named a release predating
+# ``pysmi.corpus``, the skip fired for the whole module -- every test in this
+# file, not just the vectors -- and CI reported success without running any of
+# it. A skip that can hide the entire suite it guards is worse than a
+# collection error, and there is nothing for it to protect: pytest itself comes
+# from the same dev group as pysmi, so anything able to collect this file has
+# the group installed and therefore has a pysmi that publishes the fixture.
+from pysmi.corpus import conformance as pysmi_conformance
+
 from pysnmp.smi import error
 from pysnmp.smi.builder import MibBuilder
 from pysnmp.smi.corpus import (
@@ -33,11 +43,6 @@ from pysnmp.smi.corpus import (
     oid_from_key,
     oid_key,
     subtree_bound,
-)
-
-pysmi_conformance = pytest.importorskip(
-    "pysmi.corpus.conformance",
-    reason="the conformance fixture is published by pysmi, a dev dependency",
 )
 
 
