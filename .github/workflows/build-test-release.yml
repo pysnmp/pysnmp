@@ -188,6 +188,95 @@ jobs:
           # A Codecov outage is not a reason to fail a build.
           fail_ci_if_error: false
 
+  # pysnmp-pysmi is an optional dependency, and the suite cannot prove that on
+  # its own: every other job installs the dev group, and the dev group has
+  # pysmi. tests/test_no_pysmi.py blocks the import to get close, but a blocked
+  # import is a simulation -- it says nothing about what the wheel's metadata
+  # actually pulls in. This installs the wheel with no extras into a clean
+  # environment and starts an engine in it, which is the only check that fails
+  # if `compile` stops being optional in the packaging rather than in the code.
+  test-no-pysmi:
+    name: test-no-pysmi
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Install pysnmp with no extras
+        run: |
+          uv venv .venv-bare
+          uv pip install --python .venv-bare/bin/python .
+      - name: Fail if pysmi came along anyway
+        run: |
+          if uv pip list --python .venv-bare/bin/python | grep -qi '^pysnmp-pysmi'; then
+            echo "::error::pysnmp-pysmi was installed without the compile extra"
+            uv pip list --python .venv-bare/bin/python
+            exit 1
+          fi
+      - name: Start an engine without pysmi
+        run: |
+          .venv-bare/bin/python - <<'PY'
+          import importlib.util
+          import sys
+
+          assert importlib.util.find_spec("pysmi") is None, "pysmi is importable"
+
+          from pysnmp.entity import config, engine
+          from pysnmp.smi import compiler, error
+          from pysnmp.smi.rfc1902 import ObjectIdentity
+          from pysnmp.smi.view import MibViewController
+
+          snmpEngine = engine.SnmpEngine()
+          config.addV3User(
+              snmpEngine,
+              "usr",
+              config.usmHMACSHAAuthProtocol,
+              "authkey1",
+              config.usmAesCfb128Protocol,
+              "privkey1",
+          )
+          config.addVacmUser(
+              snmpEngine, 3, "usr", "authPriv", (1, 3, 6), (1, 3, 6), (1, 3, 6)
+          )
+          config.addTargetParams(snmpEngine, "params", "usr", "authPriv")
+
+          objectIdentity = ObjectIdentity("SNMPv2-MIB", "sysDescr", 0)
+          objectIdentity.resolveWithMib(MibViewController(snmpEngine.getMibBuilder()))
+          assert objectIdentity.prettyPrint() == "SNMPv2-MIB::sysDescr.0"
+
+          # The one capability the extra buys, refusing by name rather than
+          # failing somewhere further in.
+          try:
+              compiler.addMibCompiler(snmpEngine.getMibBuilder())
+          except error.SmiError as exc:
+              assert "MIB compiler not available" in str(exc), exc
+          else:
+              sys.exit("the compiler did not refuse without pysmi")
+
+          print("engine started, names resolved, compiler refused cleanly")
+          PY
+      - name: Install the compile extra and check the compiler appears
+        run: |
+          uv pip install --python .venv-bare/bin/python '.[compile]'
+          .venv-bare/bin/python - <<'PY'
+          from pysnmp.entity.engine import SnmpEngine
+          from pysnmp.smi import compiler
+
+          mibBuilder = SnmpEngine().getMibBuilder()
+          compiler.addMibCompiler(mibBuilder)
+          assert mibBuilder.getMibCompiler() is not None
+
+          print("the compile extra adds a compiler")
+          PY
+
   # One check name for the branch ruleset to require, standing in for every
   # gating job below. The test matrix cannot be named directly: its job names
   # carry the Python version and the runner, the set of them changes with the
@@ -206,6 +295,7 @@ jobs:
       - build
       - setup-matrix
       - run-unit-tests
+      - test-no-pysmi
     runs-on: ubuntu-latest
     steps:
       - name: Fail unless every gating job succeeded

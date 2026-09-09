@@ -27,41 +27,44 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 readme = "README.md"
-# The pysmi floor names a release candidate on purpose, and naming one is the
-# only way to say this: dependabot offers a prerelease when the current version
-# is already one OR when a requirement string names one, and there is no
+# What an SNMP engine needs to run, and nothing else. pysmi is deliberately not
+# here: pysnmp renders the seven standard modules an engine resolves during
+# start-up into pysnmp/smi/mibs (tools/regenerate_mibs.py), so nothing on the
+# engine path imports pysmi at run time. tests/test_no_pysmi.py holds that line
+# by blocking the import and starting an engine anyway.
+dependencies = [
+    "pycryptodomex >=3.11.0,<4.0.0",
+    "pysnmp-pyasn1 >=2.0.2,<3.0.0",
+]
+
+# Compiling ASN.1 at run time is what pysmi is for, and it is a thing some
+# deployments do and most do not. `pip install pysnmplib[compile]` is the way
+# to ask for it; without it pysnmp.smi.compiler raises SmiError naming the
+# missing import, which is what it already did for anyone who had not installed
+# pysmi.
+#
+# The floor names a release candidate on purpose, and naming one is the only way
+# to say this: dependabot offers a prerelease when the current version is
+# already one OR when a requirement string names one, and there is no
 # configuration key for it (dependabot/dependabot-core#1926, closed as not
 # planned). PEP 440 admits prereleases per specifier, so this puts pysmi on the
 # rc stream, and this repository integrates against the sibling rc it is
 # released alongside instead of against its last GA.
 #
-# What matters is where a named rc sorts against that sibling's newest GA,
-# because resolution takes the newest allowed version:
+# 3.1.0rc3 names an rc of the *next* line, so it outranks pysmi's newest GA
+# (3.0.0) and is what resolves. That mattered more when it was a hard runtime
+# dependency: rc3 is the first release where a behavior fragment's class
+# attribute re-seeds the objects a module already built (pysnmp/pysmi#236), and
+# 3.1.0rc1 the first to publish pysmi.corpus.conformance, which
+# tests/test_corpus.py builds its fixture with. Both now bear on the optional
+# path and the dev group rather than on every install.
 #
-#   pysmi   3.1.0rc3 > 3.0.0   active. This names an rc of the *next* line, so
-#                              it outranks the newest GA and is what resolves.
-#                              Deliberate, and load-bearing at runtime: the
-#                              five base modules pysnmp used to carry its own
-#                              hand-edited copies of are gone, so what loads is
-#                              pysmi's bundle plus the behavior fragments it
-#                              splices in (pysnmp/pysmi#231, #232). rc3 is the
-#                              first release where a fragment's class attribute
-#                              also re-seeds the objects the module already
-#                              built (pysnmp/pysmi#236) -- without it every
-#                              SnmpEngine() fails on a valueless snmpEngineID.
-#                              3.1.0rc1 is separately the first release to
-#                              publish pysmi.corpus.conformance, which
-#                              tests/test_corpus.py builds its fixture with.
-#
-# pyasn1 is off that stream: 2.0.2 is a GA and is what the floor names, so
-# nothing here resolves pyasn1 to a prerelease. pysmi is the one floor left to
-# put back on a GA before cutting the 6.0.0 GA -- until then a released
-# pysnmplib lets an installer resolve a sibling release candidate.
-dependencies = [
-    "pysnmp-pysmi >=3.1.0rc3,<4.0.0",
-    "pycryptodomex >=3.11.0,<4.0.0",
-    "pysnmp-pyasn1 >=2.0.2,<3.0.0",
-]
+# pyasn1 is off that stream: 2.0.2 is a GA and is what the floor names. Put this
+# floor back on a GA before cutting the 6.0.0 GA -- an extra resolving to a
+# sibling release candidate is better than a required dependency doing it, but
+# it is still not what a GA should ship.
+[project.optional-dependencies]
+compile = ["pysnmp-pysmi >=3.1.0rc3,<4.0.0"]
 
 [project.urls]
 repository = "https://github.com/pysnmp/pysnmp"
@@ -70,8 +73,16 @@ repository = "https://github.com/pysnmp/pysnmp"
 # package, never to install it, so they belong in a group that no published
 # metadata advertises. pyasn1 and pysmi already declare theirs this way, which
 # is what lets all three run `uv run --locked --group dev` unchanged.
+#
+# pysmi is here as well as in the `compile` extra, and for reasons the extra
+# does not cover: tools/regenerate_mibs.py renders the committed modules with
+# pysmi's code generator, tests/test_generated_mibs.py re-renders them to check
+# for drift, and tests/test_corpus.py builds its fixture from
+# pysmi.corpus.conformance. Development needs pysmi whether or not an install
+# does.
 [dependency-groups]
 dev = [
+    "pysnmp-pysmi >=3.1.0rc3,<4.0.0",
     "sphinx >=7.0.0,<9.0.0",
     "myst-parser >=4.0.0,<5.0.0",
     "pytest >=9.0.3,<10.0.0",

@@ -1,15 +1,30 @@
 #!/usr/bin/env python
-"""Render pysnmp's own MIB modules from the ASN.1 they are defined by.
+"""Render the MIB modules pysnmp ships from the ASN.1 they are defined by.
 
-pysnmp publishes three MIBs of its own -- ``PYSNMP-MIB``,
-``PYSNMP-SOURCE-MIB`` and ``PYSNMP-USM-MIB``. The ASN.1 in ``docs/mibs`` is
-what defines them; the Python in ``pysnmp/smi/mibs`` is a rendering of it, and
-this is what renders it.
+Two sets, for two different reasons.
 
-Until 2026 those modules were pysmi-0.1.3 output from April 2017, edited by
-hand and never regenerated, and they had drifted from their own ASN.1 -- see
-pysnmp/pysmi#231 for the same story in five standard modules. Nothing here is
-hand-edited: run this, commit what it writes. A relation the ASN.1 cannot
+**pysnmp's own** -- ``PYSNMP-MIB``, ``PYSNMP-SOURCE-MIB`` and
+``PYSNMP-USM-MIB``. pysnmp publishes these, and the ASN.1 that defines them is
+in ``docs/mibs``.
+
+**The engine layer** -- the seven standard modules an ``SnmpEngine`` cannot
+start without. These are not pysnmp's to define; RFC 3411-3418 and RFC 3584
+define them, and the ASN.1 comes from pysmi's bundle. pysnmp carries a
+rendering of them so that starting an engine needs no pysmi at run time, which
+is what makes ``pysnmp-pysmi`` an optional dependency rather than a required
+one. #196 draws that boundary: engine configuration and live state are out of
+the corpus's scope because a manager-only deployment needs them too, and that
+floor does not grow with the number of MIBs anyone translates.
+
+Rendering them here rather than depending on pysmi's copy keeps pysmi the sole
+producer of the artifact shape -- it is still pysmi's code generator and
+pysmi's ASN.1 that produce these -- and moves it from install time to build
+time.
+
+Until 2026 pysnmp's own three were pysmi-0.1.3 output from April 2017, edited
+by hand and never regenerated, and they had drifted from their own ASN.1 --
+see pysnmp/pysmi#231 for the same story in five standard modules. Nothing here
+is hand-edited: run this, commit what it writes. A relation the ASN.1 cannot
 state goes in ``pysnmp/smi/mibs/behavior/``, not into the rendered output.
 
 ``tests/test_generated_mibs.py`` renders the same modules and compares them to
@@ -34,8 +49,30 @@ from pysmi.reader import FileReader
 from pysmi.searcher import StubSearcher
 from pysmi.writer import CallbackWriter
 
-#: The modules pysnmp defines and this renders.
-MODULES = ("PYSNMP-MIB", "PYSNMP-SOURCE-MIB", "PYSNMP-USM-MIB")
+#: The MIBs pysnmp defines, from the ASN.1 in ``docs/mibs``.
+OWN_MODULES = ("PYSNMP-MIB", "PYSNMP-SOURCE-MIB", "PYSNMP-USM-MIB")
+
+#: The standard modules an ``SnmpEngine`` resolves during start-up and
+#: configuration, from pysmi's bundled ASN.1.
+#:
+#: Measured, not guessed: build an engine, add a v3 user, a VACM entry and a
+#: target params entry, then ask the builder which modules it loaded. These
+#: seven are what it reaches for, and their import closure adds nothing --
+#: everything they import is already in ``pysnmp/smi/mibs``.
+#: ``tests/test_engine_mibs.py`` re-measures it, so a new import fails the
+#: suite rather than surfacing as an ImportError in a pysmi-less install.
+ENGINE_MODULES = (
+    "SNMP-COMMUNITY-MIB",
+    "SNMP-FRAMEWORK-MIB",
+    "SNMP-MPD-MIB",
+    "SNMP-TARGET-MIB",
+    "SNMP-USER-BASED-SM-MIB",
+    "SNMP-VIEW-BASED-ACM-MIB",
+    "SNMPv2-MIB",
+)
+
+#: Everything this renders.
+MODULES = OWN_MODULES + ENGINE_MODULES
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
