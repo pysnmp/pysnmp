@@ -470,7 +470,11 @@ def load_module(builder: Any, corpus: Any, modName: str) -> bool:
             spec = declared[name].get("type") or {}
             dependency = spec.get("type")
 
-            if dependency in declared and dependency != name:
+            if (
+                isinstance(dependency, str)
+                and dependency != name
+                and dependency in declared
+            ):
                 declare(dependency)
 
             cls = _textual_convention(resolver, declared[name])

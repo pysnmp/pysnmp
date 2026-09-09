@@ -290,7 +290,10 @@ class MibCorpus:
                 f"reads version {SCHEMA_VERSION}"
             )
 
-        self._types: dict[int, dict[str, Any]] = {}
+        # A negative result is cached too: a dangling type id is a corpus
+        # defect, and re-querying for it on every node that carries it turns
+        # one defect into a per-row cost.
+        self._types: dict[int, dict[str, Any] | None] = {}
         self._modules: frozenset[str] | None = None
 
     def __repr__(self) -> str:
