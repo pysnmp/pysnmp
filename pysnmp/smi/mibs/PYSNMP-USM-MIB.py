@@ -1,94 +1,101 @@
 #
-# This file is part of pysnmp software.
+# PySNMP MIB module PYSNMP-USM-MIB (http://snmplabs.com/pysmi)
+# ASN.1 source PYSNMP-USM-MIB.txt
+# Source digest sha256:7789d11fb75f3c642f1397ea491949c5a88b5a93fe3286fa7b414720929ec16d
+# Produced by pysmi-3.1.0-rc.3
 #
-# Copyright (c) 2005-2019, Ilya Etingof deceased
-#
-# PySNMP MIB module PYSNMP-USM-MIB
-# ASN.1 source: bundled
-# Produced by pysmi-0.1.3 at Mon Apr 17 11:46:02 2017
-# On host grommit.local platform Darwin version 16.4.0 by user ilya
-# Using Python version 3.4.2 (v3.4.2:ab2c023a9432, Oct  5 2014, 20:42:22)
-#
-Integer, OctetString, ObjectIdentifier = mibBuilder.importSymbols(
-    "ASN1", "Integer", "OctetString", "ObjectIdentifier"
+PYSNMP_MODULE_REVISION = "201704140000Z"
+
+Integer, ObjectIdentifier, OctetString = mibBuilder.importSymbols(
+    "ASN1", "Integer", "ObjectIdentifier", "OctetString"
 )
 (NamedValues,) = mibBuilder.importSymbols("ASN1-ENUMERATION", "NamedValues")
 (
+    ConstraintsIntersection,
+    ConstraintsUnion,
     SingleValueConstraint,
     ValueRangeConstraint,
-    ConstraintsIntersection,
     ValueSizeConstraint,
-    ConstraintsUnion,
 ) = mibBuilder.importSymbols(
     "ASN1-REFINEMENT",
+    "ConstraintsIntersection",
+    "ConstraintsUnion",
     "SingleValueConstraint",
     "ValueRangeConstraint",
-    "ConstraintsIntersection",
     "ValueSizeConstraint",
-    "ConstraintsUnion",
 )
 (pysnmpModuleIDs,) = mibBuilder.importSymbols("PYSNMP-MIB", "pysnmpModuleIDs")
 (SnmpAdminString,) = mibBuilder.importSymbols("SNMP-FRAMEWORK-MIB", "SnmpAdminString")
 (usmUserEntry,) = mibBuilder.importSymbols("SNMP-USER-BASED-SM-MIB", "usmUserEntry")
-NotificationGroup, ModuleCompliance = mibBuilder.importSymbols(
-    "SNMPv2-CONF", "NotificationGroup", "ModuleCompliance"
+ModuleCompliance, NotificationGroup = mibBuilder.importSymbols(
+    "SNMPv2-CONF", "ModuleCompliance", "NotificationGroup"
 )
 (
+    Bits,
+    Counter32,
+    Counter64,
+    Gauge32,
+    Integer32,
+    IpAddress,
     ModuleIdentity,
-    iso,
+    MibIdentifier,
+    NotificationType,
+    ObjectIdentity,
     MibScalar,
     MibTable,
     MibTableRow,
     MibTableColumn,
-    Gauge32,
-    NotificationType,
-    IpAddress,
-    MibIdentifier,
-    Unsigned32,
-    Counter32,
-    ObjectIdentity,
-    Counter64,
-    Bits,
-    Integer32,
     TimeTicks,
+    Unsigned32,
+    iso,
 ) = mibBuilder.importSymbols(
     "SNMPv2-SMI",
+    "Bits",
+    "Counter32",
+    "Counter64",
+    "Gauge32",
+    "Integer32",
+    "IpAddress",
     "ModuleIdentity",
-    "iso",
+    "MibIdentifier",
+    "NotificationType",
+    "ObjectIdentity",
     "MibScalar",
     "MibTable",
     "MibTableRow",
     "MibTableColumn",
-    "Gauge32",
-    "NotificationType",
-    "IpAddress",
-    "MibIdentifier",
-    "Unsigned32",
-    "Counter32",
-    "ObjectIdentity",
-    "Counter64",
-    "Bits",
-    "Integer32",
     "TimeTicks",
+    "Unsigned32",
+    "iso",
 )
-RowStatus, DisplayString, TextualConvention = mibBuilder.importSymbols(
-    "SNMPv2-TC", "RowStatus", "DisplayString", "TextualConvention"
+DisplayString, RowStatus, TextualConvention = mibBuilder.importSymbols(
+    "SNMPv2-TC", "DisplayString", "RowStatus", "TextualConvention"
 )
 pysnmpUsmMIB = ModuleIdentity((1, 3, 6, 1, 4, 1, 20408, 3, 1, 1))
+pysnmpUsmMIB.setRevisions(
+    (
+        "2019-08-30 00:00",
+        "2017-07-30 00:00",
+        "2017-04-14 00:00",
+        "2005-05-14 00:00",
+    )
+)
 if mibBuilder.loadTexts:
-    pysnmpUsmMIB.setRevisions(
+    pysnmpUsmMIB.setRevisionsDescriptions(
         (
-            "2017-04-14 00:00",
-            "2005-05-14 00:00",
+            "Added USM key types",
+            "Extended authentication key size",
+            "Updated addresses",
+            "The Initial Revision",
         )
     )
 if mibBuilder.loadTexts:
-    pysnmpUsmMIB.setLastUpdated("201704140000Z")
+    pysnmpUsmMIB.setLastUpdated("2017-04-14 00:00")
 if mibBuilder.loadTexts:
     pysnmpUsmMIB.setOrganization("The PySNMP Project")
 if mibBuilder.loadTexts:
     pysnmpUsmMIB.setContactInfo(
-        "E-mail: Ilya Etingof deceased  GitHub: https://github.com/etingof/pysnmp"
+        "E-mail: Ilya Etingof deceased GitHub: https://github.com/etingof/pysnmp"
     )
 if mibBuilder.loadTexts:
     pysnmpUsmMIB.setDescription(
@@ -129,26 +136,30 @@ pysnmpUsmKeyType = MibScalar(
     .subtype(subtypeSpec=ConstraintsUnion(SingleValueConstraint(0, 1, 2)))
     .clone(namedValues=NamedValues(("passphrase", 0), ("master", 1), ("localized", 2)))
     .clone("passphrase"),
-).setMaxAccess("not-accessible")
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyType.setStatus("current")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyType.setDescription(
-        'When configuring USM user, the value of this enumeration determines how the keys should be treated. The default value "passphrase" means that given keys are plain-text pass-phrases, "master" indicates that the keys are pre-hashed pass-phrases, while "localized" stands for pre-hashed pass-phrases mixed with SNMP Security Engine ID value.'
+        "When configuring USM user, the value of this enumeration determines how the keys should be treated. The default value 'passphrase' means that given keys are plain-text pass-phrases, 'master' indicates that the keys are pre-hashed pass-phrases, while 'localized' stands for pre-hashed pass-phrases mixed with SNMP Security Engine ID value."
     )
 pysnmpUsmUser = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3))
 pysnmpUsmSecretTable = MibTable(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 2),
-)
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmSecretTable.setStatus("current")
 if mibBuilder.loadTexts:
     pysnmpUsmSecretTable.setDescription(
         "The table of USM users passphrases configured in the SNMP engine's Local Configuration Datastore (LCD)."
     )
-pysnmpUsmSecretEntry = MibTableRow(
-    (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 2, 1),
-).setIndexNames((1, "PYSNMP-USM-MIB", "pysnmpUsmSecretUserName"))
+pysnmpUsmSecretEntry = (
+    MibTableRow(
+        (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 2, 1),
+    )
+    .setMaxAccess("notaccessible")
+    .setIndexNames((1, "PYSNMP-USM-MIB", "pysnmpUsmSecretUserName"))
+)
 if mibBuilder.loadTexts:
     pysnmpUsmSecretEntry.setStatus("current")
 if mibBuilder.loadTexts:
@@ -158,7 +169,7 @@ if mibBuilder.loadTexts:
 pysnmpUsmSecretUserName = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 2, 1, 1),
     SnmpAdminString().subtype(subtypeSpec=ValueSizeConstraint(1, 32)),
-)
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmSecretUserName.setStatus("current")
 if mibBuilder.loadTexts:
@@ -167,10 +178,8 @@ if mibBuilder.loadTexts:
     )
 pysnmpUsmSecretAuthKey = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 2, 1, 2),
-    OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
-        subtypeSpec=ValueSizeConstraint(8, 65535)
-    ),
-)
+    OctetString().subtype(subtypeSpec=ValueSizeConstraint(8, 65535)),
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmSecretAuthKey.setStatus("current")
 if mibBuilder.loadTexts:
@@ -179,10 +188,8 @@ if mibBuilder.loadTexts:
     )
 pysnmpUsmSecretPrivKey = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 2, 1, 3),
-    OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
-        subtypeSpec=ValueSizeConstraint(8, 65535)
-    ),
-)
+    OctetString().subtype(subtypeSpec=ValueSizeConstraint(8, 65535)),
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmSecretPrivKey.setStatus("current")
 if mibBuilder.loadTexts:
@@ -198,7 +205,7 @@ if mibBuilder.loadTexts:
     pysnmpUsmSecretStatus.setDescription("Table status")
 pysnmpUsmKeyTable = MibTable(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3),
-)
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyTable.setStatus("current")
 if mibBuilder.loadTexts:
@@ -207,7 +214,7 @@ if mibBuilder.loadTexts:
     )
 pysnmpUsmKeyEntry = MibTableRow(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1),
-)
+).setMaxAccess("notaccessible")
 usmUserEntry.registerAugmentions(("PYSNMP-USM-MIB", "pysnmpUsmKeyEntry"))
 pysnmpUsmKeyEntry.setIndexNames(*usmUserEntry.getIndexNames())
 if mibBuilder.loadTexts:
@@ -218,10 +225,8 @@ if mibBuilder.loadTexts:
     )
 pysnmpUsmKeyAuthLocalized = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1, 1),
-    OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
-        subtypeSpec=ValueSizeConstraint(8, 64)
-    ),
-)
+    OctetString().subtype(subtypeSpec=ValueSizeConstraint(8, 64)),
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyAuthLocalized.setStatus("current")
 if mibBuilder.loadTexts:
@@ -230,10 +235,8 @@ if mibBuilder.loadTexts:
     )
 pysnmpUsmKeyPrivLocalized = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1, 2),
-    OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
-        subtypeSpec=ValueSizeConstraint(8, 64)
-    ),
-)
+    OctetString().subtype(subtypeSpec=ValueSizeConstraint(8, 64)),
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyPrivLocalized.setStatus("current")
 if mibBuilder.loadTexts:
@@ -242,20 +245,16 @@ if mibBuilder.loadTexts:
     )
 pysnmpUsmKeyAuth = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1, 3),
-    OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
-        subtypeSpec=ValueSizeConstraint(8, 64)
-    ),
-)
+    OctetString().subtype(subtypeSpec=ValueSizeConstraint(8, 64)),
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyAuth.setStatus("current")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyAuth.setDescription("User's non-localized key used for authentication.")
 pysnmpUsmKeyPriv = MibTableColumn(
     (1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 1, 3, 1, 4),
-    OctetString("\x00\x00\x00\x00\x00\x00\x00\x00").subtype(
-        subtypeSpec=ValueSizeConstraint(8, 64)
-    ),
-)
+    OctetString().subtype(subtypeSpec=ValueSizeConstraint(8, 64)),
+).setMaxAccess("notaccessible")
 if mibBuilder.loadTexts:
     pysnmpUsmKeyPriv.setStatus("current")
 if mibBuilder.loadTexts:
@@ -264,27 +263,27 @@ pysnmpUsmMIBCompliances = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 2, 1)
 pysnmpUsmMIBGroups = MibIdentifier((1, 3, 6, 1, 4, 1, 20408, 3, 1, 1, 2, 2))
 mibBuilder.exportSymbols(
     "PYSNMP-USM-MIB",
+    PYSNMP_MODULE_ID=pysnmpUsmMIB,
     pysnmpUsmCfg=pysnmpUsmCfg,
     pysnmpUsmDiscoverable=pysnmpUsmDiscoverable,
-    pysnmpUsmKeyType=pysnmpUsmKeyType,
-    pysnmpUsmKeyEntry=pysnmpUsmKeyEntry,
-    pysnmpUsmKeyTable=pysnmpUsmKeyTable,
-    pysnmpUsmKeyPrivLocalized=pysnmpUsmKeyPrivLocalized,
-    pysnmpUsmMIBCompliances=pysnmpUsmMIBCompliances,
-    pysnmpUsmMIBObjects=pysnmpUsmMIBObjects,
-    pysnmpUsmSecretTable=pysnmpUsmSecretTable,
-    PYSNMP_MODULE_ID=pysnmpUsmMIB,
-    pysnmpUsmSecretEntry=pysnmpUsmSecretEntry,
-    pysnmpUsmMIBConformance=pysnmpUsmMIBConformance,
-    pysnmpUsmUser=pysnmpUsmUser,
-    pysnmpUsmKeyAuth=pysnmpUsmKeyAuth,
-    pysnmpUsmSecretPrivKey=pysnmpUsmSecretPrivKey,
-    pysnmpUsmKeyAuthLocalized=pysnmpUsmKeyAuthLocalized,
-    pysnmpUsmMIB=pysnmpUsmMIB,
     pysnmpUsmDiscovery=pysnmpUsmDiscovery,
-    pysnmpUsmSecretUserName=pysnmpUsmSecretUserName,
+    pysnmpUsmKeyAuth=pysnmpUsmKeyAuth,
+    pysnmpUsmKeyAuthLocalized=pysnmpUsmKeyAuthLocalized,
+    pysnmpUsmKeyEntry=pysnmpUsmKeyEntry,
     pysnmpUsmKeyPriv=pysnmpUsmKeyPriv,
-    pysnmpUsmSecretAuthKey=pysnmpUsmSecretAuthKey,
-    pysnmpUsmSecretStatus=pysnmpUsmSecretStatus,
+    pysnmpUsmKeyPrivLocalized=pysnmpUsmKeyPrivLocalized,
+    pysnmpUsmKeyTable=pysnmpUsmKeyTable,
+    pysnmpUsmKeyType=pysnmpUsmKeyType,
+    pysnmpUsmMIB=pysnmpUsmMIB,
+    pysnmpUsmMIBCompliances=pysnmpUsmMIBCompliances,
+    pysnmpUsmMIBConformance=pysnmpUsmMIBConformance,
     pysnmpUsmMIBGroups=pysnmpUsmMIBGroups,
+    pysnmpUsmMIBObjects=pysnmpUsmMIBObjects,
+    pysnmpUsmSecretAuthKey=pysnmpUsmSecretAuthKey,
+    pysnmpUsmSecretEntry=pysnmpUsmSecretEntry,
+    pysnmpUsmSecretPrivKey=pysnmpUsmSecretPrivKey,
+    pysnmpUsmSecretStatus=pysnmpUsmSecretStatus,
+    pysnmpUsmSecretTable=pysnmpUsmSecretTable,
+    pysnmpUsmSecretUserName=pysnmpUsmSecretUserName,
+    pysnmpUsmUser=pysnmpUsmUser,
 )

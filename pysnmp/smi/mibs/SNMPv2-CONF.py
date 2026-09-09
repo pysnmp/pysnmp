@@ -4,10 +4,17 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # PySNMP MIB module SNMPv2-CONF
-# ASN.1 source: bundled
-# Produced by pysmi-0.1.3 at Tue Apr 18 00:51:39 2017
-# On host grommit.local platform Darwin version 16.4.0 by user ilya
-# Using Python version 3.4.2 (v3.4.2:ab2c023a9432, Oct  5 2014, 20:42:22)
+#
+# Hand-written, and not rendered from ASN.1 -- the header this carried until
+# 2026 said "Produced by pysmi-0.1.3", which was never true of it.
+#
+# RFC 2580 defines SNMPv2-CONF entirely in macros: OBJECT-GROUP,
+# NOTIFICATION-GROUP, MODULE-COMPLIANCE and AGENT-CAPABILITIES. A macro states
+# how a MIB may be written, not an object with an OID, so a code generator
+# reading the ASN.1 has nothing to emit for this module. What every other
+# module means when it imports ModuleCompliance from here is the runtime class
+# below, which is pysnmp's to define -- as with SNMPv2-SMI and SNMPv2-TC, and
+# why pysmi lists all three among the modules it declines to compile.
 #
 (MibNode,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibNode")
 
