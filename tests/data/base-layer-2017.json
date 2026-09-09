@@ -1,11 +1,81 @@
 {
  "_meta": {
-  "extracted_from": "ab8864e6af3ec1a58751c4f704ab329d07e14a2c",
+  "extracted_from": {
+   "eleven base-layer modules": "ab8864e6af3ec1a58751c4f704ab329d07e14a2c",
+   "five behaviour-carrying modules": "5ec67f4ed8aee50e57a85c7163eaa152319384d1"
+  },
   "fields": "as produced by tests/test_base_layer_equivalence.py::_facts",
-  "what": "Facts extracted from pysnmp/smi/mibs/, the base-layer modules pysmi 0.1.2/0.1.3 generated in April 2017.",
-  "why": "Those files were deleted when best-match selection made pysmi's copies reachable (pysnmp/pysnmp#198). They stated no revision, so the tie rule kept handing them the win until they were gone. This is the baseline the equivalence harness compares against, so the characterization survives the deletion. Historical record: nothing regenerates it."
+  "what": "Facts extracted from pysnmp/smi/mibs/, the base-layer modules pysmi 0.1.2/0.1.3 generated in April 2017. Captured in two passes, each at the commit before the modules it covers were deleted.",
+  "why": "Those files were deleted when best-match selection made pysmi's copies reachable (pysnmp/pysnmp#198). They stated no revision, so the tie rule kept handing them the win until they were gone. This is the baseline the equivalence harness compares against, so the characterization survives the deletion. Historical record: nothing regenerates it. The five behaviour-carrying modules held out until pysmi could splice their hand-written behaviour into the module it generates (pysnmp/pysmi#231, #232, #236); they were captured the same way before they too were deleted."
  },
  "modules": {
+  "INET-ADDRESS-MIB": {
+   "InetAddress": {
+    "class": "type"
+   },
+   "InetAddressDNS": {
+    "class": "type"
+   },
+   "InetAddressIPv4": {
+    "class": "type"
+   },
+   "InetAddressIPv4z": {
+    "class": "type"
+   },
+   "InetAddressIPv6": {
+    "class": "type"
+   },
+   "InetAddressIPv6z": {
+    "class": "type"
+   },
+   "InetAddressPrefixLength": {
+    "class": "type"
+   },
+   "InetAddressType": {
+    "class": "type"
+   },
+   "InetAutonomousSystemNumber": {
+    "class": "type"
+   },
+   "InetPortNumber": {
+    "class": "type"
+   },
+   "InetScopeType": {
+    "class": "type"
+   },
+   "InetVersion": {
+    "class": "type"
+   },
+   "InetZoneIndex": {
+    "class": "type"
+   },
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     76
+    ],
+    "status": "current"
+   },
+   "inetAddressMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     76
+    ],
+    "status": "current"
+   }
+  },
   "RFC1158-MIB": {
    "snmpInBadTypes": {
     "class": "MibScalar",
@@ -2991,6 +3061,293 @@
     "syntax": "OctetString"
    }
   },
+  "SNMP-FRAMEWORK-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10
+    ],
+    "status": "current"
+   },
+   "SnmpAdminString": {
+    "class": "type"
+   },
+   "SnmpEngineID": {
+    "class": "type"
+   },
+   "SnmpMessageProcessingModel": {
+    "class": "type"
+   },
+   "SnmpSecurityLevel": {
+    "class": "type"
+   },
+   "SnmpSecurityModel": {
+    "class": "type"
+   },
+   "snmpAuthProtocols": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpEngine": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     2,
+     1
+    ]
+   },
+   "snmpEngineBoots": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 1 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "snmpEngineGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-FRAMEWORK-MIB",
+      "snmpEngineID"
+     ],
+     [
+      "SNMP-FRAMEWORK-MIB",
+      "snmpEngineBoots"
+     ],
+     [
+      "SNMP-FRAMEWORK-MIB",
+      "snmpEngineTime"
+     ],
+     [
+      "SNMP-FRAMEWORK-MIB",
+      "snmpEngineMaxMessageSize"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     3,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpEngineID": {
+    "class": "MibScalar",
+    "constraints": "0 | 32 | 5 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpEngineID"
+   },
+   "snmpEngineMaxMessageSize": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 2147483647 | 484",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     2,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "snmpEngineTime": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "SnmpEngineTime",
+    "units": "seconds"
+   },
+   "snmpFrameworkAdmin": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1
+    ]
+   },
+   "snmpFrameworkMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10
+    ],
+    "status": "current"
+   },
+   "snmpFrameworkMIBCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-FRAMEWORK-MIB",
+      "snmpEngineGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     3,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpFrameworkMIBCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     3,
+     1
+    ]
+   },
+   "snmpFrameworkMIBConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     3
+    ]
+   },
+   "snmpFrameworkMIBGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     3,
+     2
+    ]
+   },
+   "snmpFrameworkMIBObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     2
+    ]
+   },
+   "snmpPrivProtocols": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     10,
+     1,
+     2
+    ],
+    "status": "current"
+   }
+  },
   "SNMP-MPD-MIB": {
    "PYSNMP_MODULE_ID": {
     "class": "ModuleIdentity",
@@ -4226,6 +4583,692 @@
     ],
     "status": "current",
     "syntax": "Integer32"
+   }
+  },
+  "SNMP-TARGET-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12
+    ],
+    "status": "current"
+   },
+   "SnmpTagList": {
+    "class": "type"
+   },
+   "SnmpTagValue": {
+    "class": "type"
+   },
+   "snmpTargetAddrEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      1,
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpTargetAddrName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpTargetAddrParams": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpTargetAddrRetryCount": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647 | 255",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "Integer32"
+   },
+   "snmpTargetAddrRowStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     9
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "snmpTargetAddrStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     8
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "snmpTargetAddrTAddress": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "TAddress"
+   },
+   "snmpTargetAddrTDomain": {
+    "class": "MibTableColumn",
+    "constraints": "",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "TDomain"
+   },
+   "snmpTargetAddrTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpTargetAddrTagList": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "SnmpTagList"
+   },
+   "snmpTargetAddrTimeout": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     2,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "TimeInterval"
+   },
+   "snmpTargetBasicGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetSpinLock"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrTDomain"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrTAddress"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrTagList"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrParams"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrStorageType"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrRowStatus"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsMPModel"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsSecurityModel"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsSecurityName"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsSecurityLevel"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsStorageType"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsRowStatus"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     3,
+     2,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpTargetCommandResponderCompliance": {
+    "class": "ModuleCompliance",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetCommandResponderGroup"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     3,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpTargetCommandResponderGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpUnavailableContexts"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpUnknownContexts"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     3,
+     2,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpTargetCompliances": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     3,
+     1
+    ]
+   },
+   "snmpTargetConformance": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     3
+    ]
+   },
+   "snmpTargetGroups": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     3,
+     2
+    ]
+   },
+   "snmpTargetMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12
+    ],
+    "status": "current"
+   },
+   "snmpTargetObjects": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1
+    ]
+   },
+   "snmpTargetParamsEntry": {
+    "class": "MibTableRow",
+    "indices": [
+     [
+      1,
+      "SNMP-TARGET-MIB",
+      "snmpTargetParamsName"
+     ]
+    ],
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpTargetParamsMPModel": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1,
+     2
+    ],
+    "status": "current",
+    "syntax": "SnmpMessageProcessingModel"
+   },
+   "snmpTargetParamsName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 1 | 255 | 32 | 65535",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpTargetParamsRowStatus": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2 | 2147483647 | 3 | 4 | 5 | 6",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1,
+     7
+    ],
+    "status": "current",
+    "syntax": "RowStatus"
+   },
+   "snmpTargetParamsSecurityLevel": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "SnmpSecurityLevel"
+   },
+   "snmpTargetParamsSecurityModel": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 0 | 1 | 2147483647",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1,
+     3
+    ],
+    "status": "current",
+    "syntax": "SnmpSecurityModel"
+   },
+   "snmpTargetParamsSecurityName": {
+    "class": "MibTableColumn",
+    "constraints": "0 | 255 | 65535",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "SnmpAdminString"
+   },
+   "snmpTargetParamsStorageType": {
+    "class": "MibTableColumn",
+    "constraints": "-2147483648 | 1 | 2 | 2147483647 | 3 | 4 | 5",
+    "maxaccess": "readcreate",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3,
+     1,
+     6
+    ],
+    "status": "current",
+    "syntax": "StorageType"
+   },
+   "snmpTargetParamsTable": {
+    "class": "MibTable",
+    "maxaccess": "notaccessible",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpTargetResponseGroup": {
+    "class": "ObjectGroup",
+    "objects": [
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrTimeout"
+     ],
+     [
+      "SNMP-TARGET-MIB",
+      "snmpTargetAddrRetryCount"
+     ]
+    ],
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     3,
+     2,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpTargetSpinLock": {
+    "class": "MibScalar",
+    "constraints": "-2147483648 | 0 | 2147483647",
+    "maxaccess": "readwrite",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     1
+    ],
+    "status": "current",
+    "syntax": "TestAndIncr"
+   },
+   "snmpUnavailableContexts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     4
+    ],
+    "status": "current",
+    "syntax": "Counter32"
+   },
+   "snmpUnknownContexts": {
+    "class": "MibScalar",
+    "constraints": "0 | 4294967295",
+    "maxaccess": "readonly",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     12,
+     1,
+     5
+    ],
+    "status": "current",
+    "syntax": "Counter32"
    }
   },
   "SNMP-USER-BASED-SM-MIB": {
@@ -7393,6 +8436,445 @@
      2
     ],
     "status": "current"
+   }
+  },
+  "SNMPv2-TM": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     19
+    ],
+    "status": "current"
+   },
+   "SnmpIPXAddress": {
+    "class": "type"
+   },
+   "SnmpNBPAddress": {
+    "class": "type"
+   },
+   "SnmpOSIAddress": {
+    "class": "type"
+   },
+   "SnmpUDPAddress": {
+    "class": "type"
+   },
+   "rfc1157Domain": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     2,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "rfc1157Proxy": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     2,
+     1
+    ]
+   },
+   "snmpCLNSDomain": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "snmpCONSDomain": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "snmpDDPDomain": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     1,
+     4
+    ],
+    "status": "current"
+   },
+   "snmpIPXDomain": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     1,
+     5
+    ],
+    "status": "current"
+   },
+   "snmpUDPDomain": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "snmpv2tm": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     6,
+     3,
+     19
+    ],
+    "status": "current"
+   }
+  },
+  "TRANSPORT-ADDRESS-MIB": {
+   "PYSNMP_MODULE_ID": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100
+    ],
+    "status": "current"
+   },
+   "TransportAddress": {
+    "class": "type"
+   },
+   "TransportAddressDns": {
+    "class": "type"
+   },
+   "TransportAddressIPv4": {
+    "class": "type"
+   },
+   "TransportAddressIPv4z": {
+    "class": "type"
+   },
+   "TransportAddressIPv6": {
+    "class": "type"
+   },
+   "TransportAddressIPv6z": {
+    "class": "type"
+   },
+   "TransportAddressLocal": {
+    "class": "type"
+   },
+   "TransportAddressType": {
+    "class": "type"
+   },
+   "TransportDomain": {
+    "class": "type"
+   },
+   "transportAddressMIB": {
+    "class": "ModuleIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100
+    ],
+    "status": "current"
+   },
+   "transportDomainLocal": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     13
+    ],
+    "status": "current"
+   },
+   "transportDomainSctpDns": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     16
+    ],
+    "status": "current"
+   },
+   "transportDomainSctpIpv4": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     9
+    ],
+    "status": "current"
+   },
+   "transportDomainSctpIpv4z": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     11
+    ],
+    "status": "current"
+   },
+   "transportDomainSctpIpv6": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     10
+    ],
+    "status": "current"
+   },
+   "transportDomainSctpIpv6z": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     12
+    ],
+    "status": "current"
+   },
+   "transportDomainTcpDns": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     15
+    ],
+    "status": "current"
+   },
+   "transportDomainTcpIpv4": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     5
+    ],
+    "status": "current"
+   },
+   "transportDomainTcpIpv4z": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     7
+    ],
+    "status": "current"
+   },
+   "transportDomainTcpIpv6": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     6
+    ],
+    "status": "current"
+   },
+   "transportDomainTcpIpv6z": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     8
+    ],
+    "status": "current"
+   },
+   "transportDomainUdpDns": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     14
+    ],
+    "status": "current"
+   },
+   "transportDomainUdpIpv4": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     1
+    ],
+    "status": "current"
+   },
+   "transportDomainUdpIpv4z": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     3
+    ],
+    "status": "current"
+   },
+   "transportDomainUdpIpv6": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     2
+    ],
+    "status": "current"
+   },
+   "transportDomainUdpIpv6z": {
+    "class": "ObjectIdentity",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1,
+     4
+    ],
+    "status": "current"
+   },
+   "transportDomains": {
+    "class": "MibIdentifier",
+    "oid": [
+     1,
+     3,
+     6,
+     1,
+     2,
+     1,
+     100,
+     1
+    ]
    }
   }
  }
