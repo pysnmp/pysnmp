@@ -48,12 +48,22 @@ Just run:
 $ pip install pysnmplib
 ```
 
-To download and install PySNMP along with its dependencies:
+That pulls in what an SNMP engine needs to run:
 
 - [PyASN1](https://github.com/pysnmp/pyasn1)
 - [PyCryptodomex](https://pycryptodome.readthedocs.io) (required for SNMPv3 encryption; imported lazily, so
   SNMPv1, SNMPv2c and the SNMPv3 noAuthNoPriv/authNoPriv security levels work without it)
-- [PySMI](https://github.com/pysnmp/pysmi) (required for MIB services only)
+
+[PySMI](https://github.com/pysnmp/pysmi) is *not* pulled in. It compiles ASN.1 MIB
+sources at run time, which some deployments do and most do not, so it is an extra:
+
+```bash
+$ pip install 'pysnmplib[compile]'
+```
+
+Without it everything except run-time MIB compilation works — including SNMPv3, name
+resolution and the standard MIBs an engine needs, which PySNMP ships. Asking for a MIB
+compiler when the extra is not installed raises `SmiError` naming the missing import.
 
 Besides the library, command-line [SNMP utilities](https://github.com/etingof/snmpclitools)
 written in pure-Python could be installed via:

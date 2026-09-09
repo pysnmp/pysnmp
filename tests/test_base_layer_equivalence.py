@@ -50,6 +50,7 @@ from pysmi.writer import CallbackWriter
 
 from pysnmp.entity import config
 from pysnmp.smi import builder
+from tools.regenerate_mibs import ENGINE_MODULES
 
 #: Modules the frozen tree and pysmi's bundle both carry. Eleven converged when
 #: best-match selection made pysmi's copies reachable (pysnmp/pysnmp#198).
@@ -434,29 +435,60 @@ class TestOidsAreStable:
 
 
 class TestTheFreezeIsGone:
-    """The deletion itself, so it cannot be quietly undone."""
+    """The deletion itself, so it cannot be quietly undone.
 
-    def test_no_converged_module_is_shipped_by_pysnmp(self):
-        """Re-freezing one would take the tie and shadow pysmi's copy.
+    Seven of these modules are shipped by pysnmp again, and that is not a
+    re-freeze. What made the 2017 tree a freeze was not that pysnmp shipped
+    the files -- it was that they were hand-edited, stated no revision, and so
+    took the tie against pysmi's copy and won it silently and for good.
 
-        A generated ``.py`` committed back here states no revision, so best
-        match cannot separate it from pysmi's and source order hands it the
-        win -- silently, and for good. That is how the base layer stayed on
-        2017 in the first place.
+    The seven are rendered by ``tools/regenerate_mibs.py`` from pysmi's own
+    ASN.1 with pysmi's own code generator, they state a revision, and
+    ``tests/test_generated_mibs.py`` fails the suite if a committed one stops
+    matching its source. They are here so that an engine starts without pysmi
+    installed, which is what makes ``pysnmp-pysmi`` an optional dependency.
+
+    So what this class guards is narrower than it was, and is the part that
+    actually mattered: nothing pysnmp ships may shadow pysmi silently, and
+    nothing beyond the engine layer may be shipped at all.
+    """
+
+    def test_only_the_engine_layer_is_shipped_by_pysnmp(self):
+        """Shipping a converged module beyond these seven is the old mistake.
+
+        Each one is a copy that has to be kept current by hand or by tooling,
+        and the reason to accept that cost for the engine layer -- an engine
+        that starts with no pysmi -- does not extend to a module nothing on
+        the start-up path loads.
         """
         shipped = pathlib.Path(builder.__file__).parent / "mibs"
-        refrozen = sorted(
+        found = sorted(
             name for name in CONVERGENCE_SET if (shipped / f"{name}.py").is_file()
         )
 
-        assert refrozen == []
+        assert found == sorted(ENGINE_MODULES)
 
-    def test_every_converged_module_loads_from_pysmi(self):
+    @pytest.mark.parametrize("name", ENGINE_MODULES)
+    def test_a_shipped_module_states_a_revision(self, name):
+        """Without one it takes the tie against pysmi's copy on source order.
+
+        Stating a revision is what makes the choice between two copies a
+        comparison rather than an accident, so a shipped module that states
+        none is the 2017 failure mode however it was produced.
+        """
+        shipped = pathlib.Path(builder.__file__).parent / "mibs" / f"{name}.py"
+
+        assert "PYSNMP_MODULE_REVISION" in shipped.read_text(encoding="utf-8")
+
+    def test_every_other_converged_module_loads_from_pysmi(self):
         """Not merely absent from our tree -- actually resolved from pysmi's."""
         generated = pathlib.Path(
             importlib.util.find_spec("pysmi.mibs.pysnmp").submodule_search_locations[0]
         )
         for name in CONVERGENCE_SET:
+            if name in ENGINE_MODULES:
+                continue
+
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", DeprecationWarning)
                 mibBuilder = builder.MibBuilder()

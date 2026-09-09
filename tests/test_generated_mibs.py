@@ -1,4 +1,6 @@
-"""pysnmp's own MIB modules still match the ASN.1 that defines them.
+"""The MIB modules pysnmp ships still match the ASN.1 that defines them.
+
+Two sets, checked the same way for different reasons.
 
 ``PYSNMP-MIB``, ``PYSNMP-SOURCE-MIB`` and ``PYSNMP-USM-MIB`` are pysnmp's to
 publish. The ASN.1 in ``docs/mibs`` defines them and the Python in
@@ -7,8 +9,14 @@ years. The 2017 rendering had ``pysnmpUsmSecretAuthKey`` and five sibling
 columns readable when their ASN.1 says ``not-accessible``, and carried a
 ``DEFVAL`` on each that no clause in the module asks for.
 
-So the rendering is checked rather than trusted: re-render, and compare. What
-a relation the ASN.1 cannot state looks like now is a file in
+The seven engine modules are not pysnmp's to define -- the RFCs define them and
+pysmi's bundle carries the ASN.1 -- but pysnmp commits a rendering of them so
+that starting an engine needs no pysmi. A committed rendering is a copy, and a
+copy drifts, which is the whole reason the first set is checked. So the same
+check covers both.
+
+The rendering is checked rather than trusted: re-render, and compare. What a
+relation the ASN.1 cannot state looks like now is a file in
 ``pysnmp/smi/mibs/behavior/``, which this does not touch.
 """
 
@@ -17,7 +25,15 @@ import os
 import pytest
 
 from pysnmp.smi.builder import MibBuilder
-from tools.regenerate_mibs import ASN1_DIR, MODULES, OUTPUT_DIR, build
+from tools.regenerate_mibs import (
+    ASN1_DIR,
+    ENGINE_MODULES,
+    MODULES,
+    OUTPUT_DIR,
+    OWN_MODULES,
+    _dependency_asn1,
+    build,
+)
 
 
 @pytest.fixture(scope="module")
@@ -48,9 +64,19 @@ def test_the_committed_module_matches_its_asn1(rendered, module):
     )
 
 
-@pytest.mark.parametrize("module", MODULES)
+@pytest.mark.parametrize("module", OWN_MODULES)
 def test_the_asn1_source_is_present(module):
     assert os.path.exists(os.path.join(ASN1_DIR, f"{module}.txt"))
+
+
+@pytest.mark.parametrize("module", ENGINE_MODULES)
+def test_the_engine_module_asn1_comes_from_pysmi(module):
+    # pysnmp does not carry ASN.1 for the modules the RFCs define, and should
+    # not: a second copy of a standard module's source is a second thing to
+    # keep current. What it carries is a rendering, which this file checks
+    # against the one copy that exists. pysmi's bundle names those files by
+    # module name with no extension, unlike docs/mibs.
+    assert os.path.exists(os.path.join(_dependency_asn1(), module))
 
 
 @pytest.mark.parametrize("module", MODULES)

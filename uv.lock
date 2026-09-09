@@ -897,15 +897,15 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "3.1.0rc3"
+version = "4.0.0rc1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ply" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/64/60/718817cf864fe0e00432c315c5f89db0ad5351c508b17eaec77900426b9a/pysnmp_pysmi-3.1.0rc3.tar.gz", hash = "sha256:2f29b81e7d8f284168f40d2fa22153fccf4fa27d0843c54773404dafc0c7bc10", size = 4401171, upload-time = "2026-09-09T16:24:26.146Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/77/16/6e942d7a508d6b1746ab1d9b5319cccb9014568e2643c93082ed650b0c07/pysnmp_pysmi-4.0.0rc1.tar.gz", hash = "sha256:434f1a4b5660314ce0c19dfaad01665af262778fb9a0ff8004b30f32b23fe3de", size = 4392772, upload-time = "2026-09-09T22:14:06.37Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b4/39/d6aba744c9826e0838862dbbe367056b0c49324e63a49a471b95acb942a3/pysnmp_pysmi-3.1.0rc3-py3-none-any.whl", hash = "sha256:efae43dc52ce9a4c2bbdcb81934e151d3327a1018951193f70ca68952a104c88", size = 3160190, upload-time = "2026-09-09T16:24:24.481Z" },
+    { url = "https://files.pythonhosted.org/packages/50/87/adaecfb82780c01114c1d0a4e9331ae840b3f1f9d6df7964a9cbbbd3d7a1/pysnmp_pysmi-4.0.0rc1-py3-none-any.whl", hash = "sha256:2039092bf6eeedfb164f4b8fa53fbf6306e7d4fbe8d1b55d235d1f7ec8646844", size = 3149004, upload-time = "2026-09-09T22:14:04.446Z" },
 ]
 
 [[package]]
@@ -915,6 +915,10 @@ source = { editable = "." }
 dependencies = [
     { name = "pycryptodomex" },
     { name = "pysnmp-pyasn1" },
+]
+
+[package.optional-dependencies]
+compile = [
     { name = "pysnmp-pysmi" },
 ]
 
@@ -923,6 +927,7 @@ dev = [
     { name = "coverage", extra = ["toml"] },
     { name = "mypy" },
     { name = "myst-parser" },
+    { name = "pysnmp-pysmi" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -933,14 +938,16 @@ dev = [
 requires-dist = [
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=2.0.2,<3.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=3.1.0rc3,<4.0.0" },
+    { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=4.0.0rc1,<5.0.0" },
 ]
+provides-extras = ["compile"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage", extras = ["toml"], specifier = ">=7.2.0,<8.0.0" },
     { name = "mypy", specifier = ">=1.15.0,<3.0.0" },
     { name = "myst-parser", specifier = ">=4.0.0,<5.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=4.0.0rc1,<5.0.0" },
     { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", specifier = ">=7.0.0,<9.0.0" },
