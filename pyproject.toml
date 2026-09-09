@@ -27,27 +27,20 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 readme = "README.md"
-# The pyasn1 and pysmi floors name release candidates on purpose, and naming one
-# is the only way to say this: dependabot offers a prerelease when the current
-# version is already one OR when a requirement string names one, and there is no
+# The pysmi floor names a release candidate on purpose, and naming one is the
+# only way to say this: dependabot offers a prerelease when the current version
+# is already one OR when a requirement string names one, and there is no
 # configuration key for it (dependabot/dependabot-core#1926, closed as not
-# planned). PEP 440 admits prereleases per specifier, so this puts both siblings
-# -- pycryptodomex is the only one left on a stable floor -- on the rc stream,
-# and this repository integrates against the sibling rc it is released alongside
-# instead of against its last GA.
+# planned). PEP 440 admits prereleases per specifier, so this puts pysmi on the
+# rc stream, and this repository integrates against the sibling rc it is
+# released alongside instead of against its last GA.
 #
-# The two are not the same shape, and the difference decides whether the floor
-# does anything at all. Resolution takes the newest allowed version, so what
-# matters is where the named rc sorts against the sibling's newest GA:
+# What matters is where a named rc sorts against that sibling's newest GA,
+# because resolution takes the newest allowed version:
 #
-#   pyasn1  2.0.0rc2 < 2.0.0   inert. The floor names the last rc of the line
-#                              its GA is on, so it sits one hair below that GA
-#                              and resolution still picks 2.0.0. It starts to
-#                              matter only once pyasn1 publishes an rc ahead of
-#                              its next GA.
 #   pysmi   3.1.0rc3 > 3.0.0   active. This names an rc of the *next* line, so
 #                              it outranks the newest GA and is what resolves.
-#                              Deliberate, and now load-bearing at runtime: the
+#                              Deliberate, and load-bearing at runtime: the
 #                              five base modules pysnmp used to carry its own
 #                              hand-edited copies of are gone, so what loads is
 #                              pysmi's bundle plus the behavior fragments it
@@ -60,13 +53,14 @@ readme = "README.md"
 #                              publish pysmi.corpus.conformance, which
 #                              tests/test_corpus.py builds its fixture with.
 #
-# This belongs to the 6.0.0 rc cycle, not to the package forever. Put both
-# floors back on a GA before cutting the 6.0.0 GA, or a released pysnmplib lets
-# an installer resolve a sibling release candidate.
+# pyasn1 is off that stream: 2.0.2 is a GA and is what the floor names, so
+# nothing here resolves pyasn1 to a prerelease. pysmi is the one floor left to
+# put back on a GA before cutting the 6.0.0 GA -- until then a released
+# pysnmplib lets an installer resolve a sibling release candidate.
 dependencies = [
     "pysnmp-pysmi >=3.1.0rc3,<4.0.0",
     "pycryptodomex >=3.11.0,<4.0.0",
-    "pysnmp-pyasn1 >=2.0.0rc2,<3.0.0",
+    "pysnmp-pyasn1 >=2.0.2,<3.0.0",
 ]
 
 [project.urls]
