@@ -51,22 +51,32 @@ from pysmi.writer import CallbackWriter
 from pysnmp.entity import config
 from pysnmp.smi import builder
 
-#: Modules the frozen tree and pysmi's bundle both carry, minus the ones
-#: pysnmp/pysnmp#198 keeps in this repository because they carry engine
-#: behaviour (INET-ADDRESS-MIB, SNMP-FRAMEWORK-MIB, SNMP-TARGET-MIB,
-#: SNMPv2-TM, TRANSPORT-ADDRESS-MIB). All eleven have now converged.
+#: Modules the frozen tree and pysmi's bundle both carry. Eleven converged when
+#: best-match selection made pysmi's copies reachable (pysnmp/pysnmp#198).
+#:
+#: The last five held out because they carried engine behaviour no code
+#: generator can derive from ASN.1 -- an InetAddress index that reads a
+#: preceding InetAddressType, an engine ID an implementation computes, a socket
+#: address tuple, a tag's delimiter set. pysmi now splices that behaviour into
+#: the module it generates (pysnmp/pysmi#231, #232), so the hand-edited copies
+#: are gone and all sixteen are measured the same way.
 CONVERGENCE_SET = (
+    "INET-ADDRESS-MIB",
     "RFC1158-MIB",
     "RFC1213-MIB",
     "SNMP-COMMUNITY-MIB",
+    "SNMP-FRAMEWORK-MIB",
     "SNMP-MPD-MIB",
     "SNMP-NOTIFICATION-MIB",
     "SNMP-PROXY-MIB",
+    "SNMP-TARGET-MIB",
     "SNMP-USER-BASED-SM-MIB",
     "SNMP-USM-AES-MIB",
     "SNMP-USM-HMAC-SHA2-MIB",
     "SNMP-VIEW-BASED-ACM-MIB",
     "SNMPv2-MIB",
+    "SNMPv2-TM",
+    "TRANSPORT-ADDRESS-MIB",
 )
 
 #: Symbols the frozen copy exports that the generated one does not. Each is an
@@ -104,6 +114,8 @@ ACCESS_CORRECTIONS = {
     ("SNMP-NOTIFICATION-MIB", "snmpNotifyFilterSubtree"),
     ("SNMP-NOTIFICATION-MIB", "snmpNotifyName"),
     ("SNMP-PROXY-MIB", "snmpProxyName"),
+    ("SNMP-TARGET-MIB", "snmpTargetAddrName"),
+    ("SNMP-TARGET-MIB", "snmpTargetParamsName"),
     ("SNMP-USER-BASED-SM-MIB", "usmUserEngineID"),
     ("SNMP-USER-BASED-SM-MIB", "usmUserName"),
     ("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessContextPrefix"),
@@ -124,13 +136,23 @@ STATUS_CORRECTIONS = {
     ("SNMPv2-MIB", "snmpObsoleteGroup"): ("current", "obsolete"),
 }
 
-#: The one syntax change in the convergence set. RFC 1213 declares
-#: ``atNetAddress SYNTAX NetworkAddress``; RFC 1155 defines NetworkAddress as
-#: ``CHOICE { internet IpAddress }`` -- a choice with exactly one arm. The
-#: current generator resolves it to that arm. Same values either way, and the
-#: constraint set widens from the choice-tag to IpAddress's own sizes.
+#: The syntax changes in the convergence set.
+#:
+#: RFC 1213 declares ``atNetAddress SYNTAX NetworkAddress``; RFC 1155 defines
+#: NetworkAddress as ``CHOICE { internet IpAddress }`` -- a choice with exactly
+#: one arm. The current generator resolves it to that arm. Same values either
+#: way, and the constraint set widens from the choice-tag to IpAddress's own
+#: sizes.
+#:
+#: RFC 3411 declares ``snmpEngineTime SYNTAX INTEGER (0..2147483647)`` and no
+#: textual convention over it -- the module's only TCs are SnmpEngineID,
+#: SnmpSecurityModel, SnmpMessageProcessingModel, SnmpSecurityLevel and
+#: SnmpAdminString. The 2017 run named a ``SnmpEngineTime`` class anyway, which
+#: ``test_no_dropped_symbol_is_declared_by_its_mib`` would not have caught
+#: because the name was never exported. Integer32 is what the MIB says.
 SYNTAX_CHANGES = {
     ("RFC1213-MIB", "atNetAddress"): ("NetworkAddress", "IpAddress"),
+    ("SNMP-FRAMEWORK-MIB", "snmpEngineTime"): ("SnmpEngineTime", "Integer32"),
 }
 
 #: Facts extracted from ``pysnmp/smi/mibs/`` at the commit before the frozen

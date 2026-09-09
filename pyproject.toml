@@ -45,21 +45,26 @@ readme = "README.md"
 #                              and resolution still picks 2.0.0. It starts to
 #                              matter only once pyasn1 publishes an rc ahead of
 #                              its next GA.
-#   pysmi   2.4.0rc1 > 2.3.0   active. This names an rc of the *next* line, so
+#   pysmi   3.1.0rc3 > 3.0.0   active. This names an rc of the *next* line, so
 #                              it outranks the newest GA and is what resolves.
-#                              Deliberate: 2.3.0 carries none of the work this
-#                              repository needs -- a loadable precompiled bundle
-#                              (pysnmp/pysmi#196) and a structural hash that no
-#                              longer depends on whether texts were generated
-#                              (pysnmp/pysmi#190, #191, #192, #198) -- which
-#                              pysnmp/pysnmp#198 builds on. A `>=2.3.0` floor
-#                              silently resolved to the GA without them.
+#                              Deliberate, and now load-bearing at runtime: the
+#                              five base modules pysnmp used to carry its own
+#                              hand-edited copies of are gone, so what loads is
+#                              pysmi's bundle plus the behavior fragments it
+#                              splices in (pysnmp/pysmi#231, #232). rc3 is the
+#                              first release where a fragment's class attribute
+#                              also re-seeds the objects the module already
+#                              built (pysnmp/pysmi#236) -- without it every
+#                              SnmpEngine() fails on a valueless snmpEngineID.
+#                              3.1.0rc1 is separately the first release to
+#                              publish pysmi.corpus.conformance, which
+#                              tests/test_corpus.py builds its fixture with.
 #
 # This belongs to the 6.0.0 rc cycle, not to the package forever. Put both
 # floors back on a GA before cutting the 6.0.0 GA, or a released pysnmplib lets
 # an installer resolve a sibling release candidate.
 dependencies = [
-    "pysnmp-pysmi >=3.0.0rc5,<4.0.0",
+    "pysnmp-pysmi >=3.1.0rc3,<4.0.0",
     "pycryptodomex >=3.11.0,<4.0.0",
     "pysnmp-pyasn1 >=2.0.0rc2,<3.0.0",
 ]
@@ -79,17 +84,6 @@ dev = [
     "coverage[toml] >=7.2.0,<8.0.0",
     "mypy >=1.15.0,<3.0.0",
     "ruff >=0.4.0,<1.0.0",
-    # pysmi is already a runtime dependency, and this raises its floor for
-    # development only. tests/test_corpus.py builds its fixture with
-    # pysmi.corpus.conformance, which 3.1.0rc1 is the first release to publish;
-    # the runtime floor stays where it is because nothing pysnmp ships imports
-    # pysmi to read a corpus -- that is the point of the format.
-    #
-    # The floor is load-bearing rather than documentary. It was absent, the lock
-    # resolved pysmi 3.0.0rc5, and `pysmi.corpus` did not exist there, so the
-    # module-level import of the fixture skipped the entire corpus suite and CI
-    # passed without running any of it.
-    "pysnmp-pysmi >=3.1.0rc2",
 ]
 
 [tool.pytest.ini_options]
