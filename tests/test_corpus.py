@@ -175,6 +175,29 @@ class TestCorpusOpen:
         finally:
             os.chmod(directory, 0o700)
 
+    @pytest.mark.parametrize("directory", ["we?ird", "ha#sh", "sp ace", "per%cent"])
+    def test_opens_from_a_path_needing_uri_escaping(
+        self, corpus_path, tmp_path, directory
+    ):
+        # The connection string is a URI, not a path. Unescaped, a directory
+        # named "we?ird" ends the path at the "?" and SQLite opens an empty
+        # database of the shorter name -- which does not raise, it answers
+        # nothing, and the corpus reads as a file with application_id 0.
+        import shutil
+
+        target = tmp_path / directory
+        target.mkdir()
+        path = target / "core.db"
+        shutil.copy(corpus_path, path)
+
+        opened = MibCorpus(str(path))
+
+        try:
+            assert "FIXTURE-MIB" in opened.modules()
+
+        finally:
+            opened.close()
+
     def test_carries_the_application_id(self, corpus_path):
         import sqlite3
 
@@ -462,19 +485,48 @@ class TestBuilderWithACorpus:
         # rule picks, so following IMPORTS literally fails. Refusing to build
         # the whole module over one type is worse than resolving it from where
         # it actually lives.
+        # The type has to be one TYPE_CLASSES does *not* map, or resolution
+        # never reaches the IMPORTS step and the test passes whether or not
+        # the fallback exists. DisplayString is a TEXTUAL-CONVENTION, so it
+        # can only come from a module -- exactly the shape that fails.
         monkeypatch.setattr(
             corpus,
             "imports_of",
             lambda module: (
-                {"OCTET STRING": "NO-SUCH-MIB"}
+                {"DisplayString": "NO-SUCH-MIB"}
                 if module == "FIXTURE-MIB"
                 else corpus.__class__.imports_of(corpus, module)
             ),
         )
+        monkeypatch.setattr(
+            corpus,
+            "node_named",
+            lambda module, name: (
+                dict(
+                    corpus.__class__.node_named(corpus, module, name),
+                    syntax={"class": "type", "type": "DisplayString"},
+                )
+                if (module, name) == ("FIXTURE-MIB", "fixtureDescr")
+                else corpus.__class__.node_named(corpus, module, name)
+            ),
+        )
+        monkeypatch.setattr(
+            corpus,
+            "nodes_of",
+            lambda module: [
+                dict(node, syntax={"class": "type", "type": "DisplayString"})
+                if node["name"] == "fixtureDescr"
+                else node
+                for node in corpus.__class__.nodes_of(corpus, module)
+            ],
+        )
 
+        (convention,) = builder.importSymbols("SNMPv2-TC", "DisplayString")
         (column,) = builder.importSymbols("FIXTURE-MIB", "fixtureDescr")
 
-        assert column.getName() == (1, 3, 6, 1, 4, 1, 99999, 2, 1, 9)
+        # Resolved from SNMPv2-TC, where it actually lives, rather than the
+        # module IMPORTS named.
+        assert isinstance(column.syntax, convention)
 
     def test_type_that_resolves_nowhere_still_raises(
         self, builder, corpus, monkeypatch
@@ -501,6 +553,147 @@ class TestBuilderWithACorpus:
         )
 
         with pytest.raises(error.SmiError, match="no definition for type"):
+            builder.loadModule("FIXTURE-MIB")
+
+    def test_augmenting_row_adopts_the_base_row_index_names(
+        self, builder, corpus, monkeypatch
+    ):
+        # An augmenting row declares AUGMENTS and no INDEX, so without this it
+        # gets no index names at all and the runtime cannot decode an instance
+        # OID into index values or build one -- while the row looks perfectly
+        # well-formed. 1,181 rows in pysnmp/mibs' corpus are this shape and
+        # every one of them declares no INDEX.
+        augmenting = {
+            "module": "FIXTURE-MIB",
+            "name": "fixtureAugEntry",
+            "oid": "1.3.6.1.4.1.99999.3.1",
+            "arcs": (1, 3, 6, 1, 4, 1, 99999, 3, 1),
+            "class": "objecttype",
+            "nodetype": "row",
+            "status": "current",
+            "maxaccess": "not-accessible",
+            "units": None,
+            "syntax": None,
+            "defval": None,
+            "indices": None,
+            "augments": {
+                "module": "FIXTURE-MIB",
+                "name": "fixtureAugEntry",
+                "object": "fixtureEntry",
+            },
+        }
+        monkeypatch.setattr(
+            corpus,
+            "nodes_of",
+            lambda module: (
+                [*corpus.__class__.nodes_of(corpus, module), augmenting]
+                if module == "FIXTURE-MIB"
+                else corpus.__class__.nodes_of(corpus, module)
+            ),
+        )
+
+        row, base = builder.importSymbols(
+            "FIXTURE-MIB", "fixtureAugEntry", "fixtureEntry"
+        )
+
+        assert row.getIndexNames() == base.getIndexNames()
+        assert row.getIndexNames() == ((0, "FIXTURE-MIB", "fixtureIndex"),)
+
+    def test_augmentation_is_registered_on_the_base_row(
+        self, builder, corpus, monkeypatch
+    ):
+        # A generated module emits both halves: the base row is told it has an
+        # augmentation, and the augmenting row adopts its index names. Copying
+        # the names alone would leave the base row unaware of the augmentation.
+        augmenting = {
+            "module": "FIXTURE-MIB",
+            "name": "fixtureAugEntry",
+            "oid": "1.3.6.1.4.1.99999.3.1",
+            "arcs": (1, 3, 6, 1, 4, 1, 99999, 3, 1),
+            "class": "objecttype",
+            "nodetype": "row",
+            "status": "current",
+            "maxaccess": "not-accessible",
+            "units": None,
+            "syntax": None,
+            "defval": None,
+            "indices": None,
+            "augments": {
+                "module": "FIXTURE-MIB",
+                "name": "fixtureAugEntry",
+                "object": "fixtureEntry",
+            },
+        }
+        monkeypatch.setattr(
+            corpus,
+            "nodes_of",
+            lambda module: (
+                [*corpus.__class__.nodes_of(corpus, module), augmenting]
+                if module == "FIXTURE-MIB"
+                else corpus.__class__.nodes_of(corpus, module)
+            ),
+        )
+
+        (base,) = builder.importSymbols("FIXTURE-MIB", "fixtureEntry")
+
+        assert ("FIXTURE-MIB", "fixtureAugEntry") in base.augmentingRows
+
+    def test_syntax_without_a_type_is_refused(self, builder, corpus, monkeypatch):
+        # A KeyError three frames down is the wrong answer for a corpus that
+        # is malformed; load_module documents SmiError for exactly this.
+        monkeypatch.setattr(
+            corpus,
+            "nodes_of",
+            lambda module: [
+                dict(node, syntax={"class": "type"})
+                if node["name"] == "fixtureScalar"
+                else node
+                for node in corpus.__class__.nodes_of(corpus, module)
+            ],
+        )
+
+        with pytest.raises(error.SmiError, match="carries no type"):
+            builder.loadModule("FIXTURE-MIB")
+
+    def test_import_cycle_is_refused_rather_than_recursing(
+        self, builder, corpus, monkeypatch
+    ):
+        # Synthesis resolves imported types through importSymbols, which comes
+        # back to loadModule, so a module importing a type from itself by way
+        # of another would recurse without limit. It cannot be caught by
+        # marking the module loaded first: synthesis exports only when it
+        # finishes, so the re-entrant importSymbols would raise
+        # MibNotFoundError instead of resolving.
+        monkeypatch.setattr(
+            corpus,
+            "imports_of",
+            lambda module: (
+                {"CycleType": "FIXTURE-MIB"}
+                if module == "FIXTURE-MIB"
+                else corpus.__class__.imports_of(corpus, module)
+            ),
+        )
+        monkeypatch.setattr(
+            corpus,
+            "nodes_of",
+            lambda module: [
+                dict(node, syntax={"class": "type", "type": "CycleType"})
+                if node["name"] == "fixtureScalar"
+                else node
+                for node in corpus.__class__.nodes_of(corpus, module)
+            ],
+        )
+
+        with pytest.raises(error.SmiError, match="cycle"):
+            builder.loadModule("FIXTURE-MIB")
+
+    def test_load_texts_set_after_attaching_is_still_refused(self, builder):
+        # loadTexts is a plain attribute, so a caller can turn it on after the
+        # corpus is attached. Checking only at attachment would let that build
+        # modules with no DESCRIPTION and say nothing.
+        builder.loadTexts = True
+
+        with pytest.raises(error.SmiError, match="no texts"):
             builder.loadModule("FIXTURE-MIB")
 
     def test_corpus_can_be_removed(self, builder):

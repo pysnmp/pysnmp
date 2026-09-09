@@ -445,6 +445,7 @@ class MibBuilder:
         self.__modPathsSeen: set[str] = set()
         self.__mibCompiler: Any = None
         self.__mibCorpus: Any = None
+        self.__corpusBuilding: set[str] = set()
         self.setMibSources(*sources)
 
     # MIB corpus management
@@ -488,6 +489,26 @@ class MibBuilder:
                 for descriptions and got a module with none has no way to
                 tell that from a MIB that declares none.
         """
+        self._checkCorpusTexts(mibCorpus)
+
+        self.__mibCorpus = mibCorpus
+
+        return self
+
+    def _checkCorpusTexts(self, mibCorpus: Any) -> None:
+        """Refuse a textless corpus while ``loadTexts`` asks for prose.
+
+        Called both when a corpus is attached and again before each synthesis,
+        because ``loadTexts`` is a plain attribute a caller may set at any
+        time. Checking only at attachment would leave a builder that turned
+        texts on afterwards silently building modules with none.
+
+        Args:
+            mibCorpus: the corpus about to be used, or ``None``
+
+        Raises:
+            SmiError: texts were asked for and the corpus has none.
+        """
         if (
             mibCorpus is not None
             and self.loadTexts
@@ -498,10 +519,6 @@ class MibBuilder:
                 f"texts; load descriptions from the published json/ tree, or "
                 f"clear loadTexts"
             )
-
-        self.__mibCorpus = mibCorpus
-
-        return self
 
     def _loadModuleFromCorpus(self, modName: str) -> bool:
         """Build a module out of the corpus, if one is configured and has it.
@@ -515,9 +532,37 @@ class MibBuilder:
         if self.__mibCorpus is None:
             return False
 
+        # Re-checked here, not only at setMibCorpus(). loadTexts is a plain
+        # attribute, so setting it after a corpus is attached would otherwise
+        # slip past the check and quietly build modules with no DESCRIPTION.
+        self._checkCorpusTexts(self.__mibCorpus)
+
+        if modName in self.__corpusBuilding:
+            # A module reached again while it is being built. Synthesis
+            # resolves imported types through importSymbols, which comes back
+            # here, so an import cycle -- A imports from B, B from A -- would
+            # otherwise recurse without limit. It cannot be caught by
+            # __modSeen: synthesis exports into mibSymbols only once it
+            # finishes, so marking the module loaded up front would make the
+            # re-entrant importSymbols raise MibNotFoundError instead.
+            from pysnmp.smi.corpus import MibCorpusCycleError
+
+            raise MibCorpusCycleError(
+                f"MIB module {modName} is being built from the corpus and was "
+                f"asked for again; its imports form a cycle"
+            )
+
         from pysnmp.smi import synthesis
 
-        if not synthesis.load_module(self, self.__mibCorpus, modName):
+        self.__corpusBuilding.add(modName)
+
+        try:
+            built = synthesis.load_module(self, self.__mibCorpus, modName)
+
+        finally:
+            self.__corpusBuilding.discard(modName)
+
+        if not built:
             return False
 
         # Recorded under a path no MIB source can produce, so that

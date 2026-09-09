@@ -39,6 +39,7 @@ Prose. A corpus carries no DESCRIPTION or REFERENCE, so a builder with
 from typing import Any
 
 from pysnmp.smi import error
+from pysnmp.smi.corpus import MibCorpusCycleError
 
 __all__ = ["load_module", "synthesize_type"]
 
@@ -230,6 +231,14 @@ class _Resolver:
 
         return resolved
 
+    def imported_from(self, name: str) -> str | None:
+        """Which module this one's IMPORTS says defines a symbol."""
+        return self._imports.get(name)
+
+    def try_symbol(self, module: str, name: str) -> Any | None:
+        """A symbol, or ``None`` when that module does not offer one."""
+        return self._try(module, name)
+
     def _try(self, module: str, name: str) -> Any | None:
         """Import a symbol, or ``None`` if that module has no such thing.
 
@@ -242,6 +251,12 @@ class _Resolver:
         """
         try:
             (symbol,) = self._builder.importSymbols(module, name)
+
+        except MibCorpusCycleError:
+            # A cycle is a structural defect in the corpus, not "that module
+            # does not have this symbol". Swallowing it here would report the
+            # type as undefined and hide what is actually wrong.
+            raise
 
         except error.SmiError:
             return None
@@ -304,6 +319,11 @@ def synthesize_type(resolver: "_Resolver", spec: dict[str, Any]) -> Any:
     Returns:
         An instance ready to be handed to a ``MibScalar`` or a column.
     """
+    if not spec.get("type"):
+        # _textual_convention already refuses this; a node's syntax deserves
+        # the same answer rather than a KeyError from three frames down.
+        raise error.SmiError(f"type specification carries no type: {spec!r}")
+
     base = resolver.type_class(spec["type"])
     instance = base()
 
@@ -421,6 +441,68 @@ def _build_node(resolver: "_Resolver", node: dict[str, Any]) -> Any:
     return obj
 
 
+def _wire_augmentations(
+    resolver: "_Resolver", modName: str, nodes: list, symbols: dict[str, Any]
+) -> None:
+    """Give every augmenting row the index names of the row it augments.
+
+    An augmenting row declares AUGMENTS and no INDEX: it is indexed by the row
+    it extends. A generated module emits two things for it, and both matter --
+    the base row is told it has an augmentation, and this row adopts the base
+    row's index names. Without the second, a ``MibTableRow`` cannot turn an
+    instance OID into index values or build one, so the table is unreadable and
+    unwritable while looking perfectly well-formed. It is not a rare shape:
+    1,181 rows in pysnmp/mibs' corpus use AUGMENTS and every one declares no
+    INDEX.
+
+    A separate pass because the base row is usually in *this* module --
+    ``ifXEntry`` augments ``ifEntry``, both in ``IF-MIB`` -- so it has to be
+    resolved from what this build has made rather than through
+    ``importSymbols``, which would re-enter the load of a module already being
+    built.
+
+    Args:
+        resolver: the module's resolver, for a base row in another module
+        modName: the module being built
+        nodes: its corpus rows
+        symbols: what has been built so far, keyed by descriptor
+    """
+    for node in nodes:
+        augments = node.get("augments")
+
+        if node["nodetype"] != "row" or not augments or node.get("indices"):
+            continue
+
+        base = symbols.get(augments["object"])
+
+        if base is None:
+            # Not this module's own row. The reference names the defining
+            # module, but a corpus built from MIBs nobody controls carries
+            # references that name the wrong one, so a miss here is resolved
+            # the ordinary way rather than trusted.
+            base = resolver.try_symbol(augments["module"], augments["object"])
+
+        if base is None:
+            # The reference is supposed to name the defining module, and for
+            # AUGMENTS it frequently names the importing one instead --
+            # CISCO-TCP-MIB::ciscoTcpConnEntry records its base as
+            # CISCO-TCP-MIB::tcpConnEntry, though tcpConnEntry is TCP-MIB's.
+            # The IMPORTS clause knows where it actually came from.
+            source = resolver.imported_from(augments["object"])
+
+            if source:
+                base = resolver.try_symbol(source, augments["object"])
+
+        if base is None or not hasattr(base, "getIndexNames"):
+            # An augmentation that cannot be resolved costs this row its index
+            # names, which is what it had before; refusing the whole module
+            # over it would be a worse trade.
+            continue
+
+        base.registerAugmentions((modName, node["name"]))
+        symbols[node["name"]].setIndexNames(*base.getIndexNames())
+
+
 def load_module(builder: Any, corpus: Any, modName: str) -> bool:
     """Build a module's symbols from the corpus and export them.
 
@@ -491,8 +573,9 @@ def load_module(builder: Any, corpus: Any, modName: str) -> bool:
         declare(name)
 
     identity = None
+    nodes = corpus.nodes_of(modName)
 
-    for node in corpus.nodes_of(modName):
+    for node in nodes:
         symbols[node["name"]] = _build_node(resolver, node)
 
         if node["class"] == "moduleidentity":
@@ -502,5 +585,10 @@ def load_module(builder: Any, corpus: Any, modName: str) -> bool:
         symbols[builder.moduleID] = identity
 
     builder.exportSymbols(modName, **symbols)
+
+    # After the export, not before: resolving a base row in another module
+    # loads that module, and it may import a type back from this one. Wiring
+    # first would ask for symbols this build had not published yet.
+    _wire_augmentations(resolver, modName, nodes, symbols)
 
     return True

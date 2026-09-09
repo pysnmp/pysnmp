@@ -47,11 +47,30 @@ pysmi be an optional dependency here rather than a deeper one.
 import json
 import os
 import sqlite3
+import urllib.request
 from typing import Any, Final, Union
 
 from pysnmp.smi import error
 
-__all__ = ["MibCorpus", "oid_from_key", "oid_key", "subtree_bound"]
+__all__ = [
+    "MibCorpus",
+    "MibCorpusCycleError",
+    "oid_from_key",
+    "oid_key",
+    "subtree_bound",
+]
+
+
+class MibCorpusCycleError(error.SmiError):
+    """A module was asked for again while being built from the corpus.
+
+    Raised rather than recursed on: synthesis resolves imported types through
+    ``importSymbols``, which comes back to ``loadModule``, so a corpus whose
+    IMPORTS form a cycle would otherwise recurse without limit. It is its own
+    class so that the type resolver can tell it apart from the ordinary "that
+    module does not define this symbol", which it is allowed to recover from.
+    """
+
 
 #: The corpus schema this reader understands.
 #:
@@ -268,7 +287,14 @@ class MibCorpus:
         # immutable=1 says the file cannot change, so SQLite takes no locks and
         # needs nothing writable near it -- which is what lets a corpus be
         # mounted read-only from a container image volume.
-        self._db = sqlite3.connect(f"file:{self._path}?immutable=1", uri=True)
+        #
+        # The path is percent-encoded first because this is a URI, not a path.
+        # A directory named "we?ird" otherwise ends the path at the "?" and
+        # SQLite opens an empty database of that shorter name -- which does not
+        # raise, it simply answers nothing, and the corpus reads as a file with
+        # application_id 0.
+        uri = f"file:{urllib.request.pathname2url(self._path)}?immutable=1"
+        self._db = sqlite3.connect(uri, uri=True)
 
         try:
             application = self._db.execute("PRAGMA application_id").fetchone()[0]
