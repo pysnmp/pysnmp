@@ -65,62 +65,42 @@ def corpus(corpus_path):
 
 
 class TestOidKey:
-    """The encoding the whole file format's ordering rests on.
+    """What this codec owes beyond the format's own rules.
 
-    pysmi writes these keys and pysnmp reads them, and neither imports the
-    other, so the two implementations agreeing is a thing to test rather than
-    a thing to assume.
+    The encoding itself -- round-tripping, bytewise order being numeric order,
+    a prefix staying a prefix, a parent sorting before its children, the
+    subtree bounds, and refusing what is not an OID -- is specified by pysmi
+    and asserted by its conformance vectors, which :py:class:`TestConformance`
+    runs against *this* implementation. Restating those properties here was
+    transcribing a specification into the repository that consumes it, where
+    the copy agrees with the original exactly until the original changes.
+
+    What is left is what the vectors cannot say, because it is pysnmp's rather
+    than the format's.
     """
 
-    @pytest.mark.parametrize(
-        "oid", ["1", "1.3.6", "1.3.6.1.4.1.9", "2.0", "1.3.6.1.4.1.4294967295"]
-    )
-    def test_round_trips(self, oid):
-        assert oid_from_key(oid_key(oid)) == oid
-
     def test_accepts_arcs_as_well_as_text(self):
+        # pysmi's codec takes a dotted string. This one also takes the arcs,
+        # because callers here hold OIDs as tuples far more often than as
+        # text, so it is an affordance of this implementation rather than a
+        # property of the encoding.
         assert oid_key((1, 3, 6)) == oid_key("1.3.6")
 
-    def test_byte_order_is_numeric_order(self):
-        # 1.3.10 below 1.3.9 is what string comparison gets wrong; 1.3.256 is
-        # what one byte per arc gets wrong.
-        oids = ["1.3.6", "1.3.6.1", "1.3.7", "1.3.9", "1.3.10", "1.3.256", "2.0"]
-
-        assert sorted(oids, key=oid_key) == sorted(
-            oids, key=lambda x: tuple(int(a) for a in x.split("."))
-        )
-
-    def test_prefix_encodes_to_byte_prefix(self):
-        assert oid_key("1.3.6.1").startswith(oid_key("1.3.6"))
-
-    def test_parent_sorts_before_children(self):
-        assert oid_key("1.3.6") < oid_key("1.3.6.0")
-
-    def test_subtree_bound_brackets_the_subtree(self):
-        low = oid_key("1.3.6")
-        high = subtree_bound(low)
-
-        assert low <= oid_key("1.3.6.1.4.1.99") < high
-        assert not low <= oid_key("1.3.7") < high
-
-    def test_subtree_bound_carries_past_a_full_byte(self):
-        key = oid_key("1.255")
-
-        assert subtree_bound(key) > oid_key("1.255.1")
-
-    @pytest.mark.parametrize("bad", ["", "1.3.six", "not an oid"])
-    def test_rejects_what_is_not_an_oid(self, bad):
+    @pytest.mark.parametrize("bad", ["", "1.3.six", "not an oid", "1.4294967296"])
+    def test_refuses_as_an_smi_error(self, bad):
+        # The vectors say a codec must refuse these. They cannot say what it
+        # must raise, and the type is this library's contract: a caller
+        # catching SmiError to fall back to its MIB sources does not catch
+        # ValueError.
         with pytest.raises(error.SmiError):
             oid_key(bad)
-
-    def test_rejects_arc_out_of_range(self):
-        with pytest.raises(error.SmiError):
-            oid_key("1.4294967296")
 
     def test_agrees_with_pysmi(self):
         # The two implementations are separate on purpose -- importing pysmi
         # to read a file whose point is that it needs no pysmi would defeat
-        # the layering -- so they have to be checked against each other.
+        # the layering. The vectors pin each side to the specification; this
+        # pins them to each other, which is the cheaper check when a vector
+        # has not yet been written for some shape.
         from pysmi.corpus.db import oid_key as writer_key
 
         for oid in ("1.3.6.1.2.1.2.2.1.2", "1.3.256.9.10", "2.0", "1"):
@@ -251,6 +231,35 @@ class TestConformance:
 
     def _answer(self, corpus, vector):
         operation = vector["op"]
+
+        # The codec operations take no corpus. They run against *this*
+        # module's oid_key, which is a separate implementation from pysmi's
+        # on purpose -- reading a corpus is meant to need no pysmi -- so the
+        # vectors are what check it against the specification rather than
+        # against its own transcription of the specification.
+        if operation == "oid_key":
+            return oid_key(vector["oid"]).hex()
+
+        if operation == "oid_from_key":
+            return oid_from_key(bytes.fromhex(vector["key"]))
+
+        if operation == "subtree_bound":
+            return subtree_bound(oid_key(vector["oid"])).hex()
+
+        if operation == "oid_key_order":
+            return sorted(vector["oids"], key=oid_key)
+
+        if operation == "oid_key_prefix":
+            return oid_key(vector["under"]).startswith(oid_key(vector["oid"]))
+
+        if operation == "oid_key_refuses":
+            try:
+                oid_key(vector["oid"])
+
+            except Exception:  # noqa: BLE001
+                return "refused"
+
+            return "accepted"
 
         if operation == "meta":
             return corpus.meta(vector["key"])

@@ -89,7 +89,7 @@ dev = [
     # resolved pysmi 3.0.0rc5, and `pysmi.corpus` did not exist there, so the
     # module-level import of the fixture skipped the entire corpus suite and CI
     # passed without running any of it.
-    "pysnmp-pysmi >=3.1.0rc1",
+    "pysnmp-pysmi >=3.1.0rc2",
 ]
 
 [tool.pytest.ini_options]
