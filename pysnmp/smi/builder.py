@@ -19,6 +19,7 @@ from typing import Any, cast
 from pysnmp import debug
 from pysnmp import version as pysnmp_version
 from pysnmp.smi import error
+from pysnmp.smi.mibs import behavior
 
 PY_MAGIC_NUMBER = importlib.util.MAGIC_NUMBER
 SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
@@ -729,6 +730,17 @@ class MibBuilder:
                 # Executing the MIB module is what loading one means: a pysnmp
                 # MIB is Python that calls back into this builder.
                 exec(codeObj, g)  # noqa: S102
+
+                # Then whatever the ASN.1 could not state. Run in the module's
+                # own globals, after it built its objects, so a fragment reads
+                # and writes the symbols the module just defined -- see
+                # pysnmp.smi.mibs.behavior. Inside the try because a failing
+                # fragment leaves the module half-built exactly as a failing
+                # module body does, and should be reported the same way.
+                if behavior.apply(modName, g):
+                    debug.logger & debug.flagBld and debug.logger(
+                        f"loadModule: applied behavior for {modName}"
+                    )
 
             except Exception as e:
                 self.__modPathsSeen.remove(modPath)

@@ -38,8 +38,10 @@ Prose. A corpus carries no DESCRIPTION or REFERENCE, so a builder with
 
 from typing import Any
 
+from pysnmp import debug
 from pysnmp.smi import error
 from pysnmp.smi.corpus import MibCorpusCycleError
+from pysnmp.smi.mibs import behavior
 
 __all__ = ["load_module", "synthesize_type"]
 
@@ -108,6 +110,73 @@ CLASS_SOURCES: dict[str, str] = {
 }
 
 
+#: Classes a behavior fragment may name that a module's IMPORTS will not
+#: answer for, mapped to where a generated module imports each from.
+#:
+#: Two reasons a name is here rather than resolved from IMPORTS. A MIB imports
+#: the *macro* -- ``TEXTUAL-CONVENTION`` -- and the corpus records that
+#: spelling, while the class implementing it is ``TextualConvention``. And the
+#: ASN.1 built-ins are never imported at all, being built in, though a
+#: generated module still binds them by name at its top.
+FRAGMENT_BASES: dict[str, str] = {
+    "TextualConvention": "SNMPv2-TC",
+    **{cls: source for source, cls in TYPE_CLASSES.values()},
+}
+
+
+class _FragmentNamespace(dict):
+    """The globals a behavior fragment runs in, on the corpus path.
+
+    A fragment is written against a generated module's namespace: the symbols
+    the MIB defines, and the ones it names in its IMPORTS, which a generated
+    module binds at its top. Nothing is rendered here -- objects are built
+    straight from corpus rows -- so there is no such namespace to run in, and
+    the imported half is answered on demand instead.
+
+    A miss is resolved against the module's own IMPORTS first, then the node
+    classes, then :py:data:`FRAGMENT_BASES` -- the names IMPORTS cannot answer
+    for, the ASN.1 built-ins among them. Anything still missing raises
+    ``KeyError``, which for a global lookup means the builtins are tried and
+    then ``NameError`` -- the same failure the fragment would give in a
+    generated module.
+    """
+
+    def __init__(self, symbols: dict[str, Any], resolver: "_Resolver", module: str):
+        super().__init__(symbols)
+        self._builder = resolver.builder
+        self._imports = resolver.imports
+        self._module = module
+
+    def __missing__(self, name: str) -> Any:
+        sources = [
+            self._imports.get(name),
+            CLASS_SOURCES.get(name),
+            FRAGMENT_BASES.get(name),
+        ]
+
+        for source in sources:
+            if source is None:
+                continue
+
+            try:
+                (symbol,) = self._builder.importSymbols(source, name)
+
+            # Any failure means the name is not in that module -- a missing
+            # module, a missing symbol -- and the next source is tried. The
+            # last one raising is what turns into NameError for the fragment.
+            except Exception:  # noqa: BLE001, S112
+                continue
+
+            # Cached in the dict itself: a fragment reading the same name twice
+            # should not import twice, and a fragment that rebinds it should
+            # see its own value afterwards.
+            self[name] = symbol
+
+            return symbol
+
+        raise KeyError(name)
+
+
 class _Resolver:
     """Turns corpus type specifications into pysnmp classes, for one module.
 
@@ -149,6 +218,11 @@ class _Resolver:
     def builder(self) -> Any:
         """The builder this resolver imports through."""
         return self._builder
+
+    @property
+    def imports(self) -> dict[str, str]:
+        """This module's IMPORTS, as symbol to the module defining it."""
+        return self._imports
 
     def declare(self, name: str, cls: Any) -> None:
         """Record a type this module declares, so its own objects can use it."""
@@ -592,6 +666,23 @@ def load_module(builder: Any, corpus: Any, modName: str) -> bool:
 
     if identity is not None:
         symbols[builder.moduleID] = identity
+
+    # Before the export, so what the module publishes is what the fragment
+    # left. A corpus carries the ASN.1 and nothing else, so a module built from
+    # one arrives without the runtime relations the ASN.1 cannot state --
+    # exactly as a generated module does before its fragment runs.
+    namespace = _FragmentNamespace(symbols, resolver, modName)
+
+    if behavior.apply(modName, namespace):
+        # Only names the module already had: a fragment's helpers and imports
+        # land in the same namespace, and none of those are the module's to
+        # export. Rebinding one of its symbols is rare -- the fragments here
+        # mutate classes in place -- but it is the namespace's job to carry it.
+        symbols.update({k: v for k, v in namespace.items() if k in symbols})
+
+        debug.logger & debug.flagBld and debug.logger(
+            f"load_module: applied behavior for {modName}"
+        )
 
     builder.exportSymbols(modName, **symbols)
 
