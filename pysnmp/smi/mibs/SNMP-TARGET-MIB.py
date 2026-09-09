@@ -2,7 +2,7 @@
 # PySNMP MIB module SNMP-TARGET-MIB (http://snmplabs.com/pysmi)
 # ASN.1 source SNMP-TARGET-MIB
 # Source digest sha256:39d11d27f1da4e7d6087e0f019e5d82000a28430dba1dc2fa29885c4704af249
-# Produced by pysmi-3.1.0-rc.3
+# Produced by pysmi-4.0.0-rc.1
 #
 PYSNMP_MODULE_REVISION = "200210140000Z"
 
@@ -455,48 +455,3 @@ mibBuilder.exportSymbols(
     snmpUnavailableContexts=snmpUnavailableContexts,
     snmpUnknownContexts=snmpUnknownContexts,
 )
-
-# Runtime behavior from pysmi/mibs/behavior/SNMP-TARGET-MIB.py, which no code generator can derive
-# from the ASN.1. See pysnmp/pysmi#231.
-# RFC 3413 section 4.1.1: a tag value may not contain a delimiter -- space, tab,
-# CR or LF -- and a tag list may not lead with one, end with one, or hold two in
-# a row. The rule is stated in the DESCRIPTION clauses of SnmpTagValue and
-# SnmpTagList and appears nowhere in their SYNTAX, which is an unconstrained
-# 255-octet string, so it is checked here rather than by a subtype.
-
-from pysnmp.smi import error as _error
-
-_DELIMITERS = (" ", "\t", "\r", "\n")
-
-_OctetString = OctetString
-
-
-def _prettyInTagValue(self, value):
-    for char in str(value):
-        if char in _DELIMITERS:
-            raise _error.SmiError(f"Delimiters not allowed in tag value {value!r}")
-
-    return _OctetString.prettyIn(self, value)
-
-
-def _prettyInTagList(self, value):
-    inDelimiter = True
-
-    for char in str(value):
-        if char in _DELIMITERS:
-            if inDelimiter:
-                raise _error.SmiError(
-                    f"Leading or multiple delimiters not allowed in tag list {value!r}"
-                )
-            inDelimiter = True
-        else:
-            inDelimiter = False
-
-    if value and inDelimiter:
-        raise _error.SmiError(f"Dangling delimiter not allowed in tag list {value!r}")
-
-    return _OctetString.prettyIn(self, value)
-
-
-SnmpTagValue.prettyIn = _prettyInTagValue
-SnmpTagList.prettyIn = _prettyInTagList

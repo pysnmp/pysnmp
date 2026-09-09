@@ -2,7 +2,7 @@
 # PySNMP MIB module SNMP-FRAMEWORK-MIB (http://snmplabs.com/pysmi)
 # ASN.1 source SNMP-FRAMEWORK-MIB
 # Source digest sha256:8e097e7b3fae34f5767a7b7d8ecb7f5765921642b08ec3c62cd8e1f30ef27f42
-# Produced by pysmi-3.1.0-rc.3
+# Produced by pysmi-4.0.0-rc.1
 #
 PYSNMP_MODULE_REVISION = "200210140000Z"
 
@@ -242,41 +242,3 @@ mibBuilder.exportSymbols(
     snmpFrameworkMIBObjects=snmpFrameworkMIBObjects,
     snmpPrivProtocols=snmpPrivProtocols,
 )
-
-# Runtime behavior from pysmi/mibs/behavior/SNMP-FRAMEWORK-MIB.py, which no code generator can derive
-# from the ASN.1. See pysnmp/pysmi#231.
-# RFC 3411 section 5 and the SnmpEngineID DESCRIPTION clause give an algorithm
-# for an engine to derive its own identifier when an operator configures none:
-# pysnmp's enterprise number, then whatever local properties distinguish this
-# engine from another on the same host. An initial value an implementation
-# computes at import time is not something the module states, so it is written
-# here.
-
-import os as _os
-
-_defaultValue = [128, 0, 79, 184, 5]
-
-try:
-    # Base the engine ID on the local system name.
-    _defaultValue += [ord(x) for x in _os.uname()[1][:16]]
-except Exception:  # noqa: BLE001, S110 - a platform without uname() contributes nothing
-    pass
-
-try:
-    # ...and on the process, so two engines on one host still differ.
-    _defaultValue += [_os.getpid() >> 8 & 0xFF, _os.getpid() & 0xFF]
-except Exception:  # noqa: BLE001, S110 - best-effort seed, as above
-    pass
-
-# ...and on an address, so two engines in one process still differ.
-_defaultValue += [id(_defaultValue) >> 8 & 0xFF, id(_defaultValue) & 0xFF]
-
-SnmpEngineID.defaultValue = OctetString(_defaultValue).asOctets()
-
-# A fragment runs after the module built its objects, so the syntax the scalar
-# already holds was constructed while defaultValue was unset and is valueless.
-# Rebuild it, now that the class states a default. pysnmp reads this one as a
-# value rather than as a schema -- MibScalarInstance takes snmpEngineID.syntax
-# in pysnmp/smi/mibs/instances/__SNMP-FRAMEWORK-MIB.py, and config.py answers
-# with it for contextEngineId.
-snmpEngineID.syntax = SnmpEngineID()

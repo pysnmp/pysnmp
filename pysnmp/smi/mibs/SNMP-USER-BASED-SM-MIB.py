@@ -2,7 +2,7 @@
 # PySNMP MIB module SNMP-USER-BASED-SM-MIB (http://snmplabs.com/pysmi)
 # ASN.1 source SNMP-USER-BASED-SM-MIB
 # Source digest sha256:58811e542d99a71346ec748c573366935e2e075c93a0175999131daa773f78b0
-# Produced by pysmi-3.1.0-rc.3
+# Produced by pysmi-4.0.0-rc.1
 #
 PYSNMP_MODULE_REVISION = "200210160000Z"
 

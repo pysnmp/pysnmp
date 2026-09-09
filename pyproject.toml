@@ -51,20 +51,25 @@ dependencies = [
 # rc stream, and this repository integrates against the sibling rc it is
 # released alongside instead of against its last GA.
 #
-# 3.1.0rc3 names an rc of the *next* line, so it outranks pysmi's newest GA
-# (3.0.0) and is what resolves. That mattered more when it was a hard runtime
-# dependency: rc3 is the first release where a behavior fragment's class
-# attribute re-seeds the objects a module already built (pysnmp/pysmi#236), and
-# 3.1.0rc1 the first to publish pysmi.corpus.conformance, which
-# tests/test_corpus.py builds its fixture with. Both now bear on the optional
-# path and the dev group rather than on every install.
+# 4.0.0rc1 names an rc of the next *major*, so it outranks pysmi's newest GA
+# (3.0.0) and is what resolves. The major is pysmi dropping its mibs/behavior
+# splice (pysnmp/pysmi#245): a module it generates no longer carries the
+# runtime behavior no code generator can derive from ASN.1, because pysnmp
+# owns that now and applies it from pysnmp/smi/mibs/behavior (#215). Anything
+# still on pysmi 3.x gets that behavior twice, which is harmless -- the
+# fragments are idempotent -- and anything on 4.x gets it once, from here.
+#
+# So the floor is not a preference. Below 4.0.0rc1 pysmi splices behavior that
+# pysnmp also splices; at or above it, pysnmp is the only source. Regenerating
+# with a 3.x pysmi would write those fragments back into the committed modules
+# and tests/test_generated_mibs.py would fail against a 4.x one.
 #
 # pyasn1 is off that stream: 2.0.2 is a GA and is what the floor names. Put this
 # floor back on a GA before cutting the 6.0.0 GA -- an extra resolving to a
 # sibling release candidate is better than a required dependency doing it, but
 # it is still not what a GA should ship.
 [project.optional-dependencies]
-compile = ["pysnmp-pysmi >=3.1.0rc3,<4.0.0"]
+compile = ["pysnmp-pysmi >=4.0.0rc1,<5.0.0"]
 
 [project.urls]
 repository = "https://github.com/pysnmp/pysnmp"
@@ -82,7 +87,7 @@ repository = "https://github.com/pysnmp/pysnmp"
 # does.
 [dependency-groups]
 dev = [
-    "pysnmp-pysmi >=3.1.0rc3,<4.0.0",
+    "pysnmp-pysmi >=4.0.0rc1,<5.0.0",
     "sphinx >=7.0.0,<9.0.0",
     "myst-parser >=4.0.0,<5.0.0",
     "pytest >=9.0.3,<10.0.0",
