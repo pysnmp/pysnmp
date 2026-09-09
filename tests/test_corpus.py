@@ -134,6 +134,18 @@ class TestCorpusOpen:
         with pytest.raises(error.SmiError, match="no MIB corpus"):
             MibCorpus(str(tmp_path / "absent.db"))
 
+    def test_a_path_sqlite_cannot_open(self, tmp_path):
+        # os.path.exists passes for a directory, and sqlite3.connect raises
+        # OperationalError rather than returning something the checks below it
+        # can reject. Everything else this class covers is an SmiError, and a
+        # caller catching one to fall back to its MIB sources would not catch
+        # a bare sqlite3 error.
+        directory = tmp_path / "corpus.db"
+        directory.mkdir()
+
+        with pytest.raises(error.SmiError, match="cannot open MIB corpus"):
+            MibCorpus(str(directory))
+
     def test_not_a_corpus(self, tmp_path):
         import sqlite3
 

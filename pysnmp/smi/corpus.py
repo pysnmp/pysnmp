@@ -293,8 +293,19 @@ class MibCorpus:
         # SQLite opens an empty database of that shorter name -- which does not
         # raise, it simply answers nothing, and the corpus reads as a file with
         # application_id 0.
+        #
+        # os.path.exists above says something is there, not that SQLite can
+        # open it: a directory, or a file this process may not read, gets past
+        # it and fails here. Every other rejection below is an SmiError, and a
+        # caller that catches one to fall back to its MIB sources should not
+        # have a bare sqlite3 error come through this one path instead.
         uri = f"file:{urllib.request.pathname2url(self._path)}?immutable=1"
-        self._db = sqlite3.connect(uri, uri=True)
+
+        try:
+            self._db = sqlite3.connect(uri, uri=True)
+
+        except sqlite3.Error as exc:
+            raise error.SmiError(f"cannot open MIB corpus {path}: {exc}") from exc
 
         try:
             application = self._db.execute("PRAGMA application_id").fetchone()[0]
