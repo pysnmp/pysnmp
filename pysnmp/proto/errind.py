@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Error indications: what went wrong, as values rather than status codes.
+
+An error indication is a local failure -- no response, wrong digest, unknown
+user -- as distinct from an error status, which is what a remote agent put in
+a response it did send.
+"""
+
 import functools
 
 

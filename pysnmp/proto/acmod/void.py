@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""An access control model that permits everything.
+
+For an engine that answers to anyone, or one where access is enforced
+somewhere else entirely.
+"""
+
 from pysnmp import debug
 from pysnmp.proto import errind, error
 

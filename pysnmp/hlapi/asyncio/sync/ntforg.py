@@ -1,3 +1,5 @@
+"""Blocking trap and inform delivery."""
+
 import asyncio
 
 from pysnmp.hlapi.asyncio import ntforg

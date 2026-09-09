@@ -6,6 +6,8 @@
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
+"""Obsolete notification originator wrappers. Use `pysnmp.hlapi` instead."""
+
 from pysnmp.entity import config
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.entity.rfc3413 import context

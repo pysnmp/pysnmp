@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""What a transport target has to provide, independent of address family."""
+
 from typing import Any, Generic, TypeVar
 
 from pysnmp import error

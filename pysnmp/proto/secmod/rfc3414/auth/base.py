@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""What an authentication service has to provide."""
+
 from pysnmp.proto import errind, error
 
 

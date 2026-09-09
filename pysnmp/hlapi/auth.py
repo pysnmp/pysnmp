@@ -4,6 +4,12 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Who the request claims to be: community strings and USM users.
+
+`CommunityData` carries a v1/v2c community, `UsmUserData` a v3 user with its
+authentication and privacy protocols and keys.
+"""
+
 from typing import Any, NoReturn
 
 from pysnmp import error

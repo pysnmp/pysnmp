@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""What a security model has to provide."""
+
 from pysnmp.proto import error
 from pysnmp.proto.secmod import cache
 

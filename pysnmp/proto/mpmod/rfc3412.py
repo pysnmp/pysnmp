@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Message processing for SNMPv3, including the scoped PDU and header data."""
+
 from typing import Any
 
 from pyasn1.codec.ber import decoder, eoo

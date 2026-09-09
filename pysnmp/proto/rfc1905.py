@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The SNMPv2 PDUs, and the three exception values a response can carry."""
+
 from pyasn1.type import constraint, namedtype, namedval, tag, univ
 
 from pysnmp.proto import rfc1902

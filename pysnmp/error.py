@@ -3,6 +3,7 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The exception and warning types every other pysnmp module raises."""
 
 
 class PySnmpCryptoWarning(UserWarning):
@@ -48,6 +49,7 @@ class PySnmpError(Exception):
         return (type(cause), cause, cause.__traceback__)
 
     def __str__(self) -> str:
+        """The message, with the exception this was raised from appended."""
         msg = super().__str__()
         cause = self._chained
         if cause is None:

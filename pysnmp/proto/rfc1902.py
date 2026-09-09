@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The SMIv2 types: what an SNMPv2 value can be."""
+
 from pyasn1.type import constraint, namedtype, namedval, tag, univ
 
 from pysnmp.proto import error

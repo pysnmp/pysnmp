@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Building and reading SNMPv1 messages and PDUs."""
+
 from pyasn1.type import univ
 
 from pysnmp import nextid

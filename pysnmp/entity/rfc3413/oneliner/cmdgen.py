@@ -6,6 +6,8 @@
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
+"""Obsolete command generator wrappers. Use `pysnmp.hlapi` instead."""
+
 from pyasn1.type import univ
 
 from pysnmp.entity.engine import SnmpEngine

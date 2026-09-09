@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""State a security model keeps between a request and its response."""
+
 from pysnmp import nextid
 from pysnmp.proto import error
 

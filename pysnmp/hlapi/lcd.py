@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Turning high-level credentials into the engine's own configuration.
+
+The local configuration datastore is what the engine actually reads. These
+configurators write `CommunityData` and `UsmUserData` into it, and cache what
+they wrote so repeating a call does not re-register anything.
+"""
+
 from typing import Any
 
 from pysnmp import error, nextid

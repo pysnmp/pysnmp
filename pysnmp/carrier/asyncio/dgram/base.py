@@ -29,6 +29,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""The datagram protocol every connectionless asyncio transport is built on.
+
+Handles the parts that do not vary with address family: opening the socket,
+queueing sends until the loop connects it, and handing what arrives to the
+callback the dispatcher registered.
+"""
+
 import asyncio
 import socket
 import traceback

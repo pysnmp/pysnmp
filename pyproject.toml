@@ -211,23 +211,21 @@ ignore = [
     "S509",     # snmp-weak-cryptography
 
     # The docstring family, adopted in stages -- see #186. What is on now is
-    # the shape of the docstrings that exist: summary line, section headings,
-    # punctuation. What is still off is the requirement that every public
-    # thing have one, which is ~790 items across the package and is a
-    # documentation project rather than a lint fix. Writing 347 method
-    # docstrings mechanically produces noise, not documentation.
+    # the shape of the docstrings that exist, plus D100/D104: every module and
+    # package says what it is for. What is still off is the requirement that
+    # every public class, function and method have one, which is ~690 items
+    # and is a documentation project rather than a lint fix. Writing 347
+    # method docstrings mechanically produces noise, not documentation.
     #
     # These come off one rule at a time, each its own reviewable change:
-    #   D100/D104  108 modules and packages
+    #   D100/D104  104 modules and packages -- done
     #   D101       183 classes
     #   D103/D107  104 functions and constructors
     #   D102       347 methods, probably by subpackage
     #   D105        55 magic methods
-    "D100",     # undocumented-public-module
     "D101",     # undocumented-public-class
     "D102",     # undocumented-public-method
     "D103",     # undocumented-public-function
-    "D104",     # undocumented-public-package
     "D105",     # undocumented-magic-method
     "D107",     # undocumented-public-init
 

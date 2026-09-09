@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The command responder: the agent side that answers requests from the MIB."""
+
 from pyasn1.type import tag
 
 import pysnmp.smi.error

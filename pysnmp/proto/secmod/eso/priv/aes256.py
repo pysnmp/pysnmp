@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""AES-256 privacy, in both the Blumenthal and Reeder key-extension variants."""
+
 from pysnmp.proto.secmod.eso.priv import aesbase
 
 

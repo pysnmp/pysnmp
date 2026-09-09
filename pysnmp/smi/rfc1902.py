@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Naming a managed object, and pairing it with a value.
+
+`ObjectIdentity` is a MIB object by name, OID or index; `ObjectType` binds one
+to a value; `NotificationType` names a trap and the objects it carries. All
+three resolve against a MIB view before the engine sees them.
+"""
+
 import functools
 
 from pyasn1.error import PyAsn1Error

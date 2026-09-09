@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Errors raised while loading MIBs or serving managed objects.
+
+The `MibOperationError` subclasses map onto the SNMP error statuses an agent
+returns, so raising one is how instrumentation reports a failure.
+"""
+
 from pyasn1.error import PyAsn1Error
 
 from pysnmp.error import PySnmpError

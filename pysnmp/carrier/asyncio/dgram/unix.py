@@ -3,6 +3,11 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""SNMP over Unix domain datagram sockets, transport domain 1.3.6.1.2.1.100.1.13.
+
+Not available on Windows, which has no `AF_UNIX`.
+"""
+
 import os
 import socket
 import tempfile

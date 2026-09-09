@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The notification originator: sending traps and informs to configured targets."""
+
 from collections.abc import Callable
 from typing import Any
 

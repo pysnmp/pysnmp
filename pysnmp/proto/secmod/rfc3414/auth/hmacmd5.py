@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""HMAC-MD5-96 authentication.
+
+MD5 is no longer considered safe; RFC 7860's SHA-2 protocols are the
+replacement. Configuring this raises `PySnmpWeakCryptoWarning`.
+"""
+
 from hashlib import md5
 
 from pyasn1.type import univ

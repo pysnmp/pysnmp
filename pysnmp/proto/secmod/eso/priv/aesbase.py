@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Extending a localized key to the length AES-192 and AES-256 need.
+
+RFC 3826 localizes a key to the digest length, which is shorter than these
+ciphers take. Blumenthal and Reeder each specified a way to stretch it, and
+they do not agree, so a peer has to be matched on which one it implements.
+"""
+
 from hashlib import md5, sha1
 from math import ceil
 

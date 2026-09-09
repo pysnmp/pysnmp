@@ -6,6 +6,12 @@
 # THESE FUNCTIONS ARE OBSOLETE AND MUST NOT BE USED!
 # USE pysnmp.entity.rfc3413.oneliner.mibvar INSTEAD
 #
+"""Obsolete MIB variable helpers.
+
+Superseded by `pysnmp.smi.rfc1902`. Kept so old code keeps importing; do not
+use for anything new.
+"""
+
 from pyasn1.type import univ
 
 from pysnmp.smi.error import NoSuchObjectError

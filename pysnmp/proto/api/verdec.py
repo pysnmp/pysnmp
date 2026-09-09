@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Reading the version field out of a message without decoding the rest.
+
+Which version a message claims decides who parses it, so this has to run
+before any of them do.
+"""
+
 from pyasn1.codec.ber import decoder, eoo
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import univ

@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The SNMP engine: what every application is built on.
+
+An `SnmpEngine` owns the engine ID, the message and PDU dispatcher, the
+message processing and security models, the MIB instrumentation, and the
+transport dispatcher. One engine can serve a manager, an agent, or both.
+"""
+
 import os
 import shutil
 import tempfile
@@ -45,7 +52,8 @@ def _legacyVersionsEnabledByDefault() -> bool:
     environment says now rather than what it said when this module was first
     imported.
 
-    Returns:
+    Returns
+    -------
         False only when the environment asks for v1/v2c to be off.
     """
     return os.environ.get(LEGACY_VERSIONS_ENV, "").strip().lower() not in _TRUTHY

@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Errors raised by transports and dispatchers."""
+
 from pysnmp import error
 
 

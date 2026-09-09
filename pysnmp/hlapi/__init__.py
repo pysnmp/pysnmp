@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The high-level API: what most callers should import.
+
+Re-exports the synchronous facade over the asyncio API, so `getCmd` and
+friends here block, while the same names under `pysnmp.hlapi.asyncio` are
+coroutines.
+"""
+
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi import auth
 from pysnmp.hlapi.asyncio.device import DeviceReport as DeviceReport

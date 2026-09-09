@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Serving managed objects: what the agent side calls to read and write values."""
+
 import traceback
 from typing import Any
 

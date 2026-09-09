@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The command generator: the manager side that sends requests and retries them."""
+
 from collections.abc import Callable
 from typing import Any
 

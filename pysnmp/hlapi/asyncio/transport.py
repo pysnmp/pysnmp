@@ -4,6 +4,12 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Where to send a request: UDP, UDP/IPv6 and Unix domain targets.
+
+A target pairs a transport with an address, and resolves a hostname to one
+before the engine needs it.
+"""
+
 import socket
 from typing import cast
 

@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The community string as a security model, for SNMPv1 and SNMPv2c.
+
+A community string is not security, and this model does not pretend otherwise:
+it maps the community onto a security name and checks the transport it
+arrived on.
+"""
+
 from pyasn1.codec.ber import encoder
 from pyasn1.error import PyAsn1Error
 

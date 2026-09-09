@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Resolving variable bindings against the MIB, in both directions."""
+
 from typing import Any
 
 from pysnmp.smi import view

@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Debug logging, switched on per subsystem.
+
+`setLogger(Debug('io', 'msgproc'))` turns on tracing for the named areas; the
+flags below are the areas. When debugging is off the calls go to `DebugOff`,
+which costs a bound-method lookup and nothing else.
+"""
+
 import logging
 
 # octs2ints replaced with list() (bytes is already iterable of ints in Python 3)

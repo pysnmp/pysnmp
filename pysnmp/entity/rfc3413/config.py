@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Reading target, notification and filter configuration back out of the MIB."""
+
 from pysnmp.entity import config
 from pysnmp.smi.error import NoSuchInstanceError, SmiError
 

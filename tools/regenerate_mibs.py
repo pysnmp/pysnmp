@@ -162,6 +162,7 @@ def build(*modules: str) -> dict[str, str]:
 
 
 def main() -> int:
+    """Render the committed modules, or check them for drift under `--check`."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--check",

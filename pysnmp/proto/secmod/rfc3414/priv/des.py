@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""CBC-DES privacy.
+
+DES is no longer considered safe; RFC 3826's AES is the replacement.
+Configuring this raises `PySnmpWeakCryptoWarning`.
+"""
+
 import secrets
 from hashlib import md5, sha1
 

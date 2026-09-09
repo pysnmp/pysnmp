@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""HMAC-SHA-96 authentication.
+
+SHA-1 is no longer considered safe; RFC 7860's SHA-2 protocols are the
+replacement. Configuring this raises `PySnmpWeakCryptoWarning`.
+"""
+
 from hashlib import sha1
 
 from pyasn1.type import univ

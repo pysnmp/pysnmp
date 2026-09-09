@@ -6,6 +6,8 @@
 
 # Lazy import to break circular dependency: service.py imports eso.priv
 # modules which import rfc3414.localkey/auth via this __init__.py
+"""The User-based Security Model of RFC 3414."""
+
 import importlib as _importlib
 
 

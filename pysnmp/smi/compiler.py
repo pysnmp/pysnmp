@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Compiling ASN.1 to loadable modules at run time, when pysmi is installed.
+
+pysmi is an optional dependency: install `pysnmplib[compile]` to get it.
+Without it `addMibCompiler` raises `SmiError` naming the missing import.
+"""
+
 import sys
 from pathlib import Path
 from typing import Any

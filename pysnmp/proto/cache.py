@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The dispatcher's record of requests it has sent and not yet answered."""
+
 from pysnmp.proto import error
 
 

@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The View-based Access Control Model of RFC 3415."""
+
 from pysnmp import debug
 from pysnmp.proto import errind, error
 from pysnmp.smi.error import NoSuchInstanceError

@@ -14,6 +14,14 @@
 # Parts of the code below is taken from:
 # http://carnivore.it/2012/10/12/python3.3_sendmsg_and_recvmsg
 #
+"""`sendto`/`recvfrom` that also carry the local address.
+
+Built on POSIX `sendmsg()`/`recvmsg()`. Two things the plain calls cannot do:
+report which local address a datagram actually arrived on, which matters when
+listening on 0.0.0.0 or [::], and set the source address on the way out, which
+is what transparent proxying needs.
+"""
+
 import ctypes
 import ipaddress
 import socket
