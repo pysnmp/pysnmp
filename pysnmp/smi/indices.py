@@ -7,7 +7,7 @@ from bisect import bisect
 
 
 class OrderedDict(dict):
-    """Ordered dictionary used for indices"""
+    """Ordered dictionary used for indices."""
 
     def __init__(self, *args, **kwargs):
         self.__keys = []
@@ -104,7 +104,7 @@ class OrderedDict(dict):
 
 
 class OidOrderedDict(OrderedDict):
-    """OID-ordered dictionary used for indices"""
+    """OID-ordered dictionary used for indices."""
 
     def __init__(self, *args, **kwargs):
         self.__keysCache = {}

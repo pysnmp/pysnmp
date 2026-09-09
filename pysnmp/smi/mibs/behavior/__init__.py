@@ -121,7 +121,8 @@ def apply(module: str, namespace: dict[str, Any]) -> bool:
         namespace: the loaded module's globals -- what its own symbols are
             bound in, which is what the fragment reads and writes
 
-    Returns:
+    Returns
+    -------
         Whether a fragment ran.
     """
     path = _fragments().get(module)

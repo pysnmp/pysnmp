@@ -37,7 +37,7 @@ from pysnmp.error import PySnmpError
 
 
 class AsyncioDispatcher(AbstractTransportDispatcher):
-    """AsyncioDispatcher based on asyncio event loop"""
+    """AsyncioDispatcher based on asyncio event loop."""
 
     def __init__(self, *args, **kwargs):
         AbstractTransportDispatcher.__init__(self)

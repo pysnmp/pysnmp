@@ -7,7 +7,7 @@ import secrets
 
 
 class Integer:
-    """Return a next value in a reasonably MT-safe manner"""
+    """Return a next value in a reasonably MT-safe manner."""
 
     def __init__(self, maximum, increment=256):
         self.__maximum = maximum

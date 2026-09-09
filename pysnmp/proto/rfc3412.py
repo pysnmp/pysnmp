@@ -15,8 +15,10 @@ from pysnmp.smi import builder, instrum
 
 
 class MsgAndPduDispatcher:
-    """SNMP engine PDU & message dispatcher. Exchanges SNMP PDU's with
-    applications and serialized messages with transport level.
+    """SNMP engine PDU & message dispatcher.
+
+    Exchanges SNMP PDU's with applications and serialized messages with
+    transport level.
     """
 
     def __init__(self, mibInstrumController=None):
@@ -58,7 +60,7 @@ class MsgAndPduDispatcher:
 
     # 4.3.1
     def registerContextEngineId(self, contextEngineId, pduTypes, processPdu):
-        """Register application with dispatcher"""
+        """Register application with dispatcher."""
         # 4.3.2 -> no-op
 
         # 4.3.3
@@ -78,7 +80,7 @@ class MsgAndPduDispatcher:
 
     # 4.4.1
     def unregisterContextEngineId(self, contextEngineId, pduTypes):
-        """Unregister application with dispatcher"""
+        """Unregister application with dispatcher."""
         # 4.3.4
         if contextEngineId is None:
             # Default to local snmpEngineId
@@ -125,7 +127,7 @@ class MsgAndPduDispatcher:
         cbFun=None,
         cbCtx=None,
     ):
-        """PDU dispatcher -- prepare and serialize a request or notification"""
+        """PDU dispatcher -- prepare and serialize a request or notification."""
         # 4.1.1.2
         k = int(messageProcessingModel)
         if k in snmpEngine.messageProcessingSubsystems:
@@ -327,7 +329,7 @@ class MsgAndPduDispatcher:
 
     # 4.2.1
     def receiveMessage(self, snmpEngine, transportDomain, transportAddress, wholeMsg):
-        """Message dispatcher -- de-serialize message into PDU"""
+        """Message dispatcher -- de-serialize message into PDU."""
         # 4.2.1.1
         (snmpInPkts,) = self.mibInstrumController.mibBuilder.importSymbols(
             "__SNMPv2-MIB", "snmpInPkts"

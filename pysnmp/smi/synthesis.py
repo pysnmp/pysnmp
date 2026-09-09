@@ -221,7 +221,7 @@ class _Resolver:
 
     @property
     def imports(self) -> dict[str, str]:
-        """This module's IMPORTS, as symbol to the module defining it."""
+        """The module's IMPORTS, as symbol to the module defining it."""
         return self._imports
 
     def declare(self, name: str, cls: Any) -> None:
@@ -248,10 +248,12 @@ class _Resolver:
         Args:
             name: the type name as the MIB declares it
 
-        Returns:
+        Returns
+        -------
             The class.
 
-        Raises:
+        Raises
+        ------
             SmiError: nothing defines the name. Loudly, rather than
                 substituting a base type: a column silently typed
                 ``OctetString`` instead of its TEXTUAL-CONVENTION renders
@@ -321,7 +323,8 @@ class _Resolver:
             module: where to look
             name: the symbol
 
-        Returns:
+        Returns
+        -------
             The symbol, or ``None``.
         """
         try:
@@ -344,7 +347,8 @@ class _Resolver:
         Args:
             spec: a corpus type specification
 
-        Returns:
+        Returns
+        -------
             A single constraint, or a union of several.
         """
         declared = spec.get("constraints") or {}
@@ -391,7 +395,8 @@ def synthesize_type(resolver: "_Resolver", spec: dict[str, Any]) -> Any:
         resolver: the module's resolver
         spec: a corpus type specification
 
-    Returns:
+    Returns
+    -------
         An instance ready to be handed to a ``MibScalar`` or a column.
     """
     if not spec.get("type"):
@@ -586,11 +591,13 @@ def load_module(builder: Any, corpus: Any, modName: str) -> bool:
         corpus: an open :py:class:`~pysnmp.smi.corpus.MibCorpus`
         modName: the module to build
 
-    Returns:
+    Returns
+    -------
         Whether the corpus carried the module. ``False`` leaves the builder
         untouched, so a caller can go on looking elsewhere.
 
-    Raises:
+    Raises
+    ------
         SmiError: the corpus carries the module but it could not be built --
             an unresolvable type, an OBJECT-TYPE the runtime has no class for.
             Loudly on purpose: a half-built module resolves some OIDs and not

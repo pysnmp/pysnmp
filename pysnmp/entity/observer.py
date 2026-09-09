@@ -30,7 +30,6 @@ def execution_context(
             ...
 
     """
-
     if variables is not None and context:
         raise TypeError(
             "execution context accepts either a mapping or keyword variables"
@@ -62,9 +61,10 @@ def execution_context(
 
 
 class MetaObserver:
-    """This is a simple facility for exposing internal SNMP Engine
-    working details to pysnmp applications. These details are
-    basically local scope variables at a fixed point of execution.
+    """Expose internal SNMP engine working details to pysnmp applications.
+
+    Those details are basically local scope variables at a fixed point of
+    execution.
 
     Two modes of operations are offered:
     1. Consumer: app can request an execution point context by execution point ID.

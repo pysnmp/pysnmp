@@ -106,7 +106,6 @@ async def sendNotification(
     >>> # asyncio.run(run())
 
     """
-
     __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     notifyName = lcd.configure(

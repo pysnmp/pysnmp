@@ -16,7 +16,7 @@
 #
 # The generated MIB module can be loaded by MibBuilder.load_modules().
 #
-"""Parse IANA Private Enterprise Numbers and generate a pysnmp MIB module.
+r"""Parse IANA Private Enterprise Numbers and generate a pysnmp MIB module.
 
 The IANA PEN registry maps integer enterprise numbers to organization
 names.  This tool reads the registry (from a local file or the IANA

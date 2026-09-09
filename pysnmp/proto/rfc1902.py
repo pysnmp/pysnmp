@@ -98,7 +98,7 @@ class Integer32(univ.Integer):
 
     @classmethod
     def withValues(cls, *values):
-        """Creates a subclass with discreet values constraint."""
+        """Create a subclass with discreet values constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.SingleValueConstraint(*values)
@@ -108,7 +108,7 @@ class Integer32(univ.Integer):
 
     @classmethod
     def withRange(cls, minimum, maximum):
-        """Creates a subclass with value range constraint."""
+        """Create a subclass with value range constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.ValueRangeConstraint(
@@ -195,7 +195,7 @@ class OctetString(univ.OctetString):
         Python string or :py:class:`~pysnmp.proto.rfc1902.OctetString`
         class instance.
 
-    Other parameters
+    Other Parameters
     ----------------
     hexValue : str
         Python string representing octets in a hexadecimal notation
@@ -258,7 +258,7 @@ class OctetString(univ.OctetString):
 
     @classmethod
     def withSize(cls, minimum, maximum):
-        """Creates a subclass with value size constraint."""
+        """Create a subclass with value size constraint."""
 
         class X(cls):
             subtypeSpec = cls.subtypeSpec + constraint.ValueSizeConstraint(
@@ -534,7 +534,7 @@ class Opaque(univ.OctetString):
         Python string or :py:class:`~pysnmp.proto.rfc1902.OctetString`-based
         class instance.
 
-    Other parameters
+    Other Parameters
     ----------------
     hexValue : str
         Python string representing octets in a hexadecimal notation
@@ -610,7 +610,7 @@ class Counter64(univ.Integer):
 
 
 class Bits(OctetString):
-    """Creates an instance of SNMP BITS class.
+    r"""Creates an instance of SNMP BITS class.
 
     The :py:class:`~pysnmp.proto.rfc1902.Bits` type represents
     an enumeration of named bits. This collection is assigned non-negative,
@@ -630,7 +630,7 @@ class Bits(OctetString):
         Sequence of bit names or a Python string (as a raw data) or
         :py:class:`~pysnmp.proto.rfc1902.OctetString` class instance.
 
-    Other parameters
+    Other Parameters
     ----------------
     hexValue : str
         Python string representing octets in a hexadecimal notation
@@ -699,7 +699,7 @@ class Bits(OctetString):
 
     @classmethod
     def withNamedBits(cls, **values):
-        """Creates a subclass with discreet named bits constraint.
+        """Create a subclass with discreet named bits constraint.
 
         Reduce fully duplicate enumerations along the way.
         """

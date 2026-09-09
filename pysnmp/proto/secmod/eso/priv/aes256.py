@@ -7,7 +7,7 @@ from pysnmp.proto.secmod.eso.priv import aesbase
 
 
 class AesBlumenthal256(aesbase.AbstractAesBlumenthal):
-    """AES 256 bit encryption (Internet draft)
+    """AES 256 bit encryption (Internet draft).
 
     http://tools.ietf.org/html/draft-blumenthal-aes-usm-04
     """
@@ -29,7 +29,7 @@ class AesBlumenthal256(aesbase.AbstractAesBlumenthal):
 
 
 class Aes256(aesbase.AbstractAesReeder):
-    """AES 256 bit encryption (Internet draft)
+    """AES 256 bit encryption (Internet draft).
 
     Reeder AES encryption with non-standard key localization algorithm
     borrowed from Reeder 3DES draft:

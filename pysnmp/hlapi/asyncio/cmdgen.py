@@ -89,7 +89,7 @@ async def getCmd(
               the cost of slightly reduced performance. Default is `True`.
 
     Returns
-    ------
+    -------
     errorIndication : str
         True value indicates SNMP engine error.
     errorStatus : str
@@ -126,7 +126,6 @@ async def getCmd(
     >>> # asyncio.run(run())
 
     """
-
     __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     addrName, paramsName = lcd.configure(
@@ -186,7 +185,7 @@ async def setCmd(
               the cost of slightly reduced performance. Default is `True`.
 
     Returns
-    ------
+    -------
     errorIndication : str
         True value indicates SNMP engine error.
     errorStatus : str
@@ -222,7 +221,6 @@ async def setCmd(
     >>> # asyncio.run(run())
 
     """
-
     __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
     addrName, paramsName = lcd.configure(
@@ -282,7 +280,7 @@ async def nextCmd(
               the cost of slightly reduced performance. Default is `True`.
 
     Returns
-    ------
+    -------
     errorIndication : str
         True value indicates SNMP engine error.
     errorStatus : str
@@ -322,7 +320,6 @@ async def nextCmd(
     >>> # asyncio.run(run())
 
     """
-
     __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
     addrName, paramsName = lcd.configure(
@@ -454,7 +451,6 @@ async def bulkCmd(
     >>> # asyncio.run(run())
 
     """
-
     __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
     addrName, paramsName = lcd.configure(
