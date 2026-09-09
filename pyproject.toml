@@ -79,6 +79,17 @@ dev = [
     "coverage[toml] >=7.2.0,<8.0.0",
     "mypy >=1.15.0,<3.0.0",
     "ruff >=0.4.0,<1.0.0",
+    # pysmi is already a runtime dependency, and this raises its floor for
+    # development only. tests/test_corpus.py builds its fixture with
+    # pysmi.corpus.conformance, which 3.1.0rc1 is the first release to publish;
+    # the runtime floor stays where it is because nothing pysnmp ships imports
+    # pysmi to read a corpus -- that is the point of the format.
+    #
+    # The floor is load-bearing rather than documentary. It was absent, the lock
+    # resolved pysmi 3.0.0rc5, and `pysmi.corpus` did not exist there, so the
+    # module-level import of the fixture skipped the entire corpus suite and CI
+    # passed without running any of it.
+    "pysnmp-pysmi >=3.1.0rc1",
 ]
 
 [tool.pytest.ini_options]

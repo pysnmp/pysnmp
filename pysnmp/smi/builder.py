@@ -444,7 +444,138 @@ class MibBuilder:
         self.__modSeen: dict[str, str] = {}
         self.__modPathsSeen: set[str] = set()
         self.__mibCompiler: Any = None
+        self.__mibCorpus: Any = None
+        self.__corpusBuilding: set[str] = set()
         self.setMibSources(*sources)
+
+    # MIB corpus management
+
+    def getMibCorpus(self) -> Any:
+        """The corpus this builder falls back to, or ``None``.
+
+        Returns:
+            The :py:class:`~pysnmp.smi.corpus.MibCorpus`, or ``None`` when
+            none is configured -- which is the default and means this builder
+            resolves exactly as it always has.
+        """
+        return self.__mibCorpus
+
+    def setMibCorpus(self, mibCorpus: Any) -> Any:
+        """Resolve from a corpus what the MIB sources do not carry.
+
+        A corpus is a SQLite database pysmi produces, holding the SMI model as
+        data rather than as Python. Configuring one **adds a place to look**;
+        it does not replace the MIB sources, reorder them, or change what a
+        module already on disk resolves to. A module found by the ordinary
+        search is loaded the ordinary way, so an existing deployment that
+        configures a corpus keeps every answer it had and gains answers for
+        the modules it did not ship.
+
+        That ordering is the whole compatibility story, and it is deliberate:
+        the corpus is where a module is found when nothing else has it, which
+        is what makes this opt-in rather than a migration.
+
+        Args:
+            mibCorpus: an open
+                :py:class:`~pysnmp.smi.corpus.MibCorpus`, or ``None`` to stop
+                using one
+
+        Returns:
+            This builder.
+
+        Raises:
+            SmiError: ``loadTexts`` is set and the corpus carries no prose.
+                Refused rather than silently satisfied: a caller that asked
+                for descriptions and got a module with none has no way to
+                tell that from a MIB that declares none.
+        """
+        self._checkCorpusTexts(mibCorpus)
+
+        self.__mibCorpus = mibCorpus
+
+        return self
+
+    def _checkCorpusTexts(self, mibCorpus: Any) -> None:
+        """Refuse a textless corpus while ``loadTexts`` asks for prose.
+
+        Called both when a corpus is attached and again before each synthesis,
+        because ``loadTexts`` is a plain attribute a caller may set at any
+        time. Checking only at attachment would leave a builder that turned
+        texts on afterwards silently building modules with none.
+
+        Args:
+            mibCorpus: the corpus about to be used, or ``None``
+
+        Raises:
+            SmiError: texts were asked for and the corpus has none.
+        """
+        if (
+            mibCorpus is not None
+            and self.loadTexts
+            and not getattr(mibCorpus, "loadTexts", False)
+        ):
+            raise error.SmiError(
+                f"loadTexts is set but the corpus at {mibCorpus} carries no "
+                f"texts; load descriptions from the published json/ tree, or "
+                f"clear loadTexts"
+            )
+
+    def _loadModuleFromCorpus(self, modName: str) -> bool:
+        """Build a module out of the corpus, if one is configured and has it.
+
+        Args:
+            modName: the module to build
+
+        Returns:
+            Whether it was built.
+        """
+        if self.__mibCorpus is None:
+            return False
+
+        # Re-checked here, not only at setMibCorpus(). loadTexts is a plain
+        # attribute, so setting it after a corpus is attached would otherwise
+        # slip past the check and quietly build modules with no DESCRIPTION.
+        self._checkCorpusTexts(self.__mibCorpus)
+
+        if modName in self.__corpusBuilding:
+            # A module reached again while it is being built. Synthesis
+            # resolves imported types through importSymbols, which comes back
+            # here, so an import cycle -- A imports from B, B from A -- would
+            # otherwise recurse without limit. It cannot be caught by
+            # __modSeen: synthesis exports into mibSymbols only once it
+            # finishes, so marking the module loaded up front would make the
+            # re-entrant importSymbols raise MibNotFoundError instead.
+            from pysnmp.smi.corpus import MibCorpusCycleError
+
+            raise MibCorpusCycleError(
+                f"MIB module {modName} is being built from the corpus and was "
+                f"asked for again; its imports form a cycle"
+            )
+
+        from pysnmp.smi import synthesis
+
+        self.__corpusBuilding.add(modName)
+
+        try:
+            built = synthesis.load_module(self, self.__mibCorpus, modName)
+
+        finally:
+            self.__corpusBuilding.discard(modName)
+
+        if not built:
+            return False
+
+        # Recorded under a path no MIB source can produce, so that
+        # unloadModules() and the already-loaded check treat a synthesized
+        # module exactly like a loaded one.
+        self.__modSeen[modName] = f"corpus:{self.__mibCorpus.path}/{modName}"
+        self.__modPathsSeen.add(self.__modSeen[modName])
+
+        debug.logger & debug.flagBld and debug.logger(
+            f"loadModule: {modName} built from corpus {self.__mibCorpus.path}"
+        )
+
+        return True
 
     # MIB compiler management
 
@@ -613,7 +744,7 @@ class MibBuilder:
 
             break
 
-        if modName not in self.__modSeen:
+        if modName not in self.__modSeen and not self._loadModuleFromCorpus(modName):
             raise error.MibNotFoundError(
                 'MIB file "{}" not found in search path ({})'.format(
                     modName and modName + ".py[co]",

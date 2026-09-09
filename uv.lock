@@ -418,7 +418,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219", size = 30371, upload-time = "2025-11-21T23:01:54.787Z" }
 wheels = [
@@ -897,15 +897,15 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "3.0.0rc5"
+version = "3.1.0rc1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ply" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ba/83/c166def683c38e29730ea158d1b99bbb1f62af11b9c6b5859aca1536297e/pysnmp_pysmi-3.0.0rc5.tar.gz", hash = "sha256:21d84f555536a975391d93cf3a099ffe6fe98598ae5bed998bd07aa9e0dc666c", size = 4309060, upload-time = "2026-09-08T14:57:53.978Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/05/80/cf40deb545a51e64b6c3f9f47f7eea3818adc5b7a244aff428e760abbf19/pysnmp_pysmi-3.1.0rc1.tar.gz", hash = "sha256:05da27dedea8dc15c38d5c9a482793f79e6307ec2209099a2bebdf873b24fbd3", size = 4391709, upload-time = "2026-09-09T04:43:53.867Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/24/03/ec6e9b52c8828e6bd4e879818754d47e72b9f0e3867f97be60d322e236d7/pysnmp_pysmi-3.0.0rc5-py3-none-any.whl", hash = "sha256:fdbeedc6c5a448e800bf0e0a0a129d499c0edba32743309adbfa00dc9b21a4a2", size = 3101842, upload-time = "2026-09-08T14:57:51.922Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/cf/cbf3bc83426d1a80a6f56ed9ef6de81bed3d17e60c31391ba1a9d3bb5c2e/pysnmp_pysmi-3.1.0rc1-py3-none-any.whl", hash = "sha256:2fae9b288c4753c4d11fa5d5b10fd11462293e7a70bfee07d3321129229023ac", size = 3155590, upload-time = "2026-09-09T04:43:51.752Z" },
 ]
 
 [[package]]
@@ -923,6 +923,7 @@ dev = [
     { name = "coverage", extra = ["toml"] },
     { name = "mypy" },
     { name = "myst-parser" },
+    { name = "pysnmp-pysmi" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -941,6 +942,7 @@ dev = [
     { name = "coverage", extras = ["toml"], specifier = ">=7.2.0,<8.0.0" },
     { name = "mypy", specifier = ">=1.15.0,<3.0.0" },
     { name = "myst-parser", specifier = ">=4.0.0,<5.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=3.1.0rc1" },
     { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", specifier = ">=7.0.0,<9.0.0" },
@@ -1057,7 +1059,7 @@ name = "roman-numerals-py"
 version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "roman-numerals" },
+    { name = "roman-numerals", marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cb/b5/de96fca640f4f656eb79bbee0e79aeec52e3e0e359f8a3e6a0d366378b64/roman_numerals_py-4.1.0.tar.gz", hash = "sha256:f5d7b2b4ca52dd855ef7ab8eb3590f428c0b1ea480736ce32b01fef2a5f8daf9", size = 4274, upload-time = "2025-12-17T18:25:41.153Z" }
 wheels = [
@@ -1106,23 +1108,23 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "alabaster" },
-    { name = "babel" },
-    { name = "colorama", marker = "sys_platform == 'win32'" },
-    { name = "docutils" },
-    { name = "imagesize" },
-    { name = "jinja2" },
-    { name = "packaging" },
-    { name = "pygments" },
-    { name = "requests" },
-    { name = "snowballstemmer" },
-    { name = "sphinxcontrib-applehelp" },
-    { name = "sphinxcontrib-devhelp" },
-    { name = "sphinxcontrib-htmlhelp" },
-    { name = "sphinxcontrib-jsmath" },
-    { name = "sphinxcontrib-qthelp" },
-    { name = "sphinxcontrib-serializinghtml" },
-    { name = "tomli" },
+    { name = "alabaster", marker = "python_full_version < '3.11'" },
+    { name = "babel", marker = "python_full_version < '3.11'" },
+    { name = "colorama", marker = "python_full_version < '3.11' and sys_platform == 'win32'" },
+    { name = "docutils", marker = "python_full_version < '3.11'" },
+    { name = "imagesize", marker = "python_full_version < '3.11'" },
+    { name = "jinja2", marker = "python_full_version < '3.11'" },
+    { name = "packaging", marker = "python_full_version < '3.11'" },
+    { name = "pygments", marker = "python_full_version < '3.11'" },
+    { name = "requests", marker = "python_full_version < '3.11'" },
+    { name = "snowballstemmer", marker = "python_full_version < '3.11'" },
+    { name = "sphinxcontrib-applehelp", marker = "python_full_version < '3.11'" },
+    { name = "sphinxcontrib-devhelp", marker = "python_full_version < '3.11'" },
+    { name = "sphinxcontrib-htmlhelp", marker = "python_full_version < '3.11'" },
+    { name = "sphinxcontrib-jsmath", marker = "python_full_version < '3.11'" },
+    { name = "sphinxcontrib-qthelp", marker = "python_full_version < '3.11'" },
+    { name = "sphinxcontrib-serializinghtml", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/6f/6d/be0b61178fe2cdcb67e2a92fc9ebb488e3c51c4f74a36a7824c0adf23425/sphinx-8.1.3.tar.gz", hash = "sha256:43c1911eecb0d3e161ad78611bc905d1ad0e523e4ddc202a58a821773dc4c927", size = 8184611, upload-time = "2024-10-13T20:27:13.93Z" }
 wheels = [
@@ -1139,23 +1141,23 @@ resolution-markers = [
     "python_full_version == '3.11.*'",
 ]
 dependencies = [
-    { name = "alabaster" },
-    { name = "babel" },
-    { name = "colorama", marker = "sys_platform == 'win32'" },
-    { name = "docutils" },
-    { name = "imagesize" },
-    { name = "jinja2" },
-    { name = "packaging" },
-    { name = "pygments" },
-    { name = "requests" },
-    { name = "roman-numerals-py" },
-    { name = "snowballstemmer" },
-    { name = "sphinxcontrib-applehelp" },
-    { name = "sphinxcontrib-devhelp" },
-    { name = "sphinxcontrib-htmlhelp" },
-    { name = "sphinxcontrib-jsmath" },
-    { name = "sphinxcontrib-qthelp" },
-    { name = "sphinxcontrib-serializinghtml" },
+    { name = "alabaster", marker = "python_full_version >= '3.11'" },
+    { name = "babel", marker = "python_full_version >= '3.11'" },
+    { name = "colorama", marker = "python_full_version >= '3.11' and sys_platform == 'win32'" },
+    { name = "docutils", marker = "python_full_version >= '3.11'" },
+    { name = "imagesize", marker = "python_full_version >= '3.11'" },
+    { name = "jinja2", marker = "python_full_version >= '3.11'" },
+    { name = "packaging", marker = "python_full_version >= '3.11'" },
+    { name = "pygments", marker = "python_full_version >= '3.11'" },
+    { name = "requests", marker = "python_full_version >= '3.11'" },
+    { name = "roman-numerals-py", marker = "python_full_version >= '3.11'" },
+    { name = "snowballstemmer", marker = "python_full_version >= '3.11'" },
+    { name = "sphinxcontrib-applehelp", marker = "python_full_version >= '3.11'" },
+    { name = "sphinxcontrib-devhelp", marker = "python_full_version >= '3.11'" },
+    { name = "sphinxcontrib-htmlhelp", marker = "python_full_version >= '3.11'" },
+    { name = "sphinxcontrib-jsmath", marker = "python_full_version >= '3.11'" },
+    { name = "sphinxcontrib-qthelp", marker = "python_full_version >= '3.11'" },
+    { name = "sphinxcontrib-serializinghtml", marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/38/ad/4360e50ed56cb483667b8e6dadf2d3fda62359593faabbe749a27c4eaca6/sphinx-8.2.3.tar.gz", hash = "sha256:398ad29dee7f63a75888314e9424d40f52ce5a6a87ae88e7071e80af296ec348", size = 8321876, upload-time = "2025-03-02T22:31:59.658Z" }
 wheels = [
