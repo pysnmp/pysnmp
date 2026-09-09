@@ -4,6 +4,14 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Loading MIB modules from wherever they are: a directory, a package, a corpus.
+
+`MibBuilder` finds a module by name, imports it, applies any hand-written
+runtime behavior from `pysnmp.smi.mibs.behavior`, and holds the symbols it
+defined. A source is a directory or an importable package; a module is Python
+rendered from ASN.1.
+"""
+
 import dis
 import importlib
 import importlib.machinery

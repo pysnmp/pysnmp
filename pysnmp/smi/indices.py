@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Dictionaries that keep their keys in order, including OID order.
+
+GETNEXT has to find the successor of an OID, which a plain dict cannot do.
+`OidOrderedDict` sorts by OID component rather than lexically, so 1.3.6.1.10
+follows 1.3.6.1.9 rather than preceding it.
+"""
+
 from bisect import bisect
 
 

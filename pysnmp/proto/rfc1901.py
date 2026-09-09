@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The SNMPv2c message: a community string wrapped around an SMIv2 PDU."""
+
 from pyasn1.type import namedtype, namedval, univ
 
 from pysnmp.proto import rfc1905

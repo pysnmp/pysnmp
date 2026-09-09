@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2018, Olivier Verriest <verri@x25.pm>
 #
+"""HMAC-SHA-2 authentication at 224, 256, 384 and 512 bits, per RFC 7860."""
+
 import hmac
 from hashlib import sha224, sha256, sha384, sha512
 

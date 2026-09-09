@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The SMIv1 types: what an SNMPv1 value can be."""
+
 from pyasn1.error import PyAsn1Error
 from pyasn1.type import constraint, namedtype, tag, univ
 

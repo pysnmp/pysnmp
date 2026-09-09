@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""What a message processing model has to provide."""
+
 from typing import Any
 
 from pysnmp.proto import error

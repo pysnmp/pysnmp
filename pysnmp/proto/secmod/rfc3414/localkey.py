@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Turning a passphrase into a key, and a key into an engine-local one.
+
+Localizing binds a key to one engine ID, so the same passphrase configured
+against two agents yields two different keys and neither can be replayed at
+the other.
+"""
+
 from hashlib import md5, sha1
 
 from pyasn1.type import univ

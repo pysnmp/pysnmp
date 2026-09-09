@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Resolving MIB names to OIDs and OIDs back to names.
+
+`MibViewController` sits over a `MibBuilder` and indexes what it loaded, so a
+caller can ask for `sysDescr` and get 1.3.6.1.2.1.1.1, ask the other way
+round, or walk to the next object in OID order across every loaded module.
+"""
+
 from pysnmp import debug
 from pysnmp.smi import error
 from pysnmp.smi.indices import OidOrderedDict, OrderedDict

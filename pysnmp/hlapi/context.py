@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The SNMPv3 context a request is asked in: engine ID and context name."""
+
 from dataclasses import dataclass
 from typing import Any
 

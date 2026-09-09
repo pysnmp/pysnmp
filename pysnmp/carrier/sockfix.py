@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Socket constants Python does not define on every platform.
+
+A few of the options `sockmsg` needs are missing from `socket` depending on
+the platform and Python build. This patches in the numeric values rather than
+letting an `AttributeError` surface far from the cause.
+"""
+
 import socket
 
 from pysnmp import debug

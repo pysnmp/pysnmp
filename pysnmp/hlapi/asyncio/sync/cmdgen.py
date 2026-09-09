@@ -1,3 +1,10 @@
+"""Blocking GET, GETNEXT, GETBULK and SET.
+
+Each runs the asyncio call on a loop of its own, so these are usable from code
+that has no event loop. Calling one from inside a running loop raises rather
+than deadlocking.
+"""
+
 import asyncio
 from collections.abc import Iterator
 from typing import Any

@@ -3,6 +3,12 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""USM itself: authenticating, encrypting, and keeping engine time in step.
+
+Discovery, the time window that makes a replay stale, and the counters a peer
+reads to detect one, all live here.
+"""
+
 import time
 from collections.abc import Callable
 from typing import Any, NoReturn, TypeVar

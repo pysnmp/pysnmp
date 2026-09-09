@@ -4,6 +4,12 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Which PDUs read, which write, and which are confirmed.
+
+The dispatcher and the access control model both need to classify a PDU
+without caring which version it arrived as; these tables are how.
+"""
+
 from typing import Any
 
 from pysnmp.proto import rfc1157, rfc1905

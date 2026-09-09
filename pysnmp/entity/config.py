@@ -4,6 +4,14 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Writing the local configuration datastore the engine reads.
+
+Everything the engine needs to know -- transports, v1/v2c communities, USM
+users, targets, notification and access policy -- is stored in MIB tables.
+These functions are the supported way to write those tables, rather than
+setting the columns directly.
+"""
+
 import warnings
 from typing import Any
 
@@ -137,7 +145,8 @@ def __checkLegacyVersions(snmpEngine: Any) -> None:
     Args:
         snmpEngine: the engine being configured
 
-    Raises:
+    Raises
+    ------
         PySnmpError: the engine was built with v1/v2c disabled.
     """
     # getattr, because an engine is duck-typed in places and a caller may pass

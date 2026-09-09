@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Building and reading SNMPv2c messages and PDUs, including GETBULK."""
+
 from pyasn1.type import constraint, univ
 
 from pysnmp.proto import rfc1901, rfc1902, rfc1905

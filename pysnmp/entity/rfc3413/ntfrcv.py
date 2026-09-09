@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The notification receiver: accepting traps and informs and handing them on."""
+
 from pysnmp import debug
 from pysnmp.proto import error, rfc3411
 from pysnmp.proto.api import v1, v2c  # backend is always SMIv2 compliant

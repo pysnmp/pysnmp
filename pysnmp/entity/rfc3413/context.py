@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The SNMPv3 context: which engine and which named view a request applies to."""
+
 from pyasn1.type import univ
 
 from pysnmp import debug, error

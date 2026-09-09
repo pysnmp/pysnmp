@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The absence of authentication, as a service the model can call."""
+
 from pysnmp.proto import errind, error
 from pysnmp.proto.secmod.rfc3414.auth import base
 

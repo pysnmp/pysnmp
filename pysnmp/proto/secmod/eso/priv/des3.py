@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Triple DES privacy (Reeder), draft-reeder-snmpv3-usm-3desede."""
+
 import secrets
 from hashlib import md5, sha1
 

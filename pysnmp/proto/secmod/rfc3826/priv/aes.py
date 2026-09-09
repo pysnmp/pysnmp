@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""CFB128-AES-128 privacy, per RFC 3826."""
+
 import secrets
 from hashlib import md5, sha1
 

@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""The message and PDU dispatcher: the middle of the engine.
+
+Everything inbound and outbound passes through here. It picks the message
+processing model for the version, routes a PDU to whichever application
+registered for it, and matches responses to the requests waiting on them.
+"""
+
 from pyasn1.error import PyAsn1Error
 
 from pysnmp import debug, nextid

@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Errors raised while processing a message."""
+
 from pyasn1.error import PyAsn1Error
 
 from pysnmp import debug

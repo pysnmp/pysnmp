@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""What a transport and a transport dispatcher have to provide.
+
+A dispatcher owns the event loop, routes an inbound message to whoever
+registered for that transport domain, and runs timer callbacks. A transport
+moves bytes for one domain. Nothing here is asyncio-specific.
+"""
+
 import functools
 
 from pysnmp.carrier import error

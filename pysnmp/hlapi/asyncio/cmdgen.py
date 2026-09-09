@@ -31,6 +31,8 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+"""GET, GETNEXT, GETBULK and SET as coroutines."""
+
 import asyncio
 from typing import Any
 

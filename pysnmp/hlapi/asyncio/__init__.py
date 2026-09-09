@@ -3,6 +3,11 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The high-level API as coroutines.
+
+Same calls as `pysnmp.hlapi`, awaited rather than blocking.
+"""
+
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi.asyncio.cmdgen import bulkCmd, getCmd, isEndOfMib, nextCmd, setCmd
 from pysnmp.hlapi.asyncio.device import (

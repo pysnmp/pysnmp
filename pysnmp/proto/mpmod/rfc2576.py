@@ -4,6 +4,8 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Message processing for SNMPv1 and SNMPv2c."""
+
 from typing import Any
 
 from pyasn1.codec.ber import decoder, eoo

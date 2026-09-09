@@ -29,6 +29,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""SNMP over UDP/IPv4, transport domain 1.3.6.1.6.1.1."""
+
 import socket
 
 from pysnmp.carrier.asyncio.dgram.base import DgramAsyncioProtocol

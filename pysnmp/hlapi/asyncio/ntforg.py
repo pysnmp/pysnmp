@@ -8,6 +8,8 @@
 #          Zachary Lorusso <zlorusso@gmail.com>
 #
 
+"""Sending traps and informs as a coroutine."""
+
 import asyncio
 from typing import Any
 

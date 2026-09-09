@@ -4,6 +4,13 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
+"""Watching the engine's internals from outside, at named points in its work.
+
+An observer registered for an execution point is called with the engine's
+state as it passes through, which is how an application reaches values that
+are not part of any public return.
+"""
+
 from collections.abc import Iterator, MutableMapping
 from contextlib import contextmanager
 from typing import Any

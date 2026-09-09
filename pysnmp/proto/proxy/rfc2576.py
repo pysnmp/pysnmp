@@ -3,6 +3,13 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Translating PDUs between SNMPv1 and SNMPv2c, per RFC 2576.
+
+The two directions are not symmetric: v2c has types and error statuses v1
+cannot express, and a v1 trap carries fields a v2c trap encodes as variable
+bindings instead.
+"""
+
 from pysnmp import debug
 from pysnmp.proto import error, rfc1905, rfc3411
 from pysnmp.proto.api import v1, v2c

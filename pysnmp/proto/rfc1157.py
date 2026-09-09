@@ -3,6 +3,8 @@
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The SNMPv1 message and its PDUs."""
+
 from pyasn1.type import namedtype, namedval, tag, univ
 
 from pysnmp.proto import rfc1155
