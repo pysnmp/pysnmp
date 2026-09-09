@@ -101,6 +101,12 @@ def _matchFilter(filterEntries, oid):
 
 
 class NotificationOriginator:
+    """Sends a notification to every target the configuration names.
+
+    A trap is sent and forgotten; an inform is acknowledged, so it is retried and
+    its response is matched back the way a request's is.
+    """
+
     acmID = 3  # default MIB access control method to use
 
     #: Deprecated pre-4.4 entry point, superseded by sendVarBinds(). The

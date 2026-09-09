@@ -12,6 +12,13 @@ from pysnmp.proto.secmod import cache
 class AbstractSecurityModel:
     #: securityModel value this model answers to (:RFC:`3411#section-4`), e.g. 3
     #: for USM. None until a concrete model names one.
+    """Authenticates and encrypts a message, and undoes both on the way in.
+
+    Which model is `securityModelID`. Maps between the security name an
+    application uses and whatever credential the wire format carries, and holds
+    the state linking a request to the response that answers it.
+    """
+
     securityModelID: int | None = None
 
     def __init__(self):

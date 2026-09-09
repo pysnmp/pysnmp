@@ -23,6 +23,13 @@ from pysnmp.smi.error import NoSuchInstanceError
 
 
 class SnmpV1SecurityModel(base.AbstractSecurityModel):
+    """The community string as SNMPv1's security model.
+
+    No authentication and no encryption: the community string is the credential,
+    and it goes on the wire in the clear. Mapping it to a security name, and back,
+    is all this does.
+    """
+
     securityModelID = 1
 
     # According to rfc2576, community name <-> contextEngineId/contextName
@@ -609,6 +616,8 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
 
 
 class SnmpV2cSecurityModel(SnmpV1SecurityModel):
+    """The community string as SNMPv2c's security model, identical but for its ID."""
+
     securityModelID = 2
 
 

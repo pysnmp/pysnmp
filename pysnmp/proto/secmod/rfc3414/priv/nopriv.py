@@ -10,6 +10,8 @@ from pysnmp.proto.secmod.rfc3414.priv import base
 
 
 class NoPriv(base.AbstractEncryptionService):
+    """No privacy: leaves the scoped PDU in the clear."""
+
     serviceID: tuple[int, ...] = (1, 3, 6, 1, 6, 3, 10, 1, 2, 1)  # usmNoPrivProtocol
 
     def hashPassphrase(self, authProtocol, privKey):

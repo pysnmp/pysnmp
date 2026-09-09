@@ -15,6 +15,13 @@ class AbstractMessageProcessingModel:
     #: ASN.1 class of the message this model speaks; __init__ instantiates it.
     #: NotImplementedError stands in for a model that has not named one -- it is
     #: constructed, not raised, so the failure surfaces later rather than here.
+    """Turns a PDU into a message and back, for one SNMP version.
+
+    Which version is `messageProcessingModelID`. The model decides what the
+    header looks like and which security model handles it, and holds the state
+    linking an outgoing request to the response that answers it.
+    """
+
     snmpMsgSpec: type[Any] = NotImplementedError
 
     def __init__(self):

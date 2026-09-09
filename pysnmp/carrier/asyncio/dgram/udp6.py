@@ -14,10 +14,18 @@ domainName = snmpUDP6Domain = (1, 3, 6, 1, 2, 1, 100, 1, 2)
 
 
 class Udp6TransportAddress(tuple, AbstractTransportAddress):
+    """An IPv6 endpoint, as the `(host, port, flowinfo, scopeid)` tuple `socket` uses."""
+
     pass
 
 
 class Udp6AsyncioTransport(DgramAsyncioProtocol):
+    """SNMP over UDP/IPv6.
+
+    Addresses are normalized so a scoped or IPv4-mapped form compares equal to the
+    plain one it means.
+    """
+
     sockFamily = socket.has_ipv6 and socket.AF_INET6 or None
     addressType = Udp6TransportAddress
     unboundLocalAddress = ("::", 0, 0, 0)

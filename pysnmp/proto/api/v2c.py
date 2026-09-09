@@ -50,6 +50,12 @@ apiVarBind = v1.apiVarBind
 
 
 class PDUAPI(v1.PDUAPI):
+    """Reads and writes a v2c PDU.
+
+    Adds what v1 has no way to say: an exception value in place of a variable's
+    value, rather than failing the whole response.
+    """
+
     _errorStatus = rfc1905.errorStatus.clone(0)
     _errorIndex = univ.Integer(0).subtype(
         subtypeSpec=constraint.ValueRangeConstraint(0, rfc1905.max_bindings)
@@ -89,6 +95,8 @@ apiPDU = PDUAPI()
 
 
 class BulkPDUAPI(PDUAPI):
+    """Reads and writes a GETBULK PDU's repetition counts."""
+
     _nonRepeaters = rfc1905.nonRepeaters.clone(0)
     _maxRepetitions = rfc1905.maxRepetitions.clone(10)
 
@@ -162,6 +170,12 @@ apiBulkPDU = BulkPDUAPI()
 
 
 class TrapPDUAPI(v1.PDUAPI):
+    """Reads and writes a v2c trap, which is an ordinary PDU.
+
+    What v1 carried in dedicated fields is here in the bindings: the uptime and
+    the trap OID are the first two, by definition.
+    """
+
     sysUpTime = (1, 3, 6, 1, 2, 1, 1, 3, 0)
     snmpTrapAddress = (1, 3, 6, 1, 6, 3, 18, 1, 3, 0)
     snmpTrapCommunity = (1, 3, 6, 1, 6, 3, 18, 1, 4, 0)
@@ -184,6 +198,8 @@ apiTrapPDU = TrapPDUAPI()
 
 
 class MessageAPI(v1.MessageAPI):
+    """Reads and writes a v2c message: version, community, and the PDU inside."""
+
     _version = rfc1901.version.clone(1)
 
     def setDefaults(self, msg):

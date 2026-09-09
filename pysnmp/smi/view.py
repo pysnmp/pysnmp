@@ -21,6 +21,13 @@ classTypes = (type,)
 
 
 class MibViewController:
+    """Indexes what a builder loaded, and answers questions about names and OIDs.
+
+    Resolves a label to an OID and back, and walks to the next object in OID
+    order across every loaded module -- which is not the order the modules were
+    loaded in, nor lexical order on their names.
+    """
+
     def __init__(self, mibBuilder):
         self.mibBuilder = mibBuilder
         self.lastBuildId = -1

@@ -17,6 +17,14 @@ from pysnmp.proto.proxy import rfc2576
 
 # 3.2
 class CommandResponderBase:
+    """Answers a request out of the MIB, subject to access control.
+
+    A responder registers for the PDU types it handles, checks every variable
+    binding against the view the requester is allowed to see, and turns a MIB
+    error into the error status and index the version in use can express -- which
+    is not the same set for v1 as for v2c.
+    """
+
     acmID = 3  # default MIB access control method to use
     #: PDU tag sets this responder registers for; each subclass names its own.
     pduTypes: tuple[tag.TagSet, ...] = ()
@@ -350,6 +358,8 @@ class CommandResponderBase:
 
 
 class GetCommandResponder(CommandResponderBase):
+    """Answers GET."""
+
     pduTypes = (rfc1905.GetRequestPDU.tagSet,)
 
     # rfc1905: 4.2.1
@@ -368,6 +378,8 @@ class GetCommandResponder(CommandResponderBase):
 
 
 class NextCommandResponder(CommandResponderBase):
+    """Answers GETNEXT."""
+
     pduTypes = (rfc1905.GetNextRequestPDU.tagSet,)
 
     # rfc1905: 4.2.2
@@ -389,6 +401,12 @@ class NextCommandResponder(CommandResponderBase):
 
 
 class BulkCommandResponder(CommandResponderBase):
+    """Answers GETBULK.
+
+    `maxVarBinds` caps how many bindings one response may carry, since the
+    repetition count comes from the requester and is otherwise unbounded.
+    """
+
     pduTypes = (rfc1905.GetBulkRequestPDU.tagSet,)
     maxVarBinds = 64
 
@@ -434,6 +452,8 @@ class BulkCommandResponder(CommandResponderBase):
 
 
 class SetCommandResponder(CommandResponderBase):
+    """Answers SET."""
+
     pduTypes = (rfc1905.SetRequestPDU.tagSet,)
 
     # rfc1905: 4.2.5

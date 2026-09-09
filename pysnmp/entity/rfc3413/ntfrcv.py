@@ -14,6 +14,12 @@ from pysnmp.proto.proxy import rfc2576
 
 # 3.4
 class NotificationReceiver:
+    """Receives traps and informs and hands them to a callback.
+
+    Acknowledges an inform itself, echoing the bindings back, so the callback does
+    not have to know which of the two it was given.
+    """
+
     pduTypes = (
         v1.TrapPDU.tagSet,
         v2c.SNMPv2TrapPDU.tagSet,

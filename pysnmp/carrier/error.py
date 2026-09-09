@@ -9,4 +9,6 @@ from pysnmp import error
 
 
 class CarrierError(error.PySnmpError):
+    """Raised when a transport or dispatcher cannot do what was asked of it."""
+
     pass

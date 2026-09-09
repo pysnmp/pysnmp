@@ -35,6 +35,8 @@ Message = rfc1157.Message
 
 
 class VarBindAPI:
+    """Reads and writes the two halves of a variable binding."""
+
     @staticmethod
     def setOIDVal(varBind, oidVal):
         oid, val = oidVal[0], oidVal[1]
@@ -62,6 +64,8 @@ getNextRequestID = nextid.Integer(0xFFFFFF)
 
 
 class PDUAPI:
+    """Reads and writes a v1 PDU without naming its fields directly."""
+
     _errorStatus = rfc1157.errorStatus.clone(0)
     _errorIndex = Integer(0)
 
@@ -173,6 +177,8 @@ apiPDU = PDUAPI()
 
 
 class TrapPDUAPI:
+    """Reads and writes a v1 trap, whose fields are unlike any other PDU's."""
+
     _networkAddress = None
     _entOid = ObjectIdentifier((1, 3, 6, 1, 4, 1, 20408))
     _genericTrap = rfc1157.genericTrap.clone("coldStart")
@@ -302,6 +308,8 @@ apiTrapPDU = TrapPDUAPI()
 
 
 class MessageAPI:
+    """Reads and writes a v1 message: version, community, and the PDU inside."""
+
     _version = rfc1157.version.clone(0)
     _community = univ.OctetString("public")
 

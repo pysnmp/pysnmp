@@ -40,10 +40,14 @@ domainName = snmpUDPDomain = (1, 3, 6, 1, 6, 1, 1)
 
 
 class UdpTransportAddress(tuple, AbstractTransportAddress):
+    """An IPv4 endpoint, as the `(host, port)` pair `socket` uses."""
+
     pass
 
 
 class UdpAsyncioTransport(DgramAsyncioProtocol):
+    """SNMP over UDP/IPv4."""
+
     sockFamily = socket.AF_INET
     addressType = UdpTransportAddress
     # Not a bind: this is the address getsockname() reports for a socket that

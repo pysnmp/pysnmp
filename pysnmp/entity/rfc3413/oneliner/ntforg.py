@@ -38,6 +38,8 @@ class ErrorIndicationReturn:
 
 
 class AsynNotificationOriginator:
+    """Obsolete. Use `pysnmp.hlapi.asyncio`."""
+
     vbProcessor = NotificationOriginatorVarBinds()
     lcd = NotificationOriginatorLcdConfigurator()
 
@@ -150,6 +152,8 @@ class AsynNotificationOriginator:
 
 
 class NotificationOriginator:
+    """Obsolete. Use `pysnmp.hlapi`."""
+
     vbProcessor = NotificationOriginatorVarBinds()
 
     def __init__(self, snmpEngine=None, snmpContext=None, asynNtfOrg=None):

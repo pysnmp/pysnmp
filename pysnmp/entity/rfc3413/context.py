@@ -11,6 +11,13 @@ from pysnmp import debug, error
 
 
 class SnmpContext:
+    """Maps a context name to the MIB instrumentation that serves it.
+
+    A context is how one engine presents more than one set of managed objects --
+    per VRF, per virtual router, per tenant. The empty name is the default
+    context, which is what an agent with only one set of objects uses.
+    """
+
     def __init__(self, snmpEngine, contextEngineId=None):
         (snmpEngineId,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(

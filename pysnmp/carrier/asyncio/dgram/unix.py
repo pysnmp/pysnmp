@@ -25,10 +25,18 @@ domainName = snmpLocalDomain = (1, 3, 6, 1, 2, 1, 100, 1, 13)
 
 
 class UnixTransportAddress(str, AbstractTransportAddress):
+    """A Unix domain endpoint, which is a filesystem path."""
+
     pass
 
 
 class UnixAsyncioTransport(DgramAsyncioProtocol):
+    """SNMP over Unix domain datagram sockets.
+
+    Unavailable on Windows, where `AF_UNIX` does not exist and the constructor
+    raises.
+    """
+
     sockFamily = AF_UNIX
     addressType = UnixTransportAddress
 

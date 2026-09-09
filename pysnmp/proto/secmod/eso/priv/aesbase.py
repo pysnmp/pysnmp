@@ -21,6 +21,14 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 
 class AbstractAesBlumenthal(aes.Aes):
+    """AES with a key extended the way Blumenthal's draft says.
+
+    AES-192 and AES-256 need more key material than a localized key provides, and
+    the two drafts that extend it disagree. This one runs the localization
+    function again over the previous output, chaining until the key is long
+    enough. A peer implementing Reeder's variant will not interoperate.
+    """
+
     serviceID: tuple[int, ...] = ()
     keySize = 0
 

@@ -44,6 +44,8 @@ flagMap = {
 
 
 class Printer:
+    """Where debug output goes, defaulting to stderr through `logging`."""
+
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
             logger = logging.getLogger("pysnmp")
@@ -68,6 +70,12 @@ NullHandler = logging.NullHandler
 
 
 class Debug:
+    """Debugging switched on for the named subsystems.
+
+    Truthiness is per flag: `debug.logger & flagIO` is what a caller tests before
+    building a message it would otherwise pay to format.
+    """
+
     defaultPrinter = None
 
     def __init__(self, *flags, **options):

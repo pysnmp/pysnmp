@@ -25,6 +25,8 @@ class AbstractVarBinds:
 
 
 class CommandGeneratorVarBinds(AbstractVarBinds):
+    """Variable bindings for requests: resolves names to OIDs and back."""
+
     def makeVarBinds(self, snmpEngine: Any, varBinds: Any) -> list[Any]:
         mibViewController = self.getMibViewController(snmpEngine)
         __varBinds = []
@@ -61,6 +63,13 @@ class CommandGeneratorVarBinds(AbstractVarBinds):
 
 
 class NotificationOriginatorVarBinds(AbstractVarBinds):
+    """Variable bindings for notifications, which carry their own MIB lookups.
+
+    Unlike the command generator, this does not resolve replies by default: a
+    notification's bindings were built locally and are already what the caller
+    passed in.
+    """
+
     def makeVarBinds(self, snmpEngine: Any, varBinds: Any) -> list[Any]:
         mibViewController = self.getMibViewController(snmpEngine)
         if isinstance(varBinds, NotificationType):

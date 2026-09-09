@@ -16,6 +16,13 @@ __all__ = ["AbstractMibInstrumController", "MibInstrumController"]
 
 
 class AbstractMibInstrumController:
+    """What the agent side needs from whatever serves its managed objects.
+
+    Three operations, matching the request types: read the objects named, read the
+    ones following them, and write. Implement this to serve objects from
+    something other than a loaded MIB.
+    """
+
     def readVars(
         self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
     ) -> list[Any]:
@@ -33,6 +40,14 @@ class AbstractMibInstrumController:
 
 
 class MibInstrumController(AbstractMibInstrumController):
+    """Serves managed objects out of the MIB modules a builder loaded.
+
+    Each operation runs as a state machine over every variable binding at once,
+    which is what SNMP requires of a write: every binding is tested before any is
+    committed, and a failure anywhere rolls all of them back, so a SET either
+    happens completely or not at all.
+    """
+
     fsmReadVar: dict[tuple[str, str], str] = {
         # ( state, status ) -> newState
         ("start", "ok"): "readTest",

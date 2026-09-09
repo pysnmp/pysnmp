@@ -42,6 +42,13 @@ class AbstractLcdConfigurator:
 
 
 class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
+    """Configures the engine to send requests, and tears that down again.
+
+    Entries are reference-counted: configuring the same credentials twice adds a
+    user rather than a second set of rows, and the rows go away when the last user
+    unconfigures.
+    """
+
     cacheKeys = ["auth", "parm", "tran", "addr"]
 
     def configure(
@@ -209,6 +216,13 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
 
 
 class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
+    """Configures the engine to send notifications, and tears that down again.
+
+    Builds on the command generator's configuration, since a notification still
+    needs a target and credentials, and adds the notification and filter rows on
+    top.
+    """
+
     cacheKeys = ["auth", "name"]
     _cmdGenLcdCfg = CommandGeneratorLcdConfigurator()
 

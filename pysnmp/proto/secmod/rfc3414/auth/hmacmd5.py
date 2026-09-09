@@ -25,6 +25,8 @@ _fortyEightZeros = (0,) * 48
 
 
 class HmacMd5(base.AbstractAuthenticationService):
+    """HMAC-MD5-96. Broken; use `HmacSha2` instead."""
+
     serviceID: tuple[int, ...] = (
         1,
         3,

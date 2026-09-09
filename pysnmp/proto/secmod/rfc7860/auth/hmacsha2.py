@@ -18,6 +18,12 @@ from pysnmp.proto.secmod.rfc3414.auth import base
 
 
 class HmacSha2(base.AbstractAuthenticationService):
+    """HMAC-SHA-2, at 224, 256, 384 or 512 bits.
+
+    One class for all four: `serviceID` picks which, and the hash, key length and
+    digest length follow from it.
+    """
+
     sha224ServiceID = (1, 3, 6, 1, 6, 3, 10, 1, 1, 4)  # usmHMAC128SHA224AuthProtocol
     sha256ServiceID = (1, 3, 6, 1, 6, 3, 10, 1, 1, 5)  # usmHMAC192SHA256AuthProtocol
     sha384ServiceID = (1, 3, 6, 1, 6, 3, 10, 1, 1, 6)  # usmHMAC256SHA384AuthProtocol

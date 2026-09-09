@@ -39,6 +39,8 @@ unSpecified = UnSpecified("")
 
 
 class NoSuchObject(univ.Null):
+    """Returned in place of a value when the object does not exist."""
+
     tagSet = univ.Null.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0x00)
     )
@@ -51,6 +53,8 @@ noSuchObject = NoSuchObject("")
 
 
 class NoSuchInstance(univ.Null):
+    """Returned in place of a value when the object exists but this instance does not."""
+
     tagSet = univ.Null.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0x01)
     )
@@ -63,6 +67,8 @@ noSuchInstance = NoSuchInstance("")
 
 
 class EndOfMibView(univ.Null):
+    """Returned by GETNEXT and GETBULK when there is nothing past this OID."""
+
     tagSet = univ.Null.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0x02)
     )
@@ -149,6 +155,13 @@ maxRepetitions = univ.Integer().subtype(
 
 # Base class for bulk PDU
 class BulkPDU(univ.Sequence):
+    """What GETBULK adds to a PDU: how many objects to fetch, and how many times.
+
+    The request-id and bindings are as in any PDU, but the two fields where a
+    response carries error status and index instead carry `non-repeaters` and
+    `max-repetitions`.
+    """
+
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("request-id", rfc1902.Integer32()),
         namedtype.NamedType("non-repeaters", nonRepeaters),
@@ -158,48 +171,69 @@ class BulkPDU(univ.Sequence):
 
 
 class GetRequestPDU(PDU):
+    """GET: fetch the objects named."""
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
     )
 
 
 class GetNextRequestPDU(PDU):
+    """GETNEXT: fetch the objects following those named."""
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
     )
 
 
 class ResponsePDU(PDU):
+    """The answer to a request."""
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2)
     )
 
 
 class SetRequestPDU(PDU):
+    """SET: write the values given."""
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3)
     )
 
 
 class GetBulkRequestPDU(BulkPDU):
+    """GETBULK: walk several objects at once, in one round trip."""
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 5)
     )
 
 
 class InformRequestPDU(PDU):
+    """A notification that is acknowledged, so the sender knows it arrived."""
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 6)
     )
 
 
 class SNMPv2TrapPDU(PDU):
+    """A notification that is not acknowledged."""
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 7)
     )
 
 
 class ReportPDU(PDU):
+    """How the engine reports a problem with the message itself.
+
+    Sent instead of a response when the failure is below the application -- an
+    unknown engine ID, a wrong authentication digest, a timestamp outside the
+    window -- and carries the counter that says which.
+    """
+
     tagSet = PDU.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 8)
     )
