@@ -451,6 +451,58 @@ class TestBuilderWithACorpus:
         with pytest.raises(error.SmiError, match="no texts"):
             builder.setMibCorpus(corpus)
 
+    def test_type_resolves_when_imports_names_a_module_without_it(
+        self, builder, corpus, monkeypatch
+    ):
+        # A vendor module written against an older revision of a standard
+        # module imports a type that revision defined and the current one does
+        # not -- BRIDGE-MIB is the recurring case, since RFC 1493 defined
+        # MacAddress and RFC 4188 imports it from SNMPv2-TC instead. The
+        # corpus carries the newer revision because that is what the ranking
+        # rule picks, so following IMPORTS literally fails. Refusing to build
+        # the whole module over one type is worse than resolving it from where
+        # it actually lives.
+        monkeypatch.setattr(
+            corpus,
+            "imports_of",
+            lambda module: (
+                {"OCTET STRING": "NO-SUCH-MIB"}
+                if module == "FIXTURE-MIB"
+                else corpus.__class__.imports_of(corpus, module)
+            ),
+        )
+
+        (column,) = builder.importSymbols("FIXTURE-MIB", "fixtureDescr")
+
+        assert column.getName() == (1, 3, 6, 1, 4, 1, 99999, 2, 1, 9)
+
+    def test_type_that_resolves_nowhere_still_raises(
+        self, builder, corpus, monkeypatch
+    ):
+        # The fallback must not become a silent substitution: a column typed
+        # as its base instead of its TEXTUAL-CONVENTION renders every value
+        # wrong and looks like a device fault.
+        monkeypatch.setattr(
+            corpus,
+            "symbols_of",
+            lambda module: (
+                [
+                    {
+                        "name": "Bogus",
+                        "class": "textualconvention",
+                        "status": "current",
+                        "displayhint": None,
+                        "type": {"type": "NoSuchTypeAnywhere", "class": "type"},
+                    }
+                ]
+                if module == "FIXTURE-MIB"
+                else corpus.__class__.symbols_of(corpus, module)
+            ),
+        )
+
+        with pytest.raises(error.SmiError, match="no definition for type"):
+            builder.loadModule("FIXTURE-MIB")
+
     def test_corpus_can_be_removed(self, builder):
         builder.setMibCorpus(None)
 

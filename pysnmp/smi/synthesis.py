@@ -193,33 +193,60 @@ class _Resolver:
             module, symbol = spelling
             (resolved,) = self._builder.importSymbols(module, symbol)
 
-        elif name in self._imports:
-            (resolved,) = self._builder.importSymbols(self._imports[name], name)
-
         else:
-            # Not imported and not declared here. Some MIBs use a standard
-            # type without importing it, which is a defect in the MIB that
-            # every compiler has had to tolerate; try the two modules that
-            # define almost all of them before giving up.
             resolved = None
 
-            for module in ("SNMPv2-SMI", "SNMPv2-TC"):
-                try:
-                    (resolved,) = self._builder.importSymbols(module, name)
-                    break
+            if name in self._imports:
+                # Where IMPORTS says it comes from, which is right almost
+                # always and wrong in one recurring way: a vendor module
+                # written against an older revision of a standard module
+                # imports a type that revision defined and the current one
+                # does not. BRIDGE-MIB is the case that keeps coming up --
+                # RFC 1493 defined MacAddress, RFC 4188 imports it from
+                # SNMPv2-TC instead -- and the corpus carries the newer
+                # revision because that is what the ranking rule picks.
+                resolved = self._try(self._imports[name], name)
 
-                except error.SmiError:
-                    continue
+            if resolved is None:
+                # Not where the MIB said, or not imported at all. Some MIBs
+                # simply use a standard type without importing it. Either way
+                # the two modules that define almost all of them are worth
+                # trying before giving up on the whole module: an unresolved
+                # import is a degrade, and refusing to load anything is worse
+                # than resolving a type from where it actually lives.
+                for module in ("SNMPv2-TC", "SNMPv2-SMI"):
+                    resolved = self._try(module, name)
+
+                    if resolved is not None:
+                        break
 
             if resolved is None:
                 raise error.SmiError(
                     f"{self._module}: no definition for type {name!r}, which it "
-                    f"neither declares nor imports"
+                    f"neither declares nor imports from anything that has it"
                 )
 
         self._cache[name] = resolved
 
         return resolved
+
+    def _try(self, module: str, name: str) -> Any | None:
+        """Import a symbol, or ``None`` if that module has no such thing.
+
+        Args:
+            module: where to look
+            name: the symbol
+
+        Returns:
+            The symbol, or ``None``.
+        """
+        try:
+            (symbol,) = self._builder.importSymbols(module, name)
+
+        except error.SmiError:
+            return None
+
+        return symbol
 
     def constraints(self, spec: dict[str, Any]) -> Any | None:
         """The subtype constraint a specification asks for, or ``None``.
