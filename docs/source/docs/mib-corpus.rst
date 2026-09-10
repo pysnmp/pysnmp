@@ -87,6 +87,76 @@ Pass ``None`` to stop using one. The corpus is opened read-only with SQLite's
 which is what lets it be mounted from a Kubernetes image volume.
 
 
+Several corpora at once
+-----------------------
+
+A deployment rarely has one corpus. It has the distribution's, covering the
+standard modules and whatever vendors shipped with it, and it has its own --
+the enterprise MIBs its devices actually speak, which nobody else publishes.
+``CompositeMibCorpus`` searches several as one:
+
+.. code-block:: python
+
+   from pysnmp.smi.corpus import open_corpora
+
+   mibBuilder.setMibCorpus(open_corpora(["/mibs/site.db", "/mibs/core.db"]))
+
+Or from the environment, which is the same thing without the imports:
+
+.. code-block:: shell
+
+   PYSNMP_MIB_DBS=/mibs/site.db:/mibs/core.db
+
+Like ``PYSNMP_MIB_DIRS``, it is an ``os.pathsep``-separated list read when a
+``MibBuilder`` is constructed, and the order is the precedence order. A path
+naming something that is not a readable corpus raises ``SmiError`` there and
+then, rather than being skipped: a skipped corpus leaves a deployment resolving
+fewer modules than it asked for, and the only symptom is a MIB that used to be
+found and now is not.
+
+**The newest MODULE-IDENTITY revision wins; configured order only breaks the
+tie.** This is the rule ``MibBuilder`` already applies to two MIB sources
+carrying one module, and the rule pysmi's compiler applies to two copies of one
+MIB, applied here to corpora. Two corpora carrying a module are carrying the
+same specification at two revisions, and the newer one is the answer wherever
+it sits in the search path -- so configuring a corpus that happens to carry an
+older copy cannot silently roll that module back.
+
+Order settles what revisions cannot: when a candidate states no revision at all
+-- every SMIv1 module, and the SMI modules themselves -- or when they all state
+the same one.
+
+**By OID, the longest prefix wins first.** Given a site subtree under an arc the
+core corpus already anchors, first-match-wins would resolve every OID beneath it
+to the core corpus's shallow anchor and never reach the site corpus at all -- no
+matter which was configured first:
+
+.. code-block:: python
+
+   store = open_corpora(["/mibs/core.db", "/mibs/site.db"])
+
+   # core.db anchors 1.3.6.1.4.1.9; site.db anchors the subtree itself.
+   store.find_module("1.3.6.1.4.1.9.9.42.1.1")   # -> 'SITE-MIB'
+
+The revision rule settles only what a shorter prefix cannot: two corpora naming
+*different* modules at the same prefix length.
+
+**Both paths reach the same copy.** An OID resolves to a module name, and that
+name then goes through the revision rule like any other. A corpus can anchor an
+OID without owning the module it names -- the anchor says which module answers,
+and the revision says whose copy of it is read.
+
+**One module resolves from exactly one corpus.** Where two carry the same
+module, every name-keyed lookup for it routes to the same one and the other's
+rows for it are invisible -- not its nodes, not its types, not its IMPORTS.
+Merging them would build one module from two definitions and produce two
+classes for one type, which fails ``isinstance`` somewhere far from here.
+
+``loadTexts`` is reported for the composite only when *every* corpus carries
+prose, so one textless corpus in the search path is refused rather than
+silently answering with no DESCRIPTION for the modules it owns.
+
+
 Resolving a trap OID without a compiler
 ---------------------------------------
 

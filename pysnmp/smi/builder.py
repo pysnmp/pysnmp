@@ -494,6 +494,16 @@ class MibBuilder:
         nothing overrides the ones the engine itself needs, then the generated ones.
         That ordering is what lets a user's copy of a MIB shadow the bundled one
         without being able to displace the framework modules.
+
+        `PYSNMP_MIB_DBS` names corpora rather than sources and so is handled
+        separately, at the end: a corpus is searched only where the sources
+        come up empty, which is what keeps configuring one from changing any
+        answer a deployment already had.
+
+        Raises
+        ------
+            SmiError: `PYSNMP_MIB_DBS` names something that is not a readable
+                corpus.
         """
         self.lastBuildId = self._autoName = 0
         sources = []
@@ -517,6 +527,16 @@ class MibBuilder:
         self.__mibCorpus: Any = None
         self.__corpusBuilding: set[str] = set()
         self.setMibSources(*sources)
+
+        # Imported here rather than at module scope so that the default path
+        # -- no corpus configured, which is every existing deployment -- does
+        # not pay for sqlite3.
+        dbs = [x for x in os.environ.get("PYSNMP_MIB_DBS", "").split(os.pathsep) if x]
+
+        if dbs:
+            from pysnmp.smi.corpus import open_corpora
+
+            self.setMibCorpus(open_corpora(dbs))
 
     # MIB corpus management
 
@@ -548,8 +568,11 @@ class MibBuilder:
 
         Args:
             mibCorpus: an open
-                :py:class:`~pysnmp.smi.corpus.MibCorpus`, or ``None`` to stop
-                using one
+                :py:class:`~pysnmp.smi.corpus.MibCorpus`, a
+                :py:class:`~pysnmp.smi.corpus.CompositeMibCorpus` over several
+                of them, or ``None`` to stop using one. `PYSNMP_MIB_DBS` is a
+                thin layer over this: it opens the corpora it names, in the
+                order it names them, and calls this.
 
         Returns
         -------
