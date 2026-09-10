@@ -13,6 +13,7 @@ rendered from ASN.1.
 """
 
 import dis
+import enum
 import importlib
 import importlib.machinery
 import importlib.util
@@ -21,11 +22,13 @@ import os
 import struct
 import time
 import traceback
+import warnings
 from errno import ENOENT
 from typing import Any, cast
 
 from pysnmp import debug
 from pysnmp import version as pysnmp_version
+from pysnmp.error import PySnmpShadowedModuleWarning
 from pysnmp.smi import error
 from pysnmp.smi.mibs import behavior
 
@@ -38,12 +41,104 @@ PY_SUFFIXES = SOURCE_SUFFIXES + BYTECODE_SUFFIXES
 classTypes = (type,)
 
 
+class MibSourceKind(str, enum.Enum):
+    """What kind of place a module came from.
+
+    A caller asking where a symbol came from is usually asking one of two
+    questions -- is this still resolving out of the wheel, or has my corpus
+    taken over; and did this come from the copy I installed or the one the
+    framework ships -- and neither is answerable from a path alone. Two
+    directories look the same, and the package a wheel unpacks to looks like
+    any other directory.
+
+    A ``str`` enum so that a value logs, compares and serializes as its own
+    name without a caller having to import this to read it.
+    """
+
+    #: `pysnmp.smi.mibs` and `pysnmp.smi.mibs.instances` -- the modules the
+    #: engine itself needs, searched first so nothing can displace them.
+    OVERRIDE = "override"
+
+    #: `pysmi.mibs.pysnmp`, the modules generated into the wheel pysnmp
+    #: depends on. Searched last.
+    WHEEL = "wheel"
+
+    #: A plain directory of generated modules, registered by a caller.
+    DIR = "dir"
+
+    #: An importable package of generated modules, `PYSNMP_MIB_PKGS` included.
+    PKG = "pkg"
+
+    #: A corpus database, from `PYSNMP_MIB_DBS` or `setMibCorpus()`.
+    DB = "db"
+
+    #: Rendered on demand by an attached compiler, into its output directory.
+    COMPILED = "compiled"
+
+
+#: How to report a module found in more than one source.
+#:
+#: ``warn`` is the default because shadowing is a configuration a deployment
+#: may well intend -- a local copy of a vendor MIB, deliberately placed ahead
+#: of the bundled one. ``error`` is the setting for a deployment that has
+#: finished migrating off `.py` and wants any surviving copy to be fatal;
+#: ``silent`` for one that has decided to live with it.
+CONFLICT_SEVERITIES = ("warn", "error", "silent")
+
+#: The one shadowing pysnmp arranges itself, and so does not report.
+#:
+#: `defaultCoreMibs` exists to be searched ahead of `defaultGeneratedMibs`:
+#: pysnmp carries its own copy of the seven modules the engine needs and the
+#: wheel carries them too. Every stock install is therefore shadowing seven
+#: modules before a caller has configured anything, and warning about it would
+#: mean the default install warns -- which is both noise and a broken promise,
+#: since nothing about that install has changed.
+#:
+#: Any other combination is the caller's doing and is reported. A local
+#: directory shadowing the wheel is reported; a corpus shadowing an override
+#: is reported.
+FRAMEWORK_SHADOW = frozenset({MibSourceKind.OVERRIDE, MibSourceKind.WHEEL})
+
+
 class __AbstractMibSource:
-    def __init__(self, srcName: str) -> None:
-        """Records where to look. Nothing is read until `init()`."""
+    #: What a source of this class is, absent anything more specific from the
+    #: caller. `MibBuilder` overrides it for the sources it registers itself,
+    #: which are packages by class and something more particular by intent.
+    defaultKind: MibSourceKind = MibSourceKind.DIR
+
+    def __init__(
+        self,
+        srcName: str,
+        kind: "MibSourceKind | None" = None,
+        sourceId: str | None = None,
+    ) -> None:
+        """Records where to look. Nothing is read until `init()`.
+
+        Args:
+            srcName: the directory or importable package to search
+            kind: what this source is, for provenance. Defaults to what the
+                class is, which is the right answer for a caller registering
+                a directory or a package of their own
+            sourceId: a stable name for this source, defaulting to *srcName*.
+                Given separately because `ZipMibSource.init` rewrites
+                `_srcName` to a path inside the archive, and provenance has to
+                keep naming what the caller registered
+        """
         self._srcName = srcName
+        self._sourceId = srcName if sourceId is None else sourceId
+        self.mibSourceKind = self.defaultKind if kind is None else kind
         self.__inited = None
         debug.logger & debug.flagBld and debug.logger(f"trying {self}")
+
+    @property
+    def sourceId(self) -> str:
+        """A stable name for this source, as the caller named it."""
+        return self._sourceId
+
+    @property
+    def provenance(self) -> "tuple[MibSourceKind, str]":
+        """What this source is and which one it is, as provenance records it."""
+        return self.mibSourceKind, self._sourceId
 
     def __repr__(self) -> str:
         """The source and where it points, for debug logging."""
@@ -207,6 +302,8 @@ class __AbstractMibSource:
 class ZipMibSource(__AbstractMibSource):
     """MIB modules loaded out of a zip archive, including an egg or a wheel."""
 
+    defaultKind = MibSourceKind.PKG
+
     # zipimport.zipimporter carries the archive directory privately, and
     # typeshed describes neither it nor the loader `__import__` hands back, so
     # there is nothing narrower to say here than what `_archiveFiles` checks.
@@ -240,6 +337,11 @@ class ZipMibSource(__AbstractMibSource):
         what a wheel unpacks to -- so this hands back a ``DirMibSource`` for
         both the installed and the relative-to-CWD case, and answers with
         itself only for a genuine archive.
+
+        A substitute carries this source's kind and id rather than taking a
+        directory's: which of them serves a package is an installation detail,
+        and provenance that changed with it would report `dir` for the same
+        wheel a zip install reports `wheel` for.
         """
         try:
             p = __import__(self._srcName, globals(), locals(), ["__init__"])
@@ -254,13 +356,19 @@ class ZipMibSource(__AbstractMibSource):
                 # Dir relative to PYTHONPATH. __file__ is Optional -- a
                 # namespace package has none -- but the guard above has
                 # already established this one has a path.
-                return DirMibSource(os.path.split(cast(str, p.__file__))[0]).init()
+                return DirMibSource(
+                    os.path.split(cast(str, p.__file__))[0],
+                    kind=self.mibSourceKind,
+                    sourceId=self._sourceId,
+                ).init()
             else:
                 raise error.MibLoadError(f"{p} access error")
 
         except ImportError:
             # Dir relative to CWD
-            return DirMibSource(self._srcName).init()
+            return DirMibSource(
+                self._srcName, kind=self.mibSourceKind, sourceId=self._sourceId
+            ).init()
 
     def fullPath(self, *args: Any) -> str:
         """Qualify the archive member with the archive it lives in.
@@ -469,6 +577,15 @@ class MibBuilder:
 
     loadTexts = False
 
+    #: What to do about a module more than one source carries: ``warn``,
+    #: ``error`` or ``silent``, from `CONFLICT_SEVERITIES`.
+    #:
+    #: Shared with the compiler's own idea of severity in the sense that it
+    #: answers the same question -- a deployment part-way through migrating off
+    #: generated `.py` wants to see what is still shadowed, and one that has
+    #: finished wants any survivor to be fatal.
+    moduleConflictSeverity = "warn"
+
     # MIB modules can use this to select the features they can use
     version = pysnmp_version
 
@@ -515,17 +632,19 @@ class MibBuilder:
             for m in self.defaultMiscMibs.split(os.pathsep):
                 sources.append(ZipMibSource(m))
         for m in self.defaultCoreMibs.split(os.pathsep):
-            sources.insert(0, ZipMibSource(m))
+            sources.insert(0, ZipMibSource(m, kind=MibSourceKind.OVERRIDE))
         if self.defaultGeneratedMibs:
             for m in self.defaultGeneratedMibs.split(os.pathsep):
-                sources.append(ZipMibSource(m))
+                sources.append(ZipMibSource(m, kind=MibSourceKind.WHEEL))
         self.mibSymbols: dict[str, dict[str, Any]] = {}
         self.__mibSources: list[MibSource] = []
         self.__modSeen: dict[str, str] = {}
         self.__modPathsSeen: set[str] = set()
+        self.__modProvenance: dict[str, tuple[MibSourceKind, str]] = {}
         self.__mibCompiler: Any = None
         self.__mibCorpus: Any = None
         self.__corpusBuilding: set[str] = set()
+        self.__shadowsReported = False
         self.setMibSources(*sources)
 
         # Imported here rather than at module scope so that the default path
@@ -579,6 +698,7 @@ class MibBuilder:
             This builder.
         """
         self.__mibCorpus = mibCorpus
+        self.__shadowsReported = False
 
         return self
 
@@ -679,6 +799,18 @@ class MibBuilder:
         self.__modSeen[modName] = f"corpus:{self.__mibCorpus.path}/{modName}"
         self.__modPathsSeen.add(self.__modSeen[modName])
 
+        # Which corpus, not which composite: a module resolves from exactly
+        # one, and naming the whole search path would make provenance unable
+        # to tell a distro corpus from a customer one, which is most of what
+        # it is for.
+        owner = getattr(self.__mibCorpus, "owner", None)
+        carrier = owner(modName) if owner else None
+
+        self.__modProvenance[modName] = (
+            MibSourceKind.DB,
+            getattr(carrier, "path", self.__mibCorpus.path),
+        )
+
         debug.logger & debug.flagBld and debug.logger(
             f"loadModule: {modName} built from corpus {self.__mibCorpus.path}"
         )
@@ -697,7 +829,7 @@ class MibBuilder:
         Adding the source is the point: a module the compiler renders has to be
         loadable afterwards, and nothing else would put that directory on the path.
         """
-        self.addMibSources(DirMibSource(destDir))
+        self.addMibSources(DirMibSource(destDir, kind=MibSourceKind.COMPILED))
         self.__mibCompiler = mibCompiler
         return self
 
@@ -706,6 +838,7 @@ class MibBuilder:
     def addMibSources(self, *mibSources: Any) -> None:
         """Add sources to search, opening each one."""
         self.__mibSources.extend([s.init() for s in mibSources])
+        self.__shadowsReported = False
         debug.logger & debug.flagBld and debug.logger(
             f"addMibSources: new MIB sources {self.__mibSources}"
         )
@@ -713,6 +846,7 @@ class MibBuilder:
     def setMibSources(self, *mibSources: Any) -> None:
         """Replace the sources to search, opening each one."""
         self.__mibSources = [s.init() for s in mibSources]
+        self.__shadowsReported = False
         debug.logger & debug.flagBld and debug.logger(
             f"setMibSources: new MIB sources {self.__mibSources}"
         )
@@ -730,6 +864,155 @@ class MibBuilder:
         ask.
         """
         return self.__modSeen.get(modName)
+
+    def getModuleProvenance(self, modName: str) -> "tuple[MibSourceKind, str] | None":
+        """What kind of source a loaded module came from, and which one.
+
+        `getModulePath` answers with a path, which is what a person reads and
+        not what a program can act on: a wheel and a directory of overrides are
+        both directories, and a corpus is not a path in the sense the others
+        are. This answers ``(kind, source_id)`` instead -- the kind for
+        deciding, the id for telling two sources of that kind apart, a distro
+        corpus from a customer one above all.
+
+        Tracked per module rather than per node. One module resolves from one
+        source, so a per-node record would be the same answer repeated once per
+        OID: on the order of a thousand entries either way against several
+        hundred thousand.
+
+        Args:
+            modName: the module, as it was loaded
+
+        Returns
+        -------
+            The pair, or ``None`` for a module that is not loaded. A module
+            that was unloaded is not loaded.
+        """
+        return self.__modProvenance.get(modName)
+
+    def __corporaInPlay(self) -> "tuple[Any, ...]":
+        """The corpora configured, flattened out of a composite if it is one."""
+        if self.__mibCorpus is None:
+            return ()
+
+        return tuple(getattr(self.__mibCorpus, "corpora", (self.__mibCorpus,)))
+
+    def shadowedModules(self) -> "dict[str, list[tuple[MibSourceKind, str]]]":
+        """Modules more than one source can supply, and which sources those are.
+
+        Name-level only, and deliberately: answering whether two copies of a
+        module differ means reading and normalizing both, which is the work a
+        corpus exists to avoid. So this reports *shadowing* -- that a second
+        copy exists and will be passed over -- and never claims the copies are
+        equal or that they differ.
+
+        Sources in the order `_candidates` searches them, then the corpora.
+        That is not the winning order: revision decides among sources, and
+        reading it means reading every candidate module, which is the cost
+        this avoids. A caller wanting the copy that actually won asks
+        `getModuleProvenance` once the module is loaded.
+
+        Returns
+        -------
+            Module name to the sources carrying it, for the modules more than
+            one source carries. Empty when nothing is shadowed.
+        """
+        carriers: dict[str, list[tuple[MibSourceKind, str]]] = {}
+
+        for mibSource in self.__mibSources:
+            for modName in mibSource.listdir():
+                carriers.setdefault(modName, []).append(mibSource.provenance)
+
+        for corpus in self.__corporaInPlay():
+            for modName in corpus.modules():
+                carriers.setdefault(modName, []).append((MibSourceKind.DB, corpus.path))
+
+        return {modName: found for modName, found in carriers.items() if len(found) > 1}
+
+    def reportShadowedModules(self) -> "dict[str, list[tuple[MibSourceKind, str]]]":
+        """Report every shadowed module once, at the configured severity.
+
+        Enumerating every source is the cost, and `loadModules()` called with
+        no names already pays it, so that is the path that calls this. A caller
+        who loads modules by name and still wants the report calls it directly.
+
+        Reported once per builder, so a program that loads modules in several
+        passes does not emit the same lines each time. `addMibSources`,
+        `setMibSources` and `setMibCorpus` arm it again, since any of them can
+        create a collision that did not exist before.
+
+        `FRAMEWORK_SHADOW` is left out -- pysnmp's own copies of the engine
+        modules shadowing the wheel's is what the search order is for, and a
+        stock install would otherwise warn seven times having configured
+        nothing. `shadowedModules` still reports it, being a question about
+        the sources rather than about the configuration.
+
+        Raises
+        ------
+            SmiError: `moduleConflictSeverity` is ``error`` and something is
+                shadowed, or it is not one of `CONFLICT_SEVERITIES`.
+
+        Returns
+        -------
+            What `shadowedModules` returned, so a caller can act on it without
+            enumerating a second time.
+        """
+        if self.moduleConflictSeverity not in CONFLICT_SEVERITIES:
+            raise error.SmiError(
+                f"moduleConflictSeverity is {self.moduleConflictSeverity!r}, "
+                f"expected one of {', '.join(CONFLICT_SEVERITIES)}"
+            )
+
+        shadowed = {
+            modName: found
+            for modName, found in self.shadowedModules().items()
+            if {kind for kind, _ in found} != FRAMEWORK_SHADOW
+        }
+
+        if self.__shadowsReported or not shadowed:
+            self.__shadowsReported = True
+            return shadowed
+
+        self.__shadowsReported = True
+
+        # Counted apart from the per-module lines. A deployment whose second
+        # corpus mostly repeats the first is paying for both and getting one,
+        # and at that scale the per-module lines are too many to read -- the
+        # total is what makes it visible.
+        overlapping = sum(
+            1
+            for found in shadowed.values()
+            if sum(1 for kind, _ in found if kind is MibSourceKind.DB) > 1
+        )
+
+        for modName, found in sorted(shadowed.items()):
+            first, *rest = found
+            line = (
+                f"{modName} is carried by {len(found)} sources: "
+                f"{first[0].value}:{first[1]} is searched first, shadowing "
+                + ", ".join(f"{kind.value}:{name}" for kind, name in rest)
+            )
+
+            debug.logger & debug.flagBld and debug.logger(
+                f"reportShadowedModules: {line}"
+            )
+
+            if self.moduleConflictSeverity == "warn":
+                warnings.warn(line, PySnmpShadowedModuleWarning, stacklevel=2)
+
+        if overlapping:
+            debug.logger & debug.flagBld and debug.logger(
+                f"reportShadowedModules: {overlapping} modules are carried by "
+                f"more than one corpus"
+            )
+
+        if self.moduleConflictSeverity == "error":
+            raise error.SmiError(
+                f"{len(shadowed)} MIB modules are carried by more than one "
+                f"source: {', '.join(sorted(shadowed))}"
+            )
+
+        return shadowed
 
     # Legacy/compatibility methods (won't work for .eggs)
     def setMibPath(self, *mibPaths: str) -> None:
@@ -867,6 +1150,7 @@ class MibBuilder:
                 ) from e
 
             self.__modSeen[modName] = modPath
+            self.__modProvenance[modName] = mibSource.provenance
 
             debug.logger & debug.flagBld and debug.logger(
                 f"loadModule: loaded {modPath}"
@@ -896,6 +1180,13 @@ class MibBuilder:
                 for modName in mibSource.listdir():
                     found[modName] = None
             names = tuple(found)
+
+            # Enumerating every source is the whole cost of the shadow report
+            # and this path has just paid it, so it is the one place the
+            # report is free. Before loading anything, so that a deployment
+            # configured to treat shadowing as fatal fails before it has half
+            # a MIB set in memory.
+            self.reportShadowedModules()
 
         if not names:
             raise error.MibNotFoundError(f"No MIB module to load at {self}")
@@ -944,6 +1235,7 @@ class MibBuilder:
             self.unexportSymbols(modName)
             self.__modPathsSeen.remove(self.__modSeen[modName])
             del self.__modSeen[modName]
+            self.__modProvenance.pop(modName, None)
 
             debug.logger & debug.flagBld and debug.logger(f"unloadModules: {modName}")
 
