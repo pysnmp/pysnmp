@@ -82,16 +82,8 @@ def passwordToKeyMD5(passphrase, snmpEngineId):
 
 
 def passwordToKeySHA(passphrase, snmpEngineId):
-    """A passphrase localized to `snmpEngineId` with SHA-1.
-
-    Does not implement :RFC:`3414#appendix-A.2.2`: the passphrase is hashed with
-    MD5 rather than SHA-1 before being localized, so the key this returns does not
-    match what another implementation derives from the same passphrase. Nothing in
-    pysnmp calls it -- the SHA-1 authentication service uses `hashPassphraseSHA()`
-    and `localizeKeySHA()`, which are correct -- and changing it would change the
-    keys of anyone who does.
-    """
-    return localizeKey(hashPassphraseMD5(passphrase), snmpEngineId, sha1)
+    """A SHA-1 passphrase hashed and localized to `snmpEngineId`."""
+    return localizeKey(hashPassphraseSHA(passphrase), snmpEngineId, sha1)
 
 
 def localizeKeyMD5(passKey, snmpEngineId):
