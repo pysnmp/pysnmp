@@ -24,6 +24,8 @@ MibVariable = ObjectIdentity
 
 
 class AsynCommandGenerator:
+    """Obsolete. Use `pysnmp.hlapi.asyncio`."""
+
     _null = univ.Null("")
 
     vbProcessor = CommandGeneratorVarBinds()
@@ -256,6 +258,8 @@ class AsynCommandGenerator:
 
 
 class CommandGenerator:
+    """Obsolete. Use `pysnmp.hlapi`."""
+
     _null = univ.Null("")
 
     def __init__(self, snmpEngine=None, asynCmdGen=None):

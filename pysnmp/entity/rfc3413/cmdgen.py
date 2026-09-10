@@ -51,6 +51,13 @@ def getNextVarBinds(varBinds, origVarBinds=None):
 
 
 class CommandGenerator:
+    """Sends a request and matches the response back to it.
+
+    Handles what happens between those two: retries on timeout, and the SNMPv3
+    discovery exchange where the first request comes back as a report naming the
+    remote engine, and is then reissued against it.
+    """
+
     _null = univ.Null("")
 
     #: Deprecated pre-4.4 entry point, superseded by sendVarBinds(). The
@@ -312,6 +319,8 @@ CommandGeneratorBase = CommandGenerator
 
 
 class GetCommandGenerator(CommandGenerator):
+    """Sends GET: fetch exactly the objects named."""
+
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
@@ -354,6 +363,8 @@ class GetCommandGenerator(CommandGenerator):
 
 
 class SetCommandGenerator(CommandGenerator):
+    """Sends SET: write the values given."""
+
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
@@ -396,6 +407,8 @@ class SetCommandGenerator(CommandGenerator):
 
 
 class NextCommandGeneratorSingleRun(CommandGenerator):
+    """Sends one GETNEXT: the objects following those named, and no further."""
+
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
@@ -438,6 +451,13 @@ class NextCommandGeneratorSingleRun(CommandGenerator):
 
 
 class NextCommandGenerator(NextCommandGeneratorSingleRun):
+    """Walks with GETNEXT, reissuing until the subtree runs out.
+
+    Each response becomes the next request, so one call to `sendVarBinds` covers
+    the whole walk. `ignoreNonIncreasingOid` decides what to do about an agent
+    whose OIDs do not advance, which would otherwise loop forever.
+    """
+
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
@@ -505,6 +525,8 @@ class NextCommandGenerator(NextCommandGeneratorSingleRun):
 
 
 class BulkCommandGeneratorSingleRun(CommandGenerator):
+    """Sends one GETBULK: up to `maxRepetitions` rows, and no further."""
+
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
@@ -570,6 +592,8 @@ class BulkCommandGeneratorSingleRun(CommandGenerator):
 
 
 class BulkCommandGenerator(BulkCommandGeneratorSingleRun):
+    """Walks with GETBULK, reissuing until the subtree runs out."""
+
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):

@@ -24,6 +24,8 @@ pMod = api.protoModules[api.protoVersion2c]
 
 
 class ScopedPDU(univ.Sequence):
+    """A PDU together with the context it applies to."""
+
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("contextEngineId", univ.OctetString()),
         namedtype.NamedType("contextName", univ.OctetString()),
@@ -32,6 +34,8 @@ class ScopedPDU(univ.Sequence):
 
 
 class ScopedPduData(univ.Choice):
+    """The scoped PDU, either in the clear or encrypted."""
+
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("plaintext", ScopedPDU()),
         namedtype.NamedType("encryptedPDU", univ.OctetString()),
@@ -39,6 +43,13 @@ class ScopedPduData(univ.Choice):
 
 
 class HeaderData(univ.Sequence):
+    """The part of a v3 message every security model can read.
+
+    The message ID, the size the sender will accept, the flags saying whether it
+    is authenticated, encrypted and reportable, and which security model to hand
+    the rest to.
+    """
+
     componentType = namedtype.NamedTypes(
         namedtype.NamedType(
             "msgID",
@@ -71,6 +82,8 @@ class HeaderData(univ.Sequence):
 
 
 class SNMPv3Message(univ.Sequence):
+    """A v3 message: version, header, security parameters, and the scoped PDU."""
+
     componentType = namedtype.NamedTypes(
         namedtype.NamedType(
             "msgVersion",
@@ -96,6 +109,13 @@ _snmpErrors = {
 
 
 class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
+    """Message processing for SNMPv3.
+
+    Separates the context from the security parameters, which is what lets v3 use
+    any security model: this handles the message, and USM or another model handles
+    authenticating and encrypting what is inside it.
+    """
+
     messageProcessingModelID = univ.Integer(3)  # SNMPv3
     snmpMsgSpec: type[Any] = SNMPv3Message
     _emptyStr = univ.OctetString("")

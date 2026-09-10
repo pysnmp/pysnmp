@@ -25,6 +25,8 @@ _fortyFourZeros = (0,) * 44
 
 
 class HmacSha(base.AbstractAuthenticationService):
+    """HMAC-SHA-96. Weak; use `HmacSha2` instead."""
+
     serviceID: tuple[int, ...] = (
         1,
         3,

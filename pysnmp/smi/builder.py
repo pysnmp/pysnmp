@@ -185,6 +185,8 @@ class __AbstractMibSource:
 
 
 class ZipMibSource(__AbstractMibSource):
+    """MIB modules loaded out of a zip archive, including an egg or a wheel."""
+
     # zipimport.zipimporter carries the archive directory privately, and
     # typeshed describes neither it nor the loader `__import__` hands back, so
     # there is nothing narrower to say here than what `_archiveFiles` checks.
@@ -322,6 +324,8 @@ MibSource = __AbstractMibSource
 
 
 class DirMibSource(__AbstractMibSource):
+    """MIB modules loaded out of a filesystem directory."""
+
     def _init(self) -> Any:
         self._srcName = os.path.normpath(self._srcName)
         return self
@@ -400,6 +404,14 @@ def revisionOf(codeObj: Any) -> str | None:
 
 
 class MibBuilder:
+    """Loads MIB modules and holds the symbols they define.
+
+    A module is searched for across every registered source, and where more than
+    one source has it, the copy stating the newest MODULE-IDENTITY revision wins;
+    search order settles only what the revisions cannot. Loading a module loads
+    what it IMPORTS first, so asking for one symbol can pull in a graph of them.
+    """
+
     defaultCoreMibs = os.pathsep.join(("pysnmp.smi.mibs.instances", "pysnmp.smi.mibs"))
     defaultMiscMibs = "pysnmp_mibs"
 

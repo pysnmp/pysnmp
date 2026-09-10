@@ -62,6 +62,8 @@ def _run_or_raise_serialization_error(operation: Callable[[], _T], logLabel: str
 
 
 class UsmSecurityParameters(univ.Sequence):
+    """The USM header: whose engine, how far along its clock, which user, and the digest."""
+
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("msgAuthoritativeEngineId", univ.OctetString()),
         namedtype.NamedType(
@@ -88,6 +90,14 @@ class UsmSecurityParameters(univ.Sequence):
 
 
 class SnmpUSMSecurityModel(AbstractSecurityModel):
+    """USM: per-user authentication and encryption for SNMPv3.
+
+    Keys are localized to the authoritative engine, so this first has to learn
+    which engine that is and how far along its clock is -- the discovery exchange,
+    where the first request comes back as a report. Messages outside the time
+    window are refused, which is what stops a replay.
+    """
+
     securityModelID = 3
     authServices = {
         hmacmd5.HmacMd5.serviceID: hmacmd5.HmacMd5(),

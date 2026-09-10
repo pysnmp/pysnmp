@@ -51,24 +51,32 @@ class _RequestBase(univ.Sequence):
 
 
 class GetRequestPDU(_RequestBase):
+    """GET: fetch the objects named."""
+
     tagSet = _RequestBase.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
     )
 
 
 class GetNextRequestPDU(_RequestBase):
+    """GETNEXT: fetch the objects following those named."""
+
     tagSet = _RequestBase.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
     )
 
 
 class GetResponsePDU(_RequestBase):
+    """The answer to a v1 request. Renamed `ResponsePDU` in v2c."""
+
     tagSet = _RequestBase.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2)
     )
 
 
 class SetRequestPDU(_RequestBase):
+    """SET: write the values given."""
+
     tagSet = _RequestBase.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 3)
     )
@@ -88,6 +96,13 @@ genericTrap = univ.Integer().clone(
 
 
 class TrapPDU(univ.Sequence):
+    """A v1 trap, which is shaped unlike every other PDU.
+
+    It names the enterprise and agent that sent it and a generic and specific
+    trap number, where v2c and later carry the same information as ordinary
+    variable bindings.
+    """
+
     tagSet = univ.Sequence.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 4)
     )

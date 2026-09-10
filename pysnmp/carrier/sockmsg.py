@@ -33,10 +33,14 @@ in_addr_t = uint32_t
 
 
 class in_addr(ctypes.Structure):
+    """The C `struct in_addr`: one IPv4 address."""
+
     _fields_ = [("s_addr", in_addr_t)]
 
 
 class in6_addr_U(ctypes.Union):
+    """The union inside `struct in6_addr`, viewing the address at three widths."""
+
     _fields_ = [
         ("__u6_addr8", ctypes.c_uint8 * 16),
         ("__u6_addr16", ctypes.c_uint16 * 8),
@@ -45,12 +49,16 @@ class in6_addr_U(ctypes.Union):
 
 
 class in6_addr(ctypes.Structure):
+    """The C `struct in6_addr`: one IPv6 address."""
+
     _fields_ = [
         ("__in6_u", in6_addr_U),
     ]
 
 
 class in_pktinfo(ctypes.Structure):
+    """The C `struct in_pktinfo`: which interface and local address a datagram used."""
+
     _fields_ = [
         ("ipi_ifindex", ctypes.c_int),
         ("ipi_spec_dst", in_addr),
@@ -59,6 +67,8 @@ class in_pktinfo(ctypes.Structure):
 
 
 class in6_pktinfo(ctypes.Structure):
+    """The C `struct in6_pktinfo`: the IPv6 form of `in_pktinfo`."""
+
     _fields_ = [
         ("ipi6_addr", in6_addr),
         ("ipi6_ifindex", ctypes.c_uint),

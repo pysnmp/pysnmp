@@ -21,6 +21,12 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 
 class Aes(base.AbstractEncryptionService):
+    """CFB128-AES-128.
+
+    The salt is a counter, not a random value, so no two messages from this engine
+    share an initialization vector.
+    """
+
     serviceID: tuple[int, ...] = (1, 3, 6, 1, 6, 3, 10, 1, 2, 4)  # usmAesCfb128Protocol
     keySize = 16
     _localInt = secrets.randbits(64)

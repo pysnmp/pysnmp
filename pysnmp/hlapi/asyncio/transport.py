@@ -155,6 +155,8 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
 
 
 class UnixTransportTarget(AbstractTransportTarget[str]):
+    """A Unix domain socket to send to, named by its filesystem path."""
+
     transportDomain = unix.domainName
     protoTransport = unix.UnixAsyncioTransport
 

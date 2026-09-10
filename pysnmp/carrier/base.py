@@ -18,6 +18,12 @@ from pysnmp.carrier import error
 
 @functools.total_ordering
 class TimerCallable:
+    """A callback the dispatcher invokes on a fixed interval.
+
+    Compares equal to the bare function it wraps, so a caller can unregister the
+    callback it registered without holding on to the wrapper.
+    """
+
     def __init__(self, cbFun, callInterval):
         self.__cbFun = cbFun
         self.__nextCall = 0
@@ -45,6 +51,15 @@ class TimerCallable:
 
 
 class AbstractTransportDispatcher:
+    """Owns the transports and drives the I/O loop they run on.
+
+    Transports are registered against a transport domain, and an incoming message
+    is routed to the callback registered for whichever recipient the routing
+    function names. Jobs count what is still outstanding: the loop runs until
+    every job has released itself, which is what stops a dispatcher from exiting
+    while a request is still in flight.
+    """
+
     def __init__(self):
         self.__transports = {}
         self.__transportDomainMap = {}
@@ -201,6 +216,13 @@ class AbstractTransportDispatcher:
 
 
 class AbstractTransportAddress:
+    """An endpoint address, remembering which local address it was seen on.
+
+    The local address is what `sockmsg` recovers for a socket bound to a wildcard,
+    and it rides along on the address so a reply leaves by the interface the
+    request arrived on.
+    """
+
     _localAddress = None
 
     def setLocalAddress(self, s):
@@ -217,6 +239,12 @@ class AbstractTransportAddress:
 
 
 class AbstractTransport:
+    """One transport: a socket, opened either as a client or as a server.
+
+    A transport names the dispatcher it was written against, since the two share
+    an I/O model and pairing a transport with the wrong dispatcher would not work.
+    """
+
     #: Dispatcher this transport was written against; isCompatibleWithDispatcher()
     #: below checks candidates against it, and every concrete transport names one.
     protoTransportDispatcher: type[AbstractTransportDispatcher] | None = None

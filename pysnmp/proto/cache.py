@@ -9,6 +9,12 @@ from pysnmp.proto import error
 
 
 class Cache:
+    """Holds a request until its response arrives, or until it expires.
+
+    Keyed by a handle the dispatcher hands out; `expire` is what the timer calls
+    to sweep the requests nothing ever answered.
+    """
+
     def __init__(self):
         self.__cacheRepository = {}
 

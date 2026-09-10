@@ -23,6 +23,8 @@ from pysnmp.proto.mpmod.base import AbstractMessageProcessingModel
 
 
 class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
+    """Message processing for SNMPv1."""
+
     messageProcessingModelID = univ.Integer(0)  # SNMPv1
     snmpMsgSpec: type[Any] = v1.Message
 
@@ -585,5 +587,11 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
 
 
 class SnmpV2cMessageProcessingModel(SnmpV1MessageProcessingModel):
+    """Message processing for SNMPv2c.
+
+    The same as v1 apart from the version number and the message type, since the
+    community string works identically in both.
+    """
+
     messageProcessingModelID = univ.Integer(1)  # SNMPv2c
     snmpMsgSpec: type[Any] = v2c.Message

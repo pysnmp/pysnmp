@@ -13,6 +13,8 @@ version = univ.Integer(namedValues=namedval.NamedValues(("version-2c", 1)))
 
 
 class Message(univ.Sequence):
+    """A v2c message: a version, a community string, and a PDU."""
+
     componentType = namedtype.NamedTypes(
         namedtype.NamedType("version", version),
         namedtype.NamedType("community", univ.OctetString()),

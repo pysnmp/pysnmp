@@ -10,6 +10,12 @@ from pysnmp.proto import error
 
 
 class Cache:
+    """Holds what a message processing model needs when the response arrives.
+
+    Indexed two ways: by the message ID that goes on the wire, and by the state
+    reference the engine passes around internally.
+    """
+
     __stateReference = nextid.Integer(0xFFFFFF)
     __msgID = nextid.Integer(0xFFFFFF)
 

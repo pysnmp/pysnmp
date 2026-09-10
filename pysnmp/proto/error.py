@@ -12,6 +12,8 @@ from pysnmp.error import PySnmpError
 
 
 class ProtocolError(PySnmpError, PyAsn1Error):
+    """Raised when a message cannot be processed."""
+
     pass
 
 
@@ -19,10 +21,19 @@ class ProtocolError(PySnmpError, PyAsn1Error):
 
 
 class SnmpV3Error(ProtocolError):
+    """Raised by the SNMPv3 machinery: message processing, security, access control."""
+
     pass
 
 
 class StatusInformation(SnmpV3Error):
+    """Carries how a step failed, and what the next step needs to know.
+
+    Not always a failure the caller sees: the v3 discovery exchange reports back
+    through this, and the engine reads the details off it like a mapping to decide
+    whether to send a report, reissue the request, or give up.
+    """
+
     def __init__(self, **kwargs):
         SnmpV3Error.__init__(self)
         self.__errorIndication = kwargs
@@ -44,16 +55,24 @@ class StatusInformation(SnmpV3Error):
 
 
 class CacheExpiredError(SnmpV3Error):
+    """The state this message refers to is gone, so it can no longer be answered."""
+
     pass
 
 
 class InternalError(SnmpV3Error):
+    """Something the engine assumed about its own state did not hold."""
+
     pass
 
 
 class MessageProcessingError(SnmpV3Error):
+    """The message could not be prepared or parsed."""
+
     pass
 
 
 class RequestTimeout(SnmpV3Error):
+    """No response arrived in time."""
+
     pass

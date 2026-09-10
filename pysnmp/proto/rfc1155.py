@@ -23,6 +23,12 @@ __all__ = [
 
 
 class IpAddress(univ.OctetString):
+    """An IPv4 address, carried as four octets.
+
+    Accepts and prints the familiar dotted-quad form, which is not what goes on
+    the wire.
+    """
+
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x00)
     )
@@ -46,6 +52,8 @@ class IpAddress(univ.OctetString):
 
 
 class Counter(univ.Integer):
+    """A 32-bit counter, which only ever increases and wraps at its maximum."""
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x01)
     )
@@ -55,6 +63,8 @@ class Counter(univ.Integer):
 
 
 class NetworkAddress(univ.Choice):
+    """An address in any protocol family SNMPv1 knows, which is only IP."""
+
     componentType = namedtype.NamedTypes(namedtype.NamedType("internet", IpAddress()))
 
     def clone(self, value=univ.noValue, **kwargs):
@@ -111,6 +121,8 @@ class NetworkAddress(univ.Choice):
 
 
 class Gauge(univ.Integer):
+    """A 32-bit gauge, which rises and falls and latches at its maximum."""
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
@@ -120,6 +132,8 @@ class Gauge(univ.Integer):
 
 
 class TimeTicks(univ.Integer):
+    """Hundredths of a second since some epoch the object's definition names."""
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x03)
     )
@@ -129,12 +143,16 @@ class TimeTicks(univ.Integer):
 
 
 class Opaque(univ.OctetString):
+    """Any other ASN.1 value, wrapped in octets so SNMPv1 can carry it."""
+
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x04)
     )
 
 
 class ObjectName(univ.ObjectIdentifier):
+    """The name of a managed object: an OID."""
+
     pass
 
 

@@ -10,6 +10,8 @@ from pysnmp.proto import error
 
 
 class Cache:
+    """Holds what a security model needs when the response arrives."""
+
     __stateReference = nextid.Integer(0xFFFFFF)
 
     def __init__(self):
