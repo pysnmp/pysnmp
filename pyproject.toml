@@ -69,7 +69,7 @@ dependencies = [
 # sibling release candidate is better than a required dependency doing it, but
 # it is still not what a GA should ship.
 [project.optional-dependencies]
-compile = ["pysnmp-pysmi >=4.0.0rc3,<5.0.0"]
+compile = ["pysnmp-pysmi >=4.0.0rc4,<5.0.0"]
 
 [project.urls]
 repository = "https://github.com/pysnmp/pysnmp"
@@ -87,7 +87,7 @@ repository = "https://github.com/pysnmp/pysnmp"
 # does.
 [dependency-groups]
 dev = [
-    "pysnmp-pysmi >=4.0.0rc3,<5.0.0",
+    "pysnmp-pysmi >=4.0.0rc4,<5.0.0",
     "sphinx >=7.0.0,<9.0.0",
     "myst-parser >=4.0.0,<5.0.0",
     "pytest >=9.0.3,<10.0.0",
