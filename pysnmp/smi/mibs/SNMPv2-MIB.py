@@ -2,7 +2,7 @@
 # PySNMP MIB module SNMPv2-MIB (http://snmplabs.com/pysmi)
 # ASN.1 source SNMPv2-MIB
 # Source digest sha256:afe553d34532d3ed7e4242adf4c4ce6adde6672a686a449b96a1a32a77bf4bdc
-# Produced by pysmi-4.0.0-rc.4
+# Produced by pysmi-4.0.0
 #
 PYSNMP_MODULE_REVISION = "200210160000Z"
 
