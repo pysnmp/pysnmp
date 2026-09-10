@@ -17,6 +17,14 @@ from pysnmp.proto.error import ProtocolError
 
 
 def decodeMessageVersion(wholeMsg):
+    """The version field of a message, read without decoding the rest.
+
+    The dispatcher has to know which message processing model to hand a message to
+    before it can be parsed, and the version is the second field of the outer
+    sequence. So this decodes only as far as that integer and leaves the remainder
+    alone, which also means a message for a model this engine does not have is
+    never fully parsed.
+    """
     try:
         seq, wholeMsg = decoder.decode(
             wholeMsg,

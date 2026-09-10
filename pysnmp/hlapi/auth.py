@@ -134,6 +134,17 @@ class CommunityData:
         tag: Any = None,
         securityName: str | None = None,
     ) -> None:
+        """Configure community-based access, deriving what was not given.
+
+        Called with one argument, that argument is the community name -- the older
+        two-argument form put the index first, and telling them apart is what the
+        swapping here is for.
+
+        The index defaults to a hash of everything that distinguishes this
+        configuration, so two different communities do not collide in the LCD, and the
+        security name tracks the index rather than the community, so the name VACM sees
+        is not the secret.
+        """
         if mpModel is not None:
             self.mpModel = mpModel
             self.securityModel = mpModel + 1
@@ -399,6 +410,16 @@ class UsmUserData:
         authKeyType: int = usmKeyTypePassphrase,
         privKeyType: int = usmKeyTypePassphrase,
     ) -> None:
+        """Configure a USM user, deriving the security level from the keys given.
+
+        The level is not passed in: a user with neither key is `noAuthNoPriv`, with an
+        authentication key `authNoPriv`, and with both `authPriv`. A privacy key
+        without an authentication key is refused, since :RFC:`3414` has no such level.
+
+        Where a key is given and its protocol is not, the protocol defaults to what
+        :RFC:`3414` specifies -- HMAC-MD5 and DES -- which are weak and are what the
+        run-time warnings are about.
+        """
         self.userName = userName
         if securityName is None:
             self.securityName = userName

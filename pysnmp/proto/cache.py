@@ -16,6 +16,7 @@ class Cache:
     """
 
     def __init__(self):
+        """Nothing is cached until a request is added."""
         self.__cacheRepository = {}
 
     def add(self, index, **kwargs):

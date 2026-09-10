@@ -19,6 +19,7 @@ class SnmpContext:
     """
 
     def __init__(self, snmpEngine, contextEngineId=None):
+        """Defaults the context engine ID to the local engine's own."""
         (snmpEngineId,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                 "__SNMP-FRAMEWORK-MIB", "snmpEngineID"

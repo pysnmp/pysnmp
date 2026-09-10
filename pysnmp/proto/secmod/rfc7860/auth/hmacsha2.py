@@ -48,6 +48,13 @@ class HmacSha2(base.AbstractAuthenticationService):
     }
 
     def __init__(self, oid):
+        """Selects the SHA-2 variant the protocol OID names.
+
+        The four variants differ in digest length and in how much of the digest goes on
+        the wire (:RFC:`7860#section-4`), so both are looked up here and an OID for a
+        variant this does not implement is refused at construction rather than at first
+        use.
+        """
         if oid not in self.hashAlgorithms:
             raise error.ProtocolError(
                 f"No SHA-2 authentication algorithm {oid} available"

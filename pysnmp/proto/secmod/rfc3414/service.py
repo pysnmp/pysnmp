@@ -127,6 +127,13 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
     wildcardSecurityEngineId = pMod.OctetString(hexValue="0000000000")
 
     def __init__(self):
+        """Adds the timeline USM needs to detect a replayed message.
+
+        :RFC:`3414#section-2.2.3` requires the engine boots and time of every remote
+        engine it talks to be tracked, since that is what the time window is checked
+        against. It is expired on a timer, so an engine no longer being talked to does
+        not be remembered forever.
+        """
         AbstractSecurityModel.__init__(self)
         self.__securityParametersSpec = UsmSecurityParameters()
         self.__timeline = {}

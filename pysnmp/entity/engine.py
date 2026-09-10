@@ -112,6 +112,18 @@ class SnmpEngine:
         msgAndPduDsp: Any = None,
         enableLegacyVersions: bool | None = None,
     ) -> None:
+        """Assemble the subsystems, and settle which SNMP versions this engine speaks.
+
+        `snmpEngineID` defaults to the one the MIB generated for this host, which is
+        derived from a MAC address where one can be found. `snmpEngineBoots` is
+        incremented here: :RFC:`3414#section-2.2` counts a boot as an engine coming up,
+        and USM's time window checks depend on it moving.
+
+        `enableLegacyVersions` decides whether the v1 and v2c message processing and
+        security models are registered at all. Leaving them out is the enforcement --
+        see the note in the body -- and `None` means take the default from the
+        environment.
+        """
         self.cache: dict[Any, Any] = {}
 
         self.observer = observer.MetaObserver()

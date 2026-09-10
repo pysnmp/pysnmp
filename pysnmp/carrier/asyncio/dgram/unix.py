@@ -41,6 +41,11 @@ class UnixAsyncioTransport(DgramAsyncioProtocol):
     addressType = UnixTransportAddress
 
     def __init__(self, *args, **kwargs):
+        """Tracks the socket path, so a client-mode socket can be unlinked on close.
+
+        A Unix datagram client has to bind a path of its own to receive a reply, and
+        nothing else removes that file.
+        """
         DgramAsyncioProtocol.__init__(self, *args, **kwargs)
         self._iface = None
 

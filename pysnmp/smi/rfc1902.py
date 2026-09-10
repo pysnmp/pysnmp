@@ -92,6 +92,12 @@ class ObjectIdentity:
     stDirty, stClean = 1, 2
 
     def __init__(self, *args, **kwargs):
+        """Arguments are kept unresolved; `resolveWithMib()` is what interprets them.
+
+        What was passed can be a name, an OID, a module and symbol, or a symbol and
+        index values, and telling those apart needs a MIB view that may not exist yet.
+        So this only records them, and the object stays dirty until resolved.
+        """
         self.__args = args
         self.__kwargs = kwargs
         self.__mibSourcesToAdd = self.__modNamesToLoad = None
@@ -745,6 +751,12 @@ class ObjectType:
     stDirty, stClean = 1, 2
 
     def __init__(self, objectIdentity, objectSyntax=rfc1905.unSpecified):
+        """Pairs an identity with a value, both unresolved until `resolveWithMib()`.
+
+        The syntax the value has to conform to comes from the MIB, so the value cannot
+        be checked or converted here. `unSpecified` is the value a GET carries, where
+        the caller is asking rather than telling.
+        """
         if not isinstance(objectIdentity, ObjectIdentity):
             raise SmiError(
                 f"initializer should be ObjectIdentity instance, not {objectIdentity!r}"
@@ -1064,6 +1076,12 @@ class NotificationType:
     stDirty, stClean = 1, 2
 
     def __init__(self, objectIdentity, instanceIndex=(), objects=None):
+        """Records the notification and the objects it will carry, unresolved.
+
+        Which objects a notification carries is what its MIB definition says, so the
+        list is filled in by `resolveWithMib()`; `objects` supplies values for those
+        the sender has to provide itself.
+        """
         if not isinstance(objectIdentity, ObjectIdentity):
             raise SmiError(
                 f"initializer should be ObjectIdentity instance, not {objectIdentity!r}"

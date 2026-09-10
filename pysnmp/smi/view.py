@@ -29,6 +29,7 @@ class MibViewController:
     """
 
     def __init__(self, mibBuilder):
+        """Indexing is deferred until the first lookup, as in the instrumentation."""
         self.mibBuilder = mibBuilder
         self.lastBuildId = -1
         self.__mibSymbolsIdx = OrderedDict()

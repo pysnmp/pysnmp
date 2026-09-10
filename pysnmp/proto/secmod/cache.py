@@ -15,6 +15,7 @@ class Cache:
     __stateReference = nextid.Integer(0xFFFFFF)
 
     def __init__(self):
+        """Nothing is cached until a request is pushed."""
         self.__cacheEntries = {}
 
     def push(self, **securityData):

@@ -49,6 +49,7 @@ lcd = CommandGeneratorLcdConfigurator()
 
 
 def isEndOfMib(x):
+    """Whether a walk has run off the end of every subtree it was following."""
     return not cmdgen.getNextVarBinds(x)[1]
 
 

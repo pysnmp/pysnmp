@@ -85,6 +85,12 @@ class MetaObserver:
     """
 
     def __init__(self):
+        """Observers, their contexts and the live execution points are kept apart.
+
+        A context exists only while execution is inside the point it belongs to; the
+        three dictionaries are separate so that registering an observer does not depend
+        on any point having been reached yet.
+        """
         self.__observers = {}
         self.__contexts = {}
         self.__execpoints = {}

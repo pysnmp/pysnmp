@@ -39,6 +39,12 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
     # in here.
 
     def __init__(self):
+        """Four MIB caches, each invalidated by its own table's version.
+
+        Mapping a community to a security name and back reads several tables on every
+        message, so each is cached separately and only the one that was written is
+        discarded.
+        """
         self.__transportBranchId = self.__paramsBranchId = self.__communityBranchId = (
             self.__securityBranchId
         ) = -1

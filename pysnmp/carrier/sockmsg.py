@@ -76,6 +76,14 @@ class in6_pktinfo(ctypes.Structure):
 
 
 def getRecvFrom(addressType):
+    """Build a `recvfrom()` that also reports which local address a datagram reached.
+
+    A socket bound to the wildcard answers `getsockname()` with the wildcard, which
+    is no use for deciding where a reply should come from. The kernel does know,
+    and `IP_PKTINFO` or `IPV6_PKTINFO` is how it says so: the destination address
+    arrives as ancillary data alongside the datagram, and is attached to the
+    address the caller gets back.
+    """
 
     def recvfrom(s, sz):
         _to = None
@@ -106,6 +114,13 @@ def getRecvFrom(addressType):
 
 
 def getSendTo(addressType):
+    """Build a `sendto()` that sends from the address the request arrived on.
+
+    This is the other half of `getRecvFrom()`: the local address recorded on the
+    destination is passed back to the kernel as ancillary data, so a reply leaves
+    by the address the request was sent to rather than whichever one routing would
+    have picked.
+    """
 
     def sendto(s, _data, _to):
         ancdata = []

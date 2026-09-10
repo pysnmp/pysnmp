@@ -116,6 +116,11 @@ class NotificationOriginator:
     sendNotification: Callable[..., Any]
 
     def __init__(self, **options):
+        """Traps and informs are tracked apart: only informs are awaited.
+
+        `snmpContext` is accepted for compatibility and is not used; the context comes
+        from the notification target configuration.
+        """
         self.__pendingReqs = {}
         self.__pendingNotifications = {}
         self.snmpContext = options.pop("snmpContext", None)  # this is deprecated

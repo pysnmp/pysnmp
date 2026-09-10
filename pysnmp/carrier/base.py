@@ -25,6 +25,7 @@ class TimerCallable:
     """
 
     def __init__(self, cbFun, callInterval):
+        """The first call is due immediately; the interval applies from then on."""
         self.__cbFun = cbFun
         self.__nextCall = 0
 
@@ -61,6 +62,11 @@ class AbstractTransportDispatcher:
     """
 
     def __init__(self):
+        """The timer resolution is what the whole timeout mechanism is built on.
+
+        It defaults to half a second, and the delta is the slack allowed around a tick
+        so a callback due fractionally early is not deferred a whole tick.
+        """
         self.__transports = {}
         self.__transportDomainMap = {}
         self.__jobs = {}

@@ -24,6 +24,17 @@ __null = univ.Null("")
 
 
 def getNextVarBinds(varBinds, origVarBinds=None):
+    """The bindings to ask for next, and why to stop if there are none.
+
+    A walk ends when every binding has run off the end of its subtree. Exception
+    values -- `noSuchObject`, `noSuchInstance`, `endOfMibView` -- are what say a
+    particular binding is finished, so they are counted rather than carried
+    forward, and when none are left the walk is over.
+
+    An agent answering a GETNEXT with an OID no greater than the one asked for
+    would loop forever, so `origVarBinds` is compared against the response and that
+    is reported as an error indication instead.
+    """
     errorIndication = None
     idx = nonNulls = len(varBinds)
     rspVarBinds = []
@@ -67,6 +78,7 @@ class CommandGenerator:
     sendReq: Callable[..., Any]
 
     def __init__(self, **options):
+        """Options are kept as given and read per request, not merged here."""
         self.__options = options
         self.__pendingReqs = {}
 

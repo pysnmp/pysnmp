@@ -37,6 +37,12 @@ except ImportError as e:
     from pysnmp.smi import error
 
     def addMibCompilerDecorator(errorMsg):
+        """Build the stand-in `addMibCompiler()` used when pysmi is not installed.
+
+        The import error is captured here so the failure names what was missing,
+        rather than reporting only that no compiler is configured.
+        """
+
         def addMibCompiler(mibBuilder, **kwargs):
             if not kwargs.get("ifAvailable"):
                 raise error.SmiError(f"MIB compiler not available: {errorMsg}")
@@ -48,6 +54,12 @@ except ImportError as e:
 else:
 
     def addMibCompiler(mibBuilder, **kwargs):
+        """Attach a MIB compiler to the builder, so ASN.1 can be compiled on demand.
+
+        Without pysmi installed this raises `SmiError` naming the missing import,
+        unless `ifAvailable` is set. `ifNotAdded` makes the call a no-op where a
+        compiler is already attached.
+        """
         if kwargs.get("ifNotAdded") and mibBuilder.getMibCompiler():
             return
 

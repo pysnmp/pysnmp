@@ -47,6 +47,7 @@ class Printer:
     """Where debug output goes, defaulting to stderr through `logging`."""
 
     def __init__(self, logger=None, handler=None, formatter=None):
+        """Defaults to a stderr handler on the `pysnmp` logger at DEBUG level."""
         if logger is None:
             logger = logging.getLogger("pysnmp")
         logger.setLevel(logging.DEBUG)
@@ -79,6 +80,15 @@ class Debug:
     defaultPrinter = None
 
     def __init__(self, *flags, **options):
+        """Resolve where output goes, then turn on the flags named.
+
+        `printer` wins, then a class-wide default, then `loggerName` -- which attaches
+        to an existing logger with a null handler of its own, so output is routed by
+        whatever configured that logger rather than to stderr as well.
+
+        An unknown flag name is an error rather than a no-op: a misspelt flag would
+        otherwise silently turn nothing on.
+        """
         self._flags = flagNone
         if options.get("printer") is not None:
             self._printer = options.get("printer")
@@ -188,6 +198,7 @@ def prettify(value):
 
 
 def hexdump(octets):
+    """Octets as hexadecimal, sixteen to a line with the offset at the start."""
     return " ".join(
         [
             "{}{:02X}".format(n % 16 == 0 and f"\n{n:05d}: " or "", x)

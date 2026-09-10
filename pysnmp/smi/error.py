@@ -41,6 +41,7 @@ class MibOperationError(SmiError):
     """
 
     def __init__(self, **kwargs):
+        """Details are kept as given and read back like a mapping."""
         self.__outArgs = kwargs
 
     def __str__(self):
