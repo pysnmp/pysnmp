@@ -363,40 +363,72 @@ class TestAes256Priv:
         assert aes256.Aes256.keySize == 32
 
 
+RFC3414_PASSPHRASE = "maplesyrup"
+RFC3414_ENGINE_ID = univ.OctetString(hexValue="000000000000000000000002")
+RFC3414_KU_MD5 = "0x9faf3283884e92834ebc9847d8edd963"
+RFC3414_KUL_MD5 = "0x526f5eed9fcce26f8964c2930787d82b"
+RFC3414_KU_SHA = "0x9fb5cc0381497b3793528939ff788d5d79145211"
+RFC3414_KUL_SHA = "0x6695febc9288e36282235fc7151f128497b38f3f"
+
+
 class TestLocalkey:
+    """The RFC 3414 appendix A.3 vectors, which pin the derivation itself.
+
+    A length assertion cannot tell these functions apart: localization is what
+    fixes the digest size, so hashing the passphrase with the wrong algorithm
+    still yields a key of the expected length.
+    """
+
     def test_hash_passphrase_md5(self):
-        result = localkey.hashPassphraseMD5("testpassphrase")
-        assert len(result) == 16
+        result = localkey.hashPassphraseMD5(RFC3414_PASSPHRASE)
+        assert result.prettyPrint() == RFC3414_KU_MD5
 
     def test_hash_passphrase_sha(self):
-        result = localkey.hashPassphraseSHA("testpassphrase")
-        assert len(result) == 20
+        result = localkey.hashPassphraseSHA(RFC3414_PASSPHRASE)
+        assert result.prettyPrint() == RFC3414_KU_SHA
 
     def test_password_to_key_md5(self):
-        result = localkey.passwordToKeyMD5(
-            "testpassphrase", univ.OctetString(hexValue="0102030405")
-        )
-        assert len(result) == 16
+        result = localkey.passwordToKeyMD5(RFC3414_PASSPHRASE, RFC3414_ENGINE_ID)
+        assert result.prettyPrint() == RFC3414_KUL_MD5
 
     def test_password_to_key_sha(self):
-        result = localkey.passwordToKeySHA(
-            "testpassphrase", univ.OctetString(hexValue="0102030405")
+        result = localkey.passwordToKeySHA(RFC3414_PASSPHRASE, RFC3414_ENGINE_ID)
+        assert result.prettyPrint() == RFC3414_KUL_SHA
+
+    def test_password_to_key_sha_does_not_hash_with_md5(self):
+        assert localkey.passwordToKeySHA(
+            RFC3414_PASSPHRASE, RFC3414_ENGINE_ID
+        ) != localkey.localizeKeySHA(
+            localkey.hashPassphraseMD5(RFC3414_PASSPHRASE), RFC3414_ENGINE_ID
         )
-        assert len(result) == 20
 
     def test_localize_key_md5(self):
-        hashed = localkey.hashPassphraseMD5("testpassphrase")
-        result = localkey.localizeKeyMD5(
-            hashed, univ.OctetString(hexValue="0102030405")
-        )
-        assert len(result) == 16
+        hashed = localkey.hashPassphraseMD5(RFC3414_PASSPHRASE)
+        result = localkey.localizeKeyMD5(hashed, RFC3414_ENGINE_ID)
+        assert result.prettyPrint() == RFC3414_KUL_MD5
 
     def test_localize_key_sha(self):
-        hashed = localkey.hashPassphraseSHA("testpassphrase")
-        result = localkey.localizeKeySHA(
-            hashed, univ.OctetString(hexValue="0102030405")
+        hashed = localkey.hashPassphraseSHA(RFC3414_PASSPHRASE)
+        result = localkey.localizeKeySHA(hashed, RFC3414_ENGINE_ID)
+        assert result.prettyPrint() == RFC3414_KUL_SHA
+
+    def test_the_auth_services_agree_with_the_vectors(self):
+        """The engine path was always correct; these pin it against drift."""
+        md5_svc = hmacmd5.HmacMd5()
+        sha_svc = hmacsha.HmacSha()
+
+        assert (
+            md5_svc.localizeKey(
+                md5_svc.hashPassphrase(RFC3414_PASSPHRASE), RFC3414_ENGINE_ID
+            ).prettyPrint()
+            == RFC3414_KUL_MD5
         )
-        assert len(result) == 20
+        assert (
+            sha_svc.localizeKey(
+                sha_svc.hashPassphrase(RFC3414_PASSPHRASE), RFC3414_ENGINE_ID
+            ).prettyPrint()
+            == RFC3414_KUL_SHA
+        )
 
 
 class TestAbstractAuthBase:
