@@ -30,6 +30,7 @@ class Vacm:
         contextName,
         variableName,
     ):
+        """Allows everything. This is the model to register when nothing is to be checked."""
         debug.logger & debug.flagACL and debug.logger(
             f"isAccessAllowed: viewType {viewType} for variableName {variableName} - OK"
         )

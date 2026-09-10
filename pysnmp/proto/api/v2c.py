@@ -62,15 +62,28 @@ class PDUAPI(v1.PDUAPI):
     )
 
     def getResponse(self, reqPDU):
+        """An empty response PDU carrying the request's ID."""
         rspPDU = ResponsePDU()
         self.setDefaults(rspPDU)
         self.setRequestID(rspPDU, self.getRequestID(reqPDU))
         return rspPDU
 
     def getVarBindTable(self, reqPDU, rspPDU):
+        """The response's bindings as a table of one row.
+
+        Unlike v1 there is no error case to fold in: v2c reports a finished walk as an
+        `endOfMibView` value in the binding itself, so an error response has nothing
+        the caller wants and the bindings come back as they arrived.
+        """
         return [apiPDU.getVarBinds(rspPDU)]
 
     def setEndOfMibError(self, pdu, errorIndex):
+        """Mark one binding as past the end of the MIB.
+
+        v2c says this with a value rather than an error status, which is what lets a
+        single response finish some bindings and carry data for the rest -- the thing
+        v1 cannot express.
+        """
         varBindList = self.getVarBindList(pdu)
         varBindList[errorIndex - 1].setComponentByPosition(
             1,
@@ -81,6 +94,7 @@ class PDUAPI(v1.PDUAPI):
         )
 
     def setNoSuchInstanceError(self, pdu, errorIndex):
+        """Mark one binding as naming an object that exists with no instance."""
         varBindList = self.getVarBindList(pdu)
         varBindList[errorIndex - 1].setComponentByPosition(
             1,
@@ -101,6 +115,7 @@ class BulkPDUAPI(PDUAPI):
     _maxRepetitions = rfc1905.maxRepetitions.clone(10)
 
     def setDefaults(self, pdu):
+        """Stamp a request ID and the repetition counts, defaulting to 10 repetitions."""
         PDUAPI.setDefaults(self, pdu)
         pdu.setComponentByPosition(
             0,
@@ -128,21 +143,32 @@ class BulkPDUAPI(PDUAPI):
 
     @staticmethod
     def getNonRepeaters(pdu):
+        """How many leading bindings are fetched once rather than repeatedly."""
         return pdu.getComponentByPosition(1)
 
     @staticmethod
     def setNonRepeaters(pdu, value):
+        """Set the non-repeater count."""
         pdu.setComponentByPosition(1, value)
 
     @staticmethod
     def getMaxRepetitions(pdu):
+        """How many times the remaining bindings are walked."""
         return pdu.getComponentByPosition(2)
 
     @staticmethod
     def setMaxRepetitions(pdu, value):
+        """Set the repetition count."""
         pdu.setComponentByPosition(2, value)
 
     def getVarBindTable(self, reqPDU, rspPDU):
+        """The response's bindings cut back into rows, one per repetition.
+
+        GETBULK returns the non-repeaters once and then the repeaters over and over,
+        flattened into one list; this is what turns that back into rows. An agent may
+        return fewer repetitions than asked for, and a short final row is dropped
+        rather than padded, since a partial row is not a row of the table.
+        """
         nonRepeaters = self.getNonRepeaters(reqPDU)
 
         reqVarBinds = self.getVarBinds(reqPDU)
@@ -185,6 +211,11 @@ class TrapPDUAPI(v1.PDUAPI):
     _genTrap = ObjectIdentifier((1, 3, 6, 1, 6, 3, 1, 1, 5, 1))
 
     def setDefaults(self, pdu):
+        """Stamp the two bindings :RFC:`3416#section-4.2.6` requires of every v2c trap.
+
+        A v2c trap has none of v1's dedicated fields; the uptime and the trap OID are
+        ordinary bindings, and they have to be the first two.
+        """
         v1.PDUAPI.setDefaults(self, pdu)
         varBinds = [
             (self.sysUpTime, self._zeroTime),
@@ -203,6 +234,7 @@ class MessageAPI(v1.MessageAPI):
     _version = rfc1901.version.clone(1)
 
     def setDefaults(self, msg):
+        """Stamp version 2c and the default community."""
         msg.setComponentByPosition(
             0,
             self._version,
@@ -220,6 +252,7 @@ class MessageAPI(v1.MessageAPI):
         return msg
 
     def getResponse(self, reqMsg):
+        """A response message echoing the request's version, community and request ID."""
         rspMsg = Message()
         self.setDefaults(rspMsg)
         self.setVersion(rspMsg, self.getVersion(reqMsg))

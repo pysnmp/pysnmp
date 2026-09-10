@@ -52,6 +52,7 @@ class StatusInformation(SnmpV3Error):
         return key in self.__errorIndication
 
     def get(self, key, defVal=None):
+        """One detail off the status, or `defVal` where it was not set."""
         return self.__errorIndication.get(key, defVal)
 
 

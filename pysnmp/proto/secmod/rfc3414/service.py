@@ -821,6 +821,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         securityLevel,
         scopedPDU,
     ):
+        """Wrap a request in USM: authenticate, encrypt, and name the user."""
         return self.__generateRequestOrResponseMsg(
             snmpEngine,
             messageProcessingModel,
@@ -847,6 +848,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         scopedPDU,
         securityStateReference,
     ):
+        """Wrap a response in USM, reusing what was cached from the request."""
         return self.__generateRequestOrResponseMsg(
             snmpEngine,
             messageProcessingModel,
@@ -872,6 +874,15 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         wholeMsg,
         msg,
     ):
+        """Verify, decrypt, and answer with a report where discovery is what is wanted.
+
+        A message from an engine this one has not talked to is not a failure: the first
+        exchange with any peer is expected to come back as a report naming its engine
+        ID, boots and time, which is how the timeline needed for replay protection is
+        established. Every other failure is counted in the USM statistics and reported
+        the same way, so that a wrong key and an unknown user look alike to whoever
+        sent them.
+        """
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
         # 3.2.9 -- moved up here to be able to report
@@ -1414,6 +1425,7 @@ class SnmpUSMSecurityModel(AbstractSecurityModel):
         self.__expirationTimer += 1
 
     def receiveTimerTick(self, snmpEngine, timeNow):
+        """Expire what is remembered about peer engines' clocks."""
         self.__expireTimelineInfo()
 
 

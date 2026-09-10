@@ -51,6 +51,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         base.AbstractSecurityModel.__init__(self)
 
     def _sec2com(self, snmpEngine, securityName, contextEngineId, contextName):
+        """The community to put on the wire for a security name, from SNMP-COMMUNITY-MIB."""
         (snmpTargetParamsSecurityName,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                 "SNMP-TARGET-MIB", "snmpTargetParamsSecurityName"
@@ -167,6 +168,12 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
             ) from exc
 
     def _com2sec(self, snmpEngine, communityName, transportInformation):
+        """The security name a community maps to, given where the message came from.
+
+        The transport matters because a community may be tagged to a set of addresses;
+        a community that is right but arrives from an address it is not tagged for is
+        not accepted.
+        """
         (snmpTargetAddrTAddress,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                 "SNMP-TARGET-MIB", "snmpTargetAddrTAddress"
@@ -443,6 +450,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         securityLevel,
         scopedPDU,
     ):
+        """Put the community on an outgoing request. There is nothing else to do."""
         (msg,) = globalData
         contextEngineId, contextName, pdu = scopedPDU
 
@@ -496,6 +504,7 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         securityStateReference,
     ):
         # rfc2576: 5.2.2
+        """Put the community on an outgoing response."""
         (msg,) = globalData
         contextEngineId, contextName, pdu = scopedPDU
         cachedSecurityData = self._cache.pop(securityStateReference)
@@ -542,6 +551,12 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
         msg,
     ):
         # rfc2576: 5.2.1
+        """Map the community to a security name, counting a bad one in the MIB.
+
+        This is the whole of v1 and v2c security: the community is checked against the
+        configuration and nothing about the message is authenticated, so a message that
+        reaches here has already been trusted.
+        """
         communityName, transportInformation = securityParameters
 
         scope = {

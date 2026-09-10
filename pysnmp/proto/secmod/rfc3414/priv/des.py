@@ -33,6 +33,7 @@ class Des(base.AbstractEncryptionService):
     _localInt = secrets.randbits(32)
 
     def hashPassphrase(self, authProtocol, privKey):
+        """Hash the passphrase with whatever digest the authentication protocol uses."""
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -44,6 +45,11 @@ class Des(base.AbstractEncryptionService):
         return localkey.hashPassphrase(privKey, hashAlgo)
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Localize the privacy key and keep the 16 octets DES needs.
+
+        Half of that is the DES key; the other half is the pre-IV, which is what makes
+        the salt on the wire enough to rebuild the IV at the far end.
+        """
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -96,6 +102,12 @@ class Des(base.AbstractEncryptionService):
 
     # 8.2.4.1
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
+        """Encrypt with DES-CBC, returning the ciphertext and the salt to send with it.
+
+        The salt is the boot count and a counter, so no two messages from one engine
+        share an IV -- which is what DES-CBC needs and what the wire format has room
+        to carry.
+        """
         DES = cipherbackend.getCipher("DES")
         if DES is None:
             raise error.StatusInformation(errorIndication=errind.encryptionError)
@@ -121,6 +133,11 @@ class Des(base.AbstractEncryptionService):
 
     # 8.2.4.2
     def decryptData(self, decryptKey, privParameters, encryptedData):
+        """Decrypt DES-CBC ciphertext, rebuilding the IV from the salt and the pre-IV.
+
+        Ciphertext that is not a whole number of blocks is rejected rather than padded,
+        since a short final block means the message was truncated or is not ours.
+        """
         DES = cipherbackend.getCipher("DES")
         if DES is None:
             raise error.StatusInformation(errorIndication=errind.decryptionError)

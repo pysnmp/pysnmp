@@ -20,10 +20,16 @@ class Cache:
         self.__cacheRepository = {}
 
     def add(self, index, **kwargs):
+        """Remember a request under a handle, returning the handle back."""
         self.__cacheRepository[index] = kwargs
         return index
 
     def pop(self, index):
+        """Take a request back out, removing it. `None` where the handle is unknown.
+
+        A late response and a second response to the same request look identical here,
+        and both get `None` rather than an error -- neither is worth failing over.
+        """
         if index in self.__cacheRepository:
             cachedParams = self.__cacheRepository[index]
         else:
@@ -32,11 +38,17 @@ class Cache:
         return cachedParams
 
     def update(self, index, **kwargs):
+        """Add to what is remembered for a request, which must already be there."""
         if index not in self.__cacheRepository:
             raise error.ProtocolError(f"Cache miss on update for {kwargs}")
         self.__cacheRepository[index].update(kwargs)
 
     def expire(self, cbFun, cbCtx):
+        """Sweep requests the callback says are past due.
+
+        The callback decides, not a fixed age, because what counts as expired differs
+        by message processing model. Called with no callback this does nothing.
+        """
         for index, cachedParams in list(self.__cacheRepository.items()):
             if cbFun:
                 if cbFun(index, cachedParams, cbCtx):

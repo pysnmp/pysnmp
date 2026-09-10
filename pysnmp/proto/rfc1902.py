@@ -239,21 +239,35 @@ class OctetString(univ.OctetString):
     fixedLength: int | None = None
 
     def setFixedLength(self, value):
+        """Pin this string to an exact length, and return it for chaining.
+
+        A fixed length is not a constraint pyasn1 carries: it is what tells the table
+        index code how many sub-identifiers to take for this column, which it cannot
+        work out from the value alone.
+        """
         self.fixedLength = value
         return self
 
     def isFixedLength(self):
+        """Whether a fixed length has been pinned."""
         return self.fixedLength is not None
 
     def getFixedLength(self):
+        """The pinned length, or `None`."""
         return self.fixedLength
 
     def clone(self, *args, **kwargs):
+        """Clone, carrying the fixed length across.
+
+        pyasn1's clone knows nothing about the fixed length, so a plain clone would
+        silently drop it and break indexing on the copy.
+        """
         return univ.OctetString.clone(self, *args, **kwargs).setFixedLength(
             self.getFixedLength()
         )
 
     def subtype(self, *args, **kwargs):
+        """Subtype, carrying the fixed length across, for the same reason as `clone`."""
         return univ.OctetString.subtype(self, *args, **kwargs).setFixedLength(
             self.getFixedLength()
         )
@@ -346,6 +360,7 @@ class IpAddress(OctetString):
     fixedLength = 4
 
     def prettyIn(self, value):
+        """Accept an address as dotted quad, four octets, or another `IpAddress`."""
         if isinstance(value, str) and len(value) != 4:
             try:
                 value = [int(x) for x in value.split(".")]
@@ -357,6 +372,7 @@ class IpAddress(OctetString):
         return value
 
     def prettyOut(self, value):
+        """Render as a dotted quad."""
         if value:
             return ".".join([str(x) for x in self.__class__(value).asNumbers()])
         else:
@@ -664,6 +680,7 @@ class Bits(OctetString):
     namedValues = namedval.NamedValues()
 
     def __new__(cls, *args, **kwargs):
+        """Build a subclass on the fly when named bits are given to the constructor."""
         if "namedValues" in kwargs:
             Bits = cls.withNamedBits(**dict(kwargs.pop("namedValues")))
             return Bits(*args, **kwargs)
@@ -671,6 +688,11 @@ class Bits(OctetString):
         return OctetString.__new__(cls)
 
     def prettyIn(self, bits):
+        """Accept either bit names or the raw octets they pack into.
+
+        Bit 0 is the high bit of the first octet, not the low bit -- :RFC:`1902` numbers
+        them the other way round from how they would fall out of a shift.
+        """
         if not isinstance(bits, (tuple, list)):
             return OctetString.prettyIn(self, bits)  # raw bitstring
         octets = []
@@ -685,6 +707,7 @@ class Bits(OctetString):
         return OctetString.prettyIn(self, octets)
 
     def prettyOut(self, value):
+        """Render as the names of the bits that are set, in bit order."""
         names = []
         ints = self.__class__(value).asNumbers()
         for i, v in enumerate(ints):

@@ -34,6 +34,13 @@ class AbstractAesBlumenthal(aes.Aes):
 
     # 3.1.2.1
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Localize, then chain the hash over its own output until the key is long enough.
+
+        AES-192 and AES-256 need more key material than one localization produces.
+        Blumenthal's draft extends it by hashing the result again and appending, which
+        is what this does; Reeder's variant does something else, and the two do not
+        interoperate.
+        """
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -75,6 +82,12 @@ class AbstractAesReeder(aes.Aes):
 
     # 2.1 of https://tools.itef.org/pdf/draft_bluementhal-aes-usm-04.txt
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Localize by re-running the passphrase hash, as Reeder's draft has it.
+
+        The difference from Blumenthal is where the extension comes from: this repeats
+        the password-to-key step rather than hashing the localized key. Cisco and
+        others implement this one.
+        """
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
