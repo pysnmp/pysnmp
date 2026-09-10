@@ -153,8 +153,9 @@ Merging them would build one module from two definitions and produce two
 classes for one type, which fails ``isinstance`` somewhere far from here.
 
 ``loadTexts`` is reported for the composite only when *every* corpus carries
-prose, so one textless corpus in the search path is refused rather than
-silently answering with no DESCRIPTION for the modules it owns.
+prose, so one textless corpus in the search path makes the whole composite
+textless rather than silently answering with no DESCRIPTION for the modules it
+owns. What that then means is the subject of `What a corpus does not carry`_.
 
 
 Resolving a trap OID without a compiler
@@ -195,20 +196,62 @@ What a corpus does not carry
 
 **Prose.** No DESCRIPTION, no REFERENCE. They are roughly a third of a
 generated module's bytes, the runtime discards them under the default
-``loadTexts = False``, and pysmi's published ``json/`` tree already serves the
-one consumer that wants them -- a MIB browser.
+``loadTexts = False``, and the one consumer that wants them -- a MIB browser --
+has two other ways to get them: pysmi's published ``json/`` tree, and the
+compiler.
 
-Because of that, ``setMibCorpus()`` **refuses** a textless corpus when
-``loadTexts`` is set:
+So a corpus cannot satisfy ``loadTexts``. What happens when it is asked to
+depends on whether anything else can.
+
+Corpus for speed, compiler for prose
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Configure both. The corpus resolves the thousands of modules a deployment
+touches, cheaply and without executing anything; the compiler renders the few
+whose text is going on screen:
 
 .. code-block:: python
 
+   mibBuilder.setMibCorpus(MibCorpus("/mibs/core.db"))
+   mibBuilder.setMibCompiler(mibCompiler, destDir)
    mibBuilder.loadTexts = True
-   mibBuilder.setMibCorpus(corpus)   # raises SmiError
+
+   mibBuilder.loadModules("IF-MIB")   # compiled from ASN.1, DESCRIPTION intact
+
+Sources are searched first, then the corpus, and only for a module neither
+carried does the compiler run. Under ``loadTexts`` the corpus **steps aside**
+rather than answering with no prose, so the module falls through to the
+compiler and comes back with its text. Clear ``loadTexts`` and the corpus
+answers again, without compiling anything.
+
+Two consequences worth knowing:
+
+* Only ``loadModules()`` compiles. ``loadModule()`` never has, so a corpus that
+  steps aside there raises ``MibNotFoundError`` -- which is what it already
+  raises for a module nothing carries.
+* ``setMibCompiler()`` puts its output directory on the search path, so a
+  module compiled once is the copy every later load finds. The corpus does not
+  take it back when ``loadTexts`` is cleared again.
+
+With no compiler configured
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is nothing to fall through to, so the request is refused:
+
+.. code-block:: python
+
+   mibBuilder.setMibCorpus(corpus)
+   mibBuilder.loadTexts = True
+   mibBuilder.loadModules("IF-MIB")   # raises SmiError
 
 Refused rather than silently satisfied: a caller that asked for descriptions
 and got a module with none has no way to tell that from a MIB that declares
-none. Load texts from the ``json/`` tree, or clear ``loadTexts``.
+none. Attach a compiler, read the text from the ``json/`` tree, or clear
+``loadTexts``.
+
+Attaching the corpus is not where this is decided. A compiler may be attached
+after a corpus is, so refusing at ``setMibCorpus()`` would make a working
+configuration depend on the order the two were set up in.
 
 
 How a module is built

@@ -679,12 +679,24 @@ class TestBuilderWithACorpus:
 
     def test_load_texts_with_a_textless_corpus_is_refused(self, corpus):
         # A caller that asked for descriptions and got a module with none has
-        # no way to tell that from a MIB that declares none.
+        # no way to tell that from a MIB that declares none. With no compiler
+        # there is nothing else that could supply them.
+        builder = MibBuilder()
+        builder.loadTexts = True
+        builder.setMibCorpus(corpus)
+
+        with pytest.raises(error.SmiError, match="no texts"):
+            builder.loadModule("FIXTURE-MIB")
+
+    def test_attaching_a_textless_corpus_under_load_texts_is_allowed(self, corpus):
+        # Attachment is not where this is decided: a compiler may be attached
+        # after the corpus is, and refusing here would make a working
+        # configuration depend on the order the two were set up in.
         builder = MibBuilder()
         builder.loadTexts = True
 
-        with pytest.raises(error.SmiError, match="no texts"):
-            builder.setMibCorpus(corpus)
+        assert builder.setMibCorpus(corpus) is builder
+        assert builder.getMibCorpus() is corpus
 
     def test_type_resolves_when_imports_names_a_module_without_it(
         self, builder, corpus, monkeypatch
@@ -915,6 +927,115 @@ class TestBuilderWithACorpus:
 
         with pytest.raises(error.MibNotFoundError):
             builder.loadModule("FIXTURE-MIB")
+
+
+class TestCorpusWithACompiler:
+    """Corpus for the many modules, compiler for the few worth reading.
+
+    A corpus carries no prose and a compiler renders it, so the two together
+    are what a MIB browser wants: everything resolves out of the database,
+    and the handful of modules whose DESCRIPTION is going on screen are
+    rendered from ASN.1 on demand. That only works if a corpus asked for
+    texts it does not have steps aside instead of raising.
+    """
+
+    COMPILED = (
+        '(MibScalar,) = mibBuilder.importSymbols("SNMPv2-SMI", "MibScalar")\n'
+        '(Integer32,) = mibBuilder.importSymbols("SNMPv2-SMI", "Integer32")\n'
+        "compiledScalar = MibScalar(\n"
+        "    (1, 3, 6, 1, 4, 1, 99999, 1), Integer32()\n"
+        ').setMaxAccess("readonly")\n'
+        'compiledScalar.setDescription("Rendered from ASN.1, prose and all.")\n'
+        'mibBuilder.exportSymbols("FIXTURE-MIB", compiledScalar=compiledScalar)\n'
+    )
+
+    @pytest.fixture
+    def compiler(self, tmp_path):
+        class RecordingCompiler:
+            """A compiler that records its calls and renders one known module."""
+
+            def __init__(self, destDir):
+                self.destDir = destDir
+                self.calls = []
+
+            def compile(self, modName, **options):
+                self.calls.append((modName, options))
+
+                with open(os.path.join(self.destDir, f"{modName}.py"), "w") as fp:
+                    fp.write(TestCorpusWithACompiler.COMPILED)
+
+                return {modName: "compiled"}
+
+        return RecordingCompiler(str(tmp_path))
+
+    @pytest.fixture
+    def builder(self, corpus, compiler):
+        built = MibBuilder()
+        built.setMibCorpus(corpus)
+        built.setMibCompiler(compiler, compiler.destDir)
+
+        return built
+
+    def test_texts_send_the_module_to_the_compiler(self, builder, compiler):
+        builder.loadTexts = True
+
+        builder.loadModules("FIXTURE-MIB")
+
+        assert compiler.calls == [("FIXTURE-MIB", {"genTexts": True})]
+
+        (scalar,) = builder.importSymbols("FIXTURE-MIB", "compiledScalar")
+
+        assert scalar.getDescription() == "Rendered from ASN.1, prose and all."
+
+    def test_without_texts_the_corpus_answers_and_the_compiler_idles(
+        self, builder, compiler
+    ):
+        # The corpus is the cheap path and stays the default. Nothing is
+        # compiled for a module it can already resolve.
+        builder.loadModules("FIXTURE-MIB")
+
+        assert compiler.calls == []
+
+        (scalar,) = builder.importSymbols("FIXTURE-MIB", "fixtureScalar")
+
+        assert scalar.getName() == (1, 3, 6, 1, 4, 1, 99999, 1)
+
+    def test_loading_one_module_does_not_reach_the_compiler(self, builder, compiler):
+        # loadModule() never compiles, with or without a corpus. Declining
+        # turns into MibNotFoundError there, which is what it has always been
+        # for a module nothing carries.
+        builder.loadTexts = True
+
+        with pytest.raises(error.MibNotFoundError):
+            builder.loadModule("FIXTURE-MIB")
+
+        assert compiler.calls == []
+
+    def test_a_module_the_compiler_cannot_render_is_reported(self, builder, compiler):
+        builder.loadTexts = True
+        compiler.compile = lambda modName, **options: {modName: "missing"}
+
+        with pytest.raises(error.MibNotFoundError, match="compilation error"):
+            builder.loadModules("FIXTURE-MIB")
+
+    def test_a_compiled_module_is_what_later_loads_find(self, builder, compiler):
+        # The compiler writes into a directory that setMibCompiler() puts on
+        # the search path, and sources are searched before the corpus. So a
+        # module compiled once for its prose is the copy every later load
+        # resolves to, whether or not texts are still wanted -- the corpus does
+        # not take it back.
+        builder.loadTexts = True
+        builder.loadModules("FIXTURE-MIB")
+        builder.unloadModules("FIXTURE-MIB")
+
+        builder.loadTexts = False
+        builder.loadModules("FIXTURE-MIB")
+
+        assert compiler.calls == [("FIXTURE-MIB", {"genTexts": True})]
+
+        (scalar,) = builder.importSymbols("FIXTURE-MIB", "compiledScalar")
+
+        assert scalar.getDescription() == "Rendered from ASN.1, prose and all."
 
 
 class TestTrapPath:

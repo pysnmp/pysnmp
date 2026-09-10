@@ -577,45 +577,54 @@ class MibBuilder:
         Returns
         -------
             This builder.
-
-        Raises
-        ------
-            SmiError: ``loadTexts`` is set and the corpus carries no prose.
-                Refused rather than silently satisfied: a caller that asked
-                for descriptions and got a module with none has no way to
-                tell that from a MIB that declares none.
         """
-        self._checkCorpusTexts(mibCorpus)
-
         self.__mibCorpus = mibCorpus
 
         return self
 
-    def _checkCorpusTexts(self, mibCorpus: Any) -> None:
-        """Refuse a textless corpus while ``loadTexts`` asks for prose.
+    def _corpusMayAnswer(self) -> bool:
+        """Whether the corpus may build the next module, given ``loadTexts``.
 
-        Called both when a corpus is attached and again before each synthesis,
-        because ``loadTexts`` is a plain attribute a caller may set at any
-        time. Checking only at attachment would leave a builder that turned
-        texts on afterwards silently building modules with none.
+        A corpus carries no DESCRIPTION and no REFERENCE, so it cannot satisfy
+        ``loadTexts``. What that should mean depends on whether anything else
+        can. A compiler renders ASN.1 with ``genTexts``, so declining leaves
+        the module to fall through to it and come back with its prose intact --
+        which is the whole point of running both: the corpus answers the many
+        modules cheaply, the compiler answers the few a caller wants to read.
 
-        Args:
-            mibCorpus: the corpus about to be used, or ``None``
+        With no compiler there is nothing to fall through to, and a caller that
+        asked for descriptions and got a module with none cannot tell that from
+        a MIB declaring none. That case is refused outright.
+
+        Decided here rather than once at attachment. ``loadTexts`` is a plain
+        attribute a caller may set at any time, and a compiler may be attached
+        after the corpus is, so an answer computed at ``setMibCorpus()`` would
+        depend on the order the two were configured in.
+
+        Returns
+        -------
+            Whether the corpus should be asked for the module.
 
         Raises
         ------
-            SmiError: texts were asked for and the corpus has none.
+            SmiError: texts were asked for, the corpus has none, and no
+                compiler is configured to render them.
         """
-        if (
-            mibCorpus is not None
-            and self.loadTexts
-            and not getattr(mibCorpus, "loadTexts", False)
-        ):
-            raise error.SmiError(
-                f"loadTexts is set but the corpus at {mibCorpus} carries no "
-                f"texts; load descriptions from the published json/ tree, or "
-                f"clear loadTexts"
+        if not self.loadTexts or getattr(self.__mibCorpus, "loadTexts", False):
+            return True
+
+        if self.__mibCompiler is not None:
+            debug.logger & debug.flagBld and debug.logger(
+                f"_corpusMayAnswer: corpus at {self.__mibCorpus} carries no "
+                f"texts, leaving the module to the compiler"
             )
+            return False
+
+        raise error.SmiError(
+            f"loadTexts is set but the corpus at {self.__mibCorpus} carries no "
+            f"texts; attach a MIB compiler to render descriptions from ASN.1, "
+            f"read them from the published json/ tree, or clear loadTexts"
+        )
 
     def _loadModuleFromCorpus(self, modName: str) -> bool:
         """Build a module out of the corpus, if one is configured and has it.
@@ -630,10 +639,11 @@ class MibBuilder:
         if self.__mibCorpus is None:
             return False
 
-        # Re-checked here, not only at setMibCorpus(). loadTexts is a plain
-        # attribute, so setting it after a corpus is attached would otherwise
-        # slip past the check and quietly build modules with no DESCRIPTION.
-        self._checkCorpusTexts(self.__mibCorpus)
+        # Declining under loadTexts is how the module reaches the compiler:
+        # loadModule() raises MibNotFoundError when nothing built it, which is
+        # what loadModules() catches to compile with genTexts.
+        if not self._corpusMayAnswer():
+            return False
 
         if modName in self.__corpusBuilding:
             # A module reached again while it is being built. Synthesis
