@@ -22,6 +22,7 @@ class AbstractSecurityModel:
     securityModelID: int | None = None
 
     def __init__(self):
+        """Each model instance gets its own cache of in-flight requests."""
         self._cache = cache.Cache()
 
     def processIncomingMsg(

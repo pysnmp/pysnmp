@@ -448,6 +448,14 @@ class MibBuilder:
     loaderContract = (1, 0)
 
     def __init__(self) -> None:
+        """Assemble the search path, in the order modules are looked for.
+
+        The environment comes first (`PYSNMP_MIB_PKGS`, `PYSNMP_MIB_DIRS`,
+        `PYSNMP_MIB_DIR`), then the core modules, which are inserted at the front so
+        nothing overrides the ones the engine itself needs, then the generated ones.
+        That ordering is what lets a user's copy of a MIB shadow the bundled one
+        without being able to displace the framework modules.
+        """
         self.lastBuildId = self._autoName = 0
         sources = []
         for ev in "PYSNMP_MIB_PKGS", "PYSNMP_MIB_DIRS", "PYSNMP_MIB_DIR":

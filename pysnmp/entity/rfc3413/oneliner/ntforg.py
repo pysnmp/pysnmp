@@ -44,6 +44,11 @@ class AsynNotificationOriginator:
     lcd = NotificationOriginatorLcdConfigurator()
 
     def __init__(self, snmpEngine=None, snmpContext=None):
+        """Creates an engine and a default context if neither is given.
+
+        The default context it adds is never removed, which is one of the reasons this
+        class is obsolete.
+        """
         if snmpEngine is None:
             self.snmpEngine = snmpEngine = SnmpEngine()
         else:
@@ -158,6 +163,7 @@ class NotificationOriginator:
 
     def __init__(self, snmpEngine=None, snmpContext=None, asynNtfOrg=None):
         # compatibility attributes
+        """`asynNtfOrg` is accepted for compatibility and ignored."""
         self.snmpEngine = snmpEngine or SnmpEngine()
         self.mibViewController = self.vbProcessor.getMibViewController(self.snmpEngine)
 

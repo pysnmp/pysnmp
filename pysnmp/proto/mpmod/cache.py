@@ -20,6 +20,13 @@ class Cache:
     __msgID = nextid.Integer(0xFFFFFF)
 
     def __init__(self):
+        """Three indices over the same entries, plus the expiration queue.
+
+        A message is looked up by the message ID that came back on the wire, by the
+        state reference the engine passes internally, and by the handle the application
+        holds -- three different questions about one exchange. The expiration queue is
+        what eventually drops an exchange nothing answered.
+        """
         self.__msgIdIndex = {}
         self.__stateReferenceIndex = {}
         self.__sendPduHandleIdx = {}

@@ -82,6 +82,12 @@ class MibInstrumController(AbstractMibInstrumController):
     }
 
     def __init__(self, mibBuilder: Any) -> None:
+        """Indexing is deferred: `lastBuildId` starts behind whatever the builder has.
+
+        The controller re-indexes when the builder's build ID has moved, so starting
+        behind means the first operation indexes and no module load has to remember to
+        trigger it.
+        """
         self.mibBuilder = mibBuilder
         self.lastBuildId = -1
         self.lastBuildSyms: dict[str, Any] = {}

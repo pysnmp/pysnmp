@@ -17,6 +17,12 @@ class OrderedDict(dict):
     """Ordered dictionary used for indices."""
 
     def __init__(self, *args, **kwargs):
+        """Key order is tracked alongside the mapping and sorted lazily.
+
+        The dirty flag is what makes that lazy: keys are appended on insert and the
+        ordering is computed on the first read that needs it, so a load of many
+        objects sorts once rather than on every insert.
+        """
         self.__keys = []
         self.__dirty = True
         super().__init__()
@@ -114,6 +120,12 @@ class OidOrderedDict(OrderedDict):
     """OID-ordered dictionary used for indices."""
 
     def __init__(self, *args, **kwargs):
+        """Adds a cache of key to OID tuple on top of the ordered dictionary.
+
+        Keys arrive as tuples and as strings, and OID order is numeric per
+        sub-identifier rather than lexical, so the tuple each key sorts by is
+        converted once and kept.
+        """
         self.__keysCache = {}
         OrderedDict.__init__(self, *args, **kwargs)
 

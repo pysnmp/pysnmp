@@ -27,6 +27,14 @@ class NotificationReceiver:
     )
 
     def __init__(self, snmpEngine, cbFun, cbCtx=None):
+        """Registers under the wildcard context engine ID, for any authoritative engine.
+
+        The community a v1 trap arrived with is not in the PDU by the time the callback
+        sees it, so an observer captures it during processing and it is passed on
+        separately. A callback written against the pre-4.4 signature is still called
+        correctly: the newer one is tried first and the `TypeError` it raises is what
+        selects the older.
+        """
         snmpEngine.msgAndPduDsp.registerContextEngineId(
             b"",
             self.pduTypes,

@@ -42,6 +42,12 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
     """AsyncioDispatcher based on asyncio event loop."""
 
     def __init__(self, *args, **kwargs):
+        """Binds to an event loop, creating one where there is no running loop.
+
+        The transport count is what decides whether the timer is running: the periodic
+        call is started when the first transport registers and stopped when the last
+        goes away, so an idle dispatcher does not keep the loop awake.
+        """
         AbstractTransportDispatcher.__init__(self)
         self.__transportCount = 0
         if "timeout" in kwargs:

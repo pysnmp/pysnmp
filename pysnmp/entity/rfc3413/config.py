@@ -10,6 +10,13 @@ from pysnmp.smi.error import NoSuchInstanceError, SmiError
 
 
 def getTargetAddr(snmpEngine, snmpTargetAddrName):
+    """Read a target address row, memoised against the table's version.
+
+    Every outgoing notification looks this up, so it is cached in the engine's user
+    context rather than re-read. `branchVersionId` is what makes that safe: the MIB
+    bumps it on any write under the table, so a stale cache is discarded rather
+    than served.
+    """
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpTargetAddrEntry,) = mibBuilder.importSymbols(
@@ -113,6 +120,11 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
 
 
 def getTargetParams(snmpEngine, paramsName):
+    """Read a target parameters row, memoised the same way as the address.
+
+    The message processing model is mapped to a version the transport can name, and
+    an unsupported model is refused here rather than further down.
+    """
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpTargetParamsEntry,) = mibBuilder.importSymbols(
@@ -175,6 +187,11 @@ def getTargetParams(snmpEngine, paramsName):
 
 def getTargetInfo(snmpEngine, snmpTargetAddrName):
     # Transport endpoint
+    """Everything needed to reach one target: where, how, and as whom.
+
+    Joins the address row to the parameters row it names, which is the pair a
+    notification originator needs and neither table holds alone.
+    """
     (
         snmpTargetAddrTDomain,
         snmpTargetAddrTAddress,
@@ -203,6 +220,11 @@ def getTargetInfo(snmpEngine, snmpTargetAddrName):
 
 
 def getNotificationInfo(snmpEngine, notificationTarget):
+    """The transport tag and notify type for a notification target.
+
+    The tag is not an address: it selects every target address row carrying it,
+    which is how one notification reaches several destinations.
+    """
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpNotifyEntry,) = mibBuilder.importSymbols(
@@ -243,6 +265,12 @@ def getNotificationInfo(snmpEngine, notificationTarget):
 
 
 def getTargetNames(snmpEngine, tag):
+    """Every target address name tagged with `tag`.
+
+    The tag list on a row is whitespace-separated, so this is a membership test
+    across the table rather than a lookup, and it is memoised for the same reason
+    the row reads are.
+    """
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpTargetAddrEntry,) = mibBuilder.importSymbols(

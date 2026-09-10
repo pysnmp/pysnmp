@@ -35,6 +35,7 @@ class StatusInformation(SnmpV3Error):
     """
 
     def __init__(self, **kwargs):
+        """Details are kept as given and read back like a mapping."""
         SnmpV3Error.__init__(self)
         self.__errorIndication = kwargs
         debug.logger & (

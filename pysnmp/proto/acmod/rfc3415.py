@@ -19,6 +19,12 @@ class Vacm:
     _powOfTwoSeq = (128, 64, 32, 16, 8, 4, 2, 1)
 
     def __init__(self):
+        """Four VACM tables, each cached against its own branch version.
+
+        Access control runs on every variable binding of every request, so the tables
+        are read once and kept. Each has its own version ID, so a write to one does not
+        discard the caches of the other three.
+        """
         self._contextBranchId = -1
         self._groupNameBranchId = -1
         self._accessBranchId = -1

@@ -10,6 +10,11 @@ __all__ = ["sendNotification"]
 def sendNotification(
     snmpEngine, authData, transportTarget, contextData, notifyType, varBinds, **options
 ):
+    """Blocking trap or inform delivery.
+
+    Runs on an event loop of its own, so it is usable from code that has none;
+    calling it from inside a running loop raises rather than deadlocking.
+    """
     try:
         asyncio.get_running_loop()
     except RuntimeError:

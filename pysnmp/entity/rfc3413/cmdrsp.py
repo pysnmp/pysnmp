@@ -30,6 +30,7 @@ class CommandResponderBase:
     pduTypes: tuple[tag.TagSet, ...] = ()
 
     def __init__(self, snmpEngine, snmpContext):
+        """Registers this responder for its PDU types under the context engine ID."""
         snmpEngine.msgAndPduDsp.registerContextEngineId(
             snmpContext.contextEngineId, self.pduTypes, self.processPdu
         )

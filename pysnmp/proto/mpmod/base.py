@@ -25,6 +25,10 @@ class AbstractMessageProcessingModel:
     snmpMsgSpec: type[Any] = NotImplementedError
 
     def __init__(self):
+        """Each model instance gets its own message spec and cache.
+
+        The spec is instantiated rather than shared because decoding writes into it.
+        """
         self._snmpMsgSpec = self.snmpMsgSpec()  # local copy
         self._cache = cache.Cache()
 

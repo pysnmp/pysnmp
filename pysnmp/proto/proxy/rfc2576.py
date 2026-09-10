@@ -104,6 +104,14 @@ __zeroInt = v1.Integer(0)
 
 
 def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=""):
+    """Translate a v1 PDU into its v2c equivalent (:RFC:`2576#section-3.1`).
+
+    A trap is the awkward case: v1 carries enterprise, agent address and the
+    generic and specific trap numbers in the PDU itself, and v2c carries none of
+    them, so they become variable bindings and the trap number becomes an OID.
+    Where `snmpTrapCommunity` is given it is appended as a binding, since a v2c
+    trap has nowhere else to put it.
+    """
     pduType = v1Pdu.tagSet
     v2Pdu = __v1ToV2PduMap[pduType].clone()
 
@@ -187,6 +195,19 @@ def v1ToV2(v1Pdu, origV2Pdu=None, snmpTrapCommunity=""):
 
 
 def v2ToV1(v2Pdu, origV1Pdu=None):
+    """Translate a v2c PDU into its v1 equivalent (:RFC:`2576#section-4.1`).
+
+    The translation is lossy in the direction v1 cannot express. `Counter64`
+    has no v1 form at all, and what to do about it depends on what was asked:
+    a GET becomes a `noSuchName` error, a GETNEXT has to be reissued past the
+    offending object, and anything else is a protocol error -- which is why
+    `origV1Pdu` is needed rather than optional for a response. The exception
+    values v2c added become `noSuchName` as well.
+
+    On any error the bindings are echoed from `origV1Pdu`, since :RFC:`3416`
+    leaves them unspecified in an error response and v1 managers expect what
+    they sent.
+    """
     debug.logger & debug.flagPrx and debug.logger(
         f"v2ToV1: v2Pdu {v2Pdu.prettyPrint()}"
     )

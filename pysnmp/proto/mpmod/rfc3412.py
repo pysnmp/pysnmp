@@ -129,6 +129,12 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
     }
 
     def __init__(self):
+        """Adds the engine ID cache the v3 discovery exchange depends on.
+
+        Discovery is what learns a remote engine's ID, and it is expensive enough that
+        the answer is kept per transport address and expired on a timer rather than
+        repeated per request.
+        """
         AbstractMessageProcessingModel.__init__(self)
         self.__scopedPDU = ScopedPDU()
         self.__engineIdCache = {}

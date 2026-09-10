@@ -29,6 +29,12 @@ class MsgAndPduDispatcher:
     """
 
     def __init__(self, mibInstrumController=None):
+        """Creates MIB instrumentation if none is given, and loads what the engine needs.
+
+        The modules loaded here are the ones the engine itself reads and writes during
+        normal operation -- its counters, its USM and VACM tables -- so they are not
+        optional and are not left to the application to remember.
+        """
         if mibInstrumController is None:
             self.mibInstrumController = instrum.MibInstrumController(
                 builder.MibBuilder()

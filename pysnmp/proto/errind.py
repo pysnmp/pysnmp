@@ -19,6 +19,12 @@ class ErrorIndication(Exception):
     """SNMPv3 error-indication values."""
 
     def __init__(self, descr=None):
+        """The value is the class name with a lowercase first letter.
+
+        That is what makes an instance compare equal to the string the engine passes
+        around, so a caller can test against either. `descr` changes what is printed
+        without changing what it compares as.
+        """
         self.__value = self.__descr = (
             self.__class__.__name__[0].lower() + self.__class__.__name__[1:]
         )

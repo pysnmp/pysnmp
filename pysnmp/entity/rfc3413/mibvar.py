@@ -20,6 +20,11 @@ from pysnmp.smi.error import NoSuchObjectError
 
 
 def mibNameToOid(mibView, name):
+    """Resolve a (module, symbol) name and index suffix to an OID.
+
+    Obsolete: `pysnmp.smi.rfc1902.ObjectIdentity` does this and carries the result
+    with it.
+    """
     if isinstance(name[0], tuple):
         modName, symName = (tuple(name[0]) + ("", ""))[:2]
         if modName:  # load module if needed
@@ -51,6 +56,10 @@ __scalarSuffix = (univ.Integer(0),)
 
 
 def oidToMibName(mibView, oid):
+    """Resolve an OID back to the module, symbol and index that name it.
+
+    Obsolete: see `pysnmp.smi.rfc1902.ObjectIdentity`.
+    """
     if not isinstance(oid, tuple):
         oid = tuple(univ.ObjectIdentifier(oid))
     _oid, label, suffix = mibView.getNodeNameByOid(oid)
@@ -74,6 +83,13 @@ def oidToMibName(mibView, oid):
 
 
 def cloneFromMibValue(mibView, modName, symName, value):
+    """A value of the syntax the named object declares, or `None`.
+
+    Returns `None` for a node that has no syntax -- an OID assignment rather than
+    an object -- which is not an error, only nothing to clone.
+
+    Obsolete: see `pysnmp.smi.rfc1902.ObjectType`.
+    """
     (mibNode,) = mibView.mibBuilder.importSymbols(modName, symName)
     if hasattr(mibNode, "syntax"):  # scalar
         return mibNode.syntax.clone(value)

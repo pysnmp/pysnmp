@@ -226,6 +226,17 @@ def addV1System(
     transportTag: Any | None = None,
     securityName: Any | None = None,
 ) -> None:
+    """Map a community name onto a security name, for v1 and v2c.
+
+    Writes a row of `snmpCommunityEntry` (:RFC:`3584#section-5`), which is what
+    gives a community-based message a `securityName` the access control model can
+    reason about. `securityName` defaults to `communityIndex` rather than to the
+    community itself, so the name VACM sees is not the secret on the wire.
+
+    `transportTag` is how a community is confined to a set of transport addresses:
+    it matches the tag on a `snmpTargetAddrEntry` row, and an empty tag means any
+    source is accepted.
+    """
     __checkLegacyVersions(snmpEngine)
     __warnAboutLegacyVersion(stacklevel=3)
 
@@ -268,6 +279,7 @@ def addV1System(
 
 
 def delV1System(snmpEngine: Any, communityIndex: str) -> None:
+    """Remove the community mapping `communityIndex` names."""
     (snmpCommunityEntry, tblIdx, snmpEngineID) = __cookV1SystemInfo(
         snmpEngine, communityIndex
     )
@@ -317,7 +329,21 @@ def addV3User(
     # deprecated parameter
     contextEngineId: Any | None = None,
 ) -> None:
+    """Configure a USM user, deriving localized keys from the passphrases.
 
+    This writes two tables. `usmUserEntry` (:RFC:`3414#section-5`) holds the user
+    and the protocols it uses; `pysnmpUsmSecretEntry` holds the passphrases, which
+    the standard table deliberately has nowhere to keep -- USM stores localized
+    keys, and a key localized to one engine ID cannot be relocalized to another.
+    Keeping the passphrase is what lets a user configured before the authoritative
+    engine ID is known be re-localized once it is.
+
+    `authKeyType` and `privKeyType` say whether the key given is a passphrase to be
+    localized or a key already localized to `securityEngineId`; passing an already
+    localized key for the wrong engine is not detectable here.
+
+    `contextEngineId` is deprecated and means `securityEngineId`.
+    """
     __checkPrivBackend(privProtocol)
     __warnAboutProtocol(authProtocol, stacklevel=3)
     __warnAboutProtocol(privProtocol, stacklevel=3)
@@ -460,6 +486,10 @@ def delV3User(
     # deprecated parameters follow
     contextEngineId: Any | None = None,
 ) -> None:
+    """Remove USM user `userName`, along with the passphrases kept for it.
+
+    `contextEngineId` is deprecated and means `securityEngineId`.
+    """
     if securityEngineId is None:  # backward compatibility
         securityEngineId = contextEngineId
     (securityEngineId, usmUserEntry, tblIdx1, pysnmpUsmSecretEntry, tblIdx2) = (
@@ -516,6 +546,13 @@ def addTargetParams(
     securityLevel: int,
     mpModel: int = 3,
 ) -> None:
+    """Name a (message processing model, security model, level) triple.
+
+    Writes `snmpTargetParamsEntry` (:RFC:`3413#section-4.2`). `mpModel` selects
+    both the message processing model and the security model that goes with it: 0
+    is SNMPv1, 1 and 2 are v2c, 3 is v3 with USM. The name this binds is what
+    `addTargetAddr()` refers to.
+    """
     if mpModel == 0:
         securityModel = 1
     elif mpModel in (1, 2):
@@ -543,6 +580,7 @@ def addTargetParams(
 
 
 def delTargetParams(snmpEngine: Any, name: str) -> None:
+    """Remove the target parameters named `name`."""
     snmpTargetParamsEntry, tblIdx = __cookTargetParamsInfo(snmpEngine, name)
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((snmpTargetParamsEntry.name + (7,) + tblIdx, "destroy"),)
@@ -573,6 +611,16 @@ def addTargetAddr(
     tagList: Any = b"",
     sourceAddress: Any | None = None,
 ) -> None:
+    """Name a destination address, and the parameters to reach it with.
+
+    Writes `snmpTargetAddrEntry` (:RFC:`3413#section-4.1`), plus a row of
+    `pysnmpSourceAddrEntry` when `sourceAddress` is given -- the source address is
+    not something the standard table can express, and it is what lets a host with
+    several addresses choose which one a notification appears to come from.
+
+    `tagList` is what a notification profile and a community's `transportTag`
+    match against to find this address.
+    """
     mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
     (snmpTargetAddrEntry, snmpSourceAddrEntry, tblIdx) = __cookTargetAddrInfo(
@@ -614,6 +662,7 @@ def addTargetAddr(
 
 
 def delTargetAddr(snmpEngine: Any, addrName: str) -> None:
+    """Remove the target address named `addrName`."""
     (snmpTargetAddrEntry, snmpSourceAddrEntry, tblIdx) = __cookTargetAddrInfo(
         snmpEngine, addrName
     )
@@ -623,6 +672,14 @@ def delTargetAddr(snmpEngine: Any, addrName: str) -> None:
 
 
 def addTransport(snmpEngine: Any, transportDomain: Any, transport: Any) -> None:
+    """Bind a transport to a domain, creating a dispatcher if there is none.
+
+    A transport and a dispatcher share an I/O model, so a transport that does not
+    match the engine's existing dispatcher is refused rather than mixed in. Where
+    the engine has no dispatcher yet, one of the transport's own kind is created
+    and its loop taken from the transport; that dispatcher is reference-counted, so
+    `delTransport()` can shut down what was created implicitly.
+    """
     if snmpEngine.transportDispatcher:
         if not transport.isCompatibleWithDispatcher(snmpEngine.transportDispatcher):
             raise error.PySnmpError(
@@ -649,6 +706,7 @@ def addTransport(snmpEngine: Any, transportDomain: Any, transport: Any) -> None:
 
 
 def getTransport(snmpEngine: Any, transportDomain: Any) -> Any:
+    """The transport bound to `transportDomain`, or `None` if there is none."""
     if not snmpEngine.transportDispatcher:
         return
     try:
@@ -658,6 +716,12 @@ def getTransport(snmpEngine: Any, transportDomain: Any) -> Any:
 
 
 def delTransport(snmpEngine: Any, transportDomain: Any) -> Any:
+    """Unbind the transport at `transportDomain` and return it.
+
+    A dispatcher that `addTransport()` created implicitly is closed once the last
+    transport using it goes away. One the caller registered is left alone: it was
+    not this module's to create and is not this module's to close.
+    """
     if not snmpEngine.transportDispatcher:
         return
     transport = getTransport(snmpEngine, transportDomain)
@@ -768,6 +832,13 @@ def __cookVacmGroupInfo(
 def addVacmGroup(
     snmpEngine: Any, groupName: str, securityModel: int, securityName: Any
 ) -> None:
+    """Put a security name into a VACM group.
+
+    Writes `vacmSecurityToGroupEntry` (:RFC:`3415#section-4.1.2`). The pair that
+    identifies a row is (security model, security name), so the same name under
+    USM and under a community is two different rows and can land in two different
+    groups.
+    """
     (vacmSecurityToGroupEntry, tblIdx) = __cookVacmGroupInfo(
         snmpEngine, securityModel, securityName
     )
@@ -785,6 +856,7 @@ def addVacmGroup(
 
 
 def delVacmGroup(snmpEngine: Any, securityModel: int, securityName: Any) -> None:
+    """Remove the group membership of `securityName` under `securityModel`."""
     vacmSecurityToGroupEntry, tblIdx = __cookVacmGroupInfo(
         snmpEngine, securityModel, securityName
     )
@@ -822,6 +894,12 @@ def addVacmAccess(
     writeView: Any,
     notifyView: Any,
 ) -> None:
+    """Grant a group its read, write and notify views in a context.
+
+    Writes `vacmAccessEntry` (:RFC:`3415#section-4.1.4`). `contextMatch` is
+    ``exact`` or ``prefix``, and `securityLevel` is a floor rather than an
+    equality: a row written for `authNoPriv` also applies to `authPriv`.
+    """
     vacmAccessEntry, tblIdx = __cookVacmAccessInfo(
         snmpEngine, groupName, contextPrefix, securityModel, securityLevel
     )
@@ -850,6 +928,7 @@ def delVacmAccess(
     securityModel: int,
     securityLevel: int,
 ) -> None:
+    """Remove a group's access rights in a context."""
     vacmAccessEntry, tblIdx = __cookVacmAccessInfo(
         snmpEngine, groupName, contextPrefix, securityModel, securityLevel
     )
@@ -872,6 +951,16 @@ def __cookVacmViewInfo(snmpEngine: Any, viewName: str, subTree: Any) -> tuple[An
 def addVacmView(
     snmpEngine: Any, viewName: str, viewType: str, subTree: Any, subTreeMask: Any
 ) -> None:
+    """Include or exclude a subtree in a named view.
+
+    Writes `vacmViewTreeFamilyEntry` (:RFC:`3415#section-4.1.5`). `viewType` is
+    ``included`` or ``excluded``, and the most specific matching row wins, which is
+    what lets a view name a subtree and then carve a hole in it.
+
+    The mask may be given as an OID as well as an octet string -- a dotted string
+    is recognised by the separator in it and converted -- because writing a
+    bitmask as ``1.1.1.0.1`` is easier to check by eye than the octet it packs to.
+    """
     vacmViewTreeFamilyEntry, tblIdx = __cookVacmViewInfo(snmpEngine, viewName, subTree)
 
     # Allow bitmask specification in form of an OID
@@ -903,6 +992,7 @@ def addVacmView(
 
 
 def delVacmView(snmpEngine: Any, viewName: str, subTree: Any) -> None:
+    """Remove `subTree` from the view named `viewName`."""
     vacmViewTreeFamilyEntry, tblIdx = __cookVacmViewInfo(snmpEngine, viewName, subTree)
     snmpEngine.msgAndPduDsp.mibInstrumController.writeVars(
         ((vacmViewTreeFamilyEntry.name + (6,) + tblIdx, "destroy"),)
@@ -935,6 +1025,14 @@ def addVacmUser(
     notifySubTree: Any = (),
     contextName: Any = b"",
 ) -> None:
+    """Configure a user's access in one call: group, access and views.
+
+    VACM is three tables that have to agree, and each of the three is useless
+    without the other two. This derives a group name and view names from the
+    security name, then writes the context, the group membership, the access
+    rights and one view per subtree given. A subtree left empty means no view is
+    created, which denies that kind of access rather than granting all of it.
+    """
     (groupName, securityLevel, readView, writeView, notifyView) = __cookVacmUserInfo(
         snmpEngine, securityModel, securityName, securityLevel
     )
@@ -969,6 +1067,7 @@ def delVacmUser(
     notifySubTree: Any = (),
     contextName: Any = b"",
 ) -> None:
+    """Undo what `addVacmUser()` configured for this security name."""
     (groupName, securityLevel, readView, writeView, notifyView) = __cookVacmUserInfo(
         snmpEngine, securityModel, securityName, securityLevel
     )
@@ -994,6 +1093,11 @@ def addRoUser(
     subTree: Any,
     contextName: Any = b"",
 ) -> None:
+    """Grant read-only access to `subTree`.
+
+    Obsolete: `addVacmUser()` with a `readSubTree` says the same thing and can
+    grant the other kinds of access at the same time.
+    """
     addVacmUser(
         snmpEngine,
         securityModel,
@@ -1012,6 +1116,10 @@ def delRoUser(
     subTree: Any,
     contextName: Any = b"",
 ) -> None:
+    """Revoke the read-only access `addRoUser()` granted.
+
+    Obsolete: see `delVacmUser()`.
+    """
     delVacmUser(
         snmpEngine,
         securityModel,
@@ -1030,6 +1138,11 @@ def addRwUser(
     subTree: Any,
     contextName: Any = b"",
 ) -> None:
+    """Grant read and write access to `subTree`.
+
+    Obsolete: `addVacmUser()` with `readSubTree` and `writeSubTree` says the same
+    thing.
+    """
     addVacmUser(
         snmpEngine,
         securityModel,
@@ -1049,6 +1162,10 @@ def delRwUser(
     subTree: Any,
     contextName: Any = b"",
 ) -> None:
+    """Revoke the read-write access `addRwUser()` granted.
+
+    Obsolete: see `delVacmUser()`.
+    """
     delVacmUser(
         snmpEngine,
         securityModel,
@@ -1068,6 +1185,10 @@ def addTrapUser(
     subTree: Any,
     contextName: Any = b"",
 ) -> None:
+    """Grant the right to receive notifications about `subTree`.
+
+    Obsolete: `addVacmUser()` with a `notifySubTree` says the same thing.
+    """
     addVacmUser(
         snmpEngine,
         securityModel,
@@ -1088,6 +1209,10 @@ def delTrapUser(
     subTree: Any,
     contextName: Any = b"",
 ) -> None:
+    """Revoke the notify access `addTrapUser()` granted.
+
+    Obsolete: see `delVacmUser()`.
+    """
     delVacmUser(
         snmpEngine,
         securityModel,
@@ -1158,6 +1283,16 @@ def addNotificationTarget(
     filterType: Any | None = None,
     filterProfileName: Any | None = None,
 ) -> None:
+    """Say what to notify, where to send it, and what to leave out.
+
+    Writes `snmpNotifyEntry` (:RFC:`3413#section-4.3`), which binds a transport tag
+    to a notify type -- ``trap``, which is not acknowledged, or ``inform``, which
+    is. Where a filter subtree is given it also writes the filter profile and the
+    filter itself, so a target can be sent some notifications and not others.
+
+    The address is not named here: `transportTag` selects every `addTargetAddr()`
+    row carrying that tag, which is what lets one notification go to several.
+    """
     (
         snmpNotifyEntry,
         tblIdx1,
@@ -1218,6 +1353,7 @@ def delNotificationTarget(
     filterSubtree: Any | None = None,
     filterProfileName: Any | None = None,
 ) -> None:
+    """Remove a notification target, and its filter profile if it had one."""
     (
         snmpNotifyEntry,
         tblIdx1,
@@ -1255,6 +1391,13 @@ def setInitialVacmParameters(snmpEngine: Any) -> None:
     # rfc3415: A.1.1 --> initial-semi-security-configuration
 
     # rfc3415: A.1.2
+    """Write the initial VACM configuration from :RFC:`3415#appendix-A.1`.
+
+    This is the semi-secure configuration the RFC describes: an `initial` user
+    that can read the system group unauthenticated, and read or write more of the
+    tree once it authenticates. It exists so a freshly started engine can be
+    configured over SNMP rather than only out of band.
+    """
     addContext(snmpEngine, "")
 
     # rfc3415: A.1.3

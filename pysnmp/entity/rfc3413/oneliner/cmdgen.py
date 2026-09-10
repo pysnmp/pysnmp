@@ -32,6 +32,7 @@ class AsynCommandGenerator:
     lcd = CommandGeneratorLcdConfigurator()
 
     def __init__(self, snmpEngine=None):
+        """Creates an engine if none is given, and owns it for its lifetime."""
         if snmpEngine is None:
             self.snmpEngine = SnmpEngine()
         else:
@@ -264,6 +265,7 @@ class CommandGenerator:
 
     def __init__(self, snmpEngine=None, asynCmdGen=None):
         # compatibility attributes
+        """`asynCmdGen` is accepted for compatibility and ignored."""
         self.snmpEngine = snmpEngine or SnmpEngine()
 
     def getCmd(self, authData, transportTarget, *varNames, **kwargs):

@@ -79,6 +79,7 @@ def getCmd(
     *varBinds: Any,
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking GET. Yields one result, then whatever bindings are sent back in."""
     return _single(
         cmdgen.getCmd,
         snmpEngine,
@@ -98,6 +99,7 @@ def setCmd(
     *varBinds: Any,
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking SET. Yields one result, then whatever bindings are sent back in."""
     return _single(
         cmdgen.setCmd,
         snmpEngine,
@@ -117,6 +119,12 @@ def nextCmd(
     *varBinds: Any,
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking GETNEXT, walking until the end of the subtree.
+
+    `lexicographicMode` decides whether the walk stops at the end of the subtree it
+    started in or carries on to the end of the MIB; `maxRows` and `maxCalls` bound
+    it either way.
+    """
     loop = _loop()
     lexicographicMode = options.pop("lexicographicMode", True)
     ignoreNonIncreasingOid = options.pop("ignoreNonIncreasingOid", False)
@@ -202,6 +210,12 @@ def bulkCmd(
     *varBinds: Any,
     **options: Any,
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking GETBULK, walking until the end of the subtree.
+
+    `nonRepeaters` is how many of the bindings are fetched once rather than walked,
+    and `maxRepetitions` how many rows the agent should return per pass -- a value
+    larger than the response can hold is answered with fewer, not an error.
+    """
     loop = _loop()
     lexicographicMode = options.pop("lexicographicMode", True)
     ignoreNonIncreasingOid = options.pop("ignoreNonIncreasingOid", False)

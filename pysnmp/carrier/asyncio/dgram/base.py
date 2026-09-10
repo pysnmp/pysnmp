@@ -62,6 +62,12 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
     unboundLocalAddress: "tuple | str | None" = None
 
     def __init__(self, sock=None, sockMap=None, loop=None):
+        """Binds to an event loop now, creating one where there is no running loop.
+
+        Writes are queued rather than sent, because the transport does not exist until
+        asyncio has created the endpoint; socket options are queued for the same reason
+        and applied to the socket once there is one.
+        """
         self._writeQ = []
         self._lport = None
         self._pendingSocketOptions = []
