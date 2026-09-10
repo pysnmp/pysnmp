@@ -87,6 +87,63 @@ Pass ``None`` to stop using one. The corpus is opened read-only with SQLite's
 which is what lets it be mounted from a Kubernetes image volume.
 
 
+Several corpora at once
+-----------------------
+
+A deployment rarely has one corpus. It has the distribution's, covering the
+standard modules and whatever vendors shipped with it, and it has its own --
+the enterprise MIBs its devices actually speak, which nobody else publishes.
+``CompositeMibCorpus`` searches several as one, most specific first:
+
+.. code-block:: python
+
+   from pysnmp.smi.corpus import open_corpora
+
+   mibBuilder.setMibCorpus(open_corpora(["/mibs/site.db", "/mibs/core.db"]))
+
+Or from the environment, which is the same thing without the imports:
+
+.. code-block:: shell
+
+   PYSNMP_MIB_DBS=/mibs/site.db:/mibs/core.db
+
+Like ``PYSNMP_MIB_DIRS``, it is an ``os.pathsep``-separated list read when a
+``MibBuilder`` is constructed, and the order is the precedence order. A path
+naming something that is not a readable corpus raises ``SmiError`` there and
+then, rather than being skipped: a skipped corpus leaves a deployment resolving
+fewer modules than it asked for, and the only symptom is a MIB that used to be
+found and now is not.
+
+**Names and OIDs resolve by different rules**, and the difference matters:
+
+*By name, the first corpus carrying the module wins.* A caller naming a module
+is naming something they believe in, and the earliest source is the one they
+went out of their way to put first.
+
+*By OID, the longest prefix wins; order is only the tie-break.* This is the
+rule the class exists for. Given a site subtree under an arc the core corpus
+already anchors, first-match-wins would resolve every OID beneath it to the
+core corpus's shallow anchor and never reach the site corpus at all -- no
+matter which was configured first:
+
+.. code-block:: python
+
+   store = open_corpora(["/mibs/core.db", "/mibs/site.db"])
+
+   # core.db anchors 1.3.6.1.4.1.9; site.db anchors the subtree itself.
+   store.find_module("1.3.6.1.4.1.9.9.42.1.1")   # -> 'SITE-MIB'
+
+**One module resolves from exactly one corpus.** Where two carry the same
+module, every name-keyed lookup for it routes to the same one and the other's
+rows for it are invisible -- not its nodes, not its types, not its IMPORTS.
+Merging them would build one module from two definitions and produce two
+classes for one type, which fails ``isinstance`` somewhere far from here.
+
+``loadTexts`` is reported for the composite only when *every* corpus carries
+prose, so one textless corpus in the search path is refused rather than
+silently answering with no DESCRIPTION for the modules it owns.
+
+
 Resolving a trap OID without a compiler
 ---------------------------------------
 

@@ -53,10 +53,12 @@ from typing import Any, Final, Union
 from pysnmp.smi import error
 
 __all__ = [
+    "CompositeMibCorpus",
     "MibCorpus",
     "MibCorpusCycleError",
     "oid_from_key",
     "oid_key",
+    "open_corpora",
     "subtree_bound",
 ]
 
@@ -449,6 +451,29 @@ class MibCorpus:
 
         return node
 
+    def anchor(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
+        """Which module registers *exactly* this OID, without chopping arcs.
+
+        The single index lookup :py:meth:`find_module` repeats as it shortens
+        the OID. It is public because a search across several corpora cannot
+        be built out of :py:meth:`find_module`: that returns a module name and
+        not the length it matched at, so a shallow anchor in one corpus is
+        indistinguishable from a deep one in another, and the longest-prefix
+        rule the composite owes cannot be applied to the answers. Chopping is
+        hoisted into the caller instead, and this is what it calls.
+
+        Args:
+            oid: the OID, matched as given
+
+        Returns
+        -------
+            The module name, or ``None`` when no module anchors this exact
+            OID -- which for anything below an anchor is the normal answer.
+        """
+        row = self._db.execute(self.QUERIES["find_module"], (oid_key(oid),)).fetchone()
+
+        return row[0] if row else None
+
     def find_module(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
         """Which module answers for an OID.
 
@@ -470,12 +495,10 @@ class MibCorpus:
         arcs = [int(x) for x in oid.split(".")] if isinstance(oid, str) else list(oid)
 
         while arcs:
-            row = self._db.execute(
-                self.QUERIES["find_module"], (oid_key(tuple(arcs)),)
-            ).fetchone()
+            found = self.anchor(tuple(arcs))
 
-            if row:
-                return row[0]
+            if found is not None:
+                return found
 
             arcs.pop()
 
@@ -631,3 +654,407 @@ class MibCorpus:
             Symbol name to source module.
         """
         return dict(self._db.execute(self.QUERIES["imports_of"], (module,)))
+
+
+class CompositeMibCorpus:
+    """Several corpora searched as one, in precedence order.
+
+    A deployment rarely has a single corpus. It has the distribution's, which
+    covers the standard modules and whatever vendors were published with it,
+    and it has its own -- the enterprise MIBs its devices actually speak, which
+    nobody else ships. Both have to be readable at once, and which one answers
+    has to be decided by a rule rather than by whichever was configured last.
+
+    Two rules, because names and OIDs are not the same question.
+
+    **By name, the first corpus carrying the module wins.** A caller naming a
+    module is naming a thing they believe in, and the earliest source is the
+    one they went out of their way to put first.
+
+    **By OID, the longest prefix wins, and order is only the tie-break.**
+    First-match-wins on OIDs is the bug this class exists to avoid: a private
+    subtree under ``enterprises.9`` resolves to the core corpus's anchor for
+    ``enterprises.9`` and never reaches the customer corpus that anchors the
+    subtree itself, no matter how the two are ordered. Candidates are gathered
+    at every prefix length, deepest first.
+
+    **One module resolves from exactly one corpus.** Where two carry the same
+    module, every name-keyed lookup for it routes to the same one, and the
+    other's rows for it are not visible -- not its nodes, not its types, not
+    its IMPORTS. Merging two corpora for one module would build one module out
+    of two definitions and produce distinct class objects for the same type,
+    which breaks ``isinstance`` at a distance and is not worth any amount of
+    convenience.
+
+    Args:
+        *corpora: the corpora, most specific first
+
+    Raises
+    ------
+        SmiError: no corpora were given. There is nothing for an empty
+            composite to answer and its every lookup would be ``None``, which
+            reads as "the corpora do not carry it" rather than as the
+            configuration mistake it is.
+    """
+
+    def __init__(self, *corpora: MibCorpus):
+        """Take the corpora in precedence order and index nothing yet."""
+        if not corpora:
+            raise error.SmiError("a composite MIB corpus needs at least one corpus")
+
+        self._corpora: tuple[MibCorpus, ...] = tuple(corpora)
+        self._modules: frozenset[str] | None = None
+        self._owners: dict[str, MibCorpus | None] = {}
+
+    def __repr__(self) -> str:
+        """The composite and what it was built from, in order."""
+        return f"{self.__class__.__name__}({', '.join(repr(x) for x in self._corpora)})"
+
+    @property
+    def corpora(self) -> "tuple[MibCorpus, ...]":
+        """The corpora this searches, in precedence order."""
+        return self._corpora
+
+    @property
+    def path(self) -> str:
+        """Where the corpora were opened from, joined as a search path."""
+        return os.pathsep.join(x.path for x in self._corpora)
+
+    def close(self) -> None:
+        """Release every corpus."""
+        for corpus in self._corpora:
+            corpus.close()
+
+    @property
+    def loadTexts(self) -> bool:
+        """Whether *every* corpus carries DESCRIPTION and REFERENCE.
+
+        All rather than any, because a caller asking for texts is asking about
+        the modules they will load, and which corpus answers for a given
+        module is not something they chose. One textless corpus in the search
+        path means some modules come back with no prose, and reporting texts
+        as available would make that indistinguishable from a MIB that
+        declares none -- the precise confusion
+        :py:meth:`~pysnmp.smi.builder.MibBuilder.setMibCorpus` refuses to
+        allow.
+        """
+        return all(x.loadTexts for x in self._corpora)
+
+    def meta(self, key: str) -> str | None:
+        """One metadata value, from the first corpus that carries it.
+
+        Args:
+            key: the metadata key
+
+        Returns
+        -------
+            The value, or ``None`` when no corpus records that key. Note that
+            values such as ``corpus_id`` and the counts describe *one* corpus
+            and not the search path, so this answers "what does the first
+            corpus that has an opinion say", which is useful for diagnostics
+            and not much else.
+        """
+        for corpus in self._corpora:
+            value = corpus.meta(key)
+
+            if value is not None:
+                return value
+
+        return None
+
+    def modules(self) -> frozenset[str]:
+        """Every module any corpus carries."""
+        if self._modules is None:
+            self._modules = frozenset().union(*(x.modules() for x in self._corpora))
+
+        return self._modules
+
+    def owner(self, module: str) -> MibCorpus | None:
+        """Which corpus answers for a module, and will answer for all of it.
+
+        This is the one-module-one-corpus rule made callable: every name-keyed
+        lookup here goes through it, so a module's nodes, types and IMPORTS
+        cannot come from different corpora.
+
+        Args:
+            module: the module's descriptor
+
+        Returns
+        -------
+            The first corpus carrying it, or ``None`` when none does.
+        """
+        if module not in self._owners:
+            self._owners[module] = next(
+                (x for x in self._corpora if module in x.modules()), None
+            )
+
+        return self._owners[module]
+
+    def module(self, name: str) -> dict[str, Any] | None:
+        """What the owning corpus records about a module.
+
+        Args:
+            name: the module's descriptor
+
+        Returns
+        -------
+            Its record, or ``None`` when no corpus carries it.
+        """
+        owner = self.owner(name)
+
+        return owner.module(name) if owner else None
+
+    def anchor(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
+        """Which module registers exactly this OID, in precedence order.
+
+        Args:
+            oid: the OID, matched as given
+
+        Returns
+        -------
+            The module name, or ``None``.
+        """
+        for corpus in self._corpora:
+            found = corpus.anchor(oid)
+
+            if found is not None:
+                return found
+
+        return None
+
+    def find_module(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
+        """Which module answers for an OID, by longest prefix across all corpora.
+
+        Every corpus is asked at each prefix length before the OID is
+        shortened, so a corpus late in the order still wins with a deeper
+        anchor than an earlier one. Order decides only between anchors of
+        equal length.
+
+        Args:
+            oid: the OID to resolve
+
+        Returns
+        -------
+            The module name, or ``None`` when no corpus claims a prefix.
+        """
+        arcs = [int(x) for x in oid.split(".")] if isinstance(oid, str) else list(oid)
+
+        while arcs:
+            found = self.anchor(tuple(arcs))
+
+            if found is not None:
+                return found
+
+            arcs.pop()
+
+        return None
+
+    def _owned(self, corpus: MibCorpus, node: dict[str, Any] | None) -> bool:
+        """Whether a node this corpus returned is one it answers for.
+
+        A node belongs to a module, and a module belongs to one corpus. A
+        corpus late in the order still has rows for a module an earlier one
+        owns, and those rows are not part of what the composite resolves.
+
+        Args:
+            corpus: the corpus the node came from
+            node: the node, or ``None``
+
+        Returns
+        -------
+            Whether it should be visible.
+        """
+        return node is not None and self.owner(node["module"]) is corpus
+
+    def node(
+        self, oid: Union[str, "tuple[int, ...]"], module: str | None = None
+    ) -> dict[str, Any] | None:
+        """The node at an exact OID, from the corpus that owns its module.
+
+        Args:
+            oid: the OID, which must be the node's own and not an instance
+            module: which module's definition to take. The first corpus with
+                a node at this OID that it owns, otherwise.
+
+        Returns
+        -------
+            The node, or ``None``.
+        """
+        if module is not None:
+            owner = self.owner(module)
+
+            return owner.node(oid, module) if owner else None
+
+        for corpus in self._corpora:
+            found = corpus.node(oid)
+
+            if self._owned(corpus, found):
+                return found
+
+        return None
+
+    def node_named(self, module: str, name: str) -> dict[str, Any] | None:
+        """The node a module declares under a descriptor.
+
+        Args:
+            module: the module's descriptor
+            name: the symbol's descriptor
+
+        Returns
+        -------
+            The node, or ``None``.
+        """
+        owner = self.owner(module)
+
+        return owner.node_named(module, name) if owner else None
+
+    def next_node(self, oid: Union[str, "tuple[int, ...]"]) -> dict[str, Any] | None:
+        """The first node ordered after an OID, across every corpus.
+
+        A walk has to see one ordering, so each corpus is advanced to its own
+        first owned successor and the earliest of those wins. Rows for a
+        module some other corpus owns are stepped over rather than returned,
+        which is what keeps a walk from visiting a module twice under two
+        definitions.
+
+        Args:
+            oid: where to start, exclusive
+
+        Returns
+        -------
+            The next node, or ``None`` at the end of every corpus, which is
+            ``endOfMibView`` and not an error.
+        """
+        best: dict[str, Any] | None = None
+        bound: bytes | None = None
+
+        for corpus in self._corpora:
+            found = corpus.next_node(oid)
+
+            while found is not None and not self._owned(corpus, found):
+                found = corpus.next_node(found["arcs"])
+
+            if found is None:
+                continue
+
+            key = oid_key(found["arcs"])
+
+            if bound is None or key < bound:
+                best, bound = found, key
+
+        return best
+
+    def subtree(self, oid: Union[str, "tuple[int, ...]"]) -> list[dict[str, Any]]:
+        """Every owned node at or below an OID, in OID order.
+
+        Args:
+            oid: the subtree root
+
+        Returns
+        -------
+            The nodes, root first, merged across corpora.
+        """
+        found = [
+            node
+            for corpus in self._corpora
+            for node in corpus.subtree(oid)
+            if self._owned(corpus, node)
+        ]
+
+        return sorted(found, key=lambda x: (oid_key(x["arcs"]), x["module"]))
+
+    def nodes_of(self, module: str) -> list[dict[str, Any]]:
+        """Every node a module declares, from the corpus that owns it.
+
+        Args:
+            module: the module's descriptor
+
+        Returns
+        -------
+            The nodes, or an empty list when no corpus carries the module.
+        """
+        owner = self.owner(module)
+
+        return owner.nodes_of(module) if owner else []
+
+    def symbols_of(self, module: str) -> list[dict[str, Any]]:
+        """Every type a module declares, from the corpus that owns it.
+
+        Args:
+            module: the module's descriptor
+
+        Returns
+        -------
+            The symbols, or an empty list when no corpus carries the module.
+        """
+        owner = self.owner(module)
+
+        return owner.symbols_of(module) if owner else []
+
+    def symbol(self, module: str, name: str) -> dict[str, Any] | None:
+        """One declared type, from the corpus that owns its module.
+
+        Args:
+            module: the module's descriptor
+            name: the type's descriptor
+
+        Returns
+        -------
+            The symbol, or ``None``.
+        """
+        owner = self.owner(module)
+
+        return owner.symbol(module, name) if owner else None
+
+    def imports_of(self, module: str) -> dict[str, str]:
+        """A module's IMPORTS, from the corpus that owns it.
+
+        Args:
+            module: the module's descriptor
+
+        Returns
+        -------
+            Symbol name to source module, empty when no corpus carries it.
+        """
+        owner = self.owner(module)
+
+        return owner.imports_of(module) if owner else {}
+
+
+def open_corpora(paths: "list[str] | tuple[str, ...]") -> Any:
+    """Open a search path of corpora, most specific first.
+
+    Args:
+        paths: the ``.db`` files, in precedence order
+
+    Returns
+    -------
+        A :py:class:`MibCorpus` for a single path and a
+        :py:class:`CompositeMibCorpus` for several. One path is not wrapped
+        because a composite of one answers identically and only obscures the
+        corpus in tracebacks and in ``repr``.
+
+    Raises
+    ------
+        SmiError: no paths were given, or one of them is not a readable
+            corpus. A configured corpus that cannot be opened is a mistake to
+            report rather than a source to skip: skipping it leaves a
+            deployment resolving fewer modules than it asked for, and the only
+            symptom is a MIB that used to be found and now is not.
+    """
+    opened: list[MibCorpus] = []
+
+    try:
+        for path in paths:
+            opened.append(MibCorpus(path))
+
+    except Exception:
+        for corpus in opened:
+            corpus.close()
+
+        raise
+
+    if not opened:
+        raise error.SmiError("no MIB corpus paths given")
+
+    return opened[0] if len(opened) == 1 else CompositeMibCorpus(*opened)
