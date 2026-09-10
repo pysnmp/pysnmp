@@ -210,17 +210,14 @@ ignore = [
     "S508",     # snmp-insecure-version
     "S509",     # snmp-weak-cryptography
 
-    # The docstring family, adopted in stages -- see #186. Everything but
-    # D105 is on: every module, package, class, function, constructor and
-    # method says what it is for.
-    #
-    # These came off one rule at a time, each its own reviewable change:
-    #   D100/D104  104 modules and packages -- done
-    #   D101       182 classes -- done
-    #   D103/D107  102 functions and constructors -- done
-    #   D102       346 methods, in two parts (proto, then the rest) -- done
-    #   D105        48 magic methods
-    "D105",     # undocumented-magic-method
+    # The docstring family is fully on -- see #186. Every module, package,
+    # class, function, constructor, method and magic method says what it is
+    # for. It came off one rule at a time, each its own reviewable change:
+    #   D100/D104  104 modules and packages
+    #   D101       182 classes
+    #   D103/D107  102 functions and constructors
+    #   D102       346 methods, in two parts: proto, then the rest
+    #   D105         7 magic methods the passes above had not already covered
 
     # The one rule pyasn1 keeps that this does not, and the only place the two
     # rule sets differ. Every third-person summary it caught -- "Returns the",

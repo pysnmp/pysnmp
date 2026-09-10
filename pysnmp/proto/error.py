@@ -43,12 +43,15 @@ class StatusInformation(SnmpV3Error):
         ) and debug.logger(f"StatusInformation: {kwargs}")
 
     def __str__(self):
+        """Every detail the status carries, not just an error name."""
         return str(self.__errorIndication)
 
     def __getitem__(self, key):
+        """One detail of the status."""
         return self.__errorIndication[key]
 
     def __contains__(self, key):
+        """Whether a detail was set."""
         return key in self.__errorIndication
 
     def get(self, key, defVal=None):
