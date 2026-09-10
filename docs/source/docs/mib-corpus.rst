@@ -316,6 +316,27 @@ compiler.
 So a corpus cannot satisfy ``loadTexts``. What happens when it is asked to
 depends on whether anything else can.
 
+Saying where the ASN.1 is
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``PYSNMP_MIB_SOURCES`` is the compile-side counterpart of ``PYSNMP_MIB_DIRS``
+and ``PYSNMP_MIB_DBS``: where a compiler looks for the ASN.1 it renders.
+
+.. code-block:: shell
+
+   PYSNMP_MIB_SOURCES=/opt/vendor/mibs:https://mibs.example.org/asn1
+
+It is read by ``addMibCompiler()`` and so is only meaningful with the
+``[compile]`` extra installed. Set, it **replaces** the two shipped defaults
+(``/usr/share/snmp/mibs`` and ``/usr/share/mibs``) rather than adding to them --
+the rule ``PYSNMP_MIB_DIRS`` already follows, and the one that lets a container
+image state where its MIBs are without also searching two host paths that do
+not exist in it. An explicit ``sources=`` argument still wins.
+
+Entries may be directories, ``.zip`` archives or URLs; a URL keeps its scheme
+even though ``os.pathsep`` is the same colon that follows it.
+
+
 Corpus for speed, compiler for prose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
