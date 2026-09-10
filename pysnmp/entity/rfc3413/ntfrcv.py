@@ -54,6 +54,7 @@ class NotificationReceiver:
         )
 
     def close(self, snmpEngine):
+        """Deregister from the dispatcher and drop the callback."""
         snmpEngine.msgAndPduDsp.unregisterContextEngineId(b"", self.pduTypes)
         self.__cbFun = self.__cbCtx = None
 
@@ -71,7 +72,12 @@ class NotificationReceiver:
         maxSizeResponseScopedPDU,
         stateReference,
     ):
+        """Take a notification, hand it to the application, and acknowledge it if asked.
 
+        A v1 trap is converted to v2c first, so the application sees one shape however
+        it arrived, and an INFORM is acknowledged with the bindings echoed back as
+        :RFC:`3416` requires. An unconfirmed trap gets no response at all.
+        """
         # Agent-side API complies with SMIv2
         if messageProcessingModel == 0:
             origPdu = PDU

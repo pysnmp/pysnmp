@@ -38,10 +38,12 @@ class CommandResponderBase:
         self.__pendingReqs = {}
 
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
+        """Serve one request. Concrete responders implement this."""
         # Concrete responders implement their management operation here.
         pass
 
     def close(self, snmpEngine):
+        """Deregister from the dispatcher and drop what is still pending."""
         snmpEngine.msgAndPduDsp.unregisterContextEngineId(
             self.snmpContext.contextEngineId, self.pduTypes
         )
@@ -50,6 +52,7 @@ class CommandResponderBase:
     def sendVarBinds(
         self, snmpEngine, stateReference, errorStatus, errorIndex, varBinds
     ):
+        """Answer with these bindings and this error status."""
         (
             messageProcessingModel,
             securityModel,
@@ -78,6 +81,12 @@ class CommandResponderBase:
     sendRsp = sendVarBinds
 
     def sendPdu(self, snmpEngine, stateReference, PDU):
+        """Send a prepared response, translating it back to v1 for a v1 peer.
+
+        Everything above this works in SMIv2, so a v1 request is answered by converting
+        the v2c response -- the original request coming along because v1 has no way to
+        say some of what v2c can, and the translation needs to know what was asked.
+        """
         (
             messageProcessingModel,
             securityModel,
@@ -130,6 +139,7 @@ class CommandResponderBase:
     _counter64Type = rfc1902.Counter64.tagSet
 
     def releaseStateInformation(self, stateReference):
+        """Drop what was held for a request. Unknown references are ignored."""
         if stateReference in self.__pendingReqs:
             del self.__pendingReqs[stateReference]
 
@@ -147,7 +157,14 @@ class CommandResponderBase:
         maxSizeResponseScopedPDU,
         stateReference,
     ):
+        """Take one request, run the operation, and turn any failure into an error status.
 
+        The long run of handlers here is the point: the instrumentation raises SMI
+        errors and the wire carries error statuses, so each one is mapped to its status
+        and the index of the binding that caused it. Nothing is allowed to escape as an
+        exception, since a request that produced no response at all would leave the
+        manager waiting out its timeout for no reason.
+        """
         # Agent-side API complies with SMIv2
         if messageProcessingModel == 0:
             origPdu = PDU
@@ -286,6 +303,13 @@ class CommandResponderBase:
         self.releaseStateInformation(stateReference)
 
     def __verifyAccess(self, name, syntax, idx, viewType, acCtx):
+        """Check one binding against the access control model, as an SMI error.
+
+        The credentials come from the observer's record of the message rather than
+        being threaded down through the instrumentation, which never needs them for
+        anything else. ACM refusals are mapped to `AuthorizationError`, so an object
+        the caller may not see is indistinguishable from one that is not there.
+        """
         snmpEngine = acCtx
         execCtx = snmpEngine.observer.getExecutionContext(
             "rfc3412.receiveMessage:request"
@@ -365,6 +389,7 @@ class GetCommandResponder(CommandResponderBase):
 
     # rfc1905: 4.2.1
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
+        """Read exactly the objects named."""
         (acFun, acCtx) = acInfo
         # rfc1905: 4.2.1.1
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readVars
@@ -385,6 +410,7 @@ class NextCommandResponder(CommandResponderBase):
 
     # rfc1905: 4.2.2
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
+        """Read the objects following those named."""
         (acFun, acCtx) = acInfo
         # rfc1905: 4.2.2.1
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readNextVars
@@ -413,6 +439,12 @@ class BulkCommandResponder(CommandResponderBase):
 
     # rfc1905: 4.2.3
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
+        """Read repeatedly, capping the repetitions at what `maxVarBinds` allows.
+
+        The requester names the repetition count, so without a cap it decides how much
+        work the agent does and how large the response gets. :RFC:`3416` lets an agent
+        return fewer repetitions than asked for, which is what makes capping legal.
+        """
         (acFun, acCtx) = acInfo
         nonRepeaters = v2c.apiBulkPDU.getNonRepeaters(PDU)
         nonRepeaters = max(nonRepeaters, 0)
@@ -459,6 +491,7 @@ class SetCommandResponder(CommandResponderBase):
 
     # rfc1905: 4.2.5
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
+        """Write the bindings, which the instrumentation commits all or nothing."""
         (acFun, acCtx) = acInfo
         mgmtFun = self.snmpContext.getMibInstrum(contextName).writeVars
         # rfc1905: 4.2.5.1-13

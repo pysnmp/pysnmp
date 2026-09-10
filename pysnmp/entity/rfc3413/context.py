@@ -38,6 +38,11 @@ class SnmpContext:
         }  # Default name
 
     def registerContextName(self, contextName, mibInstrum=None):
+        """Serve a context name from an instrumentation, or from the default one.
+
+        This is what lets one agent present different sets of objects under different
+        context names, which v3 has and v1 and v2c reach only through the community.
+        """
         contextName = univ.OctetString(contextName).asOctets()
         if contextName in self.contextNames:
             raise error.PySnmpError(f"Duplicate contextName {contextName}")
@@ -50,6 +55,7 @@ class SnmpContext:
             self.contextNames[contextName] = mibInstrum
 
     def unregisterContextName(self, contextName):
+        """Stop serving a context name. Unknown names are ignored."""
         contextName = univ.OctetString(contextName).asOctets()
         if contextName in self.contextNames:
             debug.logger & debug.flagIns and debug.logger(
@@ -58,6 +64,7 @@ class SnmpContext:
             del self.contextNames[contextName]
 
     def getMibInstrum(self, contextName=b""):
+        """The instrumentation serving a context name. Raises where it is not registered."""
         contextName = univ.OctetString(contextName).asOctets()
         if contextName not in self.contextNames:
             debug.logger & debug.flagIns and debug.logger(

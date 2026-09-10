@@ -141,6 +141,12 @@ class NotificationOriginator:
         sendPduHandle,
         cbInfo,
     ):
+        """Match an INFORM's acknowledgement to what was sent, retrying if it failed.
+
+        As on the command generator, an unknown engine or a bad time window spends a
+        discovery retry rather than an ordinary one, since a first INFORM to a peer is
+        expected to fail that way.
+        """
         sendRequestHandle, cbFun, cbCtx = cbInfo
 
         # 3.3.6d
@@ -280,6 +286,7 @@ class NotificationOriginator:
         cbFun=None,
         cbCtx=None,
     ):
+        """Send a notification to a configured target, translating it for a v1 peer."""
         (transportDomain, transportAddress, timeout, retryCount, params) = (
             config.getTargetAddr(snmpEngine, targetName)
         )
@@ -372,6 +379,11 @@ class NotificationOriginator:
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, pdu, cbCtx
     ):
+        """Report a notification finished once the last of its targets has answered.
+
+        One notification may go to several targets, and the caller is told once rather
+        than per target, so this counts the outstanding sends down to nothing.
+        """
         notificationHandle, cbFun, cbCtx = cbCtx
 
         self.__pendingNotifications[notificationHandle].remove(sendRequestHandle)
@@ -409,6 +421,12 @@ class NotificationOriginator:
         cbFun=None,
         cbCtx=None,
     ):
+        """Send to every target the notify tag names, filling in the required bindings.
+
+        :RFC:`3416` wants `sysUpTime` first and `snmpTrapOID` second, so both are moved
+        into place or supplied where the caller did not give them -- a notification
+        without them is not one a receiver can interpret.
+        """
         debug.logger & debug.flagApp and debug.logger(
             'sendVarBinds: notificationTarget {}, contextEngineId {}, contextName "{}", varBinds {}'.format(
                 notificationTarget,

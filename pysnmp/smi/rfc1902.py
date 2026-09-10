@@ -213,12 +213,14 @@ class ObjectIdentity:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def getMibNode(self):
+        """The MIB object this resolved to. Raises until `resolveWithMib()` has run."""
         if self.__state & self.stClean:
             return self.__mibNode
         else:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def isFullyResolved(self):
+        """Whether the MIB lookup has happened and the OID and node are known."""
         return self.__state & self.stClean
 
     #
@@ -586,6 +588,7 @@ class ObjectIdentity:
             raise SmiError("Non-OID, label or MIB symbol")
 
     def prettyPrint(self):
+        """The MIB name, as `MODULE::symbol` with any index appended."""
         if self.__state & self.stClean:
             s = rfc1902.OctetString()
             return "{}::{}{}{}".format(
@@ -605,6 +608,7 @@ class ObjectIdentity:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def __repr__(self):
+        """How this identity was constructed, not what it resolved to."""
         return "{}({})".format(
             self.__class__.__name__, ", ".join([repr(x) for x in self.__args])
         )
@@ -612,60 +616,75 @@ class ObjectIdentity:
     # Redirect some attrs access to the OID object to behave alike
 
     def __str__(self):
+        """The OID in dotted form."""
         if self.__state & self.stClean:
             return str(self.__oid)
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __eq__(self, other):
+        """Compare by OID."""
         if self.__state & self.stClean:
             return self.__oid == other
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __lt__(self, other):
+        """Order by OID."""
         if self.__state & self.stClean:
             return self.__oid < other
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __bool__(self):
+        """Whether the OID is non-empty."""
         if self.__state & self.stClean:
             return bool(self.__oid)
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __getitem__(self, i):
+        """One sub-identifier, or a slice of them."""
         if self.__state & self.stClean:
             return self.__oid[i]
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __len__(self):
+        """How many sub-identifiers the OID has."""
         if self.__state & self.stClean:
             return len(self.__oid)
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __add__(self, other):
+        """Extend the OID on the right."""
         if self.__state & self.stClean:
             return self.__oid + other
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __radd__(self, other):
+        """Extend the OID on the left."""
         if self.__state & self.stClean:
             return other + self.__oid
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __hash__(self):
+        """Hash by OID. Raises until resolved, since the OID is what identifies it."""
         if self.__state & self.stClean:
             return hash(self.__oid)
         else:
             raise SmiError(f"{self.__class__.__name__} object not properly initialized")
 
     def __getattr__(self, attr):
+        """Forward the OID's own methods, once there is an OID to forward to.
+
+        This stands in for inheriting from `ObjectIdentifier`: an identity is not an OID
+        until it has been resolved against a MIB, so the methods appear only then
+        rather than being present and wrong beforehand.
+        """
         if self.__state & self.stClean:
             if attr in (
                 "asTuple",
@@ -766,20 +785,24 @@ class ObjectType:
         self.__units = ""
 
     def __getitem__(self, i):
+        """The identity at 0, the value at 1, as a binding is a pair."""
         if self.__state & self.stClean:
             return self.__args[i]
         else:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def __str__(self):
+        """The binding as `MODULE::symbol.index = value`."""
         return self.prettyPrint()
 
     def __repr__(self):
+        """The identity and value this was constructed from."""
         return "{}({})".format(
             self.__class__.__name__, ", ".join([repr(x) for x in self.__args])
         )
 
     def isFullyResolved(self):
+        """Whether the identity resolved and the value took its MIB-defined type."""
         return self.__state & self.stClean
 
     def addAsn1MibSource(self, *asn1Sources, **kwargs):
@@ -1000,6 +1023,7 @@ class ObjectType:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def prettyPrint(self):
+        """The binding with both halves rendered as the MIB defines them."""
         if self.__state & self.stClean:
             return f"{self.__args[0].prettyPrint()} = {self.__args[1].prettyPrint()}"
         else:
@@ -1094,12 +1118,14 @@ class NotificationType:
         self.__state = self.stDirty
 
     def __getitem__(self, i):
+        """One of the notification's bindings, by position."""
         if self.__state & self.stClean:
             return self.__varBinds[i]
         else:
             raise SmiError(f"{self.__class__.__name__} object not fully initialized")
 
     def __repr__(self):
+        """The identity, instance index and objects this was constructed from."""
         return f"{self.__class__.__name__}({self.__objectIdentity!r}, {self.__instanceIndex!r}, {self.__objects!r})"
 
     def addVarBinds(self, *varBinds):
@@ -1229,6 +1255,7 @@ class NotificationType:
         return self
 
     def isFullyResolved(self):
+        """Whether the notification and every object it carries have resolved."""
         return self.__state & self.stClean
 
     def resolveWithMib(self, mibViewController, ignoreErrors=True):
@@ -1333,6 +1360,7 @@ class NotificationType:
         return self
 
     def prettyPrint(self):
+        """The notification and its bindings, each rendered as the MIB defines them."""
         if self.__state & self.stClean:
             return " ".join(
                 [

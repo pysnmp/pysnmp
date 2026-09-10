@@ -25,6 +25,7 @@ class AbstractLcdConfigurator:
     cacheKeys: list[str] = []
 
     def _getCache(self, snmpEngine):
+        """The cache this configurator keeps on the engine, created on first use."""
         cacheId = self.__class__.__name__
         cache = snmpEngine.getUserContext(cacheId)
         if cache is None:
@@ -33,10 +34,12 @@ class AbstractLcdConfigurator:
         return cache
 
     def configure(self, snmpEngine, *args, **kwargs):
+        """Write configuration to the engine. Subclasses implement this."""
         # Subclasses provide protocol-specific configuration.
         pass
 
     def unconfigure(self, snmpEngine, *args, **kwargs):
+        """Take configuration back out. Subclasses implement this."""
         # Subclasses provide protocol-specific cleanup.
         pass
 
@@ -54,6 +57,12 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
     def configure(
         self, snmpEngine, authData, transportTarget, contextName=b"", **options
     ):
+        """Write the rows a request needs, reusing what is already there.
+
+        Configuring the same credentials twice adds a user of the existing rows rather
+        than a second set, which is what lets several generators share one engine
+        without treading on each other.
+        """
         cache = self._getCache(snmpEngine)
         if isinstance(authData, CommunityData):
             if authData.communityIndex not in cache["auth"]:
@@ -142,6 +151,7 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
         return addrName, paramsName
 
     def unconfigure(self, snmpEngine, authData=None, contextName=b"", **options):
+        """Remove rows once nothing is using them, or everything when given no credentials."""
         cache = self._getCache(snmpEngine)
         if authData:
             # A community index for v1/v2c, a (user, engine id) pair for v3.
@@ -229,6 +239,7 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
     def configure(
         self, snmpEngine, authData, transportTarget, notifyType, contextName, **options
     ):
+        """Write the rows a notification needs, including its notify tag."""
         cache = self._getCache(snmpEngine)
         notifyName = None
 
@@ -281,6 +292,7 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
         return notifyName
 
     def unconfigure(self, snmpEngine, authData=None, contextName=b"", **options):
+        """Remove those rows once nothing is using them."""
         cache = self._getCache(snmpEngine)
         if authData:
             authDataKey = (

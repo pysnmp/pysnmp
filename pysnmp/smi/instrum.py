@@ -26,16 +26,19 @@ class AbstractMibInstrumController:
     def readVars(
         self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
     ) -> list[Any]:
+        """Read bindings. This base serves nothing, so every OID is a missing instance."""
         raise error.NoSuchInstanceError(idx=0)
 
     def readNextVars(
         self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
     ) -> list[Any]:
+        """Walk to the next bindings. This base has none, so the walk ends at once."""
         raise error.EndOfMibViewError(idx=0)
 
     def writeVars(
         self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
     ) -> list[Any]:
+        """Write bindings. This base holds nothing writable."""
         raise error.NoSuchObjectError(idx=0)
 
 
@@ -93,11 +96,18 @@ class MibInstrumController(AbstractMibInstrumController):
         self.lastBuildSyms: dict[str, Any] = {}
 
     def getMibBuilder(self) -> Any:
+        """The builder whose loaded modules this serves."""
         return self.mibBuilder
 
     # MIB indexing
 
     def __indexMib(self) -> None:
+        """Rebuild the OID tree, unless the builder has loaded nothing since last time.
+
+        Loading a module changes what can be served, and the tree is what turns an OID
+        into the object that answers for it. The builder's build counter is what makes
+        this cheap enough to call on the front of every operation.
+        """
         # Build a tree from MIB objects found at currently loaded modules
         if self.lastBuildId == self.mibBuilder.lastBuildId:
             return
@@ -217,6 +227,17 @@ class MibInstrumController(AbstractMibInstrumController):
     def flipFlopFsm(
         self, fsmTable: dict[tuple[str, str], str], inputVarBinds: Any, acInfo: Any
     ) -> list[Any]:
+        """Run one operation over every binding as a state machine.
+
+        SNMP requires a SET to be all or nothing: each phase runs across all the
+        bindings before the next begins, so a failure in the test phase means nothing
+        was committed, and a failure after that unwinds what was. Reads run the same
+        machine with a shorter table, which is what keeps one code path for all three
+        operations.
+
+        The first exception is the one reported even if unwinding raises others, since
+        the later ones are consequences of the first.
+        """
         self.__indexMib()
         debug.logger & debug.flagIns and debug.logger(
             f"flipFlopFsm: input var-binds {inputVarBinds!r}"
@@ -277,14 +298,17 @@ class MibInstrumController(AbstractMibInstrumController):
     def readVars(
         self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
     ) -> list[Any]:
+        """Read the bindings named, as GET does."""
         return self.flipFlopFsm(self.fsmReadVar, varBinds, acInfo)
 
     def readNextVars(
         self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
     ) -> list[Any]:
+        """Read the bindings after those named, as GETNEXT and GETBULK do."""
         return self.flipFlopFsm(self.fsmReadNextVar, varBinds, acInfo)
 
     def writeVars(
         self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
     ) -> list[Any]:
+        """Write the bindings, testing all of them before committing any."""
         return self.flipFlopFsm(self.fsmWriteVar, varBinds, acInfo)

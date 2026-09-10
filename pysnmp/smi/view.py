@@ -37,6 +37,11 @@ class MibViewController:
     # Indexing part
 
     def indexMib(self):
+        """Rebuild the name and OID indices, unless nothing has been loaded since.
+
+        Every lookup calls this first, so the builder's build counter is what keeps it
+        from re-indexing on each one.
+        """
         if self.lastBuildId == self.mibBuilder.lastBuildId:
             return
 
@@ -158,6 +163,7 @@ class MibViewController:
     # Module management
 
     def getOrderedModuleName(self, index):
+        """The loaded module at that position, counting from either end."""
         self.indexMib()
         modNames = self.__mibSymbolsIdx.keys()
         if modNames:
@@ -165,12 +171,15 @@ class MibViewController:
         raise error.SmiError(f"No modules loaded at {self}")
 
     def getFirstModuleName(self):
+        """The first loaded module."""
         return self.getOrderedModuleName(0)
 
     def getLastModuleName(self):
+        """The last loaded module."""
         return self.getOrderedModuleName(-1)
 
     def getNextModuleName(self, modName):
+        """The module after this one."""
         self.indexMib()
         try:
             return self.__mibSymbolsIdx.nextKey(modName)
@@ -202,6 +211,13 @@ class MibViewController:
         return oid, label, suffix
 
     def getNodeNameByOid(self, nodeName, modName=""):
+        """Resolve an OID or a label to `(oid, label, suffix)`.
+
+        An OID need not name an object exactly: the longest known prefix is what
+        resolves, and the rest comes back as the suffix, which is how an instance under
+        a column is named. An OID that resolves to nothing but itself is not in this
+        MIB view at all.
+        """
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
@@ -220,6 +236,7 @@ class MibViewController:
         return oid, label, suffix
 
     def getNodeNameByDesc(self, nodeName, modName=""):
+        """Resolve a MIB symbol's name to `(oid, label, suffix)`."""
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
@@ -237,6 +254,11 @@ class MibViewController:
         return self.getNodeNameByOid(oid, modName)
 
     def getNodeName(self, nodeName, modName=""):
+        """Resolve either an OID, a label, or a `(symbol, index...)` tuple.
+
+        The forms are tried in that order, since a caller may have any of the three and
+        they cannot be told apart reliably by shape.
+        """
         # nodeName may be either an absolute OID/label or a
         # ( MIB-symbol, su, ff, ix)
         try:
@@ -249,6 +271,7 @@ class MibViewController:
             return self.getNodeNameByOid(oid + suffix + nodeName[1:], modName)
 
     def getOrderedNodeName(self, index, modName="", nodeType=None):
+        """The object at that position in the module, optionally of one node type."""
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
@@ -307,12 +330,19 @@ class MibViewController:
         return oid, label, ()
 
     def getFirstNodeName(self, modName="", nodeType=None):
+        """The first object in the module, or the first of one node type."""
         return self.getOrderedNodeName(0, modName, nodeType)
 
     def getLastNodeName(self, modName="", nodeType=None):
+        """The last object in the module, or the last of one node type."""
         return self.getOrderedNodeName(-1, modName, nodeType)
 
     def getNextNodeName(self, nodeName, modName=""):
+        """The object after this one, in OID order.
+
+        OID order is neither the order the modules were loaded in nor lexical order on
+        their names, which is why this cannot be answered from a plain mapping.
+        """
         oid, label, suffix = self.getNodeName(nodeName, modName)
         try:
             return self.getNodeName(
@@ -325,6 +355,7 @@ class MibViewController:
             ) from exc
 
     def getParentNodeName(self, nodeName, modName=""):
+        """The object one level up, its last sub-identifier moved onto the suffix."""
         oid, label, suffix = self.getNodeName(nodeName, modName)
         if len(oid) < 2:
             raise error.NoSuchObjectError(
@@ -333,12 +364,19 @@ class MibViewController:
         return oid[:-1], label[:-1], oid[-1:] + suffix
 
     def getNodeLocation(self, nodeName, modName=""):
+        """Which module defines an object, and under what label.
+
+        The answer comes from the index across all modules rather than from any one of
+        them, since the caller is asking precisely because they do not know which module
+        it is in.
+        """
         oid, label, suffix = self.getNodeName(nodeName, modName)
         return self.__mibSymbolsIdx[""]["oidToModIdx"][oid], label[-1], suffix
 
     # MIB type management
 
     def getTypeName(self, typeName, modName=""):
+        """Which module defines a textual convention or type."""
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
@@ -353,6 +391,7 @@ class MibViewController:
         return m, typeName
 
     def getOrderedTypeName(self, index, modName=""):
+        """The type at that position in the module, counting from either end."""
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
             mibMod = self.__mibSymbolsIdx[modName]
@@ -366,12 +405,15 @@ class MibViewController:
         return mibMod["typeToModIdx"][t], t
 
     def getFirstTypeName(self, modName=""):
+        """The first type the module defines."""
         return self.getOrderedTypeName(0, modName)
 
     def getLastTypeName(self, modName=""):
+        """The last type the module defines."""
         return self.getOrderedTypeName(-1, modName)
 
     def getNextType(self, typeName, modName=""):
+        """The type after this one."""
         m, t = self.getTypeName(typeName, modName)
         try:
             return self.__mibSymbolsIdx[m]["typeToModIdx"].nextKey(t)

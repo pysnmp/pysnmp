@@ -45,21 +45,27 @@ class MibOperationError(SmiError):
         self.__outArgs = kwargs
 
     def __str__(self):
+        """The class name and everything the error was given."""
         return f"{self.__class__.__name__}({self.__outArgs})"
 
     def __getitem__(self, key):
+        """One detail of the error."""
         return self.__outArgs[key]
 
     def __contains__(self, key):
+        """Whether a detail was set."""
         return key in self.__outArgs
 
     def get(self, key, defVal=None):
+        """One detail, or `defVal` where it was not set."""
         return self.__outArgs.get(key, defVal)
 
     def keys(self):
+        """The details that were set."""
         return self.__outArgs.keys()
 
     def update(self, d):
+        """Add details to the error, which is how an error picks up context as it rises."""
         self.__outArgs.update(d)
 
 

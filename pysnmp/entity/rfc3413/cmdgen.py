@@ -97,6 +97,16 @@ class CommandGenerator:
         sendPduHandle,
         cbCtx,
     ):
+        """Match a response to its request, retrying or reporting as the outcome asks.
+
+        Two different things are counted here. An ordinary failure spends a retry; an
+        `unknownEngineID` or `notInTimeWindow` spends a discovery retry instead and
+        resets the ordinary count, because the exchange did not fail so much as teach
+        this side what it did not yet know about the peer.
+
+        A v1 peer gets the request translated back to v1 before it is resent, since
+        everything above this works in SMIv2.
+        """
         origSendRequestHandle, cbFun, cbCtx = cbCtx
 
         # 3.1.1
@@ -242,6 +252,11 @@ class CommandGenerator:
     def sendPdu(
         self, snmpEngine, targetName, contextEngineId, contextName, PDU, cbFun, cbCtx
     ):
+        """Send a request to a configured target and register for the response.
+
+        The target's timeout is in hundredths of a second and the dispatcher counts in
+        ticks, so it is converted here against the dispatcher's own resolution.
+        """
         (
             transportDomain,
             transportAddress,
@@ -336,6 +351,7 @@ class GetCommandGenerator(CommandGenerator):
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
+        """Hand the response's bindings to the caller."""
         cbFun, cbCtx = cbCtx
 
         cbFun(
@@ -358,6 +374,7 @@ class GetCommandGenerator(CommandGenerator):
         cbFun,
         cbCtx=None,
     ):
+        """Ask for exactly the objects named."""
         reqPDU = v2c.GetRequestPDU()
         v2c.apiPDU.setDefaults(reqPDU)
 
@@ -380,6 +397,7 @@ class SetCommandGenerator(CommandGenerator):
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
+        """Hand the response's bindings to the caller."""
         cbFun, cbCtx = cbCtx
 
         cbFun(
@@ -402,6 +420,7 @@ class SetCommandGenerator(CommandGenerator):
         cbFun,
         cbCtx=None,
     ):
+        """Write the values given."""
         reqPDU = v2c.SetRequestPDU()
         v2c.apiPDU.setDefaults(reqPDU)
 
@@ -424,6 +443,7 @@ class NextCommandGeneratorSingleRun(CommandGenerator):
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
+        """Hand one step's bindings to the caller and stop there."""
         targetName, contextEngineId, contextName, reqPDU, cbFun, cbCtx = cbCtx
 
         cbFun(
@@ -446,6 +466,7 @@ class NextCommandGeneratorSingleRun(CommandGenerator):
         cbFun,
         cbCtx=None,
     ):
+        """Ask for the objects following those named, once."""
         reqPDU = v2c.GetNextRequestPDU()
         v2c.apiPDU.setDefaults(reqPDU)
 
@@ -473,6 +494,13 @@ class NextCommandGenerator(NextCommandGeneratorSingleRun):
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
+        """Hand the bindings over, then reissue from where they left off.
+
+        This is what makes a walk one call rather than many: the last row of the
+        response becomes the next request. It stops when the callback says to, when the
+        subtree runs out, or when the agent returns OIDs that do not advance -- which
+        would otherwise walk forever.
+        """
         targetName, contextEngineId, contextName, reqPDU, cbFun, cbCtx = cbCtx
 
         if errorIndication:
@@ -542,6 +570,7 @@ class BulkCommandGeneratorSingleRun(CommandGenerator):
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
+        """Hand one bulk response's rows to the caller and stop there."""
         (
             targetName,
             nonRepeaters,
@@ -575,6 +604,7 @@ class BulkCommandGeneratorSingleRun(CommandGenerator):
         cbFun,
         cbCtx=None,
     ):
+        """Ask for up to `maxRepetitions` rows, once."""
         reqPDU = v2c.GetBulkRequestPDU()
         v2c.apiBulkPDU.setDefaults(reqPDU)
 
@@ -609,6 +639,7 @@ class BulkCommandGenerator(BulkCommandGeneratorSingleRun):
     def processResponseVarBinds(
         self, snmpEngine, sendRequestHandle, errorIndication, PDU, cbCtx
     ):
+        """Hand the rows over, then reissue from the last one, as the GETNEXT walk does."""
         (
             targetName,
             nonRepeaters,

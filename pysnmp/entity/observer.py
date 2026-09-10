@@ -96,6 +96,7 @@ class MetaObserver:
         self.__execpoints = {}
 
     def registerObserver(self, cbFun, *execpoints, **kwargs):
+        """Call `cbFun` whenever the engine passes any of these execution points."""
         if cbFun in self.__contexts:
             raise error.PySnmpError(f"duplicate observer {cbFun}")
         else:
@@ -106,6 +107,7 @@ class MetaObserver:
             self.__observers[execpoint].append(cbFun)
 
     def unregisterObserver(self, cbFun=None):
+        """Drop one observer, or all of them when given none."""
         if cbFun is None:
             self.__observers.clear()
             self.__contexts.clear()
@@ -117,12 +119,14 @@ class MetaObserver:
                     del self.__observers[execpoint]
 
     def storeExecutionContext(self, snmpEngine, execpoint, variables):
+        """Record the state at an execution point and call whoever is watching it."""
         self.__execpoints[execpoint] = variables
         if execpoint in self.__observers:
             for cbFun in self.__observers[execpoint]:
                 cbFun(snmpEngine, execpoint, variables, self.__contexts[cbFun])
 
     def clearExecutionContext(self, snmpEngine, *execpoints):
+        """Forget the state at these execution points, or at all of them."""
         if execpoints:
             for execpoint in execpoints:
                 del self.__execpoints[execpoint]
@@ -130,6 +134,7 @@ class MetaObserver:
             self.__execpoints.clear()
 
     def getExecutionContext(self, execpoint):
+        """The state recorded at an execution point."""
         return self.__execpoints[execpoint]
 
     def _restore_execution_context(self, execpoint, variables):

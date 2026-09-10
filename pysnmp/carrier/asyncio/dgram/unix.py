@@ -50,6 +50,11 @@ class UnixAsyncioTransport(DgramAsyncioProtocol):
         self._iface = None
 
     def openClientMode(self, iface=None):
+        """Bind a path to send from, inventing a temporary one where none is given.
+
+        A unix datagram socket has no reply address unless it is bound, so even a
+        client needs a path of its own before it can be answered.
+        """
         if iface is None:
             fd, iface = tempfile.mkstemp(prefix="pysnmp-", dir=tempfile.gettempdir())
             os.close(fd)
@@ -59,12 +64,22 @@ class UnixAsyncioTransport(DgramAsyncioProtocol):
         return DgramAsyncioProtocol.openClientMode(self, iface)
 
     def openServerMode(self, iface):
+        """Bind a filesystem path to receive on, removing a stale file at that path.
+
+        A path left behind by a previous run is not reusable and would fail the bind,
+        so it is cleared rather than reported.
+        """
         if Path(iface).exists():
             Path(iface).unlink()
         self._iface = iface
         return DgramAsyncioProtocol.openServerMode(self, iface)
 
     def closeTransport(self):
+        """Close the socket and unlink the path it was bound to.
+
+        A unix socket outlives the process that made it, so this is what stops each
+        run leaving a file behind -- including the temporary path a client bound.
+        """
         DgramAsyncioProtocol.closeTransport(self)
         if self._iface:
             Path(self._iface).unlink(missing_ok=True)

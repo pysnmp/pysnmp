@@ -210,22 +210,14 @@ ignore = [
     "S508",     # snmp-insecure-version
     "S509",     # snmp-weak-cryptography
 
-    # The docstring family, adopted in stages -- see #186. What is on now is
-    # the shape of the docstrings that exist, plus D100/D104, D101 and
-    # D103/D107: every module, package, class, function and constructor says
-    # what it is for. What is still off is the requirement that every method
-    # have one, which is 394 items and is a documentation project rather
-    # than a lint fix. Writing 346 method docstrings mechanically produces
-    # noise, not documentation.
-    #
-    # These come off one rule at a time, each its own reviewable change:
-    #   D100/D104  104 modules and packages -- done
-    #   D101       182 classes -- done
-    #   D103/D107  102 functions and constructors -- done
-    #   D102       346 methods, probably by subpackage
-    #   D105        48 magic methods
-    "D102",     # undocumented-public-method
-    "D105",     # undocumented-magic-method
+    # The docstring family is fully on -- see #186. Every module, package,
+    # class, function, constructor, method and magic method says what it is
+    # for. It came off one rule at a time, each its own reviewable change:
+    #   D100/D104  104 modules and packages
+    #   D101       182 classes
+    #   D103/D107  102 functions and constructors
+    #   D102       346 methods, in two parts: proto, then the rest
+    #   D105         7 magic methods the passes above had not already covered
 
     # The one rule pyasn1 keeps that this does not, and the only place the two
     # rule sets differ. Every third-person summary it caught -- "Returns the",

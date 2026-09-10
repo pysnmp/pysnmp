@@ -55,4 +55,5 @@ class ContextData:
     contextName: Any = b""
 
     def __repr__(self) -> str:
+        """The engine ID and context name this was built with."""
         return f"{self.__class__.__name__}(contextEngineId={self.contextEngineId!r}, contextName={self.contextName!r})"

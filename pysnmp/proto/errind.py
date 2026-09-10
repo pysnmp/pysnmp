@@ -32,12 +32,19 @@ class ErrorIndication(Exception):
             self.__descr = descr
 
     def __eq__(self, other):
+        """Compare equal to the bare string as well as to another indication.
+
+        The engine passes these around as objects but application code has always
+        tested them against strings, so both have to work.
+        """
         return self.__value == other
 
     def __lt__(self, other):
+        """Order by the same string comparison equality uses."""
         return self.__value < other
 
     def __str__(self):
+        """The description, which `descr` may have replaced with something longer."""
         return self.__descr
 
 
