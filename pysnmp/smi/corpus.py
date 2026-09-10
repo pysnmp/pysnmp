@@ -53,15 +53,31 @@ from typing import Any, Final, Union
 from pysnmp.smi import error
 
 __all__ = [
+    "OBJECT_CLASSES",
+    "TIERS",
     "CompositeMibCorpus",
     "MibCorpus",
     "MibCorpusCycleError",
+    "best_by_corpus_rank",
     "best_by_revision",
     "oid_from_key",
     "oid_key",
     "open_corpora",
+    "revision_rank",
     "subtree_bound",
 ]
+
+#: Where a namespace ranks when two modules from different ones claim an arc,
+#: best first. pysmi's ``namespace.TIERS``, which is where the order is
+#: settled; repeated rather than imported because pysmi is optional and this
+#: module is on the no-compiler path.
+TIERS: Final[tuple[str, ...]] = ("standard", "draft", "vendor")
+
+#: Node classes that count as objects when asking whether a module is wholly
+#: obsolete. A module's registration points staying current while every object
+#: under them is obsolete does not make it a live module. pysmi's
+#: ``index.OBJECT_CLASSES``.
+OBJECT_CLASSES: Final[tuple[str, ...]] = ("objecttype", "notificationtype")
 
 
 class MibCorpusCycleError(error.SmiError):
@@ -244,6 +260,42 @@ def best_by_revision(candidates: "list[tuple[Any, str | None]]") -> Any:
     # max() returns the first maximal element, so candidates sharing the
     # newest revision keep the order they were configured in.
     return max(candidates, key=lambda pair: pair[1] or "")[0]
+
+
+def revision_rank(revision: "str | None") -> int:
+    """A MODULE-IDENTITY revision as a number that sorts newest first.
+
+    Args:
+        revision: the corpus ``module.revision`` column, ``YYYYMMDDHHMM``
+            followed by a ``Z``, or ``None``
+
+    Returns
+    -------
+        The negated stamp, so a later date sorts lower in a rule where lower
+        wins, and 0 for a module stating no revision -- which therefore sorts
+        after every module that states one. pysmi's ``index.revision_rank``.
+    """
+    if not revision or not revision[:12].isdigit():
+        return 0
+
+    return -int(revision[:12])
+
+
+def best_by_corpus_rank(candidates: "list[tuple[str, tuple[Any, ...]]]") -> str | None:
+    """The module that owns an arc, by the corpus rule, lower rank winning.
+
+    Args:
+        candidates: ``(module, rank)``, the rank as
+            :py:meth:`~pysnmp.smi.corpus.CompositeMibCorpus.rank_of` builds it
+
+    Returns
+    -------
+        The winning module name, or ``None`` for no candidates.
+    """
+    if not candidates:
+        return None
+
+    return min(candidates, key=lambda pair: pair[1])[0]
 
 
 class MibCorpus:
@@ -700,7 +752,7 @@ class MibCorpus:
 
 
 class CompositeMibCorpus:
-    """Several corpora searched as one, ranked by revision.
+    """Several corpora searched as one, ranked by the corpus rule.
 
     A deployment rarely has a single corpus. It has the distribution's, which
     covers the standard modules and whatever vendors were published with it,
@@ -708,13 +760,22 @@ class CompositeMibCorpus:
     nobody else ships. Both have to be readable at once, and which one answers
     has to be decided by a rule rather than by whichever was configured last.
 
-    One rule decides, and it is the one the rest of pysnmp and pysmi already
-    use: **the newest MODULE-IDENTITY revision wins, and configured order only
-    breaks the tie** -- :py:func:`best_by_revision`. Precedence by position
-    would make configuring a corpus that happens to carry an older copy of a
-    module a silent downgrade, which is the reason
-    :py:meth:`~pysnmp.smi.builder.MibBuilder._candidates` does not work that
-    way either.
+    **Two different questions, two rules.** Two corpora carrying *the same
+    module* carry one specification at two revisions, so the newest wins and
+    configured order only breaks the tie -- :py:func:`best_by_revision`, which
+    is what :py:meth:`~pysnmp.smi.builder.MibBuilder._candidates` does with two
+    MIB sources and what pysmi's ``PRECEDENCE_NEWEST_REVISION`` does with two
+    copies of one file. That is :py:meth:`owner`.
+
+    Two corpora anchoring one arc with *different modules* is not that
+    question. There is no shared specification and no symmetry to appeal to: a
+    wholly obsolete module is not an earlier draft of a live one, and a vendor
+    tree bundling its own copy of a standard MIB is not a later revision of it.
+    So the arc goes to pysmi's ``rank_index`` rule as far as a corpus carries
+    it -- ``(obsolete, tier, revision, name)``, :py:meth:`rank_of` -- which is
+    the same rule that decides the arc *inside* a corpus at build time. That is
+    :py:meth:`anchor`, and pysnmp/pysnmp#234 is where the two terms a corpus
+    cannot carry are recorded.
 
     **Both paths reach the same copy.** Resolving a name and resolving an OID
     are one question asked twice, so an OID is resolved to a module *name* and
@@ -727,9 +788,9 @@ class CompositeMibCorpus:
     ``enterprises.9`` resolves to the core corpus's anchor for
     ``enterprises.9`` and never reaches the customer corpus that anchors the
     subtree itself, no matter how the two are ordered. Every corpus is asked
-    at each prefix length before the OID is shortened; the revision rule
-    settles only what a shorter prefix cannot, which is two corpora naming
-    different modules at the *same* length.
+    at each prefix length before the OID is shortened; ranking settles only
+    what a shorter prefix cannot, which is two corpora naming different
+    modules at the *same* length.
 
     **One module resolves from exactly one corpus.** Where two carry the same
     module, every name-keyed lookup for it routes to the same one, and the
@@ -758,6 +819,11 @@ class CompositeMibCorpus:
         self._corpora: tuple[MibCorpus, ...] = tuple(corpora)
         self._modules: frozenset[str] | None = None
         self._owners: dict[str, MibCorpus | None] = {}
+
+        # Ranks are read once per module: the obsolete term costs a scan of
+        # every node the module declares, and a contested arc asks for the
+        # same handful of modules over and over.
+        self._ranks: dict[str, tuple[Any, ...]] = {}
 
     def __repr__(self) -> str:
         """The composite and what it was built from, in order."""
@@ -863,14 +929,76 @@ class CompositeMibCorpus:
 
         return owner.module(name) if owner else None
 
+    def rank_of(self, module: str) -> "tuple[Any, ...]":
+        """How a module ranks for an arc it registers, lower winning.
+
+        ``(obsolete, tier, revision, name)``: pysmi's ``index.module_rank``
+        less the two terms a corpus cannot supply.
+
+        A module whose every object is obsolete describes an arc nothing
+        should decode against, and republishing it later does not change that,
+        so obsolete ranks below live whatever the dates say. Tier then settles
+        the ordinary case this rule exists for: a vendor tree bundling its own
+        copy of a standard MIB does not take the arc from the standard
+        definition by having been republished more recently.
+
+        Two of pysmi's terms are missing and cannot be recovered here. How
+        strongly a module claims an arc -- MODULE-IDENTITY over
+        OBJECT-IDENTITY over neither -- is settled at build time and not
+        carried into ``oid_index``. The publishing RFC number is not a corpus
+        column at all. Both are noted in pysnmp/pysnmp#234; a contest that
+        turns on either falls through to the module name, which is arbitrary
+        but total.
+
+        Args:
+            module: the module's descriptor
+
+        Returns
+        -------
+            Its rank, comparable against any other module's.
+        """
+        if module not in self._ranks:
+            record = self.module(module) or {}
+            owner = self.owner(module)
+
+            statuses = [
+                node["status"]
+                for node in (owner.nodes_of(module) if owner else [])
+                if node["class"] in OBJECT_CLASSES
+            ]
+
+            obsolete = 1 if statuses and all(x == "obsolete" for x in statuses) else 0
+
+            tier = record.get("tier")
+            rank = TIERS.index(tier) if tier in TIERS else len(TIERS)
+
+            self._ranks[module] = (
+                obsolete,
+                rank,
+                revision_rank(record.get("revision")),
+                module,
+            )
+
+        return self._ranks[module]
+
     def anchor(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
         """Which module registers exactly this OID, across all corpora.
 
         Corpora usually agree, naming one module between them. Where they name
-        *different* modules for one OID the contest is settled the way every
-        other one here is, by :py:func:`best_by_revision` over those modules --
-        each read at the revision :py:meth:`owner` would give it, so the answer
-        does not depend on which corpus was asked.
+        *different* modules for one arc, the contest is the one pysmi's
+        ``rank_index`` settles inside a single corpus, so it is settled the
+        same way here: by :py:meth:`rank_of`, not by revision alone and not by
+        which corpus was configured first.
+
+        This is a different question from :py:meth:`owner`, which is asked of
+        two *copies of one module* and stays on
+        :py:func:`best_by_revision`. Two copies of one specification differ by
+        revision and nothing else, and configured order is a reasonable
+        fallback where the revisions cannot separate them. Two different
+        modules claiming one arc have no such symmetry: a wholly obsolete
+        module and a vendor module are not later drafts of the standard one,
+        and an undated module loses outright here rather than sending the
+        decision to order.
 
         Args:
             oid: the OID, matched as given
@@ -879,19 +1007,15 @@ class CompositeMibCorpus:
         -------
             The module name, or ``None``.
         """
-        candidates: list[tuple[str, str | None]] = []
         seen: set[str] = set()
 
         for corpus in self._corpora:
             found = corpus.anchor(oid)
 
-            if found is None or found in seen:
-                continue
+            if found is not None:
+                seen.add(found)
 
-            seen.add(found)
-            candidates.append((found, (self.module(found) or {}).get("revision")))
-
-        return best_by_revision(candidates)
+        return best_by_corpus_rank([(x, self.rank_of(x)) for x in seen])
 
     def find_module(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
         """Which module answers for an OID, by longest prefix across all corpora.
