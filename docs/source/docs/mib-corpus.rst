@@ -158,6 +158,79 @@ textless rather than silently answering with no DESCRIPTION for the modules it
 owns. What that then means is the subject of `What a corpus does not carry`_.
 
 
+Which copy answered
+-------------------
+
+A module can be carried by a directory, a package, the wheel, a corpus and the
+compiler's output all at once, and exactly one of them answers. Which one is not
+readable from the path: a wheel and a directory of overrides are both
+directories under ``site-packages``, and a corpus is not a path in that sense at
+all.
+
+.. code-block:: python
+
+   builder.loadModule("IF-MIB")
+
+   builder.getModuleProvenance("IF-MIB")
+   # -> (MibSourceKind.DB, '/mibs/vendor.db')
+
+   builder.getModulePath("IF-MIB")
+   # -> 'corpus:/mibs/vendor.db/IF-MIB'
+
+The kind is one of ``override`` (pysnmp's own copies of the engine MIBs),
+``wheel``, ``dir``, ``pkg``, ``db`` or ``compiled``; the id names the particular
+source, which is what tells a distro corpus from a customer one. A module that
+is not loaded has no provenance, and unloading it forgets what it had --
+reloading can well pick a different copy.
+
+It is tracked per module rather than per node, because a module resolves from
+exactly one source: a per-node record would be the same answer repeated across
+every OID in the module.
+
+
+What was passed over
+--------------------
+
+The other half of the same question. A leftover ``.py`` directory that a corpus
+was meant to replace still outranks the corpus, so the corpus is the copy being
+skipped -- the opposite of what adding one usually means.
+
+.. code-block:: python
+
+   builder.shadowedModules()
+   # -> {'IF-MIB': [(MibSourceKind.DIR, '/opt/mibs'),
+   #                (MibSourceKind.DB, '/mibs/core.db')]}
+
+   builder.reportShadowedModules()   # same answer, and says so out loud
+
+``reportShadowedModules()`` runs by itself inside ``loadModules()`` when it is
+called with no names, since that path already enumerates every source and the
+enumeration is the whole cost. Loading modules by name does not trigger it; call
+it directly there.
+
+How loudly is ``moduleConflictSeverity``:
+
+``warn`` (default)
+    One ``PySnmpShadowedModuleWarning`` per shadowed module.
+
+``error``
+    Raises ``SmiError`` before anything is loaded. The setting for a deployment
+    that has finished migrating off generated ``.py`` and wants any survivor to
+    be fatal.
+
+``silent``
+    Says nothing, still returns the answer.
+
+Two things it deliberately does not do. It **never claims the copies differ, or
+match**: answering that means reading and normalizing both, which is the work a
+corpus exists to avoid, so it reports only that a second copy exists and is
+being passed over. And it **says nothing about a stock install**, where
+``pysnmp.smi.mibs`` shadows the wheel for the seven modules the engine needs --
+that is what the search order is for, and warning about it would mean warning
+every user who configured nothing. ``shadowedModules()`` still reports it, being
+a question about the sources rather than about the configuration.
+
+
 Resolving a trap OID without a compiler
 ---------------------------------------
 
