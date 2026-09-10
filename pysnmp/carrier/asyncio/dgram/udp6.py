@@ -31,6 +31,13 @@ class Udp6AsyncioTransport(DgramAsyncioProtocol):
     unboundLocalAddress = ("::", 0, 0, 0)
 
     def normalizeAddress(self, transportAddress):
+        """Coerce to a four-part IPv6 address, dropping the zone ID and scope.
+
+        A link-local address arrives carrying a zone (`fe80::1%eth0`) and asyncio
+        reports flowinfo and scope alongside it, none of which mean anything to the
+        peer. Two addresses that differ only in those parts are the same endpoint, so
+        they are stripped to make addresses comparable.
+        """
         localAddress = None
         if isinstance(transportAddress, AbstractTransportAddress):
             localAddress = transportAddress.getLocalAddress()

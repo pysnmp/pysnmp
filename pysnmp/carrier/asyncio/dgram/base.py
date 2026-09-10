@@ -80,12 +80,22 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         self.loop = loop
 
     def datagram_received(self, datagram, transportAddress):
+        """Hand an arriving datagram to the dispatcher's callback, via the loop.
+
+        Delivery is deferred with `call_soon` rather than made here, so the callback
+        does not run inside asyncio's receive path.
+        """
         if self._cbFun is None:
             raise error.CarrierError("Unable to call cbFun")
         else:
             self.loop.call_soon(self._cbFun, self, transportAddress, datagram)
 
     def connection_made(self, transport):
+        """Take the socket, apply the options that were waiting, and flush the send queue.
+
+        Socket options and sends can both be asked for before the loop has a socket to
+        apply them to, so both are held until this point.
+        """
         self.transport = transport
         sock = transport.get_extra_info("socket")
         for configureSocket in self._pendingSocketOptions:
@@ -107,12 +117,14 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 ) from e
 
     def connection_lost(self, exc):
+        """Drop the transport. Sends after this queue again rather than failing."""
         self.transport = None
         debug.logger & debug.flagIO and debug.logger("connection_lost: invoked")
 
     # AbstractAsyncioTransport API
 
     def openClientMode(self, iface=None):
+        """Open a socket for sending, optionally bound to a local address."""
         try:
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily
@@ -128,6 +140,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         return self
 
     def openServerMode(self, iface):
+        """Bind a socket to receive on."""
         try:
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily
@@ -143,6 +156,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         return self
 
     def closeTransport(self):
+        """Cancel the pending endpoint, close the socket, and drop the callback."""
         if self._lport is not None:
             self._lport.cancel()
             if not self.loop.is_running():
@@ -155,6 +169,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         AbstractAsyncioTransport.closeTransport(self)
 
     def sendMessage(self, outgoingMessage, transportAddress):
+        """Send a datagram, queueing it if the loop has not connected the socket yet."""
         debug.logger & debug.flagIO and debug.logger(
             "sendMessage: {} transportAddress {!r} outgoingMessage {}".format(
                 (self.transport is None and "queuing" or "sending"),
@@ -175,6 +190,13 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
                 ) from e
 
     def getLocalAddress(self):
+        """The address this socket is bound to, or the wildcard where it is unbound.
+
+        An unbound socket has no name POSIX and Windows agree on: one answers with the
+        family's wildcard, the other fails and asyncio reports no name at all. The
+        concrete transport's `unboundLocalAddress` stands in for the second case so
+        callers get an address of the right shape either way.
+        """
         if self.transport is None:
             return None
         localAddress = self.transport.get_extra_info("sockname")
@@ -183,6 +205,11 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         return localAddress
 
     def normalizeAddress(self, transportAddress):
+        """Coerce to this transport's address type, noting the local address on it.
+
+        The local address rides along so a reply can leave by the interface the request
+        arrived on, which matters once a socket is bound to a wildcard.
+        """
         if not isinstance(transportAddress, self.addressType):
             transportAddress = self.addressType(transportAddress)
         if not transportAddress.getLocalAddress():
@@ -190,12 +217,15 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         return transportAddress
 
     def _configureSocket(self, configureSocket):
+        """Apply a socket option now, or hold it until there is a socket to apply it to."""
         if self.transport is None:
             self._pendingSocketOptions.append(configureSocket)
             return
         configureSocket(self.transport.get_extra_info("socket"))
 
     def enableBroadcast(self, flag=1):
+        """Allow sending to a broadcast address."""
+
         def configureSocket(sock):
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, flag)
 
@@ -208,12 +238,18 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
         return self
 
     def enablePktInfo(self, flag=1):
+        """Always fails: asyncio's datagram transport does not expose the ancillary data.
+
+        Recovering the address a datagram arrived on needs `recvmsg`, which asyncio's
+        datagram endpoint does not surface. A raw socket is the way to do this.
+        """
         raise error.CarrierError(
             "Packet-information source-address handling is unavailable with "
             "asyncio datagram transports; use a raw asyncio socket for this use case"
         )
 
     def enableTransparent(self, flag=1):
+        """Always fails, for the same reason as `enablePktInfo`."""
         if self.sockFamily == socket.AF_INET:
             option = socket.SOL_IP, socket.IP_TRANSPARENT
         elif self.sockFamily == socket.AF_INET6:

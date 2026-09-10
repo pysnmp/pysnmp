@@ -40,14 +40,21 @@ classTypes = (type,)
 
 class __AbstractMibSource:
     def __init__(self, srcName: str) -> None:
+        """Records where to look. Nothing is read until `init()`."""
         self._srcName = srcName
         self.__inited = None
         debug.logger & debug.flagBld and debug.logger(f"trying {self}")
 
     def __repr__(self) -> str:
+        """The source and where it points, for debug logging."""
         return f"{self.__class__.__name__}({self._srcName!r})"
 
     def _uniqNames(self, names: list[str]) -> tuple[str, ...]:
+        """Module names from filenames, with the suffixes stripped and duplicates gone.
+
+        One module shows up once as `.py` and again as `.pyc`, and `__init__` is not a
+        MIB module at all.
+        """
         u: set[str] = set()
 
         for f in names:
@@ -61,11 +68,19 @@ class __AbstractMibSource:
     # MibSource API follows
 
     def fullPath(self, *args: Any) -> str:
+        """Where a module would live in this source, whether or not it is there."""
         f = args[0] if args else ""
         sfx = args[1] if len(args) > 1 else ""
         return self._srcName + (f and (os.sep + f + sfx) or "")
 
     def init(self) -> Any:
+        """Open the source, returning self or another source to use in its place.
+
+        A source may find at open time that something else should serve it -- a zip
+        source pointed at an ordinary install being the case that matters, since a
+        wheel unpacks to a directory -- so it can hand back a substitute rather than
+        fail. Opening twice is a no-op.
+        """
         if self.__inited is None:
             self.__inited = self._init()
             if self.__inited is self:
@@ -77,6 +92,7 @@ class __AbstractMibSource:
             return self.__inited
 
     def listdir(self) -> tuple[str, ...]:
+        """The module names this source can supply."""
         return self._listdir()
 
     def read(self, f: str) -> Any:
@@ -172,15 +188,19 @@ class __AbstractMibSource:
 
     # Interfaces for subclasses
     def _init(self) -> Any:
+        """Open the source. Concrete sources implement this."""
         raise NotImplementedError
 
     def _listdir(self) -> tuple[str, ...]:
+        """List module names. Concrete sources implement this."""
         raise NotImplementedError
 
     def _getTimestamp(self, f: str) -> float:
+        """When a file was last written. Concrete sources implement this."""
         raise NotImplementedError
 
     def _getData(self, f: str, mode: str) -> tuple[Any, str]:
+        """Read a file, returning its content and path. Concrete sources implement this."""
         raise NotImplementedError
 
 
@@ -261,6 +281,11 @@ class ZipMibSource(__AbstractMibSource):
 
     @staticmethod
     def _parseDosTime(dosdate: int, dostime: int) -> float:
+        """Convert a zip entry's DOS date and time into a Unix timestamp.
+
+        Zip stores modification time in the packed MS-DOS format, which is what the
+        staleness check between a `.pyc` and its `.py` has to compare against.
+        """
         t = (
             ((dosdate >> 9) & 0x7F) + 1980,  # year
             ((dosdate >> 5) & 0x0F),  # month
@@ -306,6 +331,7 @@ class ZipMibSource(__AbstractMibSource):
             raise OSError(ENOENT, "No such file in ZIP archive", p)
 
     def _getData(self, f: str, mode: str | None = None) -> tuple[Any, str]:
+        """Read one archive member."""
         p = os.path.join(self._srcName, f)
         try:
             return self.__loader.get_data(p), p
@@ -327,10 +353,17 @@ class DirMibSource(__AbstractMibSource):
     """MIB modules loaded out of a filesystem directory."""
 
     def _init(self) -> Any:
+        """Normalize the path. There is nothing to open until a module is asked for."""
         self._srcName = os.path.normpath(self._srcName)
         return self
 
     def _listdir(self) -> tuple[str, ...]:
+        """The module names in the directory, or nothing where it cannot be read.
+
+        A MIB path routinely names directories that do not exist, so an unreadable one
+        is logged and skipped rather than raised -- the other sources may well have the
+        module.
+        """
         try:
             return self._uniqNames(os.listdir(self._srcName))
         except OSError as why:
@@ -340,6 +373,7 @@ class DirMibSource(__AbstractMibSource):
             return ()
 
     def _getTimestamp(self, f: str) -> float:
+        """When a file was last written."""
         p = os.path.join(self._srcName, f)
         try:
             return os.stat(p)[8]
@@ -347,6 +381,11 @@ class DirMibSource(__AbstractMibSource):
             raise OSError(ENOENT, f"No such file: {e}", p) from e
 
     def _getData(self, f: str, mode: str) -> tuple[Any, str]:
+        """Read one file, matching the name case-sensitively.
+
+        The directory listing is consulted rather than the file opened directly,
+        because MIB module names are case-sensitive and the filesystem may not be.
+        """
         p = os.path.join(self._srcName, "*")
         try:
             if f in os.listdir(self._srcName):  # make FS case-sensitive
@@ -616,9 +655,15 @@ class MibBuilder:
     # MIB compiler management
 
     def getMibCompiler(self) -> Any:
+        """The compiler that renders ASN.1 on demand, or `None` where none is set."""
         return self.__mibCompiler
 
     def setMibCompiler(self, mibCompiler: Any, destDir: str) -> Any:
+        """Attach a compiler and add its output directory as a source.
+
+        Adding the source is the point: a module the compiler renders has to be
+        loadable afterwards, and nothing else would put that directory on the path.
+        """
         self.addMibSources(DirMibSource(destDir))
         self.__mibCompiler = mibCompiler
         return self
@@ -626,18 +671,21 @@ class MibBuilder:
     # MIB modules management
 
     def addMibSources(self, *mibSources: Any) -> None:
+        """Add sources to search, opening each one."""
         self.__mibSources.extend([s.init() for s in mibSources])
         debug.logger & debug.flagBld and debug.logger(
             f"addMibSources: new MIB sources {self.__mibSources}"
         )
 
     def setMibSources(self, *mibSources: Any) -> None:
+        """Replace the sources to search, opening each one."""
         self.__mibSources = [s.init() for s in mibSources]
         debug.logger & debug.flagBld and debug.logger(
             f"setMibSources: new MIB sources {self.__mibSources}"
         )
 
     def getMibSources(self) -> tuple[Any, ...]:
+        """The sources currently searched."""
         return tuple(self.__mibSources)
 
     def getModulePath(self, modName: str) -> str | None:
@@ -652,9 +700,11 @@ class MibBuilder:
 
     # Legacy/compatibility methods (won't work for .eggs)
     def setMibPath(self, *mibPaths: str) -> None:
+        """Replace the sources with plain directories, for callers that predate sources."""
         self.setMibSources(*[DirMibSource(x) for x in mibPaths])
 
     def getMibPath(self) -> tuple[str, ...]:
+        """The sources as directory paths. Raises where any source is not a directory."""
         paths: tuple[str, ...] = ()
         for mibSource in self.getMibSources():
             if isinstance(mibSource, DirMibSource):
@@ -847,6 +897,12 @@ class MibBuilder:
         return self
 
     def unloadModules(self, *modNames: str) -> Any:
+        """Unload modules, or every loaded module when given none.
+
+        What was unloaded can be loaded again; the record of where it came from is
+        dropped along with the symbols, so a second load searches afresh and may well
+        find a different copy.
+        """
         # Snapshot, since the loop mutates mibSymbols as it goes.
         names = modNames or tuple(self.mibSymbols)
         for modName in names:
@@ -863,6 +919,7 @@ class MibBuilder:
     def importSymbols(
         self, modName: str, *symNames: str, **userCtx: Any
     ) -> tuple[Any, ...]:
+        """Fetch symbols from a module, loading the module first if it is not loaded."""
         if not modName:
             raise error.SmiError("importSymbols: empty MIB module name")
         r: tuple[Any, ...] = ()
@@ -879,6 +936,12 @@ class MibBuilder:
     def exportSymbols(
         self, modName: str, *anonymousSyms: Any, **namedSyms: Any
     ) -> None:
+        """Publish symbols under a module name, labelling those that have no label.
+
+        A symbol whose label differs from the name it was passed under is filed by the
+        label, since that is the name the MIB gives it and what a lookup will ask for.
+        Anonymous symbols get a generated name so they can be unloaded later.
+        """
         if modName not in self.mibSymbols:
             self.mibSymbols[modName] = {}
         mibSymbols = self.mibSymbols[modName]
@@ -909,6 +972,7 @@ class MibBuilder:
         self.lastBuildId += 1
 
     def unexportSymbols(self, modName: str, *symNames: str) -> None:
+        """Withdraw symbols, or the whole module when given none."""
         if modName not in self.mibSymbols:
             raise error.SmiError(f"No module {modName} at {self}")
         mibSymbols = self.mibSymbols[modName]

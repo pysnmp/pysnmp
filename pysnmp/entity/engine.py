@@ -254,6 +254,7 @@ class SnmpEngine:
                 )
 
     def __repr__(self) -> str:
+        """The class and this engine's ID, which is what distinguishes one from another."""
         return f"{self.__class__.__name__}(snmpEngineID={self.snmpEngineID!r})"
 
     # Transport dispatcher bindings
@@ -265,11 +266,17 @@ class SnmpEngine:
         transportAddress: Any,
         wholeMsg: Any,
     ) -> None:
+        """Hand a message the dispatcher received to the message dispatcher."""
         self.msgAndPduDsp.receiveMessage(
             self, transportDomain, transportAddress, wholeMsg
         )
 
     def __receiveTimerTickCbFun(self, timeNow: int) -> None:
+        """Pass the tick to the dispatcher and to every model that keeps timed state.
+
+        The message processing and security models expire their own caches, so the tick
+        has to reach each of them and not just the dispatcher.
+        """
         self.msgAndPduDsp.receiveTimerTick(self, timeNow)
         for mpHandler in self.messageProcessingSubsystems.values():
             mpHandler.receiveTimerTick(self, timeNow)
@@ -279,6 +286,12 @@ class SnmpEngine:
     def registerTransportDispatcher(
         self, transportDispatcher: Any, recvId: Any = None
     ) -> None:
+        """Attach a dispatcher, or add another receiver to the one already attached.
+
+        One engine has one dispatcher; registering the same one again under a different
+        `recvId` is how several applications share it, which is what lets a command
+        responder and a notification receiver run on one engine.
+        """
         if (
             self.transportDispatcher is not None
             and self.transportDispatcher is not transportDispatcher
@@ -290,6 +303,7 @@ class SnmpEngine:
             self.transportDispatcher = transportDispatcher
 
     def unregisterTransportDispatcher(self, recvId: Any = None) -> None:
+        """Detach the dispatcher and stop receiving on it."""
         if self.transportDispatcher is None:
             raise error.PySnmpError("Transport dispatcher not registered")
         self.transportDispatcher.unregisterRecvCbFun(recvId)
@@ -297,14 +311,22 @@ class SnmpEngine:
         self.transportDispatcher = None
 
     def getMibBuilder(self) -> Any:
+        """The builder whose modules this engine serves and resolves names against."""
         return self.msgAndPduDsp.mibInstrumController.mibBuilder
 
     # User app may attach opaque objects to SNMP Engine
     def setUserContext(self, **kwargs: Any) -> None:
+        """Attach opaque objects to the engine, under names of the caller's choosing.
+
+        Names are prefixed before being cached, so nothing an application attaches can
+        collide with what the engine keeps there itself.
+        """
         self.cache.update({f"__{k}": kwargs[k] for k in kwargs})
 
     def getUserContext(self, arg: str) -> Any:
+        """One attached object, or `None`."""
         return self.cache.get(f"__{arg}")
 
     def delUserContext(self, arg: str) -> None:
+        """Drop an attached object. Unknown names are ignored."""
         self.cache.pop(f"__{arg}", None)

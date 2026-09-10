@@ -17,6 +17,11 @@ __all__ = ["CommandGeneratorVarBinds", "NotificationOriginatorVarBinds"]
 class AbstractVarBinds:
     @staticmethod
     def getMibViewController(snmpEngine: Any) -> Any:
+        """The engine's MIB view, built and attached on first use.
+
+        It lives on the engine rather than on the caller so every application sharing
+        the engine resolves names against one index.
+        """
         mibViewController = snmpEngine.getUserContext("mibViewController")
         if not mibViewController:
             mibViewController = view.MibViewController(snmpEngine.getMibBuilder())
@@ -28,6 +33,13 @@ class CommandGeneratorVarBinds(AbstractVarBinds):
     """Variable bindings for requests: resolves names to OIDs and back."""
 
     def makeVarBinds(self, snmpEngine: Any, varBinds: Any) -> list[Any]:
+        """Resolve bindings against the MIB, accepting every form a caller may pass.
+
+        Names arrive as `ObjectType`, as an identity and value, as a bare OID, or in the
+        legacy nested-tuple form, and all of them come out resolved. Errors are not
+        ignored here: a request naming an object this side does not know is a mistake
+        worth reporting before anything is sent.
+        """
         mibViewController = self.getMibViewController(snmpEngine)
         __varBinds = []
         for varBind in varBinds:
@@ -52,6 +64,7 @@ class CommandGeneratorVarBinds(AbstractVarBinds):
     def unmakeVarBinds(
         self, snmpEngine: Any, varBinds: Any, lookupMib: bool = True
     ) -> list[Any]:
+        """Resolve a response's bindings back to MIB names, unless asked not to."""
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [
@@ -71,6 +84,7 @@ class NotificationOriginatorVarBinds(AbstractVarBinds):
     """
 
     def makeVarBinds(self, snmpEngine: Any, varBinds: Any) -> list[Any]:
+        """Resolve a notification's bindings, and the notification itself where given one."""
         mibViewController = self.getMibViewController(snmpEngine)
         if isinstance(varBinds, NotificationType):
             varBinds.resolveWithMib(mibViewController, ignoreErrors=False)
@@ -90,6 +104,11 @@ class NotificationOriginatorVarBinds(AbstractVarBinds):
     def unmakeVarBinds(
         self, snmpEngine: Any, varBinds: Any, lookupMib: bool = False
     ) -> list[Any]:
+        """Resolve bindings back to MIB names, which for notifications is off by default.
+
+        The bindings of a notification were built on this side and are already what the
+        caller passed in, so there is normally nothing to look up.
+        """
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [

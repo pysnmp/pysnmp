@@ -25,15 +25,19 @@ MibVariable = ObjectIdentity
 
 class ErrorIndicationReturn:
     def __init__(self, *vars):
+        """Holds the tuple a legacy caller unpacks, error indication first."""
         self.__vars = vars
 
     def __getitem__(self, i):
+        """One element of the result tuple."""
         return self.__vars[i]
 
     def __bool__(self):
+        """Truthy where there is an error indication, so `if result:` means failure."""
         return bool(self.__vars[0])
 
     def __str__(self):
+        """The error indication alone."""
         return str(self.__vars[0])
 
 
@@ -63,20 +67,25 @@ class AsynNotificationOriginator:
         self.mibViewController = self.vbProcessor.getMibViewController(self.snmpEngine)
 
     def __del__(self):
+        """Unconfigure this originator's targets from the engine."""
         self.uncfgNtfOrg()
 
     def cfgNtfOrg(self, authData, transportTarget, notifyType):
+        """Obsolete. Configure credentials, a target and a notify type on the engine."""
         return self.lcd.configure(
             self.snmpEngine, authData, transportTarget, notifyType
         )
 
     def uncfgNtfOrg(self, authData=None):
+        """Obsolete. Remove what `cfgNtfOrg` configured."""
         return self.lcd.unconfigure(self.snmpEngine, authData)
 
     def makeVarBinds(self, varBinds):
+        """Obsolete. Resolve bindings against the MIB."""
         return self.vbProcessor.makeVarBinds(self.snmpEngine, varBinds)
 
     def unmakeVarBinds(self, varBinds, lookupNames, lookupValues):
+        """Obsolete. Turn resolved bindings back into names and values."""
         return self.vbProcessor.unmakeVarBinds(
             self.snmpEngine, varBinds, lookupNames or lookupValues
         )
@@ -94,6 +103,7 @@ class AsynNotificationOriginator:
         contextEngineId=None,  # XXX ordering incompatibility
         contextName=b"",
     ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.send_notification`."""
 
         def __cbFun(
             snmpEngine,
@@ -162,7 +172,6 @@ class NotificationOriginator:
     vbProcessor = NotificationOriginatorVarBinds()
 
     def __init__(self, snmpEngine=None, snmpContext=None, asynNtfOrg=None):
-        # compatibility attributes
         """`asynNtfOrg` is accepted for compatibility and ignored."""
         self.snmpEngine = snmpEngine or SnmpEngine()
         self.mibViewController = self.vbProcessor.getMibViewController(self.snmpEngine)
@@ -178,6 +187,7 @@ class NotificationOriginator:
         *varBinds,
         **kwargs,
     ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.send_notification`."""
         if "lookupNames" not in kwargs:
             kwargs["lookupNames"] = False
         if "lookupValues" not in kwargs:

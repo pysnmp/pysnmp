@@ -61,9 +61,11 @@ class Printer:
         self.__logger = logger
 
     def __call__(self, msg):
+        """Write one message at DEBUG level."""
         self.__logger.debug(msg)
 
     def __str__(self):
+        """Names the logging backend, for the banner debugging prints on startup."""
         return "<python built-in logging>"
 
 
@@ -120,15 +122,19 @@ class Debug:
             )
 
     def __str__(self):
+        """The categories currently switched on."""
         return f"logger {self._printer}, flags {self._flags:x}"
 
     def __call__(self, msg):
+        """Write one message through the printer."""
         self._printer(msg)
 
     def __and__(self, flag):
+        """Whether a category is on, as `debug.logger & flagIO` asks."""
         return self._flags & flag
 
     def __rand__(self, flag):
+        """Whether a category is on, with the operands the other way round."""
         return flag & self._flags
 
 
@@ -151,15 +157,19 @@ class DebugOff:
         """Discard `msg`. Nothing is listening."""
 
     def __and__(self, flag):
+        """Always falsy, so the message after the `and` is never built."""
         return flagNone
 
     def __rand__(self, flag):
+        """Always falsy, with the operands the other way round."""
         return flagNone
 
     def __bool__(self):
+        """Always false."""
         return False
 
     def __str__(self):
+        """Says debugging is off."""
         return "<debugging off>"
 
 

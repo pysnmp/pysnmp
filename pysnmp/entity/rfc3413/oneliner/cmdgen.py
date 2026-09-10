@@ -41,22 +41,28 @@ class AsynCommandGenerator:
         self.mibViewController = self.vbProcessor.getMibViewController(self.snmpEngine)
 
     def __del__(self):
+        """Unconfigure this generator's targets from the engine."""
         self.lcd.unconfigure(self.snmpEngine)
 
     def cfgCmdGen(self, authData, transportTarget):
+        """Obsolete. Configure credentials and a target on the engine."""
         return self.lcd.configure(self.snmpEngine, authData, transportTarget)
 
     def uncfgCmdGen(self, authData=None):
+        """Obsolete. Remove what `cfgCmdGen` configured."""
         return self.lcd.unconfigure(self.snmpEngine, authData)
 
     # compatibility stub
     def makeReadVarBinds(self, varNames):
+        """Obsolete. Pair each name with a null, as a read request wants."""
         return self.makeVarBinds([(x, self._null) for x in varNames])
 
     def makeVarBinds(self, varBinds):
+        """Obsolete. Resolve bindings against the MIB."""
         return self.vbProcessor.makeVarBinds(self.snmpEngine, varBinds)
 
     def unmakeVarBinds(self, varBinds, lookupNames, lookupValues):
+        """Obsolete. Turn resolved bindings back into names and values."""
         return self.vbProcessor.unmakeVarBinds(
             self.snmpEngine, varBinds, lookupNames or lookupValues
         )
@@ -72,6 +78,7 @@ class AsynCommandGenerator:
         contextEngineId=None,
         contextName=b"",
     ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.get_cmd`."""
 
         def __cbFun(
             snmpEngine,
@@ -120,6 +127,7 @@ class AsynCommandGenerator:
         contextEngineId=None,
         contextName=b"",
     ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.set_cmd`."""
 
         def __cbFun(
             snmpEngine,
@@ -168,6 +176,7 @@ class AsynCommandGenerator:
         contextEngineId=None,
         contextName=b"",
     ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.next_cmd`."""
 
         def __cbFun(
             snmpEngine,
@@ -218,6 +227,7 @@ class AsynCommandGenerator:
         contextEngineId=None,
         contextName=b"",
     ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.bulk_cmd`."""
 
         def __cbFun(
             snmpEngine,
@@ -264,11 +274,11 @@ class CommandGenerator:
     _null = univ.Null("")
 
     def __init__(self, snmpEngine=None, asynCmdGen=None):
-        # compatibility attributes
         """`asynCmdGen` is accepted for compatibility and ignored."""
         self.snmpEngine = snmpEngine or SnmpEngine()
 
     def getCmd(self, authData, transportTarget, *varNames, **kwargs):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.get_cmd`."""
         if "lookupNames" not in kwargs:
             kwargs["lookupNames"] = False
         if "lookupValues" not in kwargs:
@@ -286,6 +296,7 @@ class CommandGenerator:
         return errorIndication, errorStatus, errorIndex, varBinds
 
     def setCmd(self, authData, transportTarget, *varBinds, **kwargs):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.set_cmd`."""
         if "lookupNames" not in kwargs:
             kwargs["lookupNames"] = False
         if "lookupValues" not in kwargs:
@@ -304,6 +315,7 @@ class CommandGenerator:
         return errorIndication, errorStatus, errorIndex, rspVarBinds
 
     def nextCmd(self, authData, transportTarget, *varNames, **kwargs):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.next_cmd`."""
         if "lookupNames" not in kwargs:
             kwargs["lookupNames"] = False
         if "lookupValues" not in kwargs:
@@ -336,6 +348,7 @@ class CommandGenerator:
         *varNames,
         **kwargs,
     ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.bulk_cmd`."""
         if "lookupNames" not in kwargs:
             kwargs["lookupNames"] = False
         if "lookupValues" not in kwargs:

@@ -178,9 +178,15 @@ class CommunityData:
         )
 
     def __hash__(self) -> NoReturn:
+        """Refuses to hash.
+
+        The community is mutable, and hashing it would leak the secret into
+        whatever the hash ends up in.
+        """
         raise TypeError(f"{self.__class__.__name__} is not hashable")
 
     def __repr__(self) -> str:
+        """Every field except the community itself, which is elided."""
         return f"{self.__class__.__name__}(communityIndex={self.communityIndex!r}, communityName=<COMMUNITY>, mpModel={self.mpModel!r}, contextEngineId={self.contextEngineId!r}, contextName={self.contextName!r}, tag={self.tag!r}, securityName={self.securityName!r})"
 
     def clone(
@@ -193,6 +199,7 @@ class CommunityData:
         tag: Any = None,
         securityName: str | None = None,
     ) -> "CommunityData":
+        """Copy with fields replaced. A lone argument is taken as the community name."""
         # a single arg is considered as a community name
         if communityName is None:
             communityName, communityIndex = communityIndex, None
@@ -450,9 +457,11 @@ class UsmUserData:
         self.privKeyType = privKeyType
 
     def __hash__(self) -> NoReturn:
+        """Refuses to hash, for the same reason as the community's."""
         raise TypeError(f"{self.__class__.__name__} is not hashable")
 
     def __repr__(self) -> str:
+        """Every field except the keys, which are elided."""
         return "{}(userName={!r}, authKey=<AUTHKEY>, privKey=<PRIVKEY>, authProtocol={!r}, privProtocol={!r}, securityEngineId={!r}, securityName={!r}, authKeyType={!r}, privKeyType={!r})".format(
             self.__class__.__name__,
             self.userName,
@@ -476,6 +485,7 @@ class UsmUserData:
         authKeyType: int | None = None,
         privKeyType: int | None = None,
     ) -> "UsmUserData":
+        """Copy with fields replaced, keeping the rest as they are."""
         return self.__class__(
             userName if userName is not None else self.userName,
             authKey if authKey is not None else self.authKey,

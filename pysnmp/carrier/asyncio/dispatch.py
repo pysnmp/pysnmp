@@ -62,16 +62,24 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
                 self.loop = asyncio.new_event_loop()
 
     async def handle_timeout(self):
+        """Tick the dispatcher's timers forever, one sleep per resolution."""
         while True:
             await asyncio.sleep(self.getTimerResolution())
             self.handleTimerTick(self.loop.time())
 
     def _start_timer(self):
+        """Start the ticking task, unless one is already running."""
         self._timerStartHandle = None
         if self.loopingcall is None:
             self.loopingcall = self.loop.create_task(self.handle_timeout())
 
     def runDispatcher(self, timeout=0.0):
+        """Run the loop until the outstanding work is done, or forever with none.
+
+        With jobs pending or writes still queued this returns once they have drained,
+        which is what a client wants. With nothing outstanding it runs forever instead
+        of returning immediately, since that is a server waiting to be asked something.
+        """
         if self.loop.is_running():
             return
 
@@ -94,12 +102,19 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
             ) from e
 
     def transportsAreWorking(self):
+        """Whether any transport still has datagrams queued to send."""
         for transport in self._AbstractTransportDispatcher__transports.values():
             if getattr(transport, "_writeQ", None):
                 return True
         return False
 
     def registerTransport(self, tDomain, transport):
+        """Take a transport, adopting its event loop and starting the timer.
+
+        A server-mode transport is often built before the dispatcher and already holds
+        a loop; receiving only works if both are on the same one, so the dispatcher
+        moves rather than making the transport move.
+        """
         # If the transport already has an event loop (e.g. server-mode
         # transport created before the dispatcher), adopt its loop so
         # that datagram reception works on the same loop.
@@ -121,6 +136,7 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         self.__transportCount += 1
 
     def _cancel_timer(self):
+        """Stop the ticking task and wait for it where the loop is not running."""
         if self._timerStartHandle is not None:
             self._timerStartHandle.cancel()
             self._timerStartHandle = None
@@ -134,6 +150,7 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         self.loopingcall = None
 
     def unregisterTransport(self, tDomain):
+        """Release a transport, stopping the timer once the last one is gone."""
         t = AbstractTransportDispatcher.getTransport(self, tDomain)
         if t is not None:
             AbstractTransportDispatcher.unregisterTransport(self, tDomain)
@@ -146,6 +163,7 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
             self._cancel_timer()
 
     def closeDispatcher(self):
+        """Close every transport and stop the timer."""
         AbstractTransportDispatcher.closeDispatcher(self)
         self._cancel_timer()
         self.__transportCount = 0
