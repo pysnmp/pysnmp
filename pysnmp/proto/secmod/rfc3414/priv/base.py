@@ -9,8 +9,6 @@ from pysnmp.proto import error
 
 
 class AbstractEncryptionService:
-    #: OID naming the protocol this service implements, e.g. usmDESPrivProtocol.
-    #: Concrete services differ in length, so the arity cannot be pinned here.
     """Encrypts and decrypts the scoped PDU.
 
     Keys are derived and localized as for authentication; `keySize` says how much
@@ -18,6 +16,8 @@ class AbstractEncryptionService:
     has to be extended first.
     """
 
+    #: OID naming the protocol this service implements, e.g. usmDESPrivProtocol.
+    #: Concrete services differ in length, so the arity cannot be pinned here.
     serviceID: tuple[int, ...] | None = None
     keySize = 0
 

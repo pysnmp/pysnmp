@@ -9,8 +9,6 @@ from pysnmp.proto import errind, error
 
 
 class AbstractAuthenticationService:
-    #: OID naming the protocol this service implements, e.g. usmHMACMD5AuthProtocol.
-    #: Concrete services differ in length, so the arity cannot be pinned here.
     """Computes and checks the digest that authenticates a message.
 
     A passphrase is hashed once, then localized to each engine it is used with, so
@@ -18,6 +16,8 @@ class AbstractAuthenticationService:
     open another.
     """
 
+    #: OID naming the protocol this service implements, e.g. usmHMACMD5AuthProtocol.
+    #: Concrete services differ in length, so the arity cannot be pinned here.
     serviceID: tuple[int, ...] | None = None
 
     def hashPassphrase(self, authKey):

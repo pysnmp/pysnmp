@@ -239,14 +239,14 @@ class AbstractTransportAddress:
 
 
 class AbstractTransport:
-    #: Dispatcher this transport was written against; isCompatibleWithDispatcher()
-    #: below checks candidates against it, and every concrete transport names one.
     """One transport: a socket, opened either as a client or as a server.
 
     A transport names the dispatcher it was written against, since the two share
     an I/O model and pairing a transport with the wrong dispatcher would not work.
     """
 
+    #: Dispatcher this transport was written against; isCompatibleWithDispatcher()
+    #: below checks candidates against it, and every concrete transport names one.
     protoTransportDispatcher: type[AbstractTransportDispatcher] | None = None
     addressType = AbstractTransportAddress
     _cbFun = None

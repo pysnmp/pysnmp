@@ -185,11 +185,11 @@ class __AbstractMibSource:
 
 
 class ZipMibSource(__AbstractMibSource):
+    """MIB modules loaded out of a zip archive, including an egg or a wheel."""
+
     # zipimport.zipimporter carries the archive directory privately, and
     # typeshed describes neither it nor the loader `__import__` hands back, so
     # there is nothing narrower to say here than what `_archiveFiles` checks.
-    """MIB modules loaded out of a zip archive, including an egg or a wheel."""
-
     __loader: Any
 
     @staticmethod

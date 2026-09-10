@@ -12,9 +12,6 @@ from pysnmp.proto.mpmod import cache
 
 
 class AbstractMessageProcessingModel:
-    #: ASN.1 class of the message this model speaks; __init__ instantiates it.
-    #: NotImplementedError stands in for a model that has not named one -- it is
-    #: constructed, not raised, so the failure surfaces later rather than here.
     """Turns a PDU into a message and back, for one SNMP version.
 
     Which version is `messageProcessingModelID`. The model decides what the
@@ -22,6 +19,9 @@ class AbstractMessageProcessingModel:
     linking an outgoing request to the response that answers it.
     """
 
+    #: ASN.1 class of the message this model speaks; __init__ instantiates it.
+    #: NotImplementedError stands in for a model that has not named one -- it is
+    #: constructed, not raised, so the failure surfaces later rather than here.
     snmpMsgSpec: type[Any] = NotImplementedError
 
     def __init__(self):
