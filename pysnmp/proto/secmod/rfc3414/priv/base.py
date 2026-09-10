@@ -22,13 +22,17 @@ class AbstractEncryptionService:
     keySize = 0
 
     def hashPassphrase(self, authProtocol, privKey):
+        """Hash a passphrase into a master privacy key. Concrete services implement this."""
         raise error.ProtocolError("no encryption")
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Bind a privacy key to one engine ID. Concrete services implement this."""
         raise error.ProtocolError("no encryption")
 
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
+        """Encrypt a scoped PDU. Concrete services implement this."""
         raise error.ProtocolError("no encryption")
 
     def decryptData(self, decryptKey, privParameters, encryptedData):
+        """Decrypt a scoped PDU. Concrete services implement this."""
         raise error.ProtocolError("no encryption")

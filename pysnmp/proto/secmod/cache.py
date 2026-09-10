@@ -19,11 +19,13 @@ class Cache:
         self.__cacheEntries = {}
 
     def push(self, **securityData):
+        """Stash what the response will need, returning the handle to fetch it back by."""
         stateReference = self.__stateReference()
         self.__cacheEntries[stateReference] = securityData
         return stateReference
 
     def pop(self, stateReference):
+        """Take back what was stashed, removing it -- a handle is good once."""
         if stateReference in self.__cacheEntries:
             securityData = self.__cacheEntries[stateReference]
         else:

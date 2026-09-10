@@ -46,6 +46,7 @@ class NoSuchObject(univ.Null):
     )
 
     def prettyPrint(self, scope=0):
+        """Say that no such object exists, rather than printing an empty null."""
         return "No Such Object currently exists at this OID"
 
 
@@ -60,6 +61,7 @@ class NoSuchInstance(univ.Null):
     )
 
     def prettyPrint(self, scope=0):
+        """Say that the object exists but this instance does not."""
         return "No Such Instance currently exists at this OID"
 
 
@@ -74,6 +76,7 @@ class EndOfMibView(univ.Null):
     )
 
     def prettyPrint(self, scope=0):
+        """Say that the walk has run past the end of the view."""
         return "No more variables left in this MIB View"
 
 

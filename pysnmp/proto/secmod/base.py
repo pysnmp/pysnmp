@@ -36,6 +36,7 @@ class AbstractSecurityModel:
         wholeMsg,
         msg,
     ):
+        """Verify and unwrap an inbound message. Concrete models implement this."""
         raise error.ProtocolError(f"Security model {self} not implemented")
 
     def generateRequestMsg(
@@ -50,6 +51,7 @@ class AbstractSecurityModel:
         securityLevel,
         scopedPDU,
     ):
+        """Wrap an outbound request. Concrete models implement this."""
         raise error.ProtocolError(f"Security model {self} not implemented")
 
     def generateResponseMsg(
@@ -65,11 +67,14 @@ class AbstractSecurityModel:
         scopedPDU,
         securityStateReference,
     ):
+        """Wrap an outbound response. Concrete models implement this."""
         raise error.ProtocolError(f"Security model {self} not implemented")
 
     def releaseStateInformation(self, stateReference):
+        """Drop what was cached for one exchange, once it can no longer be answered."""
         self._cache.pop(stateReference)
 
     def receiveTimerTick(self, snmpEngine, timeNow):
         # Security models without timers do not need to take action.
+        """Called on the dispatcher's timer; models that expire state override this."""
         pass

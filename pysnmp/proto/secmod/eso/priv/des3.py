@@ -42,6 +42,12 @@ class Des3(base.AbstractEncryptionService):
     _localInt = secrets.randbits(32)
 
     def hashPassphrase(self, authProtocol, privKey):
+        """Hash the passphrase with whatever digest the authentication protocol uses.
+
+        Privacy has no digest of its own: :RFC:`3414#section-2.6` derives the privacy
+        key with the authentication protocol's hash, which is why the auth protocol has
+        to be passed in here at all.
+        """
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -54,6 +60,12 @@ class Des3(base.AbstractEncryptionService):
 
     # 2.1
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Localize the privacy key, extending it to the 32 octets 3DES-EDE needs.
+
+        One localization yields too little key material for three DES keys plus the
+        pre-IV, so the result is hashed and localized again and appended until it is
+        long enough -- the extension Reeder's draft specifies.
+        """
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -116,6 +128,7 @@ class Des3(base.AbstractEncryptionService):
 
     # 5.1.1.2
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
+        """Encrypt with 3DES-EDE, returning the ciphertext and the salt to send with it."""
         DES3 = cipherbackend.getCipher("DES3")
         if DES3 is None:
             raise error.StatusInformation(errorIndication=errind.encryptionError)
@@ -138,6 +151,7 @@ class Des3(base.AbstractEncryptionService):
 
     # 5.1.1.3
     def decryptData(self, decryptKey, privParameters, encryptedData):
+        """Decrypt 3DES-EDE ciphertext, taking the IV from the salt the sender sent."""
         DES3 = cipherbackend.getCipher("DES3")
         if DES3 is None:
             raise error.StatusInformation(errorIndication=errind.decryptionError)

@@ -64,6 +64,7 @@ class MsgAndPduDispatcher:
 
     # legacy
     def getTransportInfo(self, stateReference):
+        """Where a request came from, so a response can be sent back to it."""
         if stateReference in self.__transportInfo:
             return self.__transportInfo[stateReference]
         else:
@@ -111,6 +112,12 @@ class MsgAndPduDispatcher:
         )
 
     def getRegisteredApp(self, contextEngineId, pduType):
+        """The application registered for a context and PDU type, wildcard included.
+
+        An exact registration wins; failing that the empty context engine ID matches
+        anything, which is how a notification receiver takes traps from engines it has
+        never heard of.
+        """
         k = (contextEngineId, pduType)
         if k in self.__appsRegistration:
             return self.__appsRegistration[k]
@@ -272,6 +279,7 @@ class MsgAndPduDispatcher:
         statusInformation,
     ):
         # Extract input values and initialize defaults
+        """Send an application's response back out through the model it arrived on."""
         k = int(messageProcessingModel)
         if k in snmpEngine.messageProcessingSubsystems:
             mpHandler = snmpEngine.messageProcessingSubsystems[k]
@@ -610,6 +618,7 @@ class MsgAndPduDispatcher:
     def releaseStateInformation(
         self, snmpEngine, sendPduHandle, messageProcessingModel
     ):
+        """Drop what was held for a request, in the dispatcher and the model both."""
         k = int(messageProcessingModel)
         if k in snmpEngine.messageProcessingSubsystems:
             mpHandler = snmpEngine.messageProcessingSubsystems[k]
@@ -665,4 +674,5 @@ class MsgAndPduDispatcher:
 
     # noinspection PyUnusedLocal
     def receiveTimerTick(self, snmpEngine, timeNow):
+        """Expire requests that were never answered, reporting a timeout for each."""
         self.__cache.expire(self.__expireRequest, snmpEngine)

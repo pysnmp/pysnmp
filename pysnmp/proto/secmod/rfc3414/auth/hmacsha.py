@@ -43,13 +43,16 @@ class HmacSha(base.AbstractAuthenticationService):
     __opad = [0x5C] * 64
 
     def hashPassphrase(self, authKey):
+        """Hash a passphrase into a master key with SHA-1."""
         return localkey.hashPassphraseSHA(authKey)
 
     def localizeKey(self, authKey, snmpEngineID):
+        """Bind a master key to one engine ID, so it cannot be replayed at another."""
         return localkey.localizeKeySHA(authKey, snmpEngineID)
 
     @property
     def digestLength(self):
+        """12 -- HMAC-SHA-96 is truncated to 96 bits."""
         return 12
 
     # 7.3.1
@@ -59,6 +62,7 @@ class HmacSha(base.AbstractAuthenticationService):
         # should be in the substrate. Also, it pre-sets digest placeholder
         # so we hash wholeMsg out of the box.
         # Yes, that's ugly but that's rfc...
+        """Compute HMAC-SHA-96 over the message and write it into the placeholder."""
         idx = wholeMsg.find(_twelveZeros)
         if idx == -1:
             raise error.ProtocolError("Cant locate digest placeholder")
@@ -91,6 +95,7 @@ class HmacSha(base.AbstractAuthenticationService):
     # 7.3.2
     def authenticateIncomingMsg(self, authKey, authParameters, wholeMsg):
         # 7.3.2.1 & 2
+        """Check HMAC-SHA-96, zeroing the digest field before recomputing."""
         if len(authParameters) != 12:
             raise error.StatusInformation(errorIndication=errind.authenticationError)
 

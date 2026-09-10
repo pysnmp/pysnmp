@@ -70,6 +70,7 @@ class Aes(base.AbstractEncryptionService):
         return privKey[: self.keySize].asOctets(), univ.OctetString(iv).asOctets()
 
     def hashPassphrase(self, authProtocol, privKey):
+        """Hash the passphrase with whatever digest the authentication protocol uses."""
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -81,6 +82,7 @@ class Aes(base.AbstractEncryptionService):
         return localkey.hashPassphrase(privKey, hashAlgo)
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Localize the privacy key and keep the 16 octets AES-128 needs."""
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -94,6 +96,12 @@ class Aes(base.AbstractEncryptionService):
 
     # 3.2.4.1
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
+        """Encrypt with AES-128-CFB, returning the ciphertext and the salt.
+
+        The IV is the boot count, the engine time and a 64-bit counter, so it does not
+        repeat within a boot; only the counter half travels, since the receiver already
+        knows the other two.
+        """
         AES = cipherbackend.getCipher("AES")
         if AES is None:
             raise error.StatusInformation(errorIndication=errind.encryptionError)
@@ -121,6 +129,11 @@ class Aes(base.AbstractEncryptionService):
 
     # 3.2.4.2
     def decryptData(self, decryptKey, privParameters, encryptedData):
+        """Decrypt AES-128-CFB ciphertext, rebuilding the IV from boots, time and salt.
+
+        CFB is a stream mode, so unlike DES there is no block alignment to enforce and
+        ciphertext of any length decrypts.
+        """
         AES = cipherbackend.getCipher("AES")
         if AES is None:
             raise error.StatusInformation(errorIndication=errind.decryptionError)

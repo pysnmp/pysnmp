@@ -48,6 +48,7 @@ class AbstractMessageProcessingModel:
         expectResponse,
         sendPduHandle,
     ):
+        """Serialize a request. Concrete models implement this."""
         raise error.ProtocolError("method not implemented")
 
     def prepareResponseMessage(
@@ -65,18 +66,22 @@ class AbstractMessageProcessingModel:
         stateReference,
         statusInformation,
     ):
+        """Serialize a response. Concrete models implement this."""
         raise error.ProtocolError("method not implemented")
 
     def prepareDataElements(
         self, snmpEngine, transportDomain, transportAddress, wholeMsg
     ):
+        """Parse an inbound message. Concrete models implement this."""
         raise error.ProtocolError("method not implemented")
 
     def releaseStateInformation(self, sendPduHandle):
+        """Drop what was held for one exchange."""
         try:
             self._cache.popBySendPduHandle(sendPduHandle)
         except error.ProtocolError:
             pass  # XXX maybe these should all follow some scheme?
 
     def receiveTimerTick(self, snmpEngine, timeNow):
+        """Called on the dispatcher's timer; drives cache expiry."""
         self._cache.expireCaches()

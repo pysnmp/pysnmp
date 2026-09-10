@@ -43,13 +43,16 @@ class HmacMd5(base.AbstractAuthenticationService):
     __opad = [0x5C] * 64
 
     def hashPassphrase(self, authKey):
+        """Hash a passphrase into a master key with MD5."""
         return localkey.hashPassphraseMD5(authKey)
 
     def localizeKey(self, authKey, snmpEngineID):
+        """Bind a master key to one engine ID, so it cannot be replayed at another."""
         return localkey.localizeKeyMD5(authKey, snmpEngineID)
 
     @property
     def digestLength(self):
+        """12 -- HMAC-MD5-96 is truncated to 96 bits."""
         return 12
 
     # 6.3.1
@@ -58,6 +61,12 @@ class HmacMd5(base.AbstractAuthenticationService):
         # should be in the substrate. Also, it pre-sets digest placeholder
         # so we hash wholeMsg out of the box.
         # Yes, that's ugly but that's rfc...
+        """Compute HMAC-MD5-96 over the message and write it into the placeholder.
+
+        The caller has already serialized the message with twelve zero octets where
+        the digest goes, because the digest covers the whole message including its own
+        field. Finding that run of zeros is how the position is recovered.
+        """
         idx = wholeMsg.find(_twelveZeros)
         if idx == -1:
             raise error.ProtocolError("Cant locate digest placeholder")
@@ -94,6 +103,11 @@ class HmacMd5(base.AbstractAuthenticationService):
     # 6.3.2
     def authenticateIncomingMsg(self, authKey, authParameters, wholeMsg):
         # 6.3.2.1 & 2
+        """Check HMAC-MD5-96, zeroing the digest field before recomputing.
+
+        The sender hashed the message with zeros in the digest field, so the same
+        substitution has to be made here before the two can be compared.
+        """
         if len(authParameters) != 12:
             raise error.StatusInformation(errorIndication=errind.authenticationError)
 

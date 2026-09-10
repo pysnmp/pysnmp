@@ -64,18 +64,26 @@ class HmacSha2(base.AbstractAuthenticationService):
         self.__placeHolder = univ.OctetString((0,) * self.__digestLength).asOctets()
 
     def hashPassphrase(self, authKey):
+        """Hash a passphrase into a master key with this instance's SHA-2 variant."""
         return localkey.hashPassphrase(authKey, self.__hashAlgo)
 
     def localizeKey(self, authKey, snmpEngineID):
+        """Bind a master key to one engine ID, so it cannot be replayed at another."""
         return localkey.localizeKey(authKey, snmpEngineID, self.__hashAlgo)
 
     @property
     def digestLength(self):
+        """Octets of digest, which differs per SHA-2 variant -- 16 for SHA-224 up to 48."""
         return self.__digestLength
 
     # 7.3.1
     def authenticateOutgoingMsg(self, authKey, wholeMsg):
         # 7.3.1.1
+        """Compute the HMAC and write it into the placeholder.
+
+        Unlike the :RFC:`3414` services the placeholder is not always twelve octets,
+        so its length comes from the variant in use.
+        """
         location = wholeMsg.find(self.__placeHolder)
         if location == -1:
             raise error.ProtocolError("Can't locate digest placeholder")
@@ -98,6 +106,7 @@ class HmacSha2(base.AbstractAuthenticationService):
     # 7.3.2
     def authenticateIncomingMsg(self, authKey, authParameters, wholeMsg):
         # 7.3.2.1 & 2
+        """Check the HMAC, zeroing the digest field before recomputing."""
         if len(authParameters) != self.__digestLength:
             raise error.StatusInformation(errorIndication=errind.authenticationError)
 

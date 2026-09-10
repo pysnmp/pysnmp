@@ -45,6 +45,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         expectResponse,
         sendPduHandle,
     ):
+        """Serialize a v1 or v2c request: community, PDU, and nothing else."""
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
         (snmpEngineId,) = mibBuilder.importSymbols(
@@ -180,6 +181,7 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
         stateReference,
         statusInformation,
     ):
+        """Serialize a v1 or v2c response, echoing the request's community."""
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
         (snmpEngineId,) = mibBuilder.importSymbols(
@@ -297,6 +299,12 @@ class SnmpV1MessageProcessingModel(AbstractMessageProcessingModel):
     def prepareDataElements(
         self, snmpEngine, transportDomain, transportAddress, wholeMsg
     ):
+        """Parse a v1 or v2c message and hand it to the security model.
+
+        With no message header to speak of, most of what the engine needs -- security
+        name, level, context -- comes back out of the community lookup rather than off
+        the wire.
+        """
         mibBuilder = snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder
 
         # rfc3412: 7.2.2

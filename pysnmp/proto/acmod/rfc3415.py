@@ -46,6 +46,7 @@ class Vacm:
         writeView,
         notifyView,
     ):
+        """Remember one row of `vacmAccessTable` in the lookup this model reads."""
         if not groupName:
             return
 
@@ -91,6 +92,14 @@ class Vacm:
     def _getFamilyViewName(
         self, groupName, contextName, securityModel, securityLevel, viewType
     ):
+        """The view that applies to a group in a context at a security level.
+
+        :RFC:`3415#section-3.2` does not pick the first row that fits. An exact match
+        on context and security model short-circuits; otherwise the candidates are
+        narrowed to this security model rather than `any`, then to prefix matches on
+        the context, and among those the longest prefix at the highest permitted
+        security level wins. That ordering is why this cannot be a dictionary lookup.
+        """
         groups = self._accessMap
 
         try:
@@ -160,7 +169,15 @@ class Vacm:
         contextName,
         variableName,
     ):
+        """Whether one OID may be read, written or notified on, per :RFC:`3415`.
 
+        The context, security-to-group, access and view-tree tables are consulted in
+        that order, and a miss in any of them is a denial with its own error, so a
+        misconfiguration can be told apart from a deliberate refusal.
+
+        Each table is cached against its `branchVersionId`, since every varbind of
+        every request comes through here.
+        """
         mibInstrumController = snmpEngine.msgAndPduDsp.mibInstrumController
 
         debug.logger & debug.flagACL and debug.logger(

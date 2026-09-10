@@ -252,6 +252,7 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         return msg, snmpEngineMaxMessageSize
 
     def getPeerEngineInfo(self, transportDomain, transportAddress):
+        """What discovery learned about the engine at an address, or three `None`s."""
         k = transportDomain, transportAddress
         if k in self.__engineIdCache:
             return (
@@ -279,6 +280,13 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         expectResponse,
         sendPduHandle,
     ):
+        """Serialize a v3 request, discovering the peer's engine ID first if need be.
+
+        A request to an engine this one has not talked to cannot be authenticated,
+        because the keys are localized to an engine ID that is not yet known. So the
+        first message to a new peer goes out as an unauthenticated discovery probe and
+        the real request follows once the report comes back.
+        """
         (snmpEngineID,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                 "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
@@ -423,6 +431,12 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         stateReference,
         statusInformation,
     ):
+        """Serialize a v3 response, or a report where the request could not be served.
+
+        A report is how v3 says what went wrong without an application ever seeing the
+        request, and it is also half of discovery -- which is why this is reached with
+        no cached state on the first exchange with a peer.
+        """
         (snmpEngineID,) = (
             snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
                 "__SNMP-FRAMEWORK-MIB", "snmpEngineID"
@@ -589,6 +603,14 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         self, snmpEngine, transportDomain, transportAddress, wholeMsg
     ):
         # 7.2.2
+        """Parse a v3 message: header, security, and then the scoped PDU.
+
+        The header has to be parsed before the security model can be chosen, and the
+        security model has to run before the scoped PDU can be read, since it may be
+        encrypted. A failure at any of those steps is answered with a report rather
+        than silence, because the sender may simply be missing what discovery would
+        tell it.
+        """
         msg, restOfwholeMsg = decoder.decode(wholeMsg, asn1Spec=self._snmpMsgSpec)
 
         debug.logger & debug.flagMP and debug.logger(
@@ -1029,5 +1051,10 @@ class SnmpV3MessageProcessingModel(AbstractMessageProcessingModel):
         self.__expirationTimer += 1
 
     def receiveTimerTick(self, snmpEngine, timeNow):
+        """Expire what discovery learned, then let the base class expire the caches.
+
+        Engine IDs are not remembered forever: a peer that reboots gets a new one, and
+        a stale entry would make every message to it fail authentication.
+        """
         self.__expireEnginesInfo()
         AbstractMessageProcessingModel.receiveTimerTick(self, snmpEngine, timeNow)

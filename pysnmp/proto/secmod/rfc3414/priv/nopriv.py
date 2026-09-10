@@ -15,13 +15,17 @@ class NoPriv(base.AbstractEncryptionService):
     serviceID: tuple[int, ...] = (1, 3, 6, 1, 6, 3, 10, 1, 2, 1)  # usmNoPrivProtocol
 
     def hashPassphrase(self, authProtocol, privKey):
+        """Nothing to hash: there is no privacy key at this security level."""
         return
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Nothing to localize: there is no privacy key at this security level."""
         return
 
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
+        """Always fails -- asking to encrypt with no privacy is a mistake."""
         raise error.StatusInformation(errorIndication=errind.noEncryption)
 
     def decryptData(self, decryptKey, privParameters, encryptedData):
+        """Always fails, for the same reason as the outgoing side."""
         raise error.StatusInformation(errorIndication=errind.noEncryption)

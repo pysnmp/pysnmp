@@ -35,6 +35,7 @@ class IpAddress(univ.OctetString):
     subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(4, 4)
 
     def prettyIn(self, value):
+        """Accept an address as dotted quad, four octets, or another `IpAddress`."""
         if isinstance(value, str) and len(value) != 4:
             try:
                 value = [int(x) for x in value.split(".")]
@@ -45,6 +46,7 @@ class IpAddress(univ.OctetString):
         return univ.OctetString.prettyIn(self, value)
 
     def prettyOut(self, value):
+        """Render as a dotted quad."""
         if value:
             return ".".join([str(x) for x in self.__class__(value).asNumbers()])
         else:
@@ -103,6 +105,11 @@ class NetworkAddress(univ.Choice):
     #          indicates an IpAddress);"
 
     def cloneFromName(self, value, impliedFlag, parentRow, parentIndices):
+        """Read a network address out of an OID being used as a table index.
+
+        The leading sub-identifier is the address family, and `internet` is the only
+        one :RFC:`1155` defines, so anything else is refused rather than guessed at.
+        """
         kind = value[0]
         clone = self.clone()
         if kind == 1:
@@ -112,6 +119,7 @@ class NetworkAddress(univ.Choice):
             raise SmiError(f"unknown NetworkAddress type {kind!r}")
 
     def cloneAsName(self, impliedFlag, parentRow, parentIndices):
+        """Render this address as OID sub-identifiers, for use as a table index."""
         kind = self.getName()
         component = self.getComponent()
         if kind == "internet":
