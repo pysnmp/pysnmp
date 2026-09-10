@@ -93,7 +93,7 @@ Several corpora at once
 A deployment rarely has one corpus. It has the distribution's, covering the
 standard modules and whatever vendors shipped with it, and it has its own --
 the enterprise MIBs its devices actually speak, which nobody else publishes.
-``CompositeMibCorpus`` searches several as one, most specific first:
+``CompositeMibCorpus`` searches several as one:
 
 .. code-block:: python
 
@@ -114,16 +114,21 @@ then, rather than being skipped: a skipped corpus leaves a deployment resolving
 fewer modules than it asked for, and the only symptom is a MIB that used to be
 found and now is not.
 
-**Names and OIDs resolve by different rules**, and the difference matters:
+**The newest MODULE-IDENTITY revision wins; configured order only breaks the
+tie.** This is the rule ``MibBuilder`` already applies to two MIB sources
+carrying one module, and the rule pysmi's compiler applies to two copies of one
+MIB, applied here to corpora. Two corpora carrying a module are carrying the
+same specification at two revisions, and the newer one is the answer wherever
+it sits in the search path -- so configuring a corpus that happens to carry an
+older copy cannot silently roll that module back.
 
-*By name, the first corpus carrying the module wins.* A caller naming a module
-is naming something they believe in, and the earliest source is the one they
-went out of their way to put first.
+Order settles what revisions cannot: when a candidate states no revision at all
+-- every SMIv1 module, and the SMI modules themselves -- or when they all state
+the same one.
 
-*By OID, the longest prefix wins; order is only the tie-break.* This is the
-rule the class exists for. Given a site subtree under an arc the core corpus
-already anchors, first-match-wins would resolve every OID beneath it to the
-core corpus's shallow anchor and never reach the site corpus at all -- no
+**By OID, the longest prefix wins first.** Given a site subtree under an arc the
+core corpus already anchors, first-match-wins would resolve every OID beneath it
+to the core corpus's shallow anchor and never reach the site corpus at all -- no
 matter which was configured first:
 
 .. code-block:: python
@@ -132,6 +137,14 @@ matter which was configured first:
 
    # core.db anchors 1.3.6.1.4.1.9; site.db anchors the subtree itself.
    store.find_module("1.3.6.1.4.1.9.9.42.1.1")   # -> 'SITE-MIB'
+
+The revision rule settles only what a shorter prefix cannot: two corpora naming
+*different* modules at the same prefix length.
+
+**Both paths reach the same copy.** An OID resolves to a module name, and that
+name then goes through the revision rule like any other. A corpus can anchor an
+OID without owning the module it names -- the anchor says which module answers,
+and the revision says whose copy of it is read.
 
 **One module resolves from exactly one corpus.** Where two carry the same
 module, every name-keyed lookup for it routes to the same one and the other's

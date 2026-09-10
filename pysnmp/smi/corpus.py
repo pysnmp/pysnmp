@@ -56,6 +56,7 @@ __all__ = [
     "CompositeMibCorpus",
     "MibCorpus",
     "MibCorpusCycleError",
+    "best_by_revision",
     "oid_from_key",
     "oid_key",
     "open_corpora",
@@ -201,6 +202,48 @@ def subtree_bound(key: bytes) -> bytes:
     out[-1] += 1
 
     return bytes(out)
+
+
+def best_by_revision(candidates: "list[tuple[Any, str | None]]") -> Any:
+    """The best of several copies of one thing, newest revision first.
+
+    Two corpora offering a module are offering the same specification at two
+    revisions, and the newer one is the answer wherever it sits in the search
+    path -- so the newest MODULE-IDENTITY revision wins and configured order
+    only breaks the tie. This is
+    :py:meth:`~pysnmp.smi.builder.MibBuilder._candidates` applied to corpora
+    rather than to MIB sources, deliberately: a builder that ranked a module
+    found in two MIB sources by revision and the same module found in two
+    corpora by position would answer one question two ways. It is also
+    pysmi's ``PRECEDENCE_NEWEST_REVISION``, which is where the rule was
+    settled.
+
+    Configured order settles it when the revisions cannot: when any candidate
+    states none -- every SMIv1 module, and the SMI modules themselves -- or
+    when they all state the same one. An undated copy cannot be placed
+    against a dated one, so a single undated candidate leaves the whole
+    decision to order.
+
+    Args:
+        candidates: ``(payload, revision)`` in configured order, the revision
+            being the corpus ``module.revision`` column, which pysmi fills
+            with the newest revision the module states
+
+    Returns
+    -------
+        The winning payload, or ``None`` for no candidates.
+    """
+    if not candidates:
+        return None
+
+    revisions = [revision for _, revision in candidates]
+
+    if not all(revisions) or len(set(revisions)) == 1:
+        return candidates[0][0]
+
+    # max() returns the first maximal element, so candidates sharing the
+    # newest revision keep the order they were configured in.
+    return max(candidates, key=lambda pair: pair[1] or "")[0]
 
 
 class MibCorpus:
@@ -657,7 +700,7 @@ class MibCorpus:
 
 
 class CompositeMibCorpus:
-    """Several corpora searched as one, in precedence order.
+    """Several corpora searched as one, ranked by revision.
 
     A deployment rarely has a single corpus. It has the distribution's, which
     covers the standard modules and whatever vendors were published with it,
@@ -665,18 +708,28 @@ class CompositeMibCorpus:
     nobody else ships. Both have to be readable at once, and which one answers
     has to be decided by a rule rather than by whichever was configured last.
 
-    Two rules, because names and OIDs are not the same question.
+    One rule decides, and it is the one the rest of pysnmp and pysmi already
+    use: **the newest MODULE-IDENTITY revision wins, and configured order only
+    breaks the tie** -- :py:func:`best_by_revision`. Precedence by position
+    would make configuring a corpus that happens to carry an older copy of a
+    module a silent downgrade, which is the reason
+    :py:meth:`~pysnmp.smi.builder.MibBuilder._candidates` does not work that
+    way either.
 
-    **By name, the first corpus carrying the module wins.** A caller naming a
-    module is naming a thing they believe in, and the earliest source is the
-    one they went out of their way to put first.
+    **Both paths reach the same copy.** Resolving a name and resolving an OID
+    are one question asked twice, so an OID is resolved to a module *name* and
+    that name then goes through the same rule. A corpus can therefore anchor
+    an OID without owning the module it names: the anchor says which module
+    answers, :py:meth:`owner` says whose copy of it is read.
 
-    **By OID, the longest prefix wins, and order is only the tie-break.**
-    First-match-wins on OIDs is the bug this class exists to avoid: a private
-    subtree under ``enterprises.9`` resolves to the core corpus's anchor for
+    **By OID the longest prefix still wins first.** First-match-wins on OIDs
+    is the bug this class exists to avoid: a private subtree under
+    ``enterprises.9`` resolves to the core corpus's anchor for
     ``enterprises.9`` and never reaches the customer corpus that anchors the
-    subtree itself, no matter how the two are ordered. Candidates are gathered
-    at every prefix length, deepest first.
+    subtree itself, no matter how the two are ordered. Every corpus is asked
+    at each prefix length before the OID is shortened; the revision rule
+    settles only what a shorter prefix cannot, which is two corpora naming
+    different modules at the *same* length.
 
     **One module resolves from exactly one corpus.** Where two carry the same
     module, every name-keyed lookup for it routes to the same one, and the
@@ -687,7 +740,7 @@ class CompositeMibCorpus:
     convenience.
 
     Args:
-        *corpora: the corpora, most specific first
+        *corpora: the corpora, in search order
 
     Raises
     ------
@@ -698,7 +751,7 @@ class CompositeMibCorpus:
     """
 
     def __init__(self, *corpora: MibCorpus):
-        """Take the corpora in precedence order and index nothing yet."""
+        """Take the corpora in search order and index nothing yet."""
         if not corpora:
             raise error.SmiError("a composite MIB corpus needs at least one corpus")
 
@@ -712,7 +765,7 @@ class CompositeMibCorpus:
 
     @property
     def corpora(self) -> "tuple[MibCorpus, ...]":
-        """The corpora this searches, in precedence order."""
+        """The corpora this searches, in the order they were given."""
         return self._corpora
 
     @property
@@ -774,19 +827,25 @@ class CompositeMibCorpus:
 
         This is the one-module-one-corpus rule made callable: every name-keyed
         lookup here goes through it, so a module's nodes, types and IMPORTS
-        cannot come from different corpora.
+        cannot come from different corpora. Which corpus that is follows
+        :py:func:`best_by_revision` -- newest revision, configured order only
+        breaking the tie.
 
         Args:
             module: the module's descriptor
 
         Returns
         -------
-            The first corpus carrying it, or ``None`` when none does.
+            The corpus whose copy is read, or ``None`` when none carries it.
         """
         if module not in self._owners:
-            self._owners[module] = next(
-                (x for x in self._corpora if module in x.modules()), None
-            )
+            candidates = [
+                (corpus, (corpus.module(module) or {}).get("revision"))
+                for corpus in self._corpora
+                if module in corpus.modules()
+            ]
+
+            self._owners[module] = best_by_revision(candidates)
 
         return self._owners[module]
 
@@ -805,7 +864,13 @@ class CompositeMibCorpus:
         return owner.module(name) if owner else None
 
     def anchor(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
-        """Which module registers exactly this OID, in precedence order.
+        """Which module registers exactly this OID, across all corpora.
+
+        Corpora usually agree, naming one module between them. Where they name
+        *different* modules for one OID the contest is settled the way every
+        other one here is, by :py:func:`best_by_revision` over those modules --
+        each read at the revision :py:meth:`owner` would give it, so the answer
+        does not depend on which corpus was asked.
 
         Args:
             oid: the OID, matched as given
@@ -814,21 +879,27 @@ class CompositeMibCorpus:
         -------
             The module name, or ``None``.
         """
+        candidates: list[tuple[str, str | None]] = []
+        seen: set[str] = set()
+
         for corpus in self._corpora:
             found = corpus.anchor(oid)
 
-            if found is not None:
-                return found
+            if found is None or found in seen:
+                continue
 
-        return None
+            seen.add(found)
+            candidates.append((found, (self.module(found) or {}).get("revision")))
+
+        return best_by_revision(candidates)
 
     def find_module(self, oid: Union[str, "tuple[int, ...]"]) -> str | None:
         """Which module answers for an OID, by longest prefix across all corpora.
 
         Every corpus is asked at each prefix length before the OID is
         shortened, so a corpus late in the order still wins with a deeper
-        anchor than an earlier one. Order decides only between anchors of
-        equal length.
+        anchor than an earlier one. Only anchors of equal length are ranked
+        against each other, by :py:meth:`anchor`.
 
         Args:
             oid: the OID to resolve
@@ -1022,10 +1093,10 @@ class CompositeMibCorpus:
 
 
 def open_corpora(paths: "list[str] | tuple[str, ...]") -> Any:
-    """Open a search path of corpora, most specific first.
+    """Open a search path of corpora.
 
     Args:
-        paths: the ``.db`` files, in precedence order
+        paths: the ``.db`` files, in search order
 
     Returns
     -------

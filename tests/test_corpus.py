@@ -138,6 +138,69 @@ def private_path(corpus_path, tmp_path_factory):
     return path
 
 
+def _at_revision(source, destination, module, revision):
+    """A copy of a corpus stating a different revision for one module.
+
+    The derived corpus is a copy, so every module in it states the revision
+    the original does and configured order decides everything. Testing that
+    the revision is what decides needs the two to disagree.
+    """
+    shutil.copy(source, destination)
+
+    db = sqlite3.connect(destination)
+
+    with db:
+        db.execute("UPDATE module SET revision = ? WHERE name = ?", (revision, module))
+
+    db.close()
+
+    return destination
+
+
+@pytest.fixture(scope="module")
+def newer_path(private_path, tmp_path_factory):
+    """The derived corpus, stating a newer FIXTURE-MIB than the first one."""
+    return _at_revision(
+        private_path,
+        str(tmp_path_factory.mktemp("newer") / "newer.db"),
+        "FIXTURE-MIB",
+        "202606010000Z",
+    )
+
+
+@pytest.fixture(scope="module")
+def older_path(private_path, tmp_path_factory):
+    """The derived corpus, stating an older FIXTURE-MIB than the first one."""
+    return _at_revision(
+        private_path,
+        str(tmp_path_factory.mktemp("older") / "older.db"),
+        "FIXTURE-MIB",
+        "202001010000Z",
+    )
+
+
+@pytest.fixture(scope="module")
+def dated_contest_paths(corpus_path, private_path, tmp_path_factory):
+    """Both corpora, with both sides of the contested anchor dated.
+
+    ``SMIV1-MIB`` states no revision, which is the whole point of it, so the
+    contested anchor falls to configured order. Dating it in *both* corpora --
+    it is carried by both, and an undated copy in either would send the
+    decision back to order -- turns the same contest into one the revision
+    rule can decide.
+    """
+    directory = tmp_path_factory.mktemp("dated")
+
+    return (
+        _at_revision(
+            corpus_path, str(directory / "base.db"), "SMIV1-MIB", "201001010000Z"
+        ),
+        _at_revision(
+            private_path, str(directory / "private.db"), "SMIV1-MIB", "201001010000Z"
+        ),
+    )
+
+
 def _with_texts(source, destination):
     """A copy of a corpus that claims to carry prose.
 
@@ -891,21 +954,24 @@ class TestTrapPath:
 
 
 class TestCompositeResolution:
-    """Two corpora searched as one, and the two rules that decide which answers.
+    """Two corpora searched as one, and the rule that decides which answers.
 
     The interesting cases are all the same shape: a deployment with the
-    distribution's corpus and its own. Which one wins has to depend on what is
-    being asked -- a name or an OID -- and not on which was configured first.
+    distribution's corpus and its own. Which one wins has to follow from what
+    the modules state rather than from which was configured first, and a name
+    and an OID have to arrive at the same copy.
     """
 
     def test_modules_is_the_union(self, composite, corpus):
         assert composite.modules() == corpus.modules() | {"PRIVATE-MIB"}
 
-    def test_a_name_resolves_from_the_first_corpus_carrying_it(self, composite):
+    def test_equal_revisions_leave_a_name_to_the_order(self, composite):
+        # The derived corpus is a copy, so both state the same revision for
+        # FIXTURE-MIB and there is nothing for the revision rule to separate.
         assert composite.node_named("FIXTURE-MIB", "fixtureScalar") is not None
         assert composite.node_named("FIXTURE-MIB", "privateScalar") is None
 
-    def test_order_is_what_decides_a_name(self, reversed_composite):
+    def test_equal_revisions_the_other_way_round(self, reversed_composite):
         assert reversed_composite.node_named("FIXTURE-MIB", "privateScalar") is not None
         assert reversed_composite.node_named("FIXTURE-MIB", "fixtureScalar") is None
 
@@ -924,6 +990,58 @@ class TestCompositeResolution:
         assert composite.owner("FIXTURE-MIB") is composite.corpora[0]
         assert composite.owner("PRIVATE-MIB") is composite.corpora[1]
         assert composite.owner("NO-SUCH-MIB") is None
+
+    def test_the_newest_revision_wins_from_the_second_corpus(
+        self, corpus_path, newer_path
+    ):
+        # The rule the whole class turns on. The first corpus carries
+        # FIXTURE-MIB and would win on position; the second states a newer
+        # revision of it and wins anyway.
+        opened = open_corpora([corpus_path, newer_path])
+
+        try:
+            assert opened.owner("FIXTURE-MIB") is opened.corpora[1]
+            assert opened.node_named("FIXTURE-MIB", "privateScalar") is not None
+            assert opened.node_named("FIXTURE-MIB", "fixtureScalar") is None
+
+        finally:
+            opened.close()
+
+    def test_an_older_copy_configured_first_is_not_a_downgrade(
+        self, corpus_path, older_path
+    ):
+        # The converse, and the reason position cannot decide: configuring a
+        # corpus that happens to carry an older copy of a module would
+        # otherwise silently roll that module back.
+        opened = open_corpora([older_path, corpus_path])
+
+        try:
+            assert opened.owner("FIXTURE-MIB") is opened.corpora[1]
+            assert opened.node_named("FIXTURE-MIB", "fixtureScalar") is not None
+
+        finally:
+            opened.close()
+
+    def test_both_paths_reach_the_same_copy(self, corpus_path, newer_path):
+        # Resolving by name and resolving by OID are one question asked twice.
+        # The first corpus anchors this OID and the second owns the module, so
+        # an OID path that stopped at the anchor would read the copy the name
+        # path rejected.
+        opened = open_corpora([corpus_path, newer_path])
+
+        try:
+            oid = "1.3.6.1.4.1.99999.2.1.9.1.2.3"
+            module = opened.find_module(oid)
+
+            assert module == "FIXTURE-MIB"
+            assert opened.owner(module) is opened.corpora[1]
+
+            named = opened.node_named(module, "privateScalar")
+
+            assert opened.node(named["oid"])["name"] == "privateScalar"
+
+        finally:
+            opened.close()
 
     def test_the_losing_corpus_contributes_nothing_to_a_module_it_lost(self, composite):
         # Not "mostly nothing". A module built out of two corpora would define
@@ -945,11 +1063,30 @@ class TestCompositeResolution:
     def test_a_deeper_anchor_wins_from_an_earlier_corpus_too(self, reversed_composite):
         assert reversed_composite.find_module(f"{PRIVATE_OID}.1.2") == "PRIVATE-MIB"
 
-    def test_equal_anchors_are_separated_by_order(self, composite):
+    def test_equal_anchors_are_separated_by_order_when_undated(self, composite):
+        # SMIV1-MIB states no revision, so this contest cannot be decided on
+        # one and falls to configured order.
         assert composite.find_module(f"{CONTESTED_OID}.1") == "SMIV1-MIB"
 
     def test_equal_anchors_the_other_way_round(self, reversed_composite):
         assert reversed_composite.find_module(f"{CONTESTED_OID}.1") == "PRIVATE-MIB"
+
+    def test_equal_anchors_are_separated_by_revision_when_dated(
+        self, dated_contest_paths
+    ):
+        # The same contest with both modules dated. PRIVATE-MIB states 2026
+        # against SMIV1-MIB's 2010, so it wins from either position and the
+        # order the corpora were configured in stops mattering.
+        base, private = dated_contest_paths
+
+        for paths in ([base, private], [private, base]):
+            opened = open_corpora(paths)
+
+            try:
+                assert opened.find_module(f"{CONTESTED_OID}.1") == "PRIVATE-MIB"
+
+            finally:
+                opened.close()
 
     def test_an_unanchored_oid_is_still_a_miss(self, composite):
         assert composite.find_module("1.3.6.1.4.1.1") is None
