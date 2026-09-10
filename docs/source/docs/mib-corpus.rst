@@ -263,6 +263,46 @@ calling ``loadModules()`` on whatever it named. That pattern works and is not
 going away yet, but it needs a second file, a full ASN.1 compile per module on
 the trap path, and it cannot answer either of the questions above.
 
+Without asking the corpus yourself
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A receiver that decodes through ``ObjectIdentity`` or ``MibViewController``
+does not have to do any of that. When a lookup runs out of MIB and a corpus is
+configured, the view asks the corpus which module owns the OID, loads it, and
+resolves again:
+
+.. code-block:: python
+
+   builder.setMibCorpus(MibCorpus("/mibs/core.db"))
+   mibView = MibViewController(builder)
+
+   # ACME-MIB has not been loaded, and nothing asked for it.
+   mibView.getNodeNameByOid((1, 3, 6, 1, 4, 1, 9999, 2, 1, 9, 1, 2, 3))
+   # -> ((1,3,6,1,4,1,9999,2,1,9), ('iso',...,'acmeDescr'), (1, 2, 3))
+
+Before this, the same call answered with ``enterprises`` and seven raw arcs:
+the corpus held the answer, was configured, and was never consulted.
+
+Two things keep it off the hot path.
+
+**Only where a module could be.** The longest known prefix is what a lookup
+resolves to, so an unknown vendor OID and an ordinary instance OID both come
+back with a suffix. They are told apart by what the prefix resolved to: below a
+scalar, table, row or column the remaining arcs are instance arcs and no module
+could claim them, so the corpus is not asked. Below a bare registration point
+-- ``enterprises``, ``mib-2``, an unloaded vendor subtree -- they are
+unregistered territory, and it is. A walk of ten thousand instance OIDs asks
+nothing.
+
+**Once per OID.** An OID the corpus cannot place is remembered, so a receiver
+hearing the same unknown trap every thirty seconds asks once. Giving the
+builder a different corpus discards that record.
+
+The module-scoped form, ``getNodeNameByOid(oid, "ACME-MIB")``, is unaffected:
+that asks what one module says about an OID, and loading a different one cannot
+answer it. Agent instrumentation is unaffected too -- what an agent serves is
+what it was configured to serve, and a corpus does not add to it.
+
 
 What a corpus does not carry
 ----------------------------
