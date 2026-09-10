@@ -34,6 +34,20 @@ class MibViewController:
         self.lastBuildId = -1
         self.__mibSymbolsIdx = OrderedDict()
 
+        # OIDs a corpus has already been asked about and could not place, so
+        # that a receiver hearing the same unknown trap every thirty seconds
+        # asks once rather than every time. Bounded by the number of distinct
+        # unresolvable prefixes a deployment actually sees, which is small.
+        # Discarded when the builder is given a different corpus, since the
+        # answer may well have changed.
+        self.__corpusMisses = set()
+        self.__corpusSeen = None
+
+        # Resolved lazily, and only on the path that needs it -- importing a
+        # symbol here would load SNMPv2-SMI when the controller is built,
+        # which nothing else about it requires.
+        self.__objectType = None
+
     # Indexing part
 
     def indexMib(self):
@@ -42,6 +56,14 @@ class MibViewController:
         Every lookup calls this first, so the builder's build counter is what keeps it
         from re-indexing on each one.
         """
+        # A different corpus may well place an OID this one could not, so the
+        # record of what it could not place does not outlive it.
+        corpus = self.mibBuilder.getMibCorpus()
+
+        if corpus is not self.__corpusSeen:
+            self.__corpusSeen = corpus
+            self.__corpusMisses.clear()
+
         if self.lastBuildId == self.mibBuilder.lastBuildId:
             return
 
@@ -210,13 +232,121 @@ class MibViewController:
             return resOid, oidToLabelIdx[resOid], ()
         return oid, label, suffix
 
+    def __worthAskingCorpus(self, oid, label, suffix, mibMod):
+        """Whether an incomplete resolution is one a corpus could improve on.
+
+        `__getOidLabel` always answers with the longest prefix it knows, so a
+        miss is rarely total: an unknown vendor OID lands on ``enterprises``
+        with the rest as suffix, exactly as a legitimate instance OID lands on
+        its column. Telling those apart is what keeps this off the hot path.
+
+        What separates them is the node the prefix resolved to. Below an
+        `ObjectType` -- a scalar, a table, a row, a column -- the remaining
+        arcs are instance arcs, the MIB says nothing further about them and no
+        module could. Below a bare registration point -- `MibIdentifier`,
+        `ObjectIdentity`, and the arcs under an unloaded vendor subtree -- the
+        remaining arcs are unregistered territory, which is precisely where a
+        module the corpus carries would sit.
+
+        So a walk of ten thousand instance OIDs asks the corpus nothing, and
+        an OID under an unloaded subtree asks once.
+        """
+        if not suffix:
+            return False
+
+        if oid == label:
+            # Nothing resolved at all, so there is no node to classify.
+            return True
+
+        modName = mibMod["oidToModIdx"].get(oid)
+
+        if modName is None:
+            return True
+
+        if self.__objectType is None:
+            # ObjectType itself is not a symbol a MIB module exports, so the
+            # three exported classes that descend from it stand in for it.
+            # MibTableColumn is a MibScalar and needs no entry of its own.
+            self.__objectType = self.mibBuilder.importSymbols(
+                "SNMPv2-SMI", "MibScalar", "MibTable", "MibTableRow"
+            )
+
+        node = self.mibBuilder.mibSymbols.get(modName, {}).get(label[-1])
+
+        return not isinstance(node, self.__objectType)
+
+    def _corpusModuleFor(self, nodeName, modName):
+        """Load the module a corpus says answers for an OID, if one does.
+
+        The gap this closes: a corpus can resolve an arbitrary OID to a module
+        by longest prefix, but until now nothing asked it to. A trap naming a
+        module that is carried by the corpus and simply not loaded resolved to
+        nothing, and the receiver saw raw arcs.
+
+        Only for the merged view (``modName=""``). Asking a named module about
+        an OID it does not carry is a different question, and loading some
+        other module cannot answer it.
+
+        Only for OIDs. A label tuple is not something a corpus indexes, and
+        `getNodeName` reaches here with one on its way to trying the symbol
+        form.
+
+        Returns
+        -------
+            Whether a module was loaded, and so whether re-indexing and
+            retrying is worth it.
+        """
+        if modName:
+            return False
+
+        corpus = self.mibBuilder.getMibCorpus()
+
+        if corpus is None:
+            return False
+
+        try:
+            arcs = tuple(int(x) for x in nodeName)
+
+        except (TypeError, ValueError):
+            return False
+
+        if not arcs or arcs in self.__corpusMisses:
+            return False
+
+        # Recorded before the lookup, not after: a corpus that cannot place
+        # this OID cannot place it on the next trap either, and a module that
+        # fails to build should not be retried on every packet.
+        self.__corpusMisses.add(arcs)
+
+        found = corpus.find_module(arcs)
+
+        if found is None or found in self.mibBuilder.mibSymbols:
+            return False
+
+        try:
+            self.mibBuilder.loadModules(found)
+
+        except error.SmiError:
+            debug.logger & debug.flagMIB and debug.logger(
+                f"_corpusModuleFor: corpus named {found} for {arcs} but it "
+                f"could not be loaded"
+            )
+            return False
+
+        debug.logger & debug.flagMIB and debug.logger(
+            f"_corpusModuleFor: loaded {found} for {arcs} from the corpus"
+        )
+
+        return True
+
     def getNodeNameByOid(self, nodeName, modName=""):
         """Resolve an OID or a label to `(oid, label, suffix)`.
 
         An OID need not name an object exactly: the longest known prefix is what
         resolves, and the rest comes back as the suffix, which is how an instance under
         a column is named. An OID that resolves to nothing but itself is not in this
-        MIB view at all.
+        MIB view at all -- unless a corpus can say which module would have carried it,
+        in which case that module is loaded and the lookup is tried once more.
         """
         self.indexMib()
         if modName in self.__mibSymbolsIdx:
@@ -226,6 +356,14 @@ class MibViewController:
         oid, label, suffix = self.__getOidLabel(
             nodeName, mibMod["oidToLabelIdx"], mibMod["labelToOidIdx"]
         )
+        if self.__worthAskingCorpus(oid, label, suffix, mibMod) and (
+            self._corpusModuleFor(nodeName, modName)
+        ):
+            self.indexMib()
+            mibMod = self.__mibSymbolsIdx[modName]
+            oid, label, suffix = self.__getOidLabel(
+                nodeName, mibMod["oidToLabelIdx"], mibMod["labelToOidIdx"]
+            )
         if oid == label:
             raise error.NoSuchObjectError(
                 str=f"Can't resolve node name {modName}::{nodeName} at {self}"

@@ -1074,6 +1074,182 @@ class TestTrapPath:
         assert left["syntax"] is right["syntax"]
 
 
+class TestViewResolvesFromTheCorpus:
+    """The other half of the trap path: the view, not the corpus.
+
+    `MibCorpus.find_module` could always place an arbitrary OID, and nothing
+    called it. A receiver decoding a trap goes through `MibViewController`,
+    which answers out of what the builder has loaded -- so an OID belonging to
+    a module the corpus carries and nobody asked for resolved to nothing, and
+    the trap was reported as raw arcs. The corpus was configured, held the
+    answer, and was never consulted.
+    """
+
+    @pytest.fixture
+    def mibView(self, corpus):
+        from pysnmp.smi.view import MibViewController
+
+        built = MibBuilder()
+        built.setMibCorpus(corpus)
+
+        return MibViewController(built)
+
+    #: An instance OID under a column of FIXTURE-MIB: column OID plus index
+    #: arcs, which is the shape a trap actually carries and appears in no MIB.
+    INSTANCE = (1, 3, 6, 1, 4, 1, 99999, 2, 1, 9, 1, 2, 3)
+
+    def test_an_oid_of_an_unloaded_module_pulls_the_module_in(self, mibView):
+        oid, label, suffix = mibView.getNodeNameByOid(self.INSTANCE)
+
+        assert label[-1] == "fixtureDescr"
+        assert oid == (1, 3, 6, 1, 4, 1, 99999, 2, 1, 9)
+        assert suffix == (1, 2, 3)
+        assert "FIXTURE-MIB" in mibView.mibBuilder.mibSymbols
+
+    def test_without_a_corpus_the_oid_stops_at_the_last_known_arc(self):
+        """What the receiver saw before this: the enterprise arc and raw numbers.
+
+        `__getOidLabel` answers with the longest prefix it knows, so an OID
+        under an unloaded vendor subtree is not an error -- it resolves to
+        ``enterprises`` and hands back the rest. That is a decoded trap with
+        no object name in it, which is the defect, and it is not visible as a
+        failure anywhere.
+        """
+        from pysnmp.smi.view import MibViewController
+
+        mibView = MibViewController(MibBuilder())
+
+        _oid, label, suffix = mibView.getNodeNameByOid(self.INSTANCE)
+
+        assert label[-1] == "enterprises"
+        assert suffix == (99999, 2, 1, 9, 1, 2, 3)
+        assert "FIXTURE-MIB" not in mibView.mibBuilder.mibSymbols
+
+    def test_an_oid_no_corpus_claims_is_left_where_it_was(self, mibView):
+        _oid, label, suffix = mibView.getNodeNameByOid((1, 3, 6, 1, 4, 1, 1, 1))
+
+        assert label[-1] == "enterprises"
+        assert suffix == (1, 1)
+
+    def test_an_instance_oid_of_a_loaded_module_asks_nothing(self, mibView, corpus):
+        """The hot path, and the reason the classification exists.
+
+        Every varbind in a walk resolves to a scalar or a column with index
+        arcs left over. Taking each of those to the corpus would mean a query
+        per varbind, chopping an arc at a time, for an answer that is always
+        the module already loaded.
+        """
+        mibView.mibBuilder.loadModules("SNMPv2-MIB")
+
+        asked = []
+        original = corpus.find_module
+        corpus.find_module = lambda oid: asked.append(oid) or original(oid)
+
+        try:
+            # sysDescr.0 -- a scalar plus its instance arc.
+            _oid, label, suffix = mibView.getNodeNameByOid((1, 3, 6, 1, 2, 1, 1, 1, 0))
+
+        finally:
+            corpus.find_module = original
+
+        assert label[-1] == "sysDescr"
+        assert suffix == (0,)
+        assert asked == []
+
+    def test_an_unplaceable_oid_is_asked_about_once(self, mibView, corpus):
+        """A receiver hearing the same unknown trap every thirty seconds.
+
+        The corpus answering ``None`` is the expensive case -- `find_module`
+        chops an arc and queries again for every arc in the OID -- and it is
+        also the case that repeats, since nothing about it will change until
+        the corpus does.
+        """
+        asked = []
+        original = corpus.find_module
+        corpus.find_module = lambda oid: asked.append(oid) or original(oid)
+
+        try:
+            for _ in range(3):
+                mibView.getNodeNameByOid((1, 3, 6, 1, 4, 1, 1, 1))
+
+        finally:
+            corpus.find_module = original
+
+        assert len(asked) == 1
+
+    def test_a_label_is_not_taken_to_the_corpus(self, mibView, corpus):
+        """`getNodeName` arrives here with a symbol tuple on its way past.
+
+        It is not an OID and a corpus indexes nothing by it, so asking would
+        be a query per resolution failure that could never succeed.
+        """
+        asked = []
+        original = corpus.find_module
+        corpus.find_module = lambda oid: asked.append(oid) or original(oid)
+
+        try:
+            with pytest.raises(error.NoSuchObjectError):
+                mibView.getNodeNameByOid(("fixtureScalar",))
+
+        finally:
+            corpus.find_module = original
+
+        assert asked == []
+
+    def test_a_named_module_is_not_answered_from_a_different_one(self, mibView):
+        """Asking FIXTURE-MIB about an OID is not asking who owns the OID.
+
+        The module-scoped view is a question about one module, and loading
+        some other module cannot answer it -- so the miss stands, and it
+        stands as the error that says the module is not in this view.
+        """
+        with pytest.raises(error.SmiError):
+            mibView.getNodeNameByOid(self.INSTANCE, "FIXTURE-MIB")
+
+    def test_a_new_corpus_gets_asked_again(self, mibView, corpus_path):
+        """What one corpus could not place, another may.
+
+        Replacing the corpus is the deployment saying the answer has changed,
+        so the record of what the old one could not answer does not survive
+        it.
+        """
+        unknown = (1, 3, 6, 1, 4, 1, 1, 1)
+
+        mibView.getNodeNameByOid(unknown)
+
+        replacement = MibCorpus(corpus_path)
+        mibView.mibBuilder.setMibCorpus(replacement)
+
+        asked = []
+        original = replacement.find_module
+        replacement.find_module = lambda oid: asked.append(oid) or original(oid)
+
+        try:
+            mibView.getNodeNameByOid(unknown)
+
+        finally:
+            replacement.find_module = original
+            replacement.close()
+
+        assert asked == [unknown]
+
+    def test_a_module_that_will_not_build_leaves_the_oid_where_it_was(
+        self, mibView, corpus
+    ):
+        """The corpus names a module and loading it then fails.
+
+        The caller gets the resolution it would have got without a corpus,
+        rather than whatever synthesis raised -- otherwise every consumer of
+        `getNodeNameByOid` has to handle corpus-build failures.
+        """
+        corpus.find_module = lambda oid: "NO-SUCH-MODULE-IN-THE-CORPUS"
+
+        _oid, label, _suffix = mibView.getNodeNameByOid(self.INSTANCE)
+
+        assert label[-1] == "enterprises"
+        assert "NO-SUCH-MODULE-IN-THE-CORPUS" not in mibView.mibBuilder.mibSymbols
+
+
 class TestCompositeResolution:
     """Two corpora searched as one, and the rule that decides which answers.
 
