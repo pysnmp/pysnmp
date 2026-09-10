@@ -897,15 +897,15 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "4.0.0rc1"
+version = "4.0.0rc2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ply" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/77/16/6e942d7a508d6b1746ab1d9b5319cccb9014568e2643c93082ed650b0c07/pysnmp_pysmi-4.0.0rc1.tar.gz", hash = "sha256:434f1a4b5660314ce0c19dfaad01665af262778fb9a0ff8004b30f32b23fe3de", size = 4392772, upload-time = "2026-09-09T22:14:06.37Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/b1/d18e5c35fbf45ec7157d172c4c4fa36d7654c666305e03ee03b107ec86c9/pysnmp_pysmi-4.0.0rc2.tar.gz", hash = "sha256:243f47296f73541eab14b1c8b67c4e497b57e255a78fdbfc7083e8c02bd59850", size = 4399391, upload-time = "2026-09-09T23:44:34.393Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/50/87/adaecfb82780c01114c1d0a4e9331ae840b3f1f9d6df7964a9cbbbd3d7a1/pysnmp_pysmi-4.0.0rc1-py3-none-any.whl", hash = "sha256:2039092bf6eeedfb164f4b8fa53fbf6306e7d4fbe8d1b55d235d1f7ec8646844", size = 3149004, upload-time = "2026-09-09T22:14:04.446Z" },
+    { url = "https://files.pythonhosted.org/packages/27/ed/e611960df5df2414680c2e1bdc9df3a04f193842212821856734459039b6/pysnmp_pysmi-4.0.0rc2-py3-none-any.whl", hash = "sha256:8a8d801d6300cc29127b03438ecbd0e44158b1503bc16f2053f513e951bd3b90", size = 3151168, upload-time = "2026-09-09T23:44:32.607Z" },
 ]
 
 [[package]]
@@ -938,7 +938,7 @@ dev = [
 requires-dist = [
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=2.0.2,<3.0.0" },
-    { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=4.0.0rc1,<5.0.0" },
+    { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=4.0.0rc2,<5.0.0" },
 ]
 provides-extras = ["compile"]
 
@@ -947,7 +947,7 @@ dev = [
     { name = "coverage", extras = ["toml"], specifier = ">=7.2.0,<8.0.0" },
     { name = "mypy", specifier = ">=1.15.0,<3.0.0" },
     { name = "myst-parser", specifier = ">=4.0.0,<5.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=4.0.0rc1,<5.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=4.0.0rc2,<5.0.0" },
     { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", specifier = ">=7.0.0,<9.0.0" },
