@@ -22,7 +22,7 @@ This version is a fork of Ilya Etingof deceased's project [etingof/pysnmp](https
 - USM Extended Security Options support (3DES, 192/256-bit AES encryption)
 - Extensible network transports framework (UDP/IPv4, UDP/IPv6)
 - [Asyncio](https://docs.python.org/3/library/asyncio.html) integration
-- [PySMI](https://github.com/pysnmp/pysmi) integration for dynamic MIB compilation
+- [pysmi](https://pysnmp.github.io/pysmi/) integration for dynamic MIB compilation
 - Built-in instrumentation exposing protocol engine operations
 - 100% Python, supports Python 3.10 and later
 - MT-safe (if SnmpEngine is thread-local)
@@ -54,7 +54,7 @@ That pulls in what an SNMP engine needs to run:
 - [PyCryptodomex](https://pycryptodome.readthedocs.io) (required for SNMPv3 encryption; imported lazily, so
   SNMPv1, SNMPv2c and the SNMPv3 noAuthNoPriv/authNoPriv security levels work without it)
 
-[PySMI](https://github.com/pysnmp/pysmi) is *not* pulled in. It compiles ASN.1 MIB
+[pysmi](https://pysnmp.github.io/pysmi/) is *not* pulled in. It compiles ASN.1 MIB
 sources at run time, which some deployments do and most do not, so it is an extra:
 
 ```bash
@@ -65,19 +65,10 @@ Without it everything except run-time MIB compilation works — including SNMPv3
 resolution and the standard MIBs an engine needs, which PySNMP ships. Asking for a MIB
 compiler when the extra is not installed raises `SmiError` naming the missing import.
 
-Besides the library, command-line [SNMP utilities](https://github.com/etingof/snmpclitools)
-written in pure-Python could be installed via:
-
-```bash
-$ pip install snmpclitools
-```
-
-and used in the very similar manner as conventional Net-SNMP tools:
-
-```bash
-$ snmpget.py -v3 -l authPriv -u usr-md5-des -A authkey1 -X privkey1 localhost sysDescr.0
-SNMPv2-MIB::sysDescr.0 = STRING: Linux localhost 5.15.0
-```
+MIB *content* is a separate thing again, and not a pip install: module
+definitions come from the [MIB distribution](https://pysnmp.github.io/mibs/),
+used live over HTTPS or installed locally from a release archive or an OCI
+image. PySNMP starts without it, on the standard modules it ships.
 
 ## Examples
 
@@ -151,13 +142,16 @@ SNMPv2-MIB::sysName.0 = system name
 
 Other than that, PySNMP is capable to automatically fetch and use required MIBs from HTTP, FTP sites
 or local directories. You could configure any MIB source available to you (including
-[this one](https://pysnmp.github.io/mibs/asn1/)) for that purpose.
+[the MIB distribution](https://pysnmp.github.io/mibs/)) for that purpose.
 
 For more example scripts please refer to the `examples/` directory in this repository.
 
 ## Documentation
 
-Library documentation and examples can be found in the `docs/` directory in this repository.
+The rendered documentation is at <https://pysnmp.github.io/pysnmp/>, built from
+the `docs/` directory in this repository. The
+[organization site](https://pysnmp.github.io/) describes how pysnmp, the MIB
+distribution, pysmi and pyasn1 fit together.
 
 If something does not work as expected, please
 [open an issue](https://github.com/pysnmp/pysnmp/issues) at GitHub or

@@ -63,7 +63,7 @@ Stand-alone PySNMP-based tools
    include extensive configuration facilities, fine-graned access 
    control and logging.
 
-   **Done:** see `SNMP Proxy Forwarder <https://pypi.org/project/snmpclitools/>`__.
+   **Done:** see `SNMP Proxy Forwarder <https://pypi.org/project/snmpfwd/>`__.
 
 #. SNMP Trap Receiver. We see this application as a simple yet flexible 
    SNMP TRAP collector. It would listen on network sockets of different 
