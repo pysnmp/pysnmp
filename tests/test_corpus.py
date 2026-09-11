@@ -1360,12 +1360,16 @@ class TestCompositeResolution:
     def test_a_deeper_anchor_wins_from_an_earlier_corpus_too(self, reversed_composite):
         assert reversed_composite.find_module(f"{PRIVATE_OID}.1.2") == "PRIVATE-MIB"
 
-    def test_equal_anchors_are_separated_by_order_when_undated(self, composite):
-        # SMIV1-MIB states no revision, so this contest cannot be decided on
-        # one and falls to configured order.
-        assert composite.find_module(f"{CONTESTED_OID}.1") == "SMIV1-MIB"
+    def test_an_undated_module_loses_the_arc_outright(self, composite):
+        # SMIV1-MIB states no revision. Inside one corpus that makes it lose
+        # to any module that does, and #234 made the composite agree: a
+        # corpus contest between two *different* modules is not the same
+        # question as two copies of one module, and has no configured order
+        # to fall back on.
+        assert composite.find_module(f"{CONTESTED_OID}.1") == "PRIVATE-MIB"
 
-    def test_equal_anchors_the_other_way_round(self, reversed_composite):
+    def test_it_loses_from_the_other_position_too(self, reversed_composite):
+        # The point of ranking rather than taking the first match.
         assert reversed_composite.find_module(f"{CONTESTED_OID}.1") == "PRIVATE-MIB"
 
     def test_equal_anchors_are_separated_by_revision_when_dated(

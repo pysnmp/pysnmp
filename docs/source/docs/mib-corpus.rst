@@ -114,17 +114,40 @@ then, rather than being skipped: a skipped corpus leaves a deployment resolving
 fewer modules than it asked for, and the only symptom is a MIB that used to be
 found and now is not.
 
-**The newest MODULE-IDENTITY revision wins; configured order only breaks the
-tie.** This is the rule ``MibBuilder`` already applies to two MIB sources
-carrying one module, and the rule pysmi's compiler applies to two copies of one
-MIB, applied here to corpora. Two corpora carrying a module are carrying the
-same specification at two revisions, and the newer one is the answer wherever
-it sits in the search path -- so configuring a corpus that happens to carry an
-older copy cannot silently roll that module back.
+**Two corpora carrying the same module: the newest MODULE-IDENTITY revision
+wins, and configured order only breaks the tie.** This is the rule
+``MibBuilder`` already applies to two MIB sources carrying one module, and the
+rule pysmi's compiler applies to two copies of one MIB. Two corpora carrying a
+module are carrying the same specification at two revisions, and the newer one
+is the answer wherever it sits in the search path -- so configuring a corpus
+that happens to carry an older copy cannot silently roll that module back.
 
 Order settles what revisions cannot: when a candidate states no revision at all
 -- every SMIv1 module, and the SMI modules themselves -- or when they all state
 the same one.
+
+**Two corpora anchoring one arc with different modules: the corpus rule.** That
+is a different question, and appealing to revision alone answers it badly. A
+vendor tree bundles its own copy of a standard MIB, so an operator adding a
+vendor corpus has two corpora anchoring the same arcs -- and the vendor copy,
+republished last week, would take the arc from the standard definition of it.
+
+So the arc is ranked the way pysmi's ``rank_index`` ranks it *inside* a corpus,
+as far as a corpus carries the terms:
+
+1. a live module before one whose every object is obsolete,
+2. then tier -- ``standard``, then ``draft``, then ``vendor``,
+3. then the newest revision, an undated module losing outright,
+4. then the module name, so that the rule is total.
+
+Two of pysmi's terms are missing: how strongly a module claims the arc
+(MODULE-IDENTITY over OBJECT-IDENTITY) is settled at build time and not carried
+into the corpus, and the publishing RFC number is not a corpus column at all. A
+contest turning on either falls through to the module name.
+
+The rule is total and reads nothing about the search path, so unlike the
+same-module case, **configured order plays no part here**: reordering
+``PYSNMP_MIB_DBS`` cannot change which module owns an arc.
 
 **By OID, the longest prefix wins first.** Given a site subtree under an arc the
 core corpus already anchors, first-match-wins would resolve every OID beneath it

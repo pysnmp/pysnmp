@@ -40,9 +40,10 @@ consumer half (``pysnmp/pysmi#248``, pysnmp/pysnmp#232). What is asserted here:
 
     Running them also answered a question nobody had asked: how much of that
     rule survives a search across *several* corpora, where there is no build to
-    have ranked anything. Six of the seven vectors resolve differently there,
-    because the composite reads only the revision term. That is pysnmp/pysnmp#234,
-    and :py:class:`TestCrossCorpusDivergence` pins it rather than skipping it.
+    have ranked anything. Six of the seven vectors resolved differently, which
+    became pysnmp/pysnmp#234; the composite now applies the rule as far as a
+    corpus carries it, and :py:class:`TestCrossCorpusDivergence` holds the two
+    vectors that remain -- both turning on a term no corpus column records.
 
 The vectors ``why`` field is the failure message throughout, so a break says
 what decision was violated rather than which tuple did not match.
@@ -60,7 +61,7 @@ from pysmi.corpus.index import rank_index
 from pysmi.corpus.namespace import TIERS
 
 from pysnmp.smi.builder import MODULE_REVISION, MibBuilder, revisionOf
-from pysnmp.smi.corpus import MibCorpus, best_by_revision
+from pysnmp.smi.corpus import CompositeMibCorpus, MibCorpus, best_by_revision
 
 
 def _vectors(operation):
@@ -335,117 +336,106 @@ class TestCrossCorpusDivergence:
 
     Within one corpus the answer is pysmi's, computed over every module the
     build saw and stored in ``oid_index``. Across corpora there is no such
-    build: ``CompositeMibCorpus`` asks each corpus who anchors the arc and
-    ranks the answers with ``best_by_revision``, the module-name rule, because
-    revision is the only term it reads. Of the seven terms the corpus rule
-    turns on, six are therefore not applied between corpora, and the answers
-    differ -- a vendor corpus republished last week takes an arc from the
-    standard definition of it, which is the outcome within a corpus is
-    specifically ordered to prevent.
+    build, so ``CompositeMibCorpus`` has to rank the answers itself.
 
-    This is a gap, not a decision, and it is pysnmp/pysnmp#234. It is pinned
-    here rather than skipped so that the day it is closed, these assertions
-    fail and say so: an unasserted gap and a regression look identical.
+    Since pysnmp/pysnmp#234 it ranks them by the corpus rule rather than by
+    revision alone: ``(obsolete, tier, revision, name)``. Two of pysmi's seven
+    terms cannot be recovered from a corpus at all, and the vectors that turn
+    on those two are recorded below. Everything else now agrees.
     """
 
-    #: Every ``oid_precedence`` vector the composite answers differently, and
-    #: the term it turns on that the composite does not read. A vector added
-    #: later for a term the composite also cannot carry fails
+    #: The ``oid_precedence`` vectors a composite still answers differently,
+    #: and why the term cannot be read. A vector added later for a term the
+    #: composite also cannot carry fails
     #: :py:meth:`test_divergence_is_exactly_what_is_recorded` rather than
     #: passing unnoticed, and a term that starts being read fails it too.
     DIVERGES = {
-        "oid-obsolete-loses-to-live-however-new-it-is": (
-            "status: a module whose every object is obsolete describes an arc "
-            "nobody should decode against, and the composite reads no status"
-        ),
-        "oid-lower-tier-wins-over-a-newer-revision": (
-            "tier: the corpus module table carries one, and the composite "
-            "does not compare it -- so a vendor corpus outranks the standard "
-            "definition by being newer, which is the case that matters most"
-        ),
         "oid-module-identity-anchor-beats-object-identity": (
             "anchor class: how strongly a module claims the arc is settled at "
-            "build time and is not carried into oid_index"
+            "build time and is not carried into oid_index, so no reader can "
+            "recover it -- pysnmp/pysmi would have to add a column"
         ),
         "oid-higher-rfc-breaks-an-equal-revision": (
             "publishing RFC: not a corpus column at all, so no reader can "
             "apply this one"
         ),
-        "oid-module-name-makes-the-rule-total": (
-            "module name as final term: equal revisions fall to configured "
-            "order instead, so the answer is stable but is the caller's order "
-            "rather than the rule's"
-        ),
-        "oid-anchorless-module-loses-to-an-anchored-one": (
-            "undated candidate: within a corpus it loses, across corpora it "
-            "disables the comparison entirely, because a composite has the "
-            "configured order to fall back on and a corpus has nothing"
-        ),
     }
 
-    def _byRevisionOnly(self, vector):
-        """What the composite answers for a vector, ranking on revision alone."""
-        return best_by_revision(
-            [
-                (
-                    module["module"],
-                    module["document"].get("identity", {}).get("lastupdated"),
-                )
-                for module in vector["modules"]
-            ]
-        )
+    def _acrossCorpora(self, directory, vector):
+        """What a composite answers, with each module in a corpus of its own.
 
-    @pytest.mark.parametrize("vector", _vectors("oid_precedence"), ids=_identify)
-    def test_divergence_is_exactly_what_is_recorded(self, vector):
-        agrees = self._byRevisionOnly(vector) == vector["expect"]
-
-        assert agrees is (vector["id"] not in self.DIVERGES), (
-            f"{vector['id']}: across corpora this resolves to "
-            f"{self._byRevisionOnly(vector)} and within one corpus to "
-            f"{vector['expect']}. DIVERGES records this vector as "
-            f"{'diverging' if vector['id'] in self.DIVERGES else 'agreeing'}, "
-            f"so either #234 moved or a term was added. {vector['why']}"
-        )
-
-    def test_the_one_term_that_does_carry_is_revision(self):
-        """The half that works, stated on its own.
-
-        Whatever else is missing, two corpora carrying the same module at two
-        revisions resolve to the newer one, which is the case an operator
-        actually creates by adding a corpus to an existing deployment.
+        One corpus per module is the shape the rule exists for -- a
+        distribution corpus and a vendor one anchoring the same arc -- and it
+        is the only way to ask a composite anything, since two modules in one
+        corpus are ranked by pysmi at build time instead.
         """
-        vector = next(
-            vector
-            for vector in _vectors("oid_precedence")
-            if vector["id"] == "oid-newest-revision-wins"
-        )
+        corpora = [
+            _build_corpus(str(directory / f"{m['module']}.db"), {"modules": [m]})
+            for m in vector["modules"]
+        ]
 
-        assert self._byRevisionOnly(vector) == vector["expect"], vector["why"]
-
-    def test_tier_is_readable_even_though_it_is_not_read(self, tmp_path):
-        """#234 is implementable, and this is the evidence for that claim.
-
-        The gap above would be permanent if the terms it turns on were absent
-        from a corpus. Tier is not: it is a column on the ``module`` table and
-        this reader already returns it, so a composite that wanted to compare
-        tiers before revisions has the value in hand. Recording that here keeps
-        the issue from being closed as won't-fix on a false premise.
-        """
-        vector = next(
-            vector
-            for vector in _vectors("oid_precedence")
-            if vector["id"] == "oid-lower-tier-wins-over-a-newer-revision"
-        )
-
-        corpus = _build_corpus(str(tmp_path / "tiers.db"), vector)
+        composite = CompositeMibCorpus(*corpora)
 
         try:
-            tiers = {
-                module["module"]: corpus.module(module["module"])["tier"]
-                for module in vector["modules"]
-            }
+            return composite.anchor(pysmi_precedence.CONTESTED)
+
+        finally:
+            composite.close()
+
+    @pytest.mark.parametrize("vector", _vectors("oid_precedence"), ids=_identify)
+    def test_divergence_is_exactly_what_is_recorded(self, tmp_path, vector):
+        found = self._acrossCorpora(tmp_path, vector)
+        agrees = found == vector["expect"]
+
+        assert agrees is (vector["id"] not in self.DIVERGES), (
+            f"{vector['id']}: across corpora this resolves to {found} and "
+            f"within one corpus to {vector['expect']}. DIVERGES records this "
+            f"vector as "
+            f"{'diverging' if vector['id'] in self.DIVERGES else 'agreeing'}, "
+            f"so either a term started being read or one stopped. "
+            f"{vector['why']}"
+        )
+
+    @pytest.mark.parametrize(
+        "vector_id",
+        [
+            "oid-obsolete-loses-to-live-however-new-it-is",
+            "oid-lower-tier-wins-over-a-newer-revision",
+        ],
+    )
+    def test_the_two_terms_that_matter_are_applied(self, tmp_path, vector_id):
+        """Tier and obsolete, named individually rather than left to the sweep.
+
+        These are the two #234 was filed for. A vendor tree bundling its own
+        copy of a standard MIB is the ordinary case, not a corner, and before
+        #234 the newer copy took the arc. The sweep above would go on passing
+        if either of these regressed and the vector were quietly added to
+        DIVERGES, so they are asserted where that would be conspicuous.
+        """
+        vector = next(x for x in _vectors("oid_precedence") if x["id"] == vector_id)
+
+        assert self._acrossCorpora(tmp_path, vector) == vector["expect"], vector["why"]
+
+    def test_the_terms_that_cannot_be_read_are_still_absent(self, tmp_path):
+        """Evidence that DIVERGES is a schema limit, not an unfinished job.
+
+        Anchor class and RFC number are the two, and neither is a column a
+        reader could consult. Asserting that here keeps the pair honest: if
+        pysnmp/pysmi ever carries them, this fails and DIVERGES shrinks.
+        """
+        vector = next(
+            x
+            for x in _vectors("oid_precedence")
+            if x["id"] == "oid-module-identity-anchor-beats-object-identity"
+        )
+
+        corpus = _build_corpus(str(tmp_path / "anchor.db"), vector)
+
+        try:
+            record = corpus.module(vector["modules"][0]["module"])
 
         finally:
             corpus.close()
 
-        assert tiers == {"VENDOR-MIB": "vendor", "STANDARD-MIB": "standard"}
+        assert "anchor" not in record
+        assert "rfc" not in record
