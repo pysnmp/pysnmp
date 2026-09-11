@@ -43,31 +43,25 @@ dependencies = [
 # missing import, which is what it already did for anyone who had not installed
 # pysmi.
 #
-# The floor names a release candidate on purpose, and naming one is the only way
-# to say this: dependabot offers a prerelease when the current version is
-# already one OR when a requirement string names one, and there is no
-# configuration key for it (dependabot/dependabot-core#1926, closed as not
-# planned). PEP 440 admits prereleases per specifier, so this puts pysmi on the
-# rc stream, and this repository integrates against the sibling rc it is
-# released alongside instead of against its last GA.
+# The floor is a final release and stays one. It named a release candidate
+# through the 4.0.0 cycle, because naming one is the only way to put a
+# requirement on the rc stream -- dependabot offers a prerelease when the
+# current version is already one OR when a requirement string names one, and
+# there is no configuration key for it (dependabot/dependabot-core#1926, closed
+# as not planned) -- and that bought integration against the sibling rc this
+# repository was cut alongside. pysmi 4.0.0 final is on PyPI, so there is no
+# longer a sibling rc to integrate against, and nothing here resolves to a
+# prerelease. See [tool.uv] below, which is what holds that.
 #
-# 4.0.0rc2 names an rc of the next *major*, so it outranks pysmi's newest GA
-# (3.0.0) and is what resolves. The major is pysmi dropping its mibs/behavior
-# splice (pysnmp/pysmi#245): a module it generates no longer carries the
-# runtime behavior no code generator can derive from ASN.1, because pysnmp
-# owns that now and applies it from pysnmp/smi/mibs/behavior (#215). Anything
-# still on pysmi 3.x gets that behavior twice, which is harmless -- the
-# fragments are idempotent -- and anything on 4.x gets it once, from here.
-#
-# So the floor is not a preference. Below 4.0.0rc1 pysmi splices behavior that
-# pysnmp also splices; at or above it, pysnmp is the only source. Regenerating
-# with a 3.x pysmi would write those fragments back into the committed modules
-# and tests/test_generated_mibs.py would fail against a 4.x one.
-#
-# pyasn1 is off that stream: 2.0.2 is a GA and is what the floor names. Put this
-# floor back on a GA before cutting the 6.0.0 GA -- an extra resolving to a
-# sibling release candidate is better than a required dependency doing it, but
-# it is still not what a GA should ship.
+# 4.0.0 rather than 3.x is a separate question from the rc one, and the answer
+# has not changed: the major is pysmi dropping its mibs/behavior splice
+# (pysnmp/pysmi#245). A module it generates no longer carries the runtime
+# behavior no code generator can derive from ASN.1, because pysnmp owns that now
+# and applies it from pysnmp/smi/mibs/behavior (#215). Anything still on pysmi
+# 3.x gets that behavior twice, which is harmless -- the fragments are
+# idempotent -- and anything on 4.x gets it once, from here. Regenerating with a
+# 3.x pysmi would write those fragments back into the committed modules and
+# tests/test_generated_mibs.py would fail against a 4.x one.
 [project.optional-dependencies]
 compile = ["pysnmp-pysmi >=4.0.0,<5.0.0"]
 
@@ -95,6 +89,26 @@ dev = [
     "mypy >=1.15.0,<3.0.0",
     "ruff >=0.4.0,<1.0.0",
 ]
+
+# General availability only, enforced rather than reviewed.
+#
+# Every requirement above names a final release -- pysnmp-pyasn1 2.0.2 and
+# pysnmp-pysmi 4.0.0 are both GA -- but a specifier is a statement about one
+# requirement, and the thing worth guaranteeing is a property of the whole
+# resolution: nothing this repository installs is a prerelease, including
+# something a transitive dependency asks for. "disallow" is that guarantee. uv
+# refuses to resolve a prerelease for any package, whatever a requirement string
+# says, so an rc cannot re-enter the lockfile by way of a dependabot bump or a
+# `uv lock --upgrade`; CI resolves with --locked, so it cannot enter unnoticed
+# either.
+#
+# This is the setting to relax -- drop it, and uv goes back to its default of
+# admitting a prerelease where a specifier names one -- to deliberately reopen
+# an rc integration stream with a sibling, which is what the 4.0.0 cycle above
+# needed. Until then, a GA cannot depend on a prerelease and neither can the rc
+# line leading to it.
+[tool.uv]
+prerelease = "disallow"
 
 [tool.pytest.ini_options]
 filterwarnings = [
