@@ -27,8 +27,10 @@ Before generating code, scan the codebase to identify:
    - Never suggest features not available in the detected framework versions
 
 3. **Library Versions**: Note the exact versions of key libraries and dependencies
-   - Runtime dependencies (from `pyproject.toml`): `pysnmp-pysmi >=2.0.1,<3.0.0`, `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=1.3.0rc2,<2.0.0`
-   - Dev dependencies (from `pyproject.toml` `[project.optional-dependencies]`): `sphinx >=7.0.0,<9.0.0`, `pytest >=9.0.3,<10.0.0`, `coverage[toml] >=7.2.0,<8.0.0`, `mypy >=1.15.0,<3.0.0`, `ruff >=0.4.0,<1.0.0`
+   - Runtime dependencies (from `pyproject.toml` `[project].dependencies`): `pycryptodomex >=3.11.0,<4.0.0`, `pysnmp-pyasn1 >=2.0.2,<3.0.0`. pysmi is **not** one of them — the engine path never imports it (`tests/test_no_pysmi.py` holds that line)
+   - Optional dependencies (from `pyproject.toml` `[project.optional-dependencies]`): the `compile` extra, `pysnmp-pysmi >=4.0.0,<5.0.0`, which is what `pysnmp.smi.compiler` needs and nothing else does
+   - Dev dependencies (from `pyproject.toml` `[dependency-groups]`, PEP 735): `pysnmp-pysmi >=4.0.0,<5.0.0`, `sphinx >=7.0.0,<9.0.0`, `myst-parser >=4.0.0,<5.0.0`, `pytest >=9.0.3,<10.0.0`, `coverage[toml] >=7.2.0,<8.0.0`, `mypy >=1.15.0,<3.0.0`, `ruff >=0.4.0,<1.0.0`
+   - Every one of those floors names a final release, and `[tool.uv] prerelease = "disallow"` keeps it that way: never propose a requirement that names a prerelease (`4.0.0rc4`, `2.0.1rc1`), and never relax that setting to make one resolve
    - Generate code compatible with these specific versions
    - The project depends on the **pysnmp-pyasn1** fork, not upstream pyasn1. Import from `pyasn1.type`, `pyasn1.codec.ber`, `pyasn1.error`, and `pyasn1.compat.octets` as seen throughout `pysnmp/proto/` and `pysnmp/smi/`
    - Cryptography uses **pycryptodomex** (the `Cryptodome` namespace), imported under `pysnmp/proto/secmod/` for USM auth/priv protocols
