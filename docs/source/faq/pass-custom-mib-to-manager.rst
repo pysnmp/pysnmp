@@ -22,7 +22,7 @@ A. Starting from PySNMP 4.3.x, plain-text (ASN.1) MIBs can be
    importing something outside that set needs. As for remote
    MIB repos, you are welcome to use our collection of ASN.1
    MIB files at
-   `https://pysnmp.github.io/mibs/asn1/ <https://pysnmp.github.io/mibs/asn1/>`_
+   `https://pysnmp.github.io/mibs/ <https://pysnmp.github.io/mibs/>`_
    as shown below.
 
 .. code-block:: python

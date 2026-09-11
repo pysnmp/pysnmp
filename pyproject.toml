@@ -4,7 +4,7 @@ version = "6.0.0-rc.11"
 description = "Pure-Python SNMP v1/v2c/v3 engine"
 authors = [
     { name = "omrozowicz", email = "omrozowicz@splunk.com" },
-    { name = "rfaircloth-splunk", email = "rfaircloth-splunk@splunk.com" },
+    { name = "Ryan Faircloth", email = "actual@rfaircloth.com" },
 ]
 license = "BSD-2-Clause"
 requires-python = ">=3.10"

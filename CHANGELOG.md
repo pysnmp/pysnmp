@@ -1,7 +1,7 @@
 # Changelog
 
 Generated from the commit history at release time. The narrative history
-through 5.x is in [CHANGES.md](https://github.com/pysnmp/pysnmp/blob/main/CHANGES.md).
+through 5.x is [published with the documentation](https://pysnmp.github.io/pysnmp/latest/changelog-history.html).
 
 ## [6.0.0-rc.11](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.10...v6.0.0-rc.11) (2026-09-11)
 

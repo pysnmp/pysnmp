@@ -2,7 +2,7 @@
 # This file is part of pysnmp software.
 #
 # Copyright (c) 2005-2019, Ilya Etingof deceased
-# License: https://www.pysnmp.com/pysnmp/license.html
+# License: https://github.com/pysnmp/pysnmp/blob/main/LICENSE.rst
 #
 """Building MIB objects from corpus rows instead of executing generated Python.
 
