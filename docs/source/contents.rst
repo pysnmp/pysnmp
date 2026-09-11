@@ -17,21 +17,28 @@ multilingual capabilities, remote configuration and other features.
 PySNMP implementation closely follows intricate system details and features 
 bringing most possible power and flexibility to its users.
 
-Current PySNMP stable version is 6.0. It requires Python 3.10 or later
-and is recommended for new applications as well as for migration from
-older, now obsolete, PySNMP releases. All site documentation and
-examples are written for the 6.0 and later versions in mind.
+.. note::
 
-Besides the libraries, a set of pure-Python 
-`command-line tools <https://pypi.python.org/pypi/snmpclitools/>`_
-are shipped along with the system. Those tools mimic the interface
-and behaviour of popular Net-SNMP snmpget/snmpset/snmpwalk utilities.
-They may be useful in a cross-platform situations as well as a testing
-and prototyping instrument for pysnmp users.
+   ``snmpclitools``, which older documentation described as shipping with
+   PySNMP, is a separate project and is **not** part of this one. The release
+   on PyPI depends on the ``pysnmp`` distribution, which is a different fork
+   from a different repository -- installing it beside ``pysnmplib`` puts two
+   SNMP engines in one environment.
 
-PySNMP software is free and open-source. Source code is hosted in 
-a `Github repo <https://github.com/pysnmp/pysnmp>`_.
-The library is being distributed under 2-clause BSD-style license.
+PySNMP is free and open-source software, distributed under a 2-clause
+BSD-style license. The source is at `pysnmp/pysnmp
+<https://github.com/pysnmp/pysnmp>`_.
+
+Three other projects are maintained alongside it, and the
+`organization site <https://pysnmp.github.io/>`_ describes how they fit
+together:
+
+* the `MIB distribution <https://pysnmp.github.io/mibs/>`_, which supplies the
+  module definitions an engine resolves names against;
+* `pysmi <https://pysnmp.github.io/pysmi/>`_, the MIB compiler, installed with
+  the ``compile`` extra;
+* `pyasn1 <https://pysnmp.github.io/pyasn1/>`_, the ASN.1 codec underneath
+  both, installed with PySNMP itself.
 
 PySNMP library development has been initially sponsored 
 by a `PSF <http://www.python.org/psf/>`_ grant.
