@@ -56,6 +56,8 @@ Transport
 
 .. autoclass:: pysnmp.hlapi.transport.AbstractTransportTarget
    :members:
+   :exclude-members: protoTransport
+
 
 MIB services
 ------------

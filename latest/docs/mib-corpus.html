@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Loading MIBs from a corpus &#8212; SNMP library for Python 6.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=f6a572b4" />
+    <script src="../_static/documentation_options.js?v=12958129"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MIB module loader contract" href="loader-contract.html" />
+    <link rel="prev" title="MIB instance generation tools" href="mib-tools.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../contents.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo" />
+    
+  </a>
+</p>
+
+
+
+<p class="blurb"><p align=left><i><b>Brewing free software for the greater good</i></b></p></p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=pysnmp&repo=pysnmp&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick start</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference.html">Library reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-internals.html">Errors and supporting types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security-considerations.html">Security Considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Loading MIBs from a corpus</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nothing-changes-unless-you-ask">Nothing changes unless you ask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-you-might-want-one">Why you might want one</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-one">Using one</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#several-corpora-at-once">Several corpora at once</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#which-copy-answered">Which copy answered</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-was-passed-over">What was passed over</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#resolving-a-trap-oid-without-a-compiler">Resolving a trap OID without a compiler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-a-corpus-does-not-carry">What a corpus does not carry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-a-module-is-built">How a module is built</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-gating">Version gating</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/contents.html">Example scripts</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../download.html">Download PySNMP</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="mib-tools.html" title="previous chapter">MIB instance generation tools</a></li>
+      <li>Next: <a href="loader-contract.html" title="next chapter">MIB module loader contract</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="loading-mibs-from-a-corpus">
+<span id="mib-corpus"></span><h1>Loading MIBs from a corpus<a class="headerlink" href="#loading-mibs-from-a-corpus" title="Link to this heading">¶</a></h1>
+<p>A <strong>MIB corpus</strong> is a SQLite database holding the SMI model as data: one row
+per node, keyed for lookup by OID and by name, and ordered so a GETNEXT walk is
+a range query. pysmi builds it (<code class="docutils literal notranslate"><span class="pre">mibcorpus</span> <span class="pre">--emit=core-db</span></code>) and pysnmp reads
+it with the standard library.</p>
+<p>It is <strong>opt-in and additive</strong>. Everything on this page is something you have to
+ask for. A <code class="docutils literal notranslate"><span class="pre">MibBuilder</span></code> with no corpus configured resolves exactly as it
+always has, and configuring one does not change what a module already on disk
+resolves to.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#nothing-changes-unless-you-ask" id="id1">Nothing changes unless you ask</a></p></li>
+<li><p><a class="reference internal" href="#why-you-might-want-one" id="id2">Why you might want one</a></p></li>
+<li><p><a class="reference internal" href="#using-one" id="id3">Using one</a></p></li>
+<li><p><a class="reference internal" href="#several-corpora-at-once" id="id4">Several corpora at once</a></p></li>
+<li><p><a class="reference internal" href="#which-copy-answered" id="id5">Which copy answered</a></p></li>
+<li><p><a class="reference internal" href="#what-was-passed-over" id="id6">What was passed over</a></p></li>
+<li><p><a class="reference internal" href="#resolving-a-trap-oid-without-a-compiler" id="id7">Resolving a trap OID without a compiler</a></p>
+<ul>
+<li><p><a class="reference internal" href="#without-asking-the-corpus-yourself" id="id8">Without asking the corpus yourself</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#what-a-corpus-does-not-carry" id="id9">What a corpus does not carry</a></p>
+<ul>
+<li><p><a class="reference internal" href="#saying-where-the-asn-1-is" id="id10">Saying where the ASN.1 is</a></p></li>
+<li><p><a class="reference internal" href="#corpus-for-speed-compiler-for-prose" id="id11">Corpus for speed, compiler for prose</a></p></li>
+<li><p><a class="reference internal" href="#with-no-compiler-configured" id="id12">With no compiler configured</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#how-a-module-is-built" id="id13">How a module is built</a></p></li>
+<li><p><a class="reference internal" href="#version-gating" id="id14">Version gating</a></p></li>
+</ul>
+</nav>
+<section id="nothing-changes-unless-you-ask">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Nothing changes unless you ask</a><a class="headerlink" href="#nothing-changes-unless-you-ask" title="Link to this heading">¶</a></h2>
+<p>This is the compatibility promise, and it is worth stating before the feature:</p>
+<ul class="simple">
+<li><p>A <code class="docutils literal notranslate"><span class="pre">MibBuilder</span></code> with no corpus behaves identically to one from before this
+existed – same sources, same search order, same objects, same errors.</p></li>
+<li><p>With a corpus configured, a module the MIB sources carry is still loaded
+from the MIB sources. The corpus is where a module is found when nothing
+else has it.</p></li>
+<li><p>The corpus is consulted <strong>before</strong> the MIB compiler, so a deployment with
+<code class="docutils literal notranslate"><span class="pre">addMibCompiler()</span></code> set up keeps compiling whatever the corpus does not
+carry.</p></li>
+</ul>
+<p>So an existing deployment upgrades into this by doing nothing, and opts in by
+adding two lines.</p>
+</section>
+<section id="why-you-might-want-one">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Why you might want one</a><a class="headerlink" href="#why-you-might-want-one" title="Link to this heading">¶</a></h2>
+<p>The published <code class="docutils literal notranslate"><span class="pre">index-v2.csv</span></code> already answers <em>which module owns this OID</em>, so
+lazy loading needs no corpus at all. Two things it cannot do are the reason
+this exists.</p>
+<p><strong>It cannot tell you what is at an OID.</strong> The index is <code class="docutils literal notranslate"><span class="pre">MODULE,OID</span></code> and
+carries a module’s <em>anchors</em>, so a leaf like <code class="docutils literal notranslate"><span class="pre">ifDescr</span></code> is not in it. Getting
+from an OID to a name, a syntax and an access level means loading the module –
+by compiling its ASN.1 on the trap path, or by parsing its whole JSON document.
+On <code class="docutils literal notranslate"><span class="pre">CISCO-ENTITY-VENDORTYPE-OID-MIB</span></code> that is 11 ms and 9,773 symbols to reach
+one of them; from a corpus it is one indexed row.</p>
+<p><strong>It cannot tell you what comes next.</strong> An anchor index has no per-node
+ordering, so a walk cannot be served from one.</p>
+<p>There is a third reason, which is about what a corpus <em>is not</em>: a pysnmp MIB
+module is Python that <code class="docutils literal notranslate"><span class="pre">MibBuilder</span></code> runs through <code class="docutils literal notranslate"><span class="pre">exec()</span></code>. A corpus is rows.
+Building a module from rows executes nothing.</p>
+</section>
+<section id="using-one">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Using one</a><a class="headerlink" href="#using-one" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi.builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">MibBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi.corpus</span><span class="w"> </span><span class="kn">import</span> <span class="n">MibCorpus</span>
+
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">MibBuilder</span><span class="p">()</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">setMibCorpus</span><span class="p">(</span><span class="n">MibCorpus</span><span class="p">(</span><span class="s2">"/mibs/core.db"</span><span class="p">))</span>
+
+<span class="c1"># Resolves from the MIB sources if they have it, from the corpus if not.</span>
+<span class="p">(</span><span class="n">ifDescr</span><span class="p">,)</span> <span class="o">=</span> <span class="n">mibBuilder</span><span class="o">.</span><span class="n">importSymbols</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">,</span> <span class="s2">"ifDescr"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With the SNMP engine:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi.v3arch.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">SnmpEngine</span>
+
+<span class="n">snmpEngine</span> <span class="o">=</span> <span class="n">SnmpEngine</span><span class="p">()</span>
+<span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">snmpEngine</span><span class="o">.</span><span class="n">get_mib_builder</span><span class="p">()</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">setMibCorpus</span><span class="p">(</span><span class="n">MibCorpus</span><span class="p">(</span><span class="s2">"/mibs/core.db"</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">None</span></code> to stop using one. The corpus is opened read-only with SQLite’s
+<code class="docutils literal notranslate"><span class="pre">immutable=1</span></code>, so it takes no locks and needs nothing writable near it –
+which is what lets it be mounted from a Kubernetes image volume.</p>
+</section>
+<section id="several-corpora-at-once">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Several corpora at once</a><a class="headerlink" href="#several-corpora-at-once" title="Link to this heading">¶</a></h2>
+<p>A deployment rarely has one corpus. It has the distribution’s, covering the
+standard modules and whatever vendors shipped with it, and it has its own –
+the enterprise MIBs its devices actually speak, which nobody else publishes.
+<code class="docutils literal notranslate"><span class="pre">CompositeMibCorpus</span></code> searches several as one:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi.corpus</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_corpora</span>
+
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">setMibCorpus</span><span class="p">(</span><span class="n">open_corpora</span><span class="p">([</span><span class="s2">"/mibs/site.db"</span><span class="p">,</span> <span class="s2">"/mibs/core.db"</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>Or from the environment, which is the same thing without the imports:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">PYSNMP_MIB_DBS</span><span class="o">=</span>/mibs/site.db:/mibs/core.db
+</pre></div>
+</div>
+<p>Like <code class="docutils literal notranslate"><span class="pre">PYSNMP_MIB_DIRS</span></code>, it is an <code class="docutils literal notranslate"><span class="pre">os.pathsep</span></code>-separated list read when a
+<code class="docutils literal notranslate"><span class="pre">MibBuilder</span></code> is constructed, and the order is the precedence order. A path
+naming something that is not a readable corpus raises <code class="docutils literal notranslate"><span class="pre">SmiError</span></code> there and
+then, rather than being skipped: a skipped corpus leaves a deployment resolving
+fewer modules than it asked for, and the only symptom is a MIB that used to be
+found and now is not.</p>
+<p><strong>Two corpora carrying the same module: the newest MODULE-IDENTITY revision
+wins, and configured order only breaks the tie.</strong> This is the rule
+<code class="docutils literal notranslate"><span class="pre">MibBuilder</span></code> already applies to two MIB sources carrying one module, and the
+rule pysmi’s compiler applies to two copies of one MIB. Two corpora carrying a
+module are carrying the same specification at two revisions, and the newer one
+is the answer wherever it sits in the search path – so configuring a corpus
+that happens to carry an older copy cannot silently roll that module back.</p>
+<p>Order settles what revisions cannot: when a candidate states no revision at all
+– every SMIv1 module, and the SMI modules themselves – or when they all state
+the same one.</p>
+<p><strong>Two corpora anchoring one arc with different modules: the corpus rule.</strong> That
+is a different question, and appealing to revision alone answers it badly. A
+vendor tree bundles its own copy of a standard MIB, so an operator adding a
+vendor corpus has two corpora anchoring the same arcs – and the vendor copy,
+republished last week, would take the arc from the standard definition of it.</p>
+<p>So the arc is ranked the way pysmi’s <code class="docutils literal notranslate"><span class="pre">rank_index</span></code> ranks it <em>inside</em> a corpus,
+as far as a corpus carries the terms:</p>
+<ol class="arabic simple">
+<li><p>a live module before one whose every object is obsolete,</p></li>
+<li><p>then tier – <code class="docutils literal notranslate"><span class="pre">standard</span></code>, then <code class="docutils literal notranslate"><span class="pre">draft</span></code>, then <code class="docutils literal notranslate"><span class="pre">vendor</span></code>,</p></li>
+<li><p>then the newest revision, an undated module losing outright,</p></li>
+<li><p>then the module name, so that the rule is total.</p></li>
+</ol>
+<p>Two of pysmi’s terms are missing: how strongly a module claims the arc
+(MODULE-IDENTITY over OBJECT-IDENTITY) is settled at build time and not carried
+into the corpus, and the publishing RFC number is not a corpus column at all. A
+contest turning on either falls through to the module name.</p>
+<p>The rule is total and reads nothing about the search path, so unlike the
+same-module case, <strong>configured order plays no part here</strong>: reordering
+<code class="docutils literal notranslate"><span class="pre">PYSNMP_MIB_DBS</span></code> cannot change which module owns an arc.</p>
+<p><strong>By OID, the longest prefix wins first.</strong> Given a site subtree under an arc the
+core corpus already anchors, first-match-wins would resolve every OID beneath it
+to the core corpus’s shallow anchor and never reach the site corpus at all – no
+matter which was configured first:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">store</span> <span class="o">=</span> <span class="n">open_corpora</span><span class="p">([</span><span class="s2">"/mibs/core.db"</span><span class="p">,</span> <span class="s2">"/mibs/site.db"</span><span class="p">])</span>
+
+<span class="c1"># core.db anchors 1.3.6.1.4.1.9; site.db anchors the subtree itself.</span>
+<span class="n">store</span><span class="o">.</span><span class="n">find_module</span><span class="p">(</span><span class="s2">"1.3.6.1.4.1.9.9.42.1.1"</span><span class="p">)</span>   <span class="c1"># -&gt; 'SITE-MIB'</span>
+</pre></div>
+</div>
+<p>The revision rule settles only what a shorter prefix cannot: two corpora naming
+<em>different</em> modules at the same prefix length.</p>
+<p><strong>Both paths reach the same copy.</strong> An OID resolves to a module name, and that
+name then goes through the revision rule like any other. A corpus can anchor an
+OID without owning the module it names – the anchor says which module answers,
+and the revision says whose copy of it is read.</p>
+<p><strong>One module resolves from exactly one corpus.</strong> Where two carry the same
+module, every name-keyed lookup for it routes to the same one and the other’s
+rows for it are invisible – not its nodes, not its types, not its IMPORTS.
+Merging them would build one module from two definitions and produce two
+classes for one type, which fails <code class="docutils literal notranslate"><span class="pre">isinstance</span></code> somewhere far from here.</p>
+<p><code class="docutils literal notranslate"><span class="pre">loadTexts</span></code> is reported for the composite only when <em>every</em> corpus carries
+prose, so one textless corpus in the search path makes the whole composite
+textless rather than silently answering with no DESCRIPTION for the modules it
+owns. What that then means is the subject of <a class="reference internal" href="#what-a-corpus-does-not-carry">What a corpus does not carry</a>.</p>
+</section>
+<section id="which-copy-answered">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Which copy answered</a><a class="headerlink" href="#which-copy-answered" title="Link to this heading">¶</a></h2>
+<p>A module can be carried by a directory, a package, the wheel, a corpus and the
+compiler’s output all at once, and exactly one of them answers. Which one is not
+readable from the path: a wheel and a directory of overrides are both
+directories under <code class="docutils literal notranslate"><span class="pre">site-packages</span></code>, and a corpus is not a path in that sense at
+all.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">builder</span><span class="o">.</span><span class="n">loadModule</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">)</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">getModuleProvenance</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">)</span>
+<span class="c1"># -&gt; (MibSourceKind.DB, '/mibs/vendor.db')</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">getModulePath</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">)</span>
+<span class="c1"># -&gt; 'corpus:/mibs/vendor.db/IF-MIB'</span>
+</pre></div>
+</div>
+<p>The kind is one of <code class="docutils literal notranslate"><span class="pre">override</span></code> (pysnmp’s own copies of the engine MIBs),
+<code class="docutils literal notranslate"><span class="pre">wheel</span></code>, <code class="docutils literal notranslate"><span class="pre">dir</span></code>, <code class="docutils literal notranslate"><span class="pre">pkg</span></code>, <code class="docutils literal notranslate"><span class="pre">db</span></code> or <code class="docutils literal notranslate"><span class="pre">compiled</span></code>; the id names the particular
+source, which is what tells a distro corpus from a customer one. A module that
+is not loaded has no provenance, and unloading it forgets what it had –
+reloading can well pick a different copy.</p>
+<p>It is tracked per module rather than per node, because a module resolves from
+exactly one source: a per-node record would be the same answer repeated across
+every OID in the module.</p>
+</section>
+<section id="what-was-passed-over">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">What was passed over</a><a class="headerlink" href="#what-was-passed-over" title="Link to this heading">¶</a></h2>
+<p>The other half of the same question. A leftover <code class="docutils literal notranslate"><span class="pre">.py</span></code> directory that a corpus
+was meant to replace still outranks the corpus, so the corpus is the copy being
+skipped – the opposite of what adding one usually means.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">builder</span><span class="o">.</span><span class="n">shadowedModules</span><span class="p">()</span>
+<span class="c1"># -&gt; {'IF-MIB': [(MibSourceKind.DIR, '/opt/mibs'),</span>
+<span class="c1">#                (MibSourceKind.DB, '/mibs/core.db')]}</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">reportShadowedModules</span><span class="p">()</span>   <span class="c1"># same answer, and says so out loud</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">reportShadowedModules()</span></code> runs by itself inside <code class="docutils literal notranslate"><span class="pre">loadModules()</span></code> when it is
+called with no names, since that path already enumerates every source and the
+enumeration is the whole cost. Loading modules by name does not trigger it; call
+it directly there.</p>
+<p>How loudly is <code class="docutils literal notranslate"><span class="pre">moduleConflictSeverity</span></code>:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">warn</span></code> (default)</dt><dd><p>One <code class="docutils literal notranslate"><span class="pre">PySnmpShadowedModuleWarning</span></code> per shadowed module.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">error</span></code></dt><dd><p>Raises <code class="docutils literal notranslate"><span class="pre">SmiError</span></code> before anything is loaded. The setting for a deployment
+that has finished migrating off generated <code class="docutils literal notranslate"><span class="pre">.py</span></code> and wants any survivor to
+be fatal.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">silent</span></code></dt><dd><p>Says nothing, still returns the answer.</p>
+</dd>
+</dl>
+<p>Two things it deliberately does not do. It <strong>never claims the copies differ, or
+match</strong>: answering that means reading and normalizing both, which is the work a
+corpus exists to avoid, so it reports only that a second copy exists and is
+being passed over. And it <strong>says nothing about a stock install</strong>, where
+<code class="docutils literal notranslate"><span class="pre">pysnmp.smi.mibs</span></code> shadows the wheel for the seven modules the engine needs –
+that is what the search order is for, and warning about it would mean warning
+every user who configured nothing. <code class="docutils literal notranslate"><span class="pre">shadowedModules()</span></code> still reports it, being
+a question about the sources rather than about the configuration.</p>
+</section>
+<section id="resolving-a-trap-oid-without-a-compiler">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Resolving a trap OID without a compiler</a><a class="headerlink" href="#resolving-a-trap-oid-without-a-compiler" title="Link to this heading">¶</a></h2>
+<p>The corpus can be queried directly, which is what a trap receiver wants: an
+arriving OID is an <em>instance</em> OID – a column OID plus index arcs – and
+appears in no MIB at all.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">corpus</span> <span class="o">=</span> <span class="n">MibCorpus</span><span class="p">(</span><span class="s2">"/mibs/core.db"</span><span class="p">)</span>
+
+<span class="c1"># Which module answers for it? Longest-prefix, chopping an arc at a time.</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">find_module</span><span class="p">(</span><span class="s2">"1.3.6.1.2.1.2.2.1.2.7"</span><span class="p">)</span>     <span class="c1"># -&gt; 'IF-MIB'</span>
+
+<span class="c1"># What is the node itself?</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s2">"1.3.6.1.2.1.2.2.1.2"</span><span class="p">)[</span><span class="s2">"name"</span><span class="p">]</span>      <span class="c1"># -&gt; 'ifDescr'</span>
+
+<span class="c1"># GETNEXT, over the whole corpus.</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">next_node</span><span class="p">(</span><span class="s2">"1.3.6.1.2.1.2.2.1.2"</span><span class="p">)[</span><span class="s2">"name"</span><span class="p">]</span> <span class="c1"># -&gt; 'ifType'</span>
+
+<span class="c1"># Everything under a subtree, in OID order.</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">subtree</span><span class="p">(</span><span class="s2">"1.3.6.1.2.1.2.2"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">find_module</span></code> returning <code class="docutils literal notranslate"><span class="pre">None</span></code> is a <strong>miss, not an error</strong>: an OID nothing
+claims still decodes structurally as far as the longest known prefix reaches,
+and that is the behaviour a trap receiver wants.</p>
+<p>This replaces the older pattern of parsing <code class="docutils literal notranslate"><span class="pre">index.csv</span></code> into a dictionary and
+calling <code class="docutils literal notranslate"><span class="pre">loadModules()</span></code> on whatever it named. That pattern works and is not
+going away yet, but it needs a second file, a full ASN.1 compile per module on
+the trap path, and it cannot answer either of the questions above.</p>
+<section id="without-asking-the-corpus-yourself">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Without asking the corpus yourself</a><a class="headerlink" href="#without-asking-the-corpus-yourself" title="Link to this heading">¶</a></h3>
+<p>A receiver that decodes through <code class="docutils literal notranslate"><span class="pre">ObjectIdentity</span></code> or <code class="docutils literal notranslate"><span class="pre">MibViewController</span></code>
+does not have to do any of that. When a lookup runs out of MIB and a corpus is
+configured, the view asks the corpus which module owns the OID, loads it, and
+resolves again:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">builder</span><span class="o">.</span><span class="n">setMibCorpus</span><span class="p">(</span><span class="n">MibCorpus</span><span class="p">(</span><span class="s2">"/mibs/core.db"</span><span class="p">))</span>
+<span class="n">mibView</span> <span class="o">=</span> <span class="n">MibViewController</span><span class="p">(</span><span class="n">builder</span><span class="p">)</span>
+
+<span class="c1"># ACME-MIB has not been loaded, and nothing asked for it.</span>
+<span class="n">mibView</span><span class="o">.</span><span class="n">getNodeNameByOid</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9999</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="c1"># -&gt; ((1,3,6,1,4,1,9999,2,1,9), ('iso',...,'acmeDescr'), (1, 2, 3))</span>
+</pre></div>
+</div>
+<p>Before this, the same call answered with <code class="docutils literal notranslate"><span class="pre">enterprises</span></code> and seven raw arcs:
+the corpus held the answer, was configured, and was never consulted.</p>
+<p>Two things keep it off the hot path.</p>
+<p><strong>Only where a module could be.</strong> The longest known prefix is what a lookup
+resolves to, so an unknown vendor OID and an ordinary instance OID both come
+back with a suffix. They are told apart by what the prefix resolved to: below a
+scalar, table, row or column the remaining arcs are instance arcs and no module
+could claim them, so the corpus is not asked. Below a bare registration point
+– <code class="docutils literal notranslate"><span class="pre">enterprises</span></code>, <code class="docutils literal notranslate"><span class="pre">mib-2</span></code>, an unloaded vendor subtree – they are
+unregistered territory, and it is. A walk of ten thousand instance OIDs asks
+nothing.</p>
+<p><strong>Once per OID.</strong> An OID the corpus cannot place is remembered, so a receiver
+hearing the same unknown trap every thirty seconds asks once. Giving the
+builder a different corpus discards that record.</p>
+<p>The module-scoped form, <code class="docutils literal notranslate"><span class="pre">getNodeNameByOid(oid,</span> <span class="pre">&quot;ACME-MIB&quot;)</span></code>, is unaffected:
+that asks what one module says about an OID, and loading a different one cannot
+answer it. Agent instrumentation is unaffected too – what an agent serves is
+what it was configured to serve, and a corpus does not add to it.</p>
+</section>
+</section>
+<section id="what-a-corpus-does-not-carry">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">What a corpus does not carry</a><a class="headerlink" href="#what-a-corpus-does-not-carry" title="Link to this heading">¶</a></h2>
+<p><strong>Prose.</strong> No DESCRIPTION, no REFERENCE. They are roughly a third of a
+generated module’s bytes, the runtime discards them under the default
+<code class="docutils literal notranslate"><span class="pre">loadTexts</span> <span class="pre">=</span> <span class="pre">False</span></code>, and the one consumer that wants them – a MIB browser –
+has two other ways to get them: pysmi’s published <code class="docutils literal notranslate"><span class="pre">json/</span></code> tree, and the
+compiler.</p>
+<p>So a corpus cannot satisfy <code class="docutils literal notranslate"><span class="pre">loadTexts</span></code>. What happens when it is asked to
+depends on whether anything else can.</p>
+<section id="saying-where-the-asn-1-is">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Saying where the ASN.1 is</a><a class="headerlink" href="#saying-where-the-asn-1-is" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">PYSNMP_MIB_SOURCES</span></code> is the compile-side counterpart of <code class="docutils literal notranslate"><span class="pre">PYSNMP_MIB_DIRS</span></code>
+and <code class="docutils literal notranslate"><span class="pre">PYSNMP_MIB_DBS</span></code>: where a compiler looks for the ASN.1 it renders.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">PYSNMP_MIB_SOURCES</span><span class="o">=</span>/opt/vendor/mibs:https://mibs.example.org/asn1
+</pre></div>
+</div>
+<p>It is read by <code class="docutils literal notranslate"><span class="pre">addMibCompiler()</span></code> and so is only meaningful with the
+<code class="docutils literal notranslate"><span class="pre">[compile]</span></code> extra installed. Set, it <strong>replaces</strong> the two shipped defaults
+(<code class="docutils literal notranslate"><span class="pre">/usr/share/snmp/mibs</span></code> and <code class="docutils literal notranslate"><span class="pre">/usr/share/mibs</span></code>) rather than adding to them –
+the rule <code class="docutils literal notranslate"><span class="pre">PYSNMP_MIB_DIRS</span></code> already follows, and the one that lets a container
+image state where its MIBs are without also searching two host paths that do
+not exist in it. An explicit <code class="docutils literal notranslate"><span class="pre">sources=</span></code> argument still wins.</p>
+<p>Entries may be directories, <code class="docutils literal notranslate"><span class="pre">.zip</span></code> archives or URLs; a URL keeps its scheme
+even though <code class="docutils literal notranslate"><span class="pre">os.pathsep</span></code> is the same colon that follows it.</p>
+</section>
+<section id="corpus-for-speed-compiler-for-prose">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Corpus for speed, compiler for prose</a><a class="headerlink" href="#corpus-for-speed-compiler-for-prose" title="Link to this heading">¶</a></h3>
+<p>Configure both. The corpus resolves the thousands of modules a deployment
+touches, cheaply and without executing anything; the compiler renders the few
+whose text is going on screen:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mibBuilder</span><span class="o">.</span><span class="n">setMibCorpus</span><span class="p">(</span><span class="n">MibCorpus</span><span class="p">(</span><span class="s2">"/mibs/core.db"</span><span class="p">))</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">setMibCompiler</span><span class="p">(</span><span class="n">mibCompiler</span><span class="p">,</span> <span class="n">destDir</span><span class="p">)</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadTexts</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadModules</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">)</span>   <span class="c1"># compiled from ASN.1, DESCRIPTION intact</span>
+</pre></div>
+</div>
+<p>Sources are searched first, then the corpus, and only for a module neither
+carried does the compiler run. Under <code class="docutils literal notranslate"><span class="pre">loadTexts</span></code> the corpus <strong>steps aside</strong>
+rather than answering with no prose, so the module falls through to the
+compiler and comes back with its text. Clear <code class="docutils literal notranslate"><span class="pre">loadTexts</span></code> and the corpus
+answers again, without compiling anything.</p>
+<p>Two consequences worth knowing:</p>
+<ul class="simple">
+<li><p>Only <code class="docutils literal notranslate"><span class="pre">loadModules()</span></code> compiles. <code class="docutils literal notranslate"><span class="pre">loadModule()</span></code> never has, so a corpus that
+steps aside there raises <code class="docutils literal notranslate"><span class="pre">MibNotFoundError</span></code> – which is what it already
+raises for a module nothing carries.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setMibCompiler()</span></code> puts its output directory on the search path, so a
+module compiled once is the copy every later load finds. The corpus does not
+take it back when <code class="docutils literal notranslate"><span class="pre">loadTexts</span></code> is cleared again.</p></li>
+</ul>
+</section>
+<section id="with-no-compiler-configured">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">With no compiler configured</a><a class="headerlink" href="#with-no-compiler-configured" title="Link to this heading">¶</a></h3>
+<p>There is nothing to fall through to, so the request is refused:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mibBuilder</span><span class="o">.</span><span class="n">setMibCorpus</span><span class="p">(</span><span class="n">corpus</span><span class="p">)</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadTexts</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">mibBuilder</span><span class="o">.</span><span class="n">loadModules</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">)</span>   <span class="c1"># raises SmiError</span>
+</pre></div>
+</div>
+<p>Refused rather than silently satisfied: a caller that asked for descriptions
+and got a module with none has no way to tell that from a MIB that declares
+none. Attach a compiler, read the text from the <code class="docutils literal notranslate"><span class="pre">json/</span></code> tree, or clear
+<code class="docutils literal notranslate"><span class="pre">loadTexts</span></code>.</p>
+<p>Attaching the corpus is not where this is decided. A compiler may be attached
+after a corpus is, so refusing at <code class="docutils literal notranslate"><span class="pre">setMibCorpus()</span></code> would make a working
+configuration depend on the order the two were set up in.</p>
+</section>
+</section>
+<section id="how-a-module-is-built">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">How a module is built</a><a class="headerlink" href="#how-a-module-is-built" title="Link to this heading">¶</a></h2>
+<p>The objects are the ones the generated module would have produced –
+<code class="docutils literal notranslate"><span class="pre">MibScalar</span></code>, <code class="docutils literal notranslate"><span class="pre">MibTable</span></code>, <code class="docutils literal notranslate"><span class="pre">MibTableRow</span></code>, <code class="docutils literal notranslate"><span class="pre">MibTableColumn</span></code>,
+<code class="docutils literal notranslate"><span class="pre">NotificationType</span></code> and the rest – with the same OIDs, the same syntax
+instances, the same <code class="docutils literal notranslate"><span class="pre">maxAccess</span></code> and the same index names. What differs is
+that the description of them arrived as data.</p>
+<p>Type names resolve in this order:</p>
+<ol class="arabic simple">
+<li><p>A type the module declares itself. Its own TEXTUAL-CONVENTION shadows
+anything of that name elsewhere.</p></li>
+<li><p>A base SMI type – <code class="docutils literal notranslate"><span class="pre">Integer32</span></code>, <code class="docutils literal notranslate"><span class="pre">OCTET</span> <span class="pre">STRING</span></code>, <code class="docutils literal notranslate"><span class="pre">Counter64</span></code> and so on.</p></li>
+<li><p>Whatever the module’s IMPORTS clause says defines it. This may load that
+module, from disk or from the corpus, so a vendor module’s <code class="docutils literal notranslate"><span class="pre">DisplayString</span></code>
+resolves to the one the already-loaded <code class="docutils literal notranslate"><span class="pre">SNMPv2-TC</span></code> exported.</p></li>
+</ol>
+<p>A type that resolves nowhere raises rather than falling back to a base type: a
+column silently typed <code class="docutils literal notranslate"><span class="pre">OctetString</span></code> instead of its TEXTUAL-CONVENTION renders
+every value wrong and looks like a device fault.</p>
+<p>A syntax is stored once in the corpus and referenced by id, and the class built
+for it is cached against that id, so two objects sharing a type share a class
+and <code class="docutils literal notranslate"><span class="pre">isinstance</span></code> never sees two classes for one type.</p>
+</section>
+<section id="version-gating">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Version gating</a><a class="headerlink" href="#version-gating" title="Link to this heading">¶</a></h2>
+<p>A corpus stamps a <strong>schema version</strong> – the layout, which changes rarely – and
+a <strong>corpus version</strong>, which is the build and changes often. They are separate
+so that a corpus rebuild does not require a pysnmp release.</p>
+<p><code class="docutils literal notranslate"><span class="pre">MibCorpus</span></code> refuses a schema version it does not implement, rather than
+reading the part it recognizes: a partial read resolves some OIDs and silently
+not others.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">corpus</span><span class="o">.</span><span class="n">meta</span><span class="p">(</span><span class="s2">"schema_version"</span><span class="p">)</span>   <span class="c1"># '1'</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">meta</span><span class="p">(</span><span class="s2">"corpus_version"</span><span class="p">)</span>   <span class="c1"># whatever the build stamped</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">module</span><span class="p">(</span><span class="s2">"IF-MIB"</span><span class="p">)</span>         <span class="c1"># tier, revision, content hash, node count</span>
+</pre></div>
+</div>
+<p>The full file format is specified in pysmi’s <code class="docutils literal notranslate"><span class="pre">corpus-schema</span></code> document, and
+pysmi publishes a conformance fixture that this repository’s CI runs against
+this reader – so the two halves of the contract are checked against each other
+rather than against themselves.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2005-2019, Ilya Etingof deceased .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

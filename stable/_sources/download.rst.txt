@@ -35,12 +35,23 @@ operational:
   ciphers are imported lazily: SNMPv1, SNMPv2c and the SNMPv3
   noAuthNoPriv and authNoPriv security levels work without it installed.
 
-Optional, but recommended:
+Optional, and installed by asking for the ``compile`` extra:
+
+.. code-block:: bash
+
+   $ pip install 'pysnmplib[compile]'
 
 * `PySMI <https://pypi.python.org/pypi/pysmi/>`_ for automatic
   MIB download and compilation. That helps visualizing more SNMP objects
 * `Ply <https://pypi.python.org/pypi/ply/>`_, parser generator
   required by PySMI
+
+PySMI is not a required dependency. PySNMP ships a rendering of the standard
+modules an engine resolves while starting up and while being configured, so
+SNMPv1, SNMPv2c, SNMPv3 and name resolution all work without it. What the extra
+buys is compiling ASN.1 MIB sources at run time; ask for a MIB compiler without
+it and :py:class:`~pysnmp.smi.error.SmiError` is raised, naming the missing
+import.
 
 Install previously downloaded packages with pip, for example:
 

@@ -62,6 +62,7 @@
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/loader-contract.html">MIB module loader contract</a></li>
 </ul>
 <ul>
@@ -124,7 +125,8 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#A"><strong>A</strong></a>
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
@@ -144,6 +146,56 @@
  | <a href="#W"><strong>W</strong></a>
  
 </div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__add__">__add__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__bool__">__bool__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__eq__">__eq__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__getattr__">__getattr__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType.__getitem__">__getitem__() (pysnmp.smi.rfc1902.NotificationType method)</a>
+
+      <ul>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__getitem__">(pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.__getitem__">(pysnmp.smi.rfc1902.ObjectType method)</a>
+</li>
+      </ul></li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__hash__">__hash__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__len__">__len__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__lt__">__lt__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Bits.__new__">__new__() (pysnmp.proto.rfc1902.Bits static method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__radd__">__radd__() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType.__repr__">__repr__() (pysnmp.smi.rfc1902.NotificationType method)</a>
+
+      <ul>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__repr__">(pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.__repr__">(pysnmp.smi.rfc1902.ObjectType method)</a>
+</li>
+      </ul></li>
+      <li><a href="docs/api-internals.html#pysnmp.error.PySnmpError.__str__">__str__() (pysnmp.error.PySnmpError method)</a>
+
+      <ul>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.__str__">(pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.__str__">(pysnmp.smi.rfc1902.ObjectType method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -167,6 +219,8 @@
         <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.addMibSource">(pysnmp.smi.rfc1902.ObjectType method)</a>
 </li>
       </ul></li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.builder.MibBuilder.addMibSources">addMibSources() (pysnmp.smi.builder.MibBuilder method)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType.addVarBinds">addVarBinds() (pysnmp.smi.rfc1902.NotificationType method)</a>
 </li>
   </ul></td>
@@ -255,17 +309,59 @@
         <li><a href="docs/hlapi/asyncio/manager/cmdgen/getcmd.html#pysnmp.hlapi.asyncio.getCmd">(in module pysnmp.hlapi.asyncio)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getFirstModuleName">getFirstModuleName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getFirstNodeName">getFirstNodeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getFirstTypeName">getFirstTypeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.OctetString.getFixedLength">getFixedLength() (pysnmp.proto.rfc1902.OctetString method)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.getLabel">getLabel() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
 </li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getLastModuleName">getLastModuleName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getLastNodeName">getLastNodeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getLastTypeName">getLastTypeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.getMibNode">getMibNode() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.builder.MibBuilder.getMibSources">getMibSources() (pysnmp.smi.builder.MibBuilder method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.getMibSymbol">getMibSymbol() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
 </li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getNextModuleName">getNextModuleName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getNextNodeName">getNextNodeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getNextType">getNextType() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getNodeLocation">getNodeLocation() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getNodeName">getNodeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getNodeNameByDesc">getNodeNameByDesc() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getNodeNameByOid">getNodeNameByOid() (pysnmp.smi.view.MibViewController method)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.getOid">getOid() (pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getOrderedModuleName">getOrderedModuleName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getOrderedNodeName">getOrderedNodeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getOrderedTypeName">getOrderedTypeName() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getParentNodeName">getParentNodeName() (pysnmp.smi.view.MibViewController method)</a>
 </li>
       <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getTableCellInfo">getTableCellInfo() (pysnmp.smi.view.MibViewController method)</a>
 </li>
       <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getTableColumns">getTableColumns() (pysnmp.smi.view.MibViewController method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.getTypeName">getTypeName() (pysnmp.smi.view.MibViewController method)</a>
 </li>
       <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.getUnits">getUnits() (pysnmp.smi.rfc1902.ObjectType method)</a>
 </li>
@@ -277,14 +373,28 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="docs/device-report.html#pysnmp.hlapi.DeviceReport.implemented_mibs">implemented_mibs (pysnmp.hlapi.DeviceReport attribute)</a>
 </li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.builder.MibBuilder.importSymbols">importSymbols() (pysnmp.smi.builder.MibBuilder method)</a>
+</li>
+      <li><a href="docs/api-internals.html#pysnmp.smi.view.MibViewController.indexMib">indexMib() (pysnmp.smi.view.MibViewController method)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Integer">Integer (class in pysnmp.proto.rfc1902)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Integer32">Integer32 (class in pysnmp.proto.rfc1902)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Integer32">Integer32 (class in pysnmp.proto.rfc1902)</a>
-</li>
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.IpAddress">IpAddress (class in pysnmp.proto.rfc1902)</a>
 </li>
+      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.OctetString.isFixedLength">isFixedLength() (pysnmp.proto.rfc1902.OctetString method)</a>
+</li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType.isFullyResolved">isFullyResolved() (pysnmp.smi.rfc1902.NotificationType method)</a>
+
+      <ul>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.isFullyResolved">(pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.isFullyResolved">(pysnmp.smi.rfc1902.ObjectType method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -376,6 +486,14 @@
 </li>
       <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.Bits.prettyOut">prettyOut() (pysnmp.proto.rfc1902.Bits method)</a>
 </li>
+      <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.NotificationType.prettyPrint">prettyPrint() (pysnmp.smi.rfc1902.NotificationType method)</a>
+
+      <ul>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectIdentity.prettyPrint">(pysnmp.smi.rfc1902.ObjectIdentity method)</a>
+</li>
+        <li><a href="docs/api-reference.html#pysnmp.smi.rfc1902.ObjectType.prettyPrint">(pysnmp.smi.rfc1902.ObjectType method)</a>
+</li>
+      </ul></li>
       <li>
     pysnmp.hlapi
 
@@ -383,10 +501,10 @@
         <li><a href="docs/api-internals.html#module-pysnmp.hlapi">module</a>
 </li>
       </ul></li>
-      <li><a href="docs/api-internals.html#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT">pysnmp.hlapi.transport.TransportAddrT (class in pysnmp.hlapi)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="docs/api-internals.html#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT">pysnmp.hlapi.transport.TransportAddrT (class in pysnmp.hlapi)</a>
+</li>
       <li>
     pysnmp.smi.rfc1902
 
@@ -424,33 +542,33 @@
     RFC
 
       <ul>
-        <li><a href="docs/api-reference.html#index-50">RFC 1157 Section 4.1.1</a>
+        <li><a href="docs/api-reference.html#index-53">RFC 1157 Section 4.1.1</a>
 </li>
-        <li><a href="docs/api-reference.html#index-49">RFC 1902</a>
+        <li><a href="docs/api-reference.html#index-52">RFC 1902</a>, <a href="docs/api-reference.html#index-71">[1]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-46">RFC 1902 Section 2</a>, <a href="docs/api-reference.html#index-47">[1]</a>, <a href="docs/api-reference.html#index-48">[2]</a>, <a href="docs/api-reference.html#index-51">[3]</a>, <a href="docs/api-reference.html#index-52">[4]</a>, <a href="docs/api-reference.html#index-53">[5]</a>, <a href="docs/api-reference.html#index-54">[6]</a>, <a href="docs/api-reference.html#index-55">[7]</a>
+        <li><a href="docs/api-reference.html#index-49">RFC 1902 Section 2</a>, <a href="docs/api-reference.html#index-50">[1]</a>, <a href="docs/api-reference.html#index-51">[2]</a>, <a href="docs/api-reference.html#index-54">[3]</a>, <a href="docs/api-reference.html#index-55">[4]</a>, <a href="docs/api-reference.html#index-56">[5]</a>, <a href="docs/api-reference.html#index-57">[6]</a>, <a href="docs/api-reference.html#index-58">[7]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-56">RFC 1902 Section 7.1.1</a>, <a href="docs/api-reference.html#index-57">[1]</a>
+        <li><a href="docs/api-reference.html#index-59">RFC 1902 Section 7.1.1</a>, <a href="docs/api-reference.html#index-60">[1]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-66">RFC 1902 Section 7.1.10</a>
+        <li><a href="docs/api-reference.html#index-69">RFC 1902 Section 7.1.10</a>
 </li>
-        <li><a href="docs/api-reference.html#index-63">RFC 1902 Section 7.1.11</a>
+        <li><a href="docs/api-reference.html#index-66">RFC 1902 Section 7.1.11</a>
 </li>
-        <li><a href="docs/api-reference.html#index-58">RFC 1902 Section 7.1.2</a>
+        <li><a href="docs/api-reference.html#index-61">RFC 1902 Section 7.1.2</a>
 </li>
-        <li><a href="docs/api-reference.html#index-60">RFC 1902 Section 7.1.3</a>
+        <li><a href="docs/api-reference.html#index-63">RFC 1902 Section 7.1.3</a>
 </li>
-        <li><a href="docs/api-reference.html#index-67">RFC 1902 Section 7.1.4</a>
+        <li><a href="docs/api-reference.html#index-70">RFC 1902 Section 7.1.4</a>
 </li>
-        <li><a href="docs/api-reference.html#index-59">RFC 1902 Section 7.1.5</a>
+        <li><a href="docs/api-reference.html#index-62">RFC 1902 Section 7.1.5</a>
 </li>
-        <li><a href="docs/api-reference.html#index-61">RFC 1902 Section 7.1.6</a>
+        <li><a href="docs/api-reference.html#index-64">RFC 1902 Section 7.1.6</a>
 </li>
-        <li><a href="docs/api-reference.html#index-62">RFC 1902 Section 7.1.7</a>
+        <li><a href="docs/api-reference.html#index-65">RFC 1902 Section 7.1.7</a>
 </li>
-        <li><a href="docs/api-reference.html#index-64">RFC 1902 Section 7.1.8</a>
+        <li><a href="docs/api-reference.html#index-67">RFC 1902 Section 7.1.8</a>
 </li>
-        <li><a href="docs/api-reference.html#index-65">RFC 1902 Section 7.1.9</a>
+        <li><a href="docs/api-reference.html#index-68">RFC 1902 Section 7.1.9</a>
 </li>
         <li><a href="docs/hlapi/asyncio/manager/cmdgen/getcmd.html#index-0">RFC 1905 Section 4.2.1</a>
 </li>
@@ -464,11 +582,11 @@
 </li>
         <li><a href="docs/api-reference.html#index-11">RFC 1924 Section 3</a>, <a href="docs/api-reference.html#index-17">[1]</a>, <a href="docs/api-reference.html#index-5">[2]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-0">RFC 2271 Section 3.4.2</a>, <a href="docs/api-reference.html#index-21">[1]</a>
+        <li><a href="docs/api-reference.html#index-0">RFC 2271 Section 3.4.2</a>, <a href="docs/api-reference.html#index-22">[1]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-42">RFC 2576 Section 5.1</a>
+        <li><a href="docs/api-reference.html#index-45">RFC 2576 Section 5.1</a>
 </li>
-        <li><a href="docs/api-reference.html#index-22">RFC 2576 Section 5.3</a>, <a href="docs/api-reference.html#index-24">[1]</a>
+        <li><a href="docs/api-reference.html#index-23">RFC 2576 Section 5.3</a>, <a href="docs/api-reference.html#index-25">[1]</a>
 </li>
         <li><a href="docs/api-reference.html#index-10">RFC 2851 Section 4</a>, <a href="docs/api-reference.html#index-16">[1]</a>, <a href="docs/api-reference.html#index-4">[2]</a>
 </li>
@@ -476,43 +594,49 @@
 </li>
         <li><a href="docs/api-reference.html#index-20">RFC 3411 Section 3.1.1</a>
 </li>
-        <li><a href="docs/api-reference.html#index-41">RFC 3411 Section 3.3.1</a>
+        <li><a href="docs/api-reference.html#index-44">RFC 3411 Section 3.3.1</a>
 </li>
-        <li><a href="docs/api-reference.html#index-44">RFC 3411 Section 3.3.2</a>
+        <li><a href="docs/api-reference.html#index-47">RFC 3411 Section 3.3.2</a>
 </li>
-        <li><a href="docs/api-reference.html#index-45">RFC 3411 Section 3.3.3</a>
+        <li><a href="docs/api-reference.html#index-48">RFC 3411 Section 3.3.3</a>
 </li>
-        <li><a href="docs/api-reference.html#index-43">RFC 3411 Section 4.1</a>
+        <li><a href="docs/api-reference.html#index-46">RFC 3411 Section 4.1</a>
 </li>
         <li><a href="docs/api-reference.html#index-19">RFC 3412 Section 2.1</a>
 </li>
+        <li><a href="docs/security-considerations.html#index-0">RFC 3412 Section 4.2.1.2</a>
+</li>
         <li><a href="docs/pysnmp-architecture.html#index-0">RFC 3413</a>, <a href="docs/snmp-design.html#index-0">[1]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-23">RFC 3413 Section 4.1.1</a>
+        <li><a href="docs/api-reference.html#index-24">RFC 3413 Section 4.1.1</a>
 </li>
         <li><a href="docs/api-reference.html#index-12">RFC 3413 Section 4.1.4</a>, <a href="docs/api-reference.html#index-14">[1]</a>, <a href="docs/api-reference.html#index-18">[2]</a>, <a href="docs/api-reference.html#index-2">[3]</a>, <a href="docs/api-reference.html#index-6">[4]</a>, <a href="docs/api-reference.html#index-8">[5]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-26">RFC 3414 Section 2.5.1</a>, <a href="docs/api-reference.html#index-27">[1]</a>
+        <li><a href="docs/api-reference.html#index-31">RFC 3414</a>, <a href="docs/api-reference.html#index-32">[1]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-28">RFC 3414 Section 2.6</a>, <a href="docs/api-reference.html#index-29">[1]</a>, <a href="docs/api-reference.html#index-38">[2]</a>, <a href="docs/api-reference.html#index-39">[3]</a>, <a href="docs/api-reference.html#index-40">[4]</a>
+        <li><a href="docs/api-reference.html#index-21">RFC 3414 Section 2.2</a>
 </li>
-        <li><a href="docs/api-reference.html#index-25">RFC 3414 Section 5</a>
+        <li><a href="docs/api-reference.html#index-27">RFC 3414 Section 2.5.1</a>, <a href="docs/api-reference.html#index-28">[1]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-30">RFC 3414 Section 6</a>
+        <li><a href="docs/api-reference.html#index-29">RFC 3414 Section 2.6</a>, <a href="docs/api-reference.html#index-30">[1]</a>, <a href="docs/api-reference.html#index-41">[2]</a>, <a href="docs/api-reference.html#index-42">[3]</a>, <a href="docs/api-reference.html#index-43">[4]</a>
 </li>
-        <li><a href="docs/api-reference.html#index-31">RFC 3414 Section 7</a>
+        <li><a href="docs/api-reference.html#index-26">RFC 3414 Section 5</a>
 </li>
-        <li><a href="docs/api-reference.html#index-36">RFC 3414 Section 8</a>
+        <li><a href="docs/api-reference.html#index-33">RFC 3414 Section 6</a>
+</li>
+        <li><a href="docs/api-reference.html#index-34">RFC 3414 Section 7</a>
+</li>
+        <li><a href="docs/api-reference.html#index-39">RFC 3414 Section 8</a>
 </li>
         <li><a href="docs/hlapi/asyncio/manager/cmdgen/bulkcmd.html#index-1">RFC 3416 Section 4.2.3</a>
 </li>
         <li><a href="docs/snmp-history.html#index-2">RFC 3418</a>
 </li>
-        <li><a href="docs/api-reference.html#index-37">RFC 3826 Section 3</a>
+        <li><a href="docs/api-reference.html#index-40">RFC 3826 Section 3</a>
 </li>
         <li><a href="docs/snmp-history.html#index-3">RFC 6241</a>
 </li>
-        <li><a href="docs/api-reference.html#index-32">RFC 7860</a>, <a href="docs/api-reference.html#index-33">[1]</a>, <a href="docs/api-reference.html#index-34">[2]</a>, <a href="docs/api-reference.html#index-35">[3]</a>
+        <li><a href="docs/api-reference.html#index-35">RFC 7860</a>, <a href="docs/api-reference.html#index-36">[1]</a>, <a href="docs/api-reference.html#index-37">[2]</a>, <a href="docs/api-reference.html#index-38">[3]</a>
 </li>
         <li><a href="docs/snmp-history.html#index-0">RFC 789</a>
 </li>
@@ -533,6 +657,8 @@
         <li><a href="docs/hlapi/asyncio/manager/cmdgen/setcmd.html#pysnmp.hlapi.asyncio.setCmd">(in module pysnmp.hlapi.asyncio)</a>
 </li>
       </ul></li>
+      <li><a href="docs/api-reference.html#pysnmp.proto.rfc1902.OctetString.setFixedLength">setFixedLength() (pysnmp.proto.rfc1902.OctetString method)</a>
+</li>
       <li><a href="docs/api-reference.html#pysnmp.hlapi.asyncio.Udp6TransportTarget.setLocalAddress">setLocalAddress() (pysnmp.hlapi.asyncio.Udp6TransportTarget method)</a>
 
       <ul>

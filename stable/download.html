@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/loader-contract.html">MIB module loader contract</a></li>
 </ul>
 <ul>
@@ -157,13 +158,22 @@ used by SNMPv3 crypto features. It is a declared dependency, but its
 ciphers are imported lazily: SNMPv1, SNMPv2c and the SNMPv3
 noAuthNoPriv and authNoPriv security levels work without it installed.</p></li>
 </ul>
-<p>Optional, but recommended:</p>
+<p>Optional, and installed by asking for the <code class="docutils literal notranslate"><span class="pre">compile</span></code> extra:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">'pysnmplib[compile]'</span>
+</pre></div>
+</div>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pypi.python.org/pypi/pysmi/">PySMI</a> for automatic
 MIB download and compilation. That helps visualizing more SNMP objects</p></li>
 <li><p><a class="reference external" href="https://pypi.python.org/pypi/ply/">Ply</a>, parser generator
 required by PySMI</p></li>
 </ul>
+<p>PySMI is not a required dependency. PySNMP ships a rendering of the standard
+modules an engine resolves while starting up and while being configured, so
+SNMPv1, SNMPv2c, SNMPv3 and name resolution all work without it. What the extra
+buys is compiling ASN.1 MIB sources at run time; ask for a MIB compiler without
+it and <a class="reference internal" href="docs/api-internals.html#pysnmp.smi.error.SmiError" title="pysnmp.smi.error.SmiError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SmiError</span></code></a> is raised, naming the missing
+import.</p>
 <p>Install previously downloaded packages with pip, for example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-index<span class="w"> </span>--find-links<span class="w"> </span>/path/to/packages<span class="w"> </span>pysnmplib
 </pre></div>

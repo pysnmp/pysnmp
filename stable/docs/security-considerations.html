@@ -65,12 +65,14 @@
 <li class="toctree-l2"><a class="reference internal" href="#recommended-configuration">Recommended configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#protocol-status">Protocol status</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#configuration-warnings">Configuration warnings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#turning-snmpv1-and-snmpv2c-off">Turning SNMPv1 and SNMPv2c off</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cipher-backend">Cipher backend</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
 </ul>
 <ul>
@@ -277,6 +279,57 @@ selectively:</p>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">'ignore'</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">PySnmpWeakCryptoWarning</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="turning-snmpv1-and-snmpv2c-off">
+<h2>Turning SNMPv1 and SNMPv2c off<a class="headerlink" href="#turning-snmpv1-and-snmpv2c-off" title="Link to this heading">¶</a></h2>
+<p>SNMPv1 and SNMPv2c authenticate with a community string sent in the clear.
+There is no cipher to be weak here and nothing to configure better: the
+credential is readable by anyone who can see the packet, and a request carrying
+the right string is honoured whoever sent it.</p>
+<p>Regulated environments generally have to do more than avoid using them. They
+have to be able to say the engine <em>cannot</em> use them, which is a different
+claim, and one that a code review of the calling application does not settle.
+Build the engine without them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.entity.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">SnmpEngine</span>
+
+<span class="n">snmpEngine</span> <span class="o">=</span> <span class="n">SnmpEngine</span><span class="p">(</span><span class="n">enableLegacyVersions</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or, for an application that offers no way to pass the argument, set the
+environment variable and leave the application alone:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">PYSNMP_DISABLE_V1_V2C</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+<p>An explicit <code class="docutils literal notranslate"><span class="pre">enableLegacyVersions</span></code> argument always wins over the variable, so
+a process that deliberately builds a legacy engine — a proxy translating v2c to
+v3, say — still can.</p>
+<section id="what-the-guarantee-rests-on">
+<h3>What the guarantee rests on<a class="headerlink" href="#what-the-guarantee-rests-on" title="Link to this heading">¶</a></h3>
+<p>The v1 and v2c message processing and security models are not registered on the
+engine at all. Enforcement is subtraction rather than a check, which matters
+for what you can claim about it:</p>
+<ul class="simple">
+<li><p><strong>Inbound.</strong> <span class="target" id="index-0"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc3412.html#section-4.2.1.2"><strong>RFC 3412 Section 4.2.1.2</strong></a> says a message whose <code class="docutils literal notranslate"><span class="pre">msgVersion</span></code>
+has no message processing model is counted in <code class="docutils literal notranslate"><span class="pre">snmpInBadVersions</span></code> and
+dropped. A v3-only engine rejects a v1 message exactly as it rejects a
+version that does not exist. The message is never dispatched, no community
+is ever compared, and the drop is counted where an audit can read it.</p></li>
+<li><p><strong>Outbound.</strong> <code class="docutils literal notranslate"><span class="pre">MsgAndPduDispatcher.sendPdu()</span></code> raises
+<code class="docutils literal notranslate"><span class="pre">unsupportedMsgProcessingModel</span></code>. Nothing community-authenticated can leave
+the engine.</p></li>
+<li><p><strong>Configuration.</strong> <code class="docutils literal notranslate"><span class="pre">pysnmp.entity.config.addV1System()</span></code> raises
+<a class="reference internal" href="api-internals.html#pysnmp.error.PySnmpError" title="pysnmp.error.PySnmpError"><code class="xref py py-class docutils literal notranslate"><span class="pre">pysnmp.error.PySnmpError</span></code></a> rather than building a row that could
+never be used, so a mistake surfaces at the line that made it. Anything
+reaching pysnmp through <a class="reference internal" href="api-reference.html#pysnmp.hlapi.CommunityData" title="pysnmp.hlapi.auth.CommunityData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommunityData</span></code></a> reaches
+this function, so the high-level API fails the same way.</p></li>
+</ul>
+<p>There is no configuration that re-enables a version on an engine already built
+without it. Rebuild the engine.</p>
+<p>Configuring a community on an engine that <em>does</em> allow it emits
+<a class="reference internal" href="api-internals.html#pysnmp.error.PySnmpWeakCryptoWarning" title="pysnmp.error.PySnmpWeakCryptoWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">pysnmp.error.PySnmpWeakCryptoWarning</span></code></a>, the same way a weak cipher does.
+The default is unchanged — every engine still speaks all three versions unless
+told otherwise — and the warning is silenced the same way as the others.</p>
+</section>
 </section>
 <section id="cipher-backend">
 <h2>Cipher backend<a class="headerlink" href="#cipher-backend" title="Link to this heading">¶</a></h2>

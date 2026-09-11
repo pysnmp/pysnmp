@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/loader-contract.html">MIB module loader contract</a></li>
 </ul>
 <ul>
@@ -129,10 +130,87 @@
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
 <p>Generated from the commit history at release time. The narrative history
 through 5.x is in <a class="reference external" href="https://github.com/pysnmp/pysnmp/blob/main/CHANGES.md">CHANGES.md</a>.</p>
-<section id="rc-10-2026-09-08">
-<h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.9...v6.0.0-rc.10">6.0.0-rc.10</a> (2026-09-08)<a class="headerlink" href="#rc-10-2026-09-08" title="Link to this heading">¶</a></h2>
+<section id="rc-11-2026-09-11">
+<h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.10...v6.0.0-rc.11">6.0.0-rc.11</a> (2026-09-11)<a class="headerlink" href="#rc-11-2026-09-11" title="Link to this heading">¶</a></h2>
 <section id="breaking-changes">
 <h3>⚠ BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>secmod:</strong> passwordToKeySHA() returns a different key for the same
+passphrase and engine ID. Callers who stored keys derived from it must
+re-derive them. The keys it returned before could not be used against any
+other implementation.</p></li>
+<li><p><strong>smi:</strong> pysnmp-pysmi is no longer installed with pysnmplib. Code that
+relied on pysnmp pulling pysmi in – importing pysmi directly, or calling
+addMibCompiler() – must install pysnmplib[compile] or depend on pysnmp-pysmi
+explicitly. addMibCompiler() already raised SmiError when pysmi was missing, so
+what changed is who reaches that path, not what they see on it.</p></li>
+<li><p><strong>smi:</strong> PYSNMP-USM-MIB’s pass-phrase columns report not-accessible
+where the 2017 rendering left them at MibTableColumn’s read-only default:
+pysnmpUsmSecretUserName, pysnmpUsmSecretAuthKey, pysnmpUsmSecretPrivKey,
+pysnmpUsmKeyAuthLocalized, pysnmpUsmKeyPrivLocalized, pysnmpUsmKeyAuth and
+pysnmpUsmKeyPriv. Every one is not-accessible in the module’s own MAX-ACCESS
+clause, so a manager could read stored authentication and privacy pass-phrases
+that the MIB never offered. pysnmp’s internal writes are unaffected: they go
+through the instrumentation controller with no access-control function, which
+is where max-access is enforced.</p></li>
+</ul>
+<p>Co-Authored-By: Claude Opus 5 (1M context) <a class="reference external" href="mailto:noreply&#37;&#52;&#48;anthropic&#46;com">noreply<span>&#64;</span>anthropic<span>&#46;</span>com</a></p>
+<ul class="simple">
+<li><p><strong>smi:</strong> SNMP-TARGET-MIB::snmpTargetAddrName and snmpTargetParamsName
+report not-accessible where the 2017 copy said read-only. RFC 3413 declares
+both IMPLIED INDEX columns and RFC 2578 section 7.3 requires it; nothing
+becomes unobtainable, since an index column’s value travels in the OID suffix
+of every row.</p></li>
+<li><p><strong>smi:</strong> SnmpTagValue and SnmpTagList reject an ASCII CR in a tag.
+RFC 3413 section 4.1.1 defines the delimiters as space, tab, CR and LF; the
+2017 copy listed tab twice and omitted CR, so “a\rb” was accepted as a single
+tag value. Nothing else about the validation changes.</p></li>
+<li><p><strong>smi:</strong> SNMP-FRAMEWORK-MIB::snmpEngineTime has syntax Integer32
+rather than a class named SnmpEngineTime. RFC 3411 declares it
+SYNTAX INTEGER (0..2147483647) and defines no such textual convention – the
+module’s only TCs are SnmpEngineID, SnmpSecurityModel,
+SnmpMessageProcessingModel, SnmpSecurityLevel and SnmpAdminString.</p></li>
+</ul>
+<p>Fixes an InetAddress index crash along the way: cloneAsName now clones from
+the octets rather than an ascii decode of them, so an InetAddress carrying
+raw address bytes no longer fails its DISPLAY-HINT with
+“Display format eval failure”.</p>
+</section>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>entity:</strong> make v1/v2c a runtime policy rather than a packaging split (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/9ab872700b3994ae3ea4a9e7a5777725dfc03943">9ab8727</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/108">#108</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/111">#111</a></p></li>
+<li><p><strong>smi:</strong> delete the last five hand-edited base modules (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/98967d217adfe348a11605a21b9235d1dae3b0c0">98967d2</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysmi/issues/231">pysnmp/pysmi#231</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/232">#232</a> <a class="reference external" href="https://github.com/pysnmp/pysmi/issues/236">pysnmp/pysmi#236</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/198">#198</a></p></li>
+<li><p><strong>smi:</strong> make pysnmp-pysmi an optional dependency (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/0d148fb71185cac2b15b2c49c41f14f24cba4960">0d148fb</a>), closes <a class="reference external" href="https://github.com/197/pysnmp/issues/198">197/#198</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/196">#196</a></p></li>
+<li><p><strong>smi:</strong> own MIB runtime behavior and render pysnmp’s MIBs from ASN.1 (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/75798679b0462df8c1d9970cfd710da39ba7eae2">7579867</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysmi/issues/236">pysnmp/pysmi#236</a></p></li>
+<li><p><strong>smi:</strong> read PYSNMP_MIB_SOURCES for where the ASN.1 is (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/d5481bee07e40726113d9c5845816882dee1677f">d5481be</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/144">#144</a></p></li>
+<li><p><strong>smi:</strong> report which source a module came from, and what it shadowed (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/85a70623a3c2a7c52f15a237195faea433507b5b">85a7062</a>)</p></li>
+<li><p><strong>smi:</strong> resolve an unknown OID by loading the module a corpus names (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/41d1521d47638546b5c170e113377d2857e7795e">41d1521</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/144">#144</a></p></li>
+<li><p><strong>smi:</strong> resolve MIBs from a corpus, when asked to (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/f90f956b3344156d54def6b1adfe90409269178d">f90f956</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/199">pysnmp/pysnmp#199</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/144">pysnmp/pysnmp#144</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/145">pysnmp/pysnmp#145</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/196">pysnmp/pysnmp#196</a></p></li>
+<li><p><strong>smi:</strong> search several MIB corpora as one, ordered by precedence (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/20f1ef39550f446921c6f5fa72a0575910fa78f0">20f1ef3</a>)</p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>deps:</strong> put the pyasn1 floor back on a GA (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/278fc80d17290180b24e0d0724afb7062f768a2a">278fc80</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysmi/issues/236">pysnmp/pysmi#236</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/196">#196</a></p></li>
+<li><p><strong>secmod:</strong> derive the SHA-1 key from a SHA-1 hash of the passphrase (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/515c51b3cd4b688421e550b65a9f9fa3df1ff2ba">515c51b</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/225">#225</a></p></li>
+<li><p><strong>smi:</strong> drop SNMP-USER-BASED-SM-3DES-MIB (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/a27bc4bdc9af358216adc782d8aae396c8ebe222">a27bc4b</a>)</p></li>
+<li><p><strong>smi:</strong> give augmenting rows their index names, and guard the corpus paths (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/12ed810fd835c625a13a693f2446668a59a2c728">12ed810</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/199">pysnmp/pysnmp#199</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/145">pysnmp/pysnmp#145</a></p></li>
+<li><p><strong>smi:</strong> let a compiler render the texts a corpus cannot carry (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/d0fffd4b2c5d66cc520514cc54f18686513d19f9">d0fffd4</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/217">#217</a></p></li>
+<li><p><strong>smi:</strong> raise SmiError for a corpus path SQLite cannot open (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/6fe848b00f549b147568806c971c27b56616201a">6fe848b</a>)</p></li>
+<li><p><strong>smi:</strong> rank a contested arc by the corpus rule, not by revision alone (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/0b9b8133bd1b60a56cbd084787fdb71e5daf3e4d">0b9b813</a>)</p></li>
+<li><p><strong>smi:</strong> resolve a type IMPORTS points at the wrong module for (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/d9f1050cda0cdeaf464181acb170e8e92c5c5093">d9f1050</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/145">pysnmp/pysnmp#145</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/199">pysnmp/pysnmp#199</a></p></li>
+<li><p><strong>smi:</strong> satisfy mypy on the corpus reader’s two optional paths (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/14967ff5184b168f63ab1b6d52d71194cb499127">14967ff</a>)</p></li>
+<li><p><strong>tests:</strong> do not name a directory “we?ird” on a platform that forbids it (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/401d73e0d8c0589cfdaf2632de2460908badc0f7">401d73e</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/211">#211</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/211">#211</a></p></li>
+<li><p><strong>tests:</strong> make the corpus suite run in CI instead of skipping itself (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/29df876d75fee1a4be04eb60e6d727ac1da89572">29df876</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/199">pysnmp/pysnmp#199</a> <a class="reference external" href="https://github.com/pysnmp/pysmi/issues/184">pysnmp/pysmi#184</a></p></li>
+</ul>
+</section>
+</section>
+<section id="rc-10-2026-09-08">
+<h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.9...v6.0.0-rc.10">6.0.0-rc.10</a> (2026-09-08)<a class="headerlink" href="#rc-10-2026-09-08" title="Link to this heading">¶</a></h2>
+<section id="id1">
+<h3>⚠ BREAKING CHANGES<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>entity:</strong> seven INDEX columns of SNMP-VIEW-BASED-ACM-MIB report
 not-accessible where the 2017 copy said read-only, per RFC 2578 section 7.3:
@@ -155,8 +233,8 @@ now <code class="docutils literal notranslate"><span class="pre">deprecated</spa
 the single arm RFC 1155 defines that CHOICE to have.</p></li>
 </ul>
 </section>
-<section id="features">
-<h3>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h3>
+<section id="id2">
+<h3>Features<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>entity:</strong> create VACM context rows without a column RFC 3415 omits (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/e9563a69b8ec500b013f9e5a644b8d75e3264ee2">e9563a6</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/198">#198</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/205">#205</a></p></li>
 <li><p><strong>smi:</strong> delete the 2017 base layer so pysmi’s modules are the ones that load (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/59e68bad713bbf585fa12b463ee9ce61a24dde9a">59e68ba</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/205">#205</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/198">#198</a> <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/205">#205</a></p></li>
@@ -164,8 +242,8 @@ the single arm RFC 1155 defines that CHOICE to have.</p></li>
 <li><p><strong>smi:</strong> resolve a module by best match, not by which source answers first (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/f380447264222e1926c916fe031340be0b4aaad4">f380447</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/198">#198</a></p></li>
 </ul>
 </section>
-<section id="bug-fixes">
-<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">¶</a></h3>
+<section id="id3">
+<h3>Bug Fixes<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>carrier:</strong> report the family wildcard for an unbound datagram socket (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/ab23e505ddb53f8a76cc95c24a078c33333bcfcc">ab23e50</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/173">#173</a></p></li>
 <li><p><strong>smi:</strong> do not reload a module a newer source appeared for (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/b954c7579ac70f38cdb1e486668472d6fa94d067">b954c75</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/198">#198</a></p></li>
@@ -182,14 +260,14 @@ the single arm RFC 1155 defines that CHOICE to have.</p></li>
 </section>
 <section id="rc-9-2026-09-06">
 <h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.8...v6.0.0-rc.9">6.0.0-rc.9</a> (2026-09-06)<a class="headerlink" href="#rc-9-2026-09-06" title="Link to this heading">¶</a></h2>
-<section id="id1">
-<h3>⚠ BREAKING CHANGES<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<section id="id4">
+<h3>⚠ BREAKING CHANGES<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>deps:</strong> pysnmp-pyasn1 must now be &gt;=2.0.0,&lt;3.0.0.</p></li>
 </ul>
 </section>
-<section id="id2">
-<h3>Bug Fixes<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<section id="id5">
+<h3>Bug Fixes<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>debug:</strong> make the debug switch callable whether or not debugging is on (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/921b720e4958de857037d42b53981b355c060f47">921b720</a>)</p></li>
 <li><p><strong>deps:</strong> track pysmi and pyasn1 release candidates (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/c0a116d555b003f076b4a2df99c04c0b0aca88fb">c0a116d</a>)</p></li>
@@ -209,8 +287,8 @@ the single arm RFC 1155 defines that CHOICE to have.</p></li>
 </section>
 <section id="rc-8-2026-09-06">
 <h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.7...v6.0.0-rc.8">6.0.0-rc.8</a> (2026-09-06)<a class="headerlink" href="#rc-8-2026-09-06" title="Link to this heading">¶</a></h2>
-<section id="id3">
-<h3>Bug Fixes<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<section id="id6">
+<h3>Bug Fixes<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>ci:</strong> publish docs from a branch, not a detached HEAD (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/90021961c9aef4d0f135b5af5c8d9055e238a913">9002196</a>)</p></li>
 </ul>
@@ -218,8 +296,8 @@ the single arm RFC 1155 defines that CHOICE to have.</p></li>
 </section>
 <section id="rc-7-2026-09-05">
 <h2><a class="reference external" href="https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.6...v6.0.0-rc.7">6.0.0-rc.7</a> (2026-09-05)<a class="headerlink" href="#rc-7-2026-09-05" title="Link to this heading">¶</a></h2>
-<section id="id4">
-<h3>Bug Fixes<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<section id="id7">
+<h3>Bug Fixes<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>smi:</strong> accept numeric input for integer TCs carrying a DISPLAY-HINT (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/7d98e83463ec293d5887ecfcdc55e9bdf4cca5a4">7d98e83</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/150">#150</a></p></li>
 <li><p><strong>smi:</strong> let transport-address TCs use the TEXTUAL-CONVENTION machinery (<a class="reference external" href="https://github.com/pysnmp/pysnmp/commit/33c91faad6e2ee74e5e33b16acaac82dd322c542">33c91fa</a>), closes <a class="reference external" href="https://github.com/pysnmp/pysnmp/issues/155">#155</a></p></li>
