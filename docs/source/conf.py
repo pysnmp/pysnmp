@@ -120,29 +120,18 @@ pygments_style = "sphinx"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "alabaster"
-# html_theme = 'sphinx_rtd_theme'
+html_theme = "furo"
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
+# The same theme as the organization site at pysnmp.github.io, so moving
+# between the four is moving within one site. furo supplies its own sidebar,
+# so there is no html_sidebars here, and it takes the logo as a theme option
+# rather than through html_logo.
 html_theme_options = {
-    "logo": "logo.svg",
-    "description": "<p align=left><i><b>Brewing free software for the greater good</i></b></p>",
-    "show_powered_by": False,
-    "github_user": "pysnmp",
-    "github_repo": "pysnmp",
-    "fixed_sidebar": True,
-}
-
-html_sidebars = {
-    "**": [
-        "about.html",
-        "navigation.html",
-        "relations.html",
-        "searchbox.html",
-        "donate.html",
-    ]
+    "light_logo": "logo.svg",
+    "dark_logo": "logo.svg",
+    "source_repository": "https://github.com/pysnmp/pysnmp/",
+    "source_branch": "main",
+    "source_directory": "docs/source/",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -201,6 +190,10 @@ html_static_path = [".static"]
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
+
+# Nothing links to the sources once the link above is off, so there is no
+# reason to publish a copy of every page's reStructuredText beside it.
+html_copy_source = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
