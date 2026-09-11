@@ -319,8 +319,8 @@ texinfo_documents = [
 # was pinned at 3.4 here, seven releases below the 3.10 this package requires.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
-    "pyasn1": ("https://pyasn1.readthedocs.io/en/latest/", None),
-    "pysmi": ("https://www.pysnmp.com/pysmi/", None),
+    "pyasn1": ("https://pysnmp.github.io/pyasn1/stable/", None),
+    "pysmi": ("https://pysnmp.github.io/pysmi/stable/", None),
 }
 
 # this merges constructor docstring with class docstring

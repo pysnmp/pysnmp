@@ -66,12 +66,12 @@ class AbstractAesReeder(aes.Aes):
 
     Many vendors (including Cisco) do not use:
 
-    https://tools.itef.org/pdf/draft_bluementhal-aes-usm-04.txt
+    https://datatracker.ietf.org/doc/html/draft-blumenthal-aes-usm-04
 
     for key localization instead, they use the procedure for 3DES key localization
     specified in:
 
-    https://tools.itef.org/pdf/draft_reeder_snmpv3-usm-3desede-00.pdf
+    https://datatracker.ietf.org/doc/html/draft-reeder-snmpv3-usm-3desede-00
 
     The difference between the two is that the Reeder draft does key extension by repeating
     the steps in the password to key algorithm (hash phrase, then localize with SNMPEngine ID).
@@ -80,7 +80,7 @@ class AbstractAesReeder(aes.Aes):
     serviceID: tuple[int, ...] = ()
     keySize = 0
 
-    # 2.1 of https://tools.itef.org/pdf/draft_bluementhal-aes-usm-04.txt
+    # 2.1 of https://datatracker.ietf.org/doc/html/draft-blumenthal-aes-usm-04
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
         """Localize by re-running the passphrase hash, as Reeder's draft has it.
 
