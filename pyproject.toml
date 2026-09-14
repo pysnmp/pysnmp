@@ -62,8 +62,17 @@ dependencies = [
 # idempotent -- and anything on 4.x gets it once, from here. Regenerating with a
 # 3.x pysmi would write those fragments back into the committed modules and
 # tests/test_generated_mibs.py would fail against a 4.x one.
+#
+# The ceiling admits pysmi 5 because what this extra buys -- pysmi's pysnmp
+# code generator -- is byte-identical between 4.1.1 and 5.0.0, and
+# tests/test_generated_mibs.py is what says so rather than a reading of the
+# changelog. pysmi 5 is a corpus release: core.db schema 2, the registry
+# parsers, the site emitter, none of which is on the path this extra exists
+# for. Holding the ceiling at 5 would have made a deployment that compiles at
+# run time choose between this package and a current pysmi, over a major that
+# does not touch what it compiles.
 [project.optional-dependencies]
-compile = ["pysnmp-pysmi >=4.0.0,<5.0.0"]
+compile = ["pysnmp-pysmi >=4.0.0,<6"]
 
 [project.urls]
 repository = "https://github.com/pysnmp/pysnmp"
@@ -79,9 +88,15 @@ repository = "https://github.com/pysnmp/pysnmp"
 # for drift, and tests/test_corpus.py builds its fixture from
 # pysmi.corpus.conformance. Development needs pysmi whether or not an install
 # does.
+#
+# The floor is 5.0.0 where the extra's is 4.0.0, and the difference is the
+# fixture. pysmi.corpus.conformance is the reader contract, and its vectors
+# move with the schema: the provenance vectors and the schema_version one
+# exist only in the 5.x fixture, so testing pysnmp/smi/corpus.py against a
+# 4.x pysmi would test it against the schema it no longer only reads.
 [dependency-groups]
 dev = [
-    "pysnmp-pysmi >=4.0.0,<5.0.0",
+    "pysnmp-pysmi >=5.0.0,<6",
     # documentation toolchain is marker-guarded the way pyasn1 already does
     # it. Both CI jobs that build docs run 3.12 or newer.
     "sphinx >=9.1.0,<10.0.0; python_version >= '3.12'",
@@ -93,25 +108,33 @@ dev = [
     "ruff >=0.4.0,<1.0.0",
 ]
 
-# General availability only, enforced rather than reviewed.
+# General availability wherever there is one, enforced rather than reviewed.
 #
 # Every requirement above names a final release -- pysnmp-pyasn1 2.0.2 and
-# pysnmp-pysmi 4.0.0 are both GA -- but a specifier is a statement about one
-# requirement, and the thing worth guaranteeing is a property of the whole
-# resolution: nothing this repository installs is a prerelease, including
-# something a transitive dependency asks for. "disallow" is that guarantee. uv
-# refuses to resolve a prerelease for any package, whatever a requirement string
-# says, so an rc cannot re-enter the lockfile by way of a dependabot bump or a
-# `uv lock --upgrade`; CI resolves with --locked, so it cannot enter unnoticed
-# either.
+# pysnmp-pysmi 4.0.0 and 5.0.0 are GA -- but a specifier is a statement about
+# one requirement, and the thing worth guaranteeing is a property of the whole
+# resolution: nothing this repository installs is a prerelease of a package
+# that has a release, including something a transitive dependency asks for.
+# "if-necessary" is that guarantee: uv takes a prerelease only for a package
+# whose every version is one, so an rc of pysmi, pyasn1 or pysnmp cannot enter
+# the lockfile by way of a dependabot bump or a `uv lock --upgrade`, whatever a
+# requirement string says. CI resolves with --locked, so it cannot enter
+# unnoticed either.
 #
-# This is the setting to relax -- drop it, and uv goes back to its default of
-# admitting a prerelease where a specifier names one -- to deliberately reopen
-# an rc integration stream with a sibling, which is what the 4.0.0 cycle above
-# needed. Until then, a GA cannot depend on a prerelease and neither can the rc
-# line leading to it.
+# It was "disallow", which is the same guarantee with no exception at all, and
+# that turned out to be a guarantee this repository cannot keep. furo depends
+# on sphinx-basic-ng, which has published nothing but betas since 2022 -- its
+# 1.0.0b2 is already in the lockfile, because no resolution of the docs
+# toolchain exists without it. Under "disallow" the lockfile still verified,
+# since --locked checks rather than resolves, but every re-resolve failed: a
+# dependency bump could not be locked at all. A setting a repository has to
+# route around is not enforcement.
+#
+# This is still the setting to relax further -- "allow" admits a prerelease
+# wherever a specifier names one -- to deliberately reopen an rc integration
+# stream with a sibling, which is what the 4.0.0 cycle above needed.
 [tool.uv]
-prerelease = "disallow"
+prerelease = "if-necessary"
 
 [tool.pytest.ini_options]
 filterwarnings = [

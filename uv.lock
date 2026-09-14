@@ -9,7 +9,7 @@ resolution-markers = [
 ]
 
 [options]
-prerelease-mode = "disallow"
+prerelease-mode = "if-necessary"
 
 [[package]]
 name = "accessible-pygments"
@@ -940,15 +940,15 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "4.0.0"
+version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ply" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/18/2d/b9d365b7cf8c738837c47e9a7e86a7ee9a9dbd004cd57835da4538af6e74/pysnmp_pysmi-4.0.0.tar.gz", hash = "sha256:5f9c1b8f4616c9aee17be68e01a0fd88fc518667c10abc661fce0ec6eb34beda", size = 4421053, upload-time = "2026-09-10T20:45:56.098Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/7f/92c4d0391ac5b575ded61a79451860b807f3089ebf907d97caa039805615/pysnmp_pysmi-5.0.0.tar.gz", hash = "sha256:047ed3e8b07af0dbac38e4feb53bac0305c3a982ce58db7049c4c6c2cf4d697b", size = 4604588, upload-time = "2026-09-14T06:34:37.353Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/c6/15c547da968964bf10411d035e57ed9ba2971720db509889fbd339972146/pysnmp_pysmi-4.0.0-py3-none-any.whl", hash = "sha256:43667de4c63ef15dce1ae96fb5f011647e8c7167988bac57a39c1e523311c92d", size = 3156832, upload-time = "2026-09-10T20:45:53.981Z" },
+    { url = "https://files.pythonhosted.org/packages/17/2f/27c295252b4d5bb6154414f04fa53eb92e19a79a17a9e6df56cada7b50f5/pysnmp_pysmi-5.0.0-py3-none-any.whl", hash = "sha256:0dcb7be7303fe5041033f1889d6445aebbed7fc7dd0ea9c003122fd918c64ea3", size = 3268316, upload-time = "2026-09-14T06:34:35.483Z" },
 ]
 
 [[package]]
@@ -981,7 +981,7 @@ dev = [
 requires-dist = [
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=2.0.2,<3.0.0" },
-    { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=4.0.0,<5.0.0" },
+    { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=4.0.0,<6" },
 ]
 provides-extras = ["compile"]
 
@@ -991,7 +991,7 @@ dev = [
     { name = "furo", marker = "python_full_version >= '3.12'", specifier = ">=2025.12.19" },
     { name = "mypy", specifier = ">=1.15.0,<3.0.0" },
     { name = "myst-parser", marker = "python_full_version >= '3.12'", specifier = ">=5.1.0,<6.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=4.0.0,<5.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=5.0.0,<6" },
     { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", marker = "python_full_version >= '3.12'", specifier = ">=9.1.0,<10.0.0" },
