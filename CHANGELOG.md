@@ -3,6 +3,12 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is [published with the documentation](https://pysnmp.github.io/pysnmp/latest/changelog-history.html).
 
+## [6.0.0-rc.12](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.11...v6.0.0-rc.12) (2026-09-14)
+
+### Features
+
+* **smi:** read a schema 2 corpus, and answer where a module came from ([aa25837](https://github.com/pysnmp/pysnmp/commit/aa2583775b8e30cfb63ac689df90e26e9e7e894b))
+
 ## [6.0.0-rc.11](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.10...v6.0.0-rc.11) (2026-09-11)
 
 ### ⚠ BREAKING CHANGES
