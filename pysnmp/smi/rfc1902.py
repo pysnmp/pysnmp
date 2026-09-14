@@ -252,7 +252,7 @@ class ObjectIdentity:
 
         Examples
         --------
-        >>> ObjectIdentity('SNMPv2-MIB', 'sysDescr').addAsn1MibSource('https://pysnmp.github.io:443/mibs/asn1/@mib@')
+        >>> ObjectIdentity('SNMPv2-MIB', 'sysDescr').addAsn1MibSource('https://data.mibsdepot.com/asn1/@mib@')
         ObjectIdentity('SNMPv2-MIB', 'sysDescr')
         >>>
 
@@ -830,7 +830,7 @@ class ObjectType:
 
         Examples
         --------
-        >>> repr(ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addAsn1MibSource('https://pysnmp.github.io:443/mibs/asn1/@mib@')).startswith("ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), <Null value object")
+        >>> repr(ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')).addAsn1MibSource('https://data.mibsdepot.com/asn1/@mib@')).startswith("ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), <Null value object")
         True
         >>>
 
@@ -1190,7 +1190,7 @@ class NotificationType:
 
         Examples
         --------
-        >>> NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {}).addAsn1MibSource('https://pysnmp.github.io:443/mibs/asn1/@mib@')
+        >>> NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {}).addAsn1MibSource('https://data.mibsdepot.com/asn1/@mib@')
         NotificationType(ObjectIdentity('SNMPv2-MIB', 'coldStart'), (), {})
         >>>
 

@@ -228,7 +228,7 @@ For scalar MIB objects index is '0' by convention. The
    (1, 3, 6, 1, 2, 1, 1, 1, 0)
 
 We will be reading *sysDescr* scalar MIB object instance as defined
-in `SNMPv2-MIB <https://pysnmp.github.io/mibs/asn1/SNMPv2-MIB>`_ module.
+in `SNMPv2-MIB <https://mibsdepot.com/mib/SNMPv2-MIB/>`_ module.
 
 .. code-block:: python
 
@@ -242,7 +242,7 @@ in `SNMPv2-MIB <https://pysnmp.github.io/mibs/asn1/SNMPv2-MIB>`_ module.
 By default PySNMP will search your local filesystem for ASN.1 MIB files
 you refer to. It can also be configured to automatically download
 them from remote hosts, as shown in the examples. We maintain a
-`collection <https://pysnmp.github.io/mibs/>`_ of ASN.1 MIB modules
+`collection <https://mibsdepot.com/browse/>`_ of ASN.1 MIB modules
 that you can use in your SNMP projects.
 
 .. note::

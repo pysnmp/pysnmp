@@ -15,6 +15,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
+#: Where `addMibCompiler` compiles from when nothing else says.
+#:
+#: Local only, and deliberately: attaching a compiler should not put an SNMP
+#: application on the network for MIB content it did not ask for. To compile
+#: from the published corpus, name it: pass
+#: ``https://data.mibsdepot.com/asn1/@mib@`` in ``sources=``, or set the same URL
+#: in `PYSNMP_MIB_SOURCES`. Naming it is also what puts it in the order the
+#: caller wants relative to any local tree.
 defaultSources = ["file:///usr/share/snmp/mibs", "file:///usr/share/mibs"]
 
 #: Where to look for ASN.1 to compile, as `os.pathsep`-separated entries.
