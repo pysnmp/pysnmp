@@ -451,9 +451,8 @@ not others.
 
 An older one it reads. Schema 2 added the ``provenance`` table and changed
 nothing else, so a schema 1 corpus answers every other question in full, and
-:py:meth:`~pysnmp.smi.corpus.MibCorpus.provenance` answers for it the way it
-answers for any module whose origin the build did not record: nothing was
-recorded.
+``MibCorpus.provenance()`` answers for it the way it answers for any module
+whose origin the build did not record: nothing was recorded.
 
 .. code-block:: python
 
