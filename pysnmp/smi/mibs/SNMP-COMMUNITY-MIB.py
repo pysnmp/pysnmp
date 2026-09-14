@@ -1,8 +1,8 @@
 #
-# PySNMP MIB module SNMP-COMMUNITY-MIB (http://snmplabs.com/pysmi)
+# PySNMP MIB module SNMP-COMMUNITY-MIB (https://pysnmp.github.io/pysmi/)
 # ASN.1 source SNMP-COMMUNITY-MIB
 # Source digest sha256:296ed1c1a59302ad700a713a6a85169323014626e929bae75473a164b55d0263
-# Produced by pysmi-4.0.0
+# Produced by pysmi-5.0.0
 #
 PYSNMP_MODULE_REVISION = "200308060000Z"
 

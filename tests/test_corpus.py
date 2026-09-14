@@ -74,6 +74,12 @@ def corpus(corpus_path):
 #: distribution corpus already claims.
 PRIVATE_OID = "1.3.6.1.4.1.99999.2.7"
 
+#: The digest pysmi's conformance fixture records for ``FIXTURE-MIB``. Named
+#: rather than repeated, because what the provenance tests are about is the
+#: namespace and file -- the digest is the same on both sides of every one of
+#: them, and spelling out sixty-four hexadecimal digits twice would bury that.
+PROVENANCE_DIGEST = pysmi_conformance.PROVENANCE["FIXTURE-MIB"]["digest"]
+
 #: An OID the derived corpus anchors to a *different* module at the *same*
 #: length the conformance corpus anchors ``SMIV1-MIB``. Nothing but precedence
 #: can separate these two, which is what makes it the tie-break case.
@@ -129,6 +135,14 @@ def private_path(corpus_path, tmp_path_factory):
         db.execute(
             "UPDATE oid_index SET module = 'PRIVATE-MIB' WHERE oid_key = ?",
             (oid_key(CONTESTED_OID),),
+        )
+
+        # A different origin for the same module. Provenance is the one
+        # answer that says which corpus produced it, so the two have to
+        # disagree for a composite's answer to mean anything.
+        db.execute(
+            "UPDATE provenance SET namespace = 'private', "
+            "file = 'site/FIXTURE-MIB' WHERE module = 'FIXTURE-MIB'"
         )
 
         db.execute("UPDATE meta SET value = 'private' WHERE key = 'corpus_id'")
@@ -526,6 +540,18 @@ class TestConformance:
         if operation == "import_source":
             return corpus.imports_of(vector["module"]).get(vector["name"])
 
+        if operation == "provenance":
+            # A list, because that is what the vector states and pysmi's own
+            # runner answers with -- the reader returns the three fields
+            # named, and the order they are named in is the contract.
+            record = corpus.provenance(vector["module"])
+
+            return (
+                None
+                if record is None
+                else [record["namespace"], record["file"], record["digest"]]
+            )
+
         if operation == "module_field":
             record = corpus.module(vector["module"])
             field = "hash" if vector["field"] == "content_hash" else vector["field"]
@@ -537,6 +563,75 @@ class TestConformance:
     @pytest.mark.parametrize("vector", pysmi_conformance.VECTORS, ids=lambda x: x["id"])
     def test_vector(self, corpus, vector):
         assert self._answer(corpus, vector) == vector["expect"], vector["why"]
+
+
+class TestProvenance:
+    """Where a module came from, beyond what the vectors already say.
+
+    :py:class:`TestConformance` runs pysmi's provenance vectors against this
+    reader, which settles the single-corpus answers: the three fields, the
+    file being relative to its namespace, and a module the build recorded no
+    origin for reading as ``None`` rather than as empty strings.
+
+    What is left is pysnmp's. A composite is several corpora presented as one,
+    so the origin a caller is shown has to be the origin of the rows it is
+    reading -- not the first corpus that happens to have a row for the name.
+    And the table arrived with schema 2, so a corpus written before it has to
+    read as one that recorded nothing.
+    """
+
+    def test_the_owning_corpus_answers(self, composite, reversed_composite):
+        # PRIVATE-MIB's node resolves from the derived corpus in both
+        # orderings; FIXTURE-MIB's resolves from whichever is configured
+        # first, and its origin has to follow it.
+        assert composite.provenance("FIXTURE-MIB") == {
+            "namespace": "standard",
+            "file": "FIXTURE-MIB",
+            "digest": PROVENANCE_DIGEST,
+        }
+
+        assert reversed_composite.provenance("FIXTURE-MIB") == {
+            "namespace": "private",
+            "file": "site/FIXTURE-MIB",
+            "digest": PROVENANCE_DIGEST,
+        }
+
+    def test_a_module_no_corpus_carries(self, composite):
+        assert composite.provenance("NO-SUCH-MIB") is None
+
+    def test_a_module_no_corpus_recorded_an_origin_for(self, composite):
+        # PRIVATE-MIB exists only in the derived corpus, which carries no
+        # provenance row for it. Carried and unrecorded is the ordinary case
+        # for a module a caller staged rather than a build resolved.
+        assert composite.module("PRIVATE-MIB") is not None
+        assert composite.provenance("PRIVATE-MIB") is None
+
+    def test_a_schema_1_corpus_records_nothing(self, corpus_path, tmp_path):
+        # Schema 2 added the table and changed nothing else, so a schema 1
+        # corpus still answers every other question. Refusing it would strand
+        # a corpus that resolves every OID it is asked about, over a table
+        # pysnmp reads and pysmi added later.
+        path = tmp_path / "schema1.db"
+        shutil.copy(corpus_path, path)
+
+        db = sqlite3.connect(str(path))
+
+        with db:
+            db.execute("DROP TABLE provenance")
+            db.execute("UPDATE meta SET value = '1' WHERE key = 'schema_version'")
+
+        db.execute("PRAGMA user_version = 1")
+        db.close()
+
+        opened = MibCorpus(str(path))
+
+        try:
+            assert opened.meta("schema_version") == "1"
+            assert opened.provenance("FIXTURE-MIB") is None
+            assert opened.node_named("FIXTURE-MIB", "fixtureScalar") is not None
+
+        finally:
+            opened.close()
 
 
 class TestBuilderUnchangedWithoutACorpus:

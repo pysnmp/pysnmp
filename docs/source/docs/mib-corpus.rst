@@ -445,15 +445,47 @@ A corpus stamps a **schema version** -- the layout, which changes rarely -- and
 a **corpus version**, which is the build and changes often. They are separate
 so that a corpus rebuild does not require a pysnmp release.
 
-``MibCorpus`` refuses a schema version it does not implement, rather than
+``MibCorpus`` refuses a schema version *newer* than it implements, rather than
 reading the part it recognizes: a partial read resolves some OIDs and silently
 not others.
 
+An older one it reads. Schema 2 added the ``provenance`` table and changed
+nothing else, so a schema 1 corpus answers every other question in full, and
+``MibCorpus.provenance()`` answers for it the way it answers for any module
+whose origin the build did not record: nothing was recorded.
+
 .. code-block:: python
 
-   corpus.meta("schema_version")   # '1'
+   corpus.meta("schema_version")   # '2', or '1' for a corpus built before it
    corpus.meta("corpus_version")   # whatever the build stamped
    corpus.module("IF-MIB")         # tier, revision, content hash, node count
+
+
+Where a module came from
+------------------------
+
+The first question anyone asks of a MIB they did not publish, and one only the
+build can answer: by the time a module is a row in a corpus, the file it was
+parsed from is gone.
+
+.. code-block:: python
+
+   corpus.provenance("IF-MIB")
+   # {'namespace': 'standard', 'file': 'IF-MIB', 'digest': 'sha256:...'}
+
+``file`` is relative to its namespace and never absolute -- a corpus is
+byte-reproducible, and an absolute path would carry the directory the build ran
+in. ``namespace`` is what the build's manifest called the source the module
+came from, which is what separates two modules that define the same arc.
+
+``None`` means the corpus records no origin for that module, which is a
+different answer from an origin of empty strings and must not be rendered as
+one. A module staged by a caller rather than resolved by the build has no
+origin, and neither does anything in a schema 1 corpus.
+
+On a composite the answer comes from the corpus that *owns* the module -- the
+one whose rows a caller is reading -- not from the first one that happens to
+carry the name.
 
 The full file format is specified in pysmi's ``corpus-schema`` document, and
 pysmi publishes a conformance fixture that this repository's CI runs against

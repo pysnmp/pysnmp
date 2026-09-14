@@ -1,8 +1,8 @@
 #
-# PySNMP MIB module SNMP-TARGET-MIB (http://snmplabs.com/pysmi)
+# PySNMP MIB module SNMP-TARGET-MIB (https://pysnmp.github.io/pysmi/)
 # ASN.1 source SNMP-TARGET-MIB
 # Source digest sha256:39d11d27f1da4e7d6087e0f019e5d82000a28430dba1dc2fa29885c4704af249
-# Produced by pysmi-4.0.0
+# Produced by pysmi-5.0.0
 #
 PYSNMP_MODULE_REVISION = "200210140000Z"
 

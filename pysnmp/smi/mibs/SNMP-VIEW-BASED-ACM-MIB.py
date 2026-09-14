@@ -1,8 +1,8 @@
 #
-# PySNMP MIB module SNMP-VIEW-BASED-ACM-MIB (http://snmplabs.com/pysmi)
+# PySNMP MIB module SNMP-VIEW-BASED-ACM-MIB (https://pysnmp.github.io/pysmi/)
 # ASN.1 source SNMP-VIEW-BASED-ACM-MIB
 # Source digest sha256:5b2a1d85a8d6484d55a3a1856512ef8ee50acf381e5404a323858c5ee878e1e3
-# Produced by pysmi-4.0.0
+# Produced by pysmi-5.0.0
 #
 PYSNMP_MODULE_REVISION = "200210160000Z"
 

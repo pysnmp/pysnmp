@@ -91,13 +91,29 @@ class MibCorpusCycleError(error.SmiError):
     """
 
 
-#: The corpus schema this reader understands.
+#: The corpus schema versions this reader understands, oldest first.
 #:
 #: A corpus stamps its own version in ``meta`` and in the file's
 #: ``user_version`` header field. Refusing what we cannot read is deliberate:
-#: reading the subset we recognize out of a newer corpus would resolve some
+#: reading the subset we recognize out of a *newer* corpus would resolve some
 #: OIDs and silently not others.
-SCHEMA_VERSION: Final = 1
+#:
+#: An older one is a different question, and the answer here is different.
+#: Schema 2 adds the ``provenance`` table and changes nothing else -- every
+#: table and column the queries below name is in both -- so a schema 1 corpus
+#: is readable in full, and :py:meth:`MibCorpus.provenance` answers for it the
+#: same way it answers for a module schema 2 records no origin for: nothing was
+#: recorded. Refusing it instead would strand a corpus that answers every
+#: question this reader is asked, over a table pysnmp added later.
+SCHEMA_VERSIONS: Final = (1, 2)
+
+#: The newest schema this reader understands, and the one a corpus built
+#: alongside this pysnmp carries.
+SCHEMA_VERSION: Final = SCHEMA_VERSIONS[-1]
+
+#: The schema that first carried :py:meth:`MibCorpus.provenance`. Below it the
+#: table is absent rather than empty, which SQLite reports by raising.
+PROVENANCE_SCHEMA: Final = 2
 
 #: SQLite's ``application_id`` for a corpus -- ``PSMI`` as big-endian ASCII.
 #: Checked before any table is trusted, so pointing this at an unrelated
@@ -355,6 +371,9 @@ class MibCorpus:
             "WHERE module = ? AND name = ?"
         ),
         "imports_of": "SELECT name, source FROM import WHERE module = ?",
+        "provenance": (
+            "SELECT namespace, file, digest FROM provenance WHERE module = ?"
+        ),
         "type": "SELECT spec FROM type WHERE id = ?",
         "module": (
             "SELECT name, tier, oid, lastupdated, revision, content_hash, nodes "
@@ -424,12 +443,16 @@ class MibCorpus:
                 f"{path} is not a MIB corpus: application_id {application:#x}"
             )
 
-        if version != SCHEMA_VERSION:
+        if version not in SCHEMA_VERSIONS:
             self._db.close()
             raise error.SmiError(
                 f"MIB corpus {path} is schema version {version}; this pysnmp "
-                f"reads version {SCHEMA_VERSION}"
+                f"reads {', '.join(str(x) for x in SCHEMA_VERSIONS)}"
             )
+
+        #: Whether this file carries the ``provenance`` table at all, decided
+        #: once from the version rather than by catching an error per query.
+        self._provenance = version >= PROVENANCE_SCHEMA
 
         # A negative result is cached too: a dangling type id is a corpus
         # defect, and re-querying for it on every node that carries it turns
@@ -749,6 +772,39 @@ class MibCorpus:
             Symbol name to source module.
         """
         return dict(self._db.execute(self.QUERIES["imports_of"], (module,)))
+
+    def provenance(self, module: str) -> dict[str, str] | None:
+        """Where the build got this module, as the build recorded it.
+
+        The first question anyone asks of a MIB they did not publish, and one
+        only the build can answer: by the time a module is a row in a corpus
+        the file it was parsed from is gone. Two modules that define the same
+        arc come from two namespaces, and this says which file each was.
+
+        ``file`` is relative to its namespace, never absolute -- a corpus is
+        byte-reproducible, and an absolute path would carry the directory the
+        build ran in.
+
+        Args:
+            module: the module's descriptor
+
+        Returns
+        -------
+            ``namespace``, ``file`` and ``digest``, or ``None`` when the
+            corpus records no origin for this module. ``None`` is a distinct
+            answer from an origin of empty strings and must not be rendered as
+            one: a corpus may hold a module the build staged rather than
+            resolved, and a schema 1 corpus records no origins at all.
+        """
+        if not self._provenance:
+            return None
+
+        row = self._db.execute(self.QUERIES["provenance"], (module,)).fetchone()
+
+        if row is None:
+            return None
+
+        return {"namespace": row[0], "file": row[1], "digest": row[2]}
 
 
 class CompositeMibCorpus:
@@ -1214,6 +1270,26 @@ class CompositeMibCorpus:
         owner = self.owner(module)
 
         return owner.imports_of(module) if owner else {}
+
+    def provenance(self, module: str) -> dict[str, str] | None:
+        """Where the build got this module, from the corpus that owns it.
+
+        The owning corpus is the one that answers, which is the point: a
+        module carried by two corpora resolves from one of them, and the
+        origin a caller is shown has to be the origin of the rows it is
+        reading.
+
+        Args:
+            module: the module's descriptor
+
+        Returns
+        -------
+            ``namespace``, ``file`` and ``digest``, or ``None`` when no corpus
+            carries the module or the owning one records no origin for it.
+        """
+        owner = self.owner(module)
+
+        return owner.provenance(module) if owner else None
 
 
 def open_corpora(paths: "list[str] | tuple[str, ...]") -> Any:
