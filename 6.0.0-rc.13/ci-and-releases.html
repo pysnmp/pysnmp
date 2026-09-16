@@ -1,0 +1,744 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Further development" href="development.html"><link rel="prev" title="Historical changelog" href="changelog-history.html">
+        <link rel="prefetch" href="_static/logo.svg" as="image">
+        <link rel="prefetch" href="_static/logo.svg" as="image">
+
+    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Continuous integration and releases - SNMP library for Python 6.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="contents.html"><div class="brand">SNMP library for Python 6.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="contents.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/logo.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/logo.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">SNMP library for Python 6.0.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="quick-start.html">Quick start</a><input aria-label="Toggle navigation of Quick start" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="docs/tutorial.html">Documentation</a><input aria-label="Toggle navigation of Documentation" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs/snmp-history.html">SNMP history</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/snmp-design.html">SNMP design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/pysnmp-architecture.html">PySNMP architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/pysnmp-hlapi-tutorial.html">Common operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="docs/api-reference.html">Library reference</a><input aria-label="Toggle navigation of Library reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs/hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs/api-internals.html">Errors and supporting types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="docs/security-considerations.html">Security Considerations</a><input aria-label="Toggle navigation of Security Considerations" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/mib-corpus.html">Loading MIBs from a corpus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/loader-contract.html">MIB module loader contract</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/contents.html">Example scripts</a><input aria-label="Toggle navigation of Example scripts" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="examples/hlapi/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/hlapi/asyncio/manager/cmdgen/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/hlapi/asyncio/manager/cmdgen/walking-operations.html">Walking operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/hlapi/asyncio/manager/cmdgen/device-report.html">Device details report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/hlapi/asyncio/manager/cmdgen/advanced-topics.html">Advanced Command Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/hlapi/asyncio/agent/ntforg/common-notifications.html">Common notifications</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/hlapi/asyncio/agent/ntforg/advanced-topics.html">Advanced Notification Originator</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples/smi/manager/browsing-mib-tree.html">Manager side</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/smi/manager/generated-mib-modules.html">Generated MIB modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/smi/agent/implementing-mib-objects.html">Agent side</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="download.html">Download PySNMP</a><input aria-label="Toggle navigation of Download PySNMP" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="faq.html">FAQ</a><input aria-label="Toggle navigation of FAQ" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq/getting-peer-information.html">Getting peer address information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/how-to-implement-agent-mib.html">How to implement MIB at the Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/ignored-snmp-packets.html">Ignored SNMP packets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/listening-on-multiple-interfaces.html">Listening on multiple network interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/non-printable-snmp-values-apps.html">Garbaged SNMP values (apps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/non-printable-snmp-values-tools.html">Garbaged SNMP values (tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/oids-not-increasing.html">Dealing with the “OID not increasing” error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/pass-custom-mib-to-manager.html">How to pass MIB to the Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/response-values-mib-resolution.html">Resolve response values at MIB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/snmp-data-constraints-verification-failure.html">SNMP data constraints verification error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/walk-whole-mib.html">Walking whole MIB</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Further development</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/blob/main/docs/source/ci-and-releases.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/edit/main/docs/source/ci-and-releases.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="continuous-integration-and-releases">
+<h1>Continuous integration and releases<a class="headerlink" href="#continuous-integration-and-releases" title="Link to this heading">¶</a></h1>
+<p>This page describes how changes reach a released version of <code class="docutils literal notranslate"><span class="pre">pysnmplib</span></code>.
+The same model is used by
+<a class="reference external" href="https://github.com/pysnmp/pyasn1">pyasn1</a> and
+<a class="reference external" href="https://github.com/pysnmp/pysmi">pysmi</a>, so what follows applies to all
+three projects except where a difference is called out.</p>
+<section id="branches">
+<h2>Branches<a class="headerlink" href="#branches" title="Link to this heading">¶</a></h2>
+<p>There are exactly two long-lived branches.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">next</span></code></dt><dd><p>Where work integrates. Every pull request targets <code class="docutils literal notranslate"><span class="pre">next</span></code>. It is
+normal and expected for <code class="docutils literal notranslate"><span class="pre">next</span></code> to carry commits that <code class="docutils literal notranslate"><span class="pre">main</span></code> does
+not.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">main</span></code></dt><dd><p>What has been released. It moves only when <code class="docutils literal notranslate"><span class="pre">next</span></code> is promoted into
+it.</p>
+</dd>
+</dl>
+<p>Maintenance branches matching <code class="docutils literal notranslate"><span class="pre">N.x</span></code> or <code class="docutils literal notranslate"><span class="pre">N.M.x</span></code> are configured but none
+exist yet. The <code class="docutils literal notranslate"><span class="pre">develop</span></code> branch was a third release channel and is no
+longer one.</p>
+<p>Do not open a pull request against <code class="docutils literal notranslate"><span class="pre">main</span></code>. A fix merged there would be
+released without ever having existed as a release candidate, and <code class="docutils literal notranslate"><span class="pre">next</span></code>
+would not contain it.</p>
+<p>Neither branch releases on push. Both the release candidate and the GA are
+cut by a human dispatching the workflow; see <a class="reference internal" href="#cutting-a-release">Cutting a release</a>.</p>
+</section>
+<section id="commit-messages">
+<h2>Commit messages<a class="headerlink" href="#commit-messages" title="Link to this heading">¶</a></h2>
+<p>Releases are cut by <a class="reference external" href="https://semantic-release.gitbook.io/">semantic-release</a> from the commit history, so the
+subject line of every commit decides whether a release happens and how the
+version changes.</p>
+<p>The <a class="reference external" href="https://www.conventionalcommits.org/">Conventional Commits</a>
+<code class="docutils literal notranslate"><span class="pre">conventionalcommits</span></code> preset is in use:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 20.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Subject</p></th>
+<th class="head"><p>Version change</p></th>
+<th class="head"><p>Appears in release notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fix:</span> <span class="pre">...</span></code></p></td>
+<td><p>patch</p></td>
+<td><p>Bug Fixes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">feat:</span> <span class="pre">...</span></code></p></td>
+<td><p>minor</p></td>
+<td><p>Features</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">perf:</span> <span class="pre">...</span></code></p></td>
+<td><p>patch</p></td>
+<td><p>Performance Improvements</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">feat!:</span> <span class="pre">...</span></code></p></td>
+<td><p><strong>major</strong></p></td>
+<td><p>Features, and BREAKING CHANGES</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">BREAKING</span> <span class="pre">CHANGE:</span></code> footer</p></td>
+<td><p><strong>major</strong></p></td>
+<td><p>BREAKING CHANGES</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">docs:</span></code>, <code class="docutils literal notranslate"><span class="pre">test:</span></code>, <code class="docutils literal notranslate"><span class="pre">ci:</span></code>, <code class="docutils literal notranslate"><span class="pre">chore:</span></code>, <code class="docutils literal notranslate"><span class="pre">refactor:</span></code>, <code class="docutils literal notranslate"><span class="pre">style:</span></code></p></td>
+<td><p>none</p></td>
+<td><p>hidden</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">!</span></code> marker and the <code class="docutils literal notranslate"><span class="pre">BREAKING</span> <span class="pre">CHANGE:</span></code> footer are equivalent. Note
+that the <em>angular</em> preset, which is semantic-release’s default, does not
+parse <code class="docutils literal notranslate"><span class="pre">!</span></code> at all — a <code class="docutils literal notranslate"><span class="pre">feat!:</span></code> commit under that preset silently
+produces a minor release rather than a major one. All three projects set
+<code class="docutils literal notranslate"><span class="pre">conventionalcommits</span></code> explicitly for this reason.</p>
+<p>Reference an issue in the body (<code class="docutils literal notranslate"><span class="pre">Closes</span> <span class="pre">#123</span></code>) rather than in the
+subject, so the generated notes link it.</p>
+<p>The format is checked rather than assumed. <a class="reference external" href="https://commitlint.js.org/">commitlint</a> reads <code class="docutils literal notranslate"><span class="pre">commitlint.config.mjs</span></code> at the
+repository root from two places: the <code class="docutils literal notranslate"><span class="pre">commit-msg</span></code> hook installed by
+<code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code> checks a message as it is written, and the
+<code class="docutils literal notranslate"><span class="pre">Commit</span> <span class="pre">conventions</span></code> workflow checks every commit in a pull request.
+Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code> once per checkout — a checkout made before
+the hook was added has to run it again, because installing the
+<code class="docutils literal notranslate"><span class="pre">commit-msg</span></code> hook type is what makes the check run at all.</p>
+<p>Merge commits, <code class="docutils literal notranslate"><span class="pre">fixup!</span></code> commits and the subjects git writes for a
+revert are ignored. The pull request title is not checked: pull requests
+here are merged rather than squashed, so the title never enters the
+history. What the config changes relative to
+<code class="docutils literal notranslate"><span class="pre">&#64;commitlint/config-conventional</span></code>, and how to lint a range by hand, is
+in <code class="docutils literal notranslate"><span class="pre">.github/semantic-release.md</span></code>.</p>
+</section>
+<section id="what-runs-on-a-pull-request">
+<h2>What runs on a pull request<a class="headerlink" href="#what-runs-on-a-pull-request" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">CI</span></code> workflow (<code class="docutils literal notranslate"><span class="pre">.github/workflows/build-test-release.yml</span></code>) runs on
+every push to <code class="docutils literal notranslate"><span class="pre">main</span></code> and <code class="docutils literal notranslate"><span class="pre">next</span></code> and on every pull request against
+them.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pre-commit</span></code></dt><dd><p>The repository’s <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> hooks, on every file. This is where
+<code class="docutils literal notranslate"><span class="pre">ruff</span> <span class="pre">check</span></code> and <code class="docutils literal notranslate"><span class="pre">ruff</span> <span class="pre">format</span></code> run.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">security-sast-semgrep</span></code></dt><dd><p>Static analysis for security defects.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">docs</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-W</span> <span class="pre">--keep-going</span></code>. Warnings are errors, and
+<code class="docutils literal notranslate"><span class="pre">--keep-going</span></code> reports all of them rather than stopping at the
+first.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">build</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">build</span></code>, uploading the wheel and sdist as an artifact.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">matrix</span></code></dt><dd><p>Computes the test matrix. See below.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">test-unit</span></code></dt><dd><p>The test suite, once per matrix entry, publishing JUnit results and
+coverage.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">Build</span> <span class="pre">Release</span></code></dt><dd><p>Runs semantic-release. On a pull request this job does not run at
+all; on a push it rehearses the release without cutting one.</p>
+</dd>
+</dl>
+<p>Two workflows run alongside it and do not gate a release:
+<code class="docutils literal notranslate"><span class="pre">net-snmp-integration.yml</span></code>, which exercises every SNMP version and USM
+security profile against a real Net-SNMP agent in a container, and
+<code class="docutils literal notranslate"><span class="pre">codeql-analysis.yml</span></code>.</p>
+<p>A third, <code class="docutils literal notranslate"><span class="pre">commit-conventions.yml</span></code>, lints the commit messages of a pull
+request against the conventions above. It runs on pull requests only, so
+it is not part of the release path, but it does gate a merge wherever
+branch protection names it as a required check.</p>
+</section>
+<section id="the-test-matrix">
+<h2>The test matrix<a class="headerlink" href="#the-test-matrix" title="Link to this heading">¶</a></h2>
+<p>Every supported Python runs on Linux on every pull request. macOS and
+Windows run only on the edge Python versions, and only when the run can
+justify the cost: a push to <code class="docutils literal notranslate"><span class="pre">main</span></code> or <code class="docutils literal notranslate"><span class="pre">next</span></code>, a manual dispatch, or a
+pull request carrying the <code class="docutils literal notranslate"><span class="pre">ci:full-matrix</span></code> label.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 25.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Trigger</p></th>
+<th class="head"><p>Linux</p></th>
+<th class="head"><p>macOS and Windows</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Pull request</p></td>
+<td><p>3.10 – 3.14</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pull request labelled <code class="docutils literal notranslate"><span class="pre">ci:full-matrix</span></code></p></td>
+<td><p>3.10 – 3.14</p></td>
+<td><p>3.10 and 3.14</p></td>
+</tr>
+<tr class="row-even"><td><p>Push to <code class="docutils literal notranslate"><span class="pre">main</span></code> or <code class="docutils literal notranslate"><span class="pre">next</span></code></p></td>
+<td><p>3.10 – 3.14</p></td>
+<td><p>3.10 and 3.14</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>That is five jobs on an ordinary pull request and nine on a broad run.</p>
+<p>The reasoning is worth stating, because it is the opposite of the usual
+“test everything everywhere” instinct. These are pure-Python projects, so
+the interpreter version is where most of the risk lives and the operating
+system mostly is not. Of the platforms, Windows is the one that can
+actually diverge — <code class="docutils literal notranslate"><span class="pre">cp1252</span></code> as the default encoding, path handling, and
+a different asyncio event loop under the transport layer — and until now
+it was not tested at all.</p>
+<p>There is also a concrete failure mode to avoid. Running five macOS jobs
+per pull request sits exactly on GitHub’s free-tier limit of five
+concurrent macOS jobs for public repositories, so two overlapping runs
+queue behind each other until they time out. Two macOS jobs leave
+headroom.</p>
+<p>Windows is currently <code class="docutils literal notranslate"><span class="pre">continue-on-error</span></code>: it reports its result without
+blocking a merge, until it has a track record. Remove that once it has
+one.</p>
+<p>To get the broad matrix on a pull request, add the <code class="docutils literal notranslate"><span class="pre">ci:full-matrix</span></code>
+label. The workflow listens for the <code class="docutils literal notranslate"><span class="pre">labeled</span></code> event, so the run starts
+when the label is applied — no need to push again.</p>
+<p>Tests are run with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">--locked</span></code>, which installs exactly what
+<code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> records and fails rather than re-resolving. A CI failure is
+therefore reproducible locally, and a dependency released upstream cannot
+turn CI red without a commit.</p>
+</section>
+<section id="cutting-a-release">
+<h2>Cutting a release<a class="headerlink" href="#cutting-a-release" title="Link to this heading">¶</a></h2>
+<p>Nothing releases on push. Both kinds of release are cut by dispatching
+the <code class="docutils literal notranslate"><span class="pre">CI</span></code> workflow from the Actions tab and choosing the branch:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">next</span></code></dt><dd><p>Cuts a release candidate, <code class="docutils literal notranslate"><span class="pre">X.Y.Z-rc.N</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">main</span></code></dt><dd><p>Cuts the GA release, <code class="docutils literal notranslate"><span class="pre">X.Y.Z</span></code>.</p>
+</dd>
+</dl>
+<p>semantic-release works out the version from the commits, writes it into
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, <code class="docutils literal notranslate"><span class="pre">pysnmp/__init__.py</span></code> and <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code>, refreshes
+<code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> and builds the distributions, commits all of that as
+<code class="docutils literal notranslate"><span class="pre">chore(release):</span> <span class="pre">X.Y.Z</span></code>, tags it, and publishes a GitHub release. The
+same job then uploads the built distributions to PyPI.</p>
+<p>To ship a GA: promote <code class="docutils literal notranslate"><span class="pre">next</span></code> into <code class="docutils literal notranslate"><span class="pre">main</span></code> with a pull request, wait for
+it to be green, then dispatch the workflow against <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p>
+<p>Every push — to <code class="docutils literal notranslate"><span class="pre">next</span></code> as much as to <code class="docutils literal notranslate"><span class="pre">main</span></code> — is a dry run instead.
+semantic-release computes the version it <em>would</em> cut and tags nothing.
+Because its prepare step never runs, nothing is built either, so the
+workflow builds that version as <code class="docutils literal notranslate"><span class="pre">X.Y.Z.devN</span></code> and keeps it as an
+artifact. Install that artifact and exercise it before dispatching the
+real release.</p>
+<p>Releasing by hand rather than on every merge is deliberate. When <code class="docutils literal notranslate"><span class="pre">next</span></code>
+released automatically, it kept cutting release candidates from whatever
+base its own history reached, which drifts below <code class="docutils literal notranslate"><span class="pre">main</span></code> as soon as a GA
+is cut there — see <a class="reference internal" href="#keeping-next-and-main-in-step">Keeping next and main in step</a>.</p>
+</section>
+<section id="keeping-next-and-main-in-step">
+<h2>Keeping next and main in step<a class="headerlink" href="#keeping-next-and-main-in-step" title="Link to this heading">¶</a></h2>
+<p>Promoting <code class="docutils literal notranslate"><span class="pre">next</span></code> into <code class="docutils literal notranslate"><span class="pre">main</span></code> and then releasing leaves the
+<code class="docutils literal notranslate"><span class="pre">chore(release):</span></code> commit, and the tag on it, on <code class="docutils literal notranslate"><span class="pre">main</span></code> only. <code class="docutils literal notranslate"><span class="pre">next</span></code>
+does not contain them, so as far as semantic-release can see from
+<code class="docutils literal notranslate"><span class="pre">next</span></code>, the newest release is still the last one that branch cut.</p>
+<p>Left alone this drifts. In pysmi it produced <code class="docutils literal notranslate"><span class="pre">2.0.0-rc.15</span></code> and
+<code class="docutils literal notranslate"><span class="pre">2.0.0-rc.16</span></code> on PyPI <em>after</em> <code class="docutils literal notranslate"><span class="pre">2.0.1</span></code> had shipped: release candidates
+numbered below a released version, uploaded after it.</p>
+<p>So after cutting a GA on <code class="docutils literal notranslate"><span class="pre">main</span></code>, merge <code class="docutils literal notranslate"><span class="pre">main</span></code> back into <code class="docutils literal notranslate"><span class="pre">next</span></code>. This
+is the only direction in which <code class="docutils literal notranslate"><span class="pre">main</span></code> should ever be merged into
+<code class="docutils literal notranslate"><span class="pre">next</span></code>, and it carries nothing but the release commit.</p>
+<p>Commits on <code class="docutils literal notranslate"><span class="pre">next</span></code> that are not on <code class="docutils literal notranslate"><span class="pre">main</span></code> are the normal state of
+things and need no action: that is unreleased work waiting for the next
+promotion.</p>
+</section>
+<section id="reaching-pypi">
+<h2>Reaching PyPI<a class="headerlink" href="#reaching-pypi" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Build</span> <span class="pre">Release</span></code> job uploads to PyPI in the same run that cuts the
+tag, using <a class="reference external" href="https://docs.pypi.org/trusted-publishers/">PyPI Trusted Publishing</a>. No API token exists
+anywhere in the repository. PyPI matches four claims from the run’s OIDC
+token — owner, repository, workflow filename, and environment name — and
+mints a credential valid for that run alone. Under Trusted Publishing the
+upload also carries <a class="reference external" href="https://peps.python.org/pep-0740/">PEP 740</a>
+attestations by default.</p>
+<p>The trusted publisher is registered on the PyPI project’s <em>Publishing</em>
+settings page and must name the workflow file exactly:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Claim</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Owner</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pysnmp</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Repository</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pysnmp</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Workflow name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">build-test-release.yml</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Environment name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">release</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Renaming the workflow file or the environment breaks publishing until the
+publisher is re-registered.</p>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
+<p><strong>A run was cancelled and no step failed.</strong> Look at whether the jobs were
+killed part-way through. Runner processes that die mid-suite, with no
+assertion failure in the log, are usually out of memory rather than
+cancelled. A run whose overall conclusion is <code class="docutils literal notranslate"><span class="pre">cancelled</span></code> while
+individual jobs report <code class="docutils literal notranslate"><span class="pre">failure</span></code> with exit code 143 was terminated from
+outside.</p>
+<p><strong>A release did not happen after merging to</strong> <code class="docutils literal notranslate"><span class="pre">next</span></code>. Merging does not
+release; dispatch the workflow. If a dispatch also released nothing, check
+the commit subjects — only <code class="docutils literal notranslate"><span class="pre">fix</span></code>, <code class="docutils literal notranslate"><span class="pre">feat</span></code>, <code class="docutils literal notranslate"><span class="pre">perf</span></code> and breaking
+changes produce a release, so a branch of nothing but <code class="docutils literal notranslate"><span class="pre">docs</span></code> and
+<code class="docutils literal notranslate"><span class="pre">chore</span></code> commits correctly releases nothing. The <code class="docutils literal notranslate"><span class="pre">Build</span> <span class="pre">Release</span></code> job
+log states which commits it analysed and what it concluded.</p>
+<p><strong>PyPI rejected the upload with 403.</strong> The trusted publisher does not
+match. Confirm all four fields on the PyPI publishing settings page
+against the table above; the workflow filename is the one most often
+wrong.</p>
+<p><strong>A test job failed with “The lockfile at uv.lock needs to be updated”.</strong>
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> changed without <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">lock</span></code> being run. Run <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">lock</span></code>
+and commit the result. The release prepare step does this automatically
+after semantic-release rewrites the version.</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="development.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Further development</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="changelog-history.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Historical changelog</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2005-2019, Ilya Etingof deceased 
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Continuous integration and releases</a><ul>
+<li><a class="reference internal" href="#branches">Branches</a></li>
+<li><a class="reference internal" href="#commit-messages">Commit messages</a></li>
+<li><a class="reference internal" href="#what-runs-on-a-pull-request">What runs on a pull request</a></li>
+<li><a class="reference internal" href="#the-test-matrix">The test matrix</a></li>
+<li><a class="reference internal" href="#cutting-a-release">Cutting a release</a></li>
+<li><a class="reference internal" href="#keeping-next-and-main-in-step">Keeping next and main in step</a></li>
+<li><a class="reference internal" href="#reaching-pypi">Reaching PyPI</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=cb01d673"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>
