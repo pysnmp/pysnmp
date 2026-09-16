@@ -3,6 +3,8 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is [published with the documentation](https://pysnmp.github.io/pysnmp/latest/changelog-history.html).
 
+## [6.0.0-rc.13](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.12...v6.0.0-rc.13) (2026-09-16)
+
 ## [6.0.0-rc.12](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.11...v6.0.0-rc.12) (2026-09-14)
 
 ### Features

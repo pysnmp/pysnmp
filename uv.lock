@@ -950,7 +950,7 @@ wheels = [
 
 [[package]]
 name = "pysnmplib"
-version = "6.0.0rc12"
+version = "6.0.0rc13"
 source = { editable = "." }
 dependencies = [
     { name = "pycryptodomex" },
