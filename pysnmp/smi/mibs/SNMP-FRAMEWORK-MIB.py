@@ -2,7 +2,7 @@
 # PySNMP MIB module SNMP-FRAMEWORK-MIB (https://pysnmp.github.io/pysmi/)
 # ASN.1 source SNMP-FRAMEWORK-MIB
 # Source digest sha256:8e097e7b3fae34f5767a7b7d8ecb7f5765921642b08ec3c62cd8e1f30ef27f42
-# Produced by pysmi-5.3.1
+# Produced by pysmi-5.6.0
 #
 PYSNMP_MODULE_REVISION = "200210140000Z"
 
