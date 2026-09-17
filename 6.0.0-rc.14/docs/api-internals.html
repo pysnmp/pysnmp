@@ -1,0 +1,1085 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Breaking Changes" href="breaking-changes.html"><link rel="prev" title="TRAP/INFORM notification" href="hlapi/asyncio/agent/ntforg/notification.html">
+        <link rel="prefetch" href="../_static/logo.svg" as="image">
+        <link rel="prefetch" href="../_static/logo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Errors and supporting types - SNMP library for Python 6.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../contents.html"><div class="brand">SNMP library for Python 6.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../contents.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">SNMP library for Python 6.0.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../quick-start.html">Quick start</a><input aria-label="Toggle navigation of Quick start" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Documentation</a><input aria-label="Toggle navigation of Documentation" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="snmp-history.html">SNMP history</a></li>
+<li class="toctree-l2"><a class="reference internal" href="snmp-design.html">SNMP design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysnmp-architecture.html">PySNMP architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysnmp-hlapi-tutorial.html">Common operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api-reference.html">Library reference</a><input aria-label="Toggle navigation of Library reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Errors and supporting types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="security-considerations.html">Security Considerations</a><input aria-label="Toggle navigation of Security Considerations" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-corpus.html">Loading MIBs from a corpus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/contents.html">Example scripts</a><input aria-label="Toggle navigation of Example scripts" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/hlapi/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/walking-operations.html">Walking operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/device-report.html">Device details report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/advanced-topics.html">Advanced Command Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/agent/ntforg/common-notifications.html">Common notifications</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/agent/ntforg/advanced-topics.html">Advanced Notification Originator</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/manager/browsing-mib-tree.html">Manager side</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/manager/generated-mib-modules.html">Generated MIB modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/agent/implementing-mib-objects.html">Agent side</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../download.html">Download PySNMP</a><input aria-label="Toggle navigation of Download PySNMP" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../faq.html">FAQ</a><input aria-label="Toggle navigation of FAQ" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../faq/getting-peer-information.html">Getting peer address information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/how-to-implement-agent-mib.html">How to implement MIB at the Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/ignored-snmp-packets.html">Ignored SNMP packets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/listening-on-multiple-interfaces.html">Listening on multiple network interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/non-printable-snmp-values-apps.html">Garbaged SNMP values (apps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/non-printable-snmp-values-tools.html">Garbaged SNMP values (tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/oids-not-increasing.html">Dealing with the “OID not increasing” error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/pass-custom-mib-to-manager.html">How to pass MIB to the Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/response-values-mib-resolution.html">Resolve response values at MIB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/snmp-data-constraints-verification-failure.html">SNMP data constraints verification error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/walk-whole-mib.html">Walking whole MIB</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/blob/main/docs/source/docs/api-internals.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/edit/main/docs/source/docs/api-internals.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="errors-and-supporting-types">
+<h1>Errors and supporting types<a class="headerlink" href="#errors-and-supporting-types" title="Link to this heading">¶</a></h1>
+<p>The objects on this page are referenced throughout the library reference and
+the docstrings — as the exceptions an operation raises, the type a call hands
+back, or the MIB services the high-level API is built on. They are collected
+here so that every one of those references resolves.</p>
+<section id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Link to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pysnmp.error.PySnmpError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.error.</span></span><span class="sig-name descname"><span class="pre">PySnmpError</span></span><a class="headerlink" href="#pysnmp.error.PySnmpError" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for pysnmp exceptions.</p>
+<p>Carries the exception it was raised from, if any, into its own string
+form, so a caller that only logs <cite>str(exc)</cite> still sees the underlying
+failure.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pysnmp.error.PySnmpError.cause">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">cause</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></span><a class="headerlink" href="#pysnmp.error.PySnmpError.cause" title="Link to this definition">¶</a></dt>
+<dd><p>The chained exception as a <cite>sys.exc_info()</cite>-shaped triple.</p>
+<p>Empty triple when this exception was not raised while another was
+being handled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.error.PySnmpError.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#pysnmp.error.PySnmpError.__str__" title="Link to this definition">¶</a></dt>
+<dd><p>The message, with the exception this was raised from appended.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pysnmp.smi.error.SmiError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.smi.error.</span></span><span class="sig-name descname"><span class="pre">SmiError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.error.SmiError" title="Link to this definition">¶</a></dt>
+<dd><p>Raised when a MIB cannot be loaded or a managed object cannot be served.</p>
+<p>Raised by the SMI layer. It derives from both
+<a class="reference internal" href="#pysnmp.error.PySnmpError" title="pysnmp.error.PySnmpError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">PySnmpError</span></code></a> and <a class="reference external" href="https://pysnmp.github.io/pyasn1/stable/pyasn1/error/contents.html#pyasn1.error.PyAsn1Error" title="(in ASN.1 types and codecs v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PyAsn1Error</span></code></a>, so
+either is enough to catch it.</p>
+</dd></dl>
+
+</section>
+<section id="warnings">
+<h2>Warnings<a class="headerlink" href="#warnings" title="Link to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pysnmp.error.PySnmpCryptoWarning">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.error.</span></span><span class="sig-name descname"><span class="pre">PySnmpCryptoWarning</span></span><a class="headerlink" href="#pysnmp.error.PySnmpCryptoWarning" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for warnings about SNMPv3 cryptographic protocol selection.</p>
+<p>Subclasses of this warning are raised at user configuration time rather
+than at packet processing time. They derive from <cite>UserWarning</cite> (not
+<cite>DeprecationWarning</cite>) so that they remain visible under Python’s default
+warning filters, since ignoring them has security consequences.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pysnmp.error.PySnmpWeakCryptoWarning">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.error.</span></span><span class="sig-name descname"><span class="pre">PySnmpWeakCryptoWarning</span></span><a class="headerlink" href="#pysnmp.error.PySnmpWeakCryptoWarning" title="Link to this definition">¶</a></dt>
+<dd><p>The selected protocol is no longer considered cryptographically safe.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pysnmp.error.PySnmpNonStandardCryptoWarning">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.error.</span></span><span class="sig-name descname"><span class="pre">PySnmpNonStandardCryptoWarning</span></span><a class="headerlink" href="#pysnmp.error.PySnmpNonStandardCryptoWarning" title="Link to this definition">¶</a></dt>
+<dd><p>The selected protocol is not standards-track and may not interoperate.</p>
+</dd></dl>
+
+</section>
+<section id="module-pysnmp.hlapi">
+<span id="return-types"></span><h2>Return types<a class="headerlink" href="#module-pysnmp.hlapi" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.hlapi.types.SnmpResponse">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.types.</span></span><span class="sig-name descname"><span class="pre">SnmpResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errorIndication</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">errorStatus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">errorIndex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">varBinds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.hlapi.types.SnmpResponse" title="Link to this definition">¶</a></dt>
+<dd><p>Result of an SNMP command (GET / SET / NEXT / BULK / notification).</p>
+<p>This is a <code class="docutils literal notranslate"><span class="pre">NamedTuple</span></code> subclass of <code class="docutils literal notranslate"><span class="pre">tuple</span></code>, so existing code that
+unpacks the 4-tuple positionally continues to work unchanged:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">errorIndication</span><span class="p">,</span> <span class="n">errorStatus</span><span class="p">,</span> <span class="n">errorIndex</span><span class="p">,</span> <span class="n">varBinds</span> <span class="o">=</span> <span class="k">await</span> <span class="n">getCmd</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.types.SnmpResponse.errorIndication">
+<span class="sig-name descname"><span class="pre">errorIndication</span></span><a class="headerlink" href="#pysnmp.hlapi.types.SnmpResponse.errorIndication" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">None</span></code> on success, or an error-indication object/string on
+SNMP engine error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.types.SnmpResponse.errorStatus">
+<span class="sig-name descname"><span class="pre">errorStatus</span></span><a class="headerlink" href="#pysnmp.hlapi.types.SnmpResponse.errorStatus" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">0</span></code> / <code class="docutils literal notranslate"><span class="pre">None</span></code> on success, or a truthy value indicating a
+protocol-level PDU error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.types.SnmpResponse.errorIndex">
+<span class="sig-name descname"><span class="pre">errorIndex</span></span><a class="headerlink" href="#pysnmp.hlapi.types.SnmpResponse.errorIndex" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">0</span></code> when no error, otherwise a 1-based index into <em>varBinds</em>
+referring to the variable that caused the error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.types.SnmpResponse.varBinds">
+<span class="sig-name descname"><span class="pre">varBinds</span></span><a class="headerlink" href="#pysnmp.hlapi.types.SnmpResponse.varBinds" title="Link to this definition">¶</a></dt>
+<dd><p>A sequence of resolved var-bind pairs (typically
+<a class="reference internal" href="api-reference.html#pysnmp.smi.rfc1902.ObjectType" title="pysnmp.smi.rfc1902.ObjectType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectType</span></code></a> instances).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Create new instance of SnmpResponse(errorIndication, errorStatus, errorIndex, varBinds)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pysnmp.proto.rfc1905.endOfMibView">
+<span class="sig-prename descclassname"><span class="pre">pysnmp.proto.rfc1905.</span></span><span class="sig-name descname"><span class="pre">endOfMibView</span></span><a class="headerlink" href="#pysnmp.proto.rfc1905.endOfMibView" title="Link to this definition">¶</a></dt>
+<dd><p>Returned by GETNEXT and GETBULK when there is nothing past this OID.</p>
+<p>The value a response carries in place of a variable binding when a walk has
+run past the end of the MIB view.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.proto.rfc1902.ObjectName">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.proto.rfc1902.</span></span><span class="sig-name descname"><span class="pre">ObjectName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;NoValue</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.proto.rfc1902.ObjectName" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="transport">
+<h2>Transport<a class="headerlink" href="#transport" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.transport.</span></span><span class="sig-name descname"><span class="pre">TransportAddrT</span></span><a class="headerlink" href="#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT" title="Link to this definition">¶</a></dt>
+<dd><p>The address shape a concrete transport target speaks. Each transport has
+its own – a <code class="docutils literal notranslate"><span class="pre">(host,</span> <span class="pre">port)</span></code> pair for UDP over IPv4 and IPv6, a path
+string for Unix domain sockets – so <a class="reference internal" href="#pysnmp.hlapi.transport.AbstractTransportTarget" title="pysnmp.hlapi.transport.AbstractTransportTarget"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractTransportTarget</span></code></a> is generic in it rather
+than naming one its subclasses would have to contradict.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.hlapi.transport.AbstractTransportTarget">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.transport.</span></span><span class="sig-name descname"><span class="pre">AbstractTransportTarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transportAddr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT" title="pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT"><span class="pre">TransportAddrT</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tagList</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">b''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.hlapi.transport.AbstractTransportTarget" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.hlapi.transport.AbstractTransportTarget.setLocalAddress">
+<span class="sig-name descname"><span class="pre">setLocalAddress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iface</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pysnmp.hlapi.transport.AbstractTransportTarget" title="pysnmp.hlapi.transport.AbstractTransportTarget"><span class="pre">AbstractTransportTarget</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT" title="pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT"><span class="pre">TransportAddrT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pysnmp.hlapi.transport.AbstractTransportTarget.setLocalAddress" title="Link to this definition">¶</a></dt>
+<dd><p>Set source address.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iface</strong> (<em>tuple</em>) – Indicates network address of a local interface from which SNMP packets will be originated.
+Format is the same as of <cite>transportAddress</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pysnmp.smi.rfc1902">
+<span id="mib-services"></span><h2>MIB services<a class="headerlink" href="#module-pysnmp.smi.rfc1902" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.smi.builder.MibBuilder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.smi.builder.</span></span><span class="sig-name descname"><span class="pre">MibBuilder</span></span><a class="headerlink" href="#pysnmp.smi.builder.MibBuilder" title="Link to this definition">¶</a></dt>
+<dd><p>Loads MIB modules and holds the symbols they define.</p>
+<p>A module is searched for across every registered source, and where more than
+one source has it, the copy stating the newest MODULE-IDENTITY revision wins;
+search order settles only what the revisions cannot. Loading a module loads
+what it IMPORTS first, so asking for one symbol can pull in a graph of them.</p>
+<p>Assemble the search path, in the order modules are looked for.</p>
+<p>The environment comes first (<cite>PYSNMP_MIB_PKGS</cite>, <cite>PYSNMP_MIB_DIRS</cite>,
+<cite>PYSNMP_MIB_DIR</cite>), then the core modules, which are inserted at the front so
+nothing overrides the ones the engine itself needs, then the generated ones.
+That ordering is what lets a user’s copy of a MIB shadow the bundled one
+without being able to displace the framework modules.</p>
+<p><cite>PYSNMP_MIB_DBS</cite> names corpora rather than sources and so is handled
+separately, at the end: a corpus is searched only where the sources
+come up empty, which is what keeps configuring one from changing any
+answer a deployment already had.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.smi.error.SmiError" title="pysnmp.smi.error.SmiError"><strong>SmiError</strong></a> – <cite>PYSNMP_MIB_DBS</cite> names something that is not a readable: corpus.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.builder.MibBuilder.addMibSources">
+<span class="sig-name descname"><span class="pre">addMibSources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">mibSources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pysnmp.smi.builder.MibBuilder.addMibSources" title="Link to this definition">¶</a></dt>
+<dd><p>Add sources to search, opening each one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.builder.MibBuilder.getMibSources">
+<span class="sig-name descname"><span class="pre">getMibSources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pysnmp.smi.builder.MibBuilder.getMibSources" title="Link to this definition">¶</a></dt>
+<dd><p>The sources currently searched.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.builder.MibBuilder.loadModules">
+<span class="sig-name descname"><span class="pre">loadModules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">modNames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">userCtx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#pysnmp.smi.builder.MibBuilder.loadModules" title="Link to this definition">¶</a></dt>
+<dd><p>Load (optionally, compiling) pysnmp MIB modules.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.builder.MibBuilder.importSymbols">
+<span class="sig-name descname"><span class="pre">importSymbols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">symNames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">userCtx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pysnmp.smi.builder.MibBuilder.importSymbols" title="Link to this definition">¶</a></dt>
+<dd><p>Fetch symbols from a module, loading the module first if it is not loaded.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.smi.view.</span></span><span class="sig-name descname"><span class="pre">MibViewController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mibBuilder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController" title="Link to this definition">¶</a></dt>
+<dd><p>Indexes what a builder loaded, and answers questions about names and OIDs.</p>
+<p>Resolves a label to an OID and back, and walks to the next object in OID
+order across every loaded module – which is not the order the modules were
+loaded in, nor lexical order on their names.</p>
+<p>Indexing is deferred until the first lookup, as in the instrumentation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.indexMib">
+<span class="sig-name descname"><span class="pre">indexMib</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.indexMib" title="Link to this definition">¶</a></dt>
+<dd><p>Rebuild the name and OID indices, unless nothing has been loaded since.</p>
+<p>Every lookup calls this first, so the builder’s build counter is what keeps it
+from re-indexing on each one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getOrderedModuleName">
+<span class="sig-name descname"><span class="pre">getOrderedModuleName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getOrderedModuleName" title="Link to this definition">¶</a></dt>
+<dd><p>The loaded module at that position, counting from either end.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getFirstModuleName">
+<span class="sig-name descname"><span class="pre">getFirstModuleName</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getFirstModuleName" title="Link to this definition">¶</a></dt>
+<dd><p>The first loaded module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getLastModuleName">
+<span class="sig-name descname"><span class="pre">getLastModuleName</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getLastModuleName" title="Link to this definition">¶</a></dt>
+<dd><p>The last loaded module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getNextModuleName">
+<span class="sig-name descname"><span class="pre">getNextModuleName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getNextModuleName" title="Link to this definition">¶</a></dt>
+<dd><p>The module after this one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getNodeNameByOid">
+<span class="sig-name descname"><span class="pre">getNodeNameByOid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getNodeNameByOid" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve an OID or a label to <cite>(oid, label, suffix)</cite>.</p>
+<p>An OID need not name an object exactly: the longest known prefix is what
+resolves, and the rest comes back as the suffix, which is how an instance under
+a column is named. An OID that resolves to nothing but itself is not in this
+MIB view at all – unless a corpus can say which module would have carried it,
+in which case that module is loaded and the lookup is tried once more.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getNodeNameByDesc">
+<span class="sig-name descname"><span class="pre">getNodeNameByDesc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getNodeNameByDesc" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve a MIB symbol’s name to <cite>(oid, label, suffix)</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getNodeName">
+<span class="sig-name descname"><span class="pre">getNodeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getNodeName" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve either an OID, a label, or a <cite>(symbol, index…)</cite> tuple.</p>
+<p>The forms are tried in that order, since a caller may have any of the three and
+they cannot be told apart reliably by shape.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getOrderedNodeName">
+<span class="sig-name descname"><span class="pre">getOrderedNodeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodeType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getOrderedNodeName" title="Link to this definition">¶</a></dt>
+<dd><p>The object at that position in the module, optionally of one node type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getFirstNodeName">
+<span class="sig-name descname"><span class="pre">getFirstNodeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodeType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getFirstNodeName" title="Link to this definition">¶</a></dt>
+<dd><p>The first object in the module, or the first of one node type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getLastNodeName">
+<span class="sig-name descname"><span class="pre">getLastNodeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodeType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getLastNodeName" title="Link to this definition">¶</a></dt>
+<dd><p>The last object in the module, or the last of one node type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getNextNodeName">
+<span class="sig-name descname"><span class="pre">getNextNodeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getNextNodeName" title="Link to this definition">¶</a></dt>
+<dd><p>The object after this one, in OID order.</p>
+<p>OID order is neither the order the modules were loaded in nor lexical order on
+their names, which is why this cannot be answered from a plain mapping.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getParentNodeName">
+<span class="sig-name descname"><span class="pre">getParentNodeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getParentNodeName" title="Link to this definition">¶</a></dt>
+<dd><p>The object one level up, its last sub-identifier moved onto the suffix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getNodeLocation">
+<span class="sig-name descname"><span class="pre">getNodeLocation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getNodeLocation" title="Link to this definition">¶</a></dt>
+<dd><p>Which module defines an object, and under what label.</p>
+<p>The answer comes from the index across all modules rather than from any one of
+them, since the caller is asking precisely because they do not know which module
+it is in.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getTypeName">
+<span class="sig-name descname"><span class="pre">getTypeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getTypeName" title="Link to this definition">¶</a></dt>
+<dd><p>Which module defines a textual convention or type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getOrderedTypeName">
+<span class="sig-name descname"><span class="pre">getOrderedTypeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getOrderedTypeName" title="Link to this definition">¶</a></dt>
+<dd><p>The type at that position in the module, counting from either end.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getFirstTypeName">
+<span class="sig-name descname"><span class="pre">getFirstTypeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getFirstTypeName" title="Link to this definition">¶</a></dt>
+<dd><p>The first type the module defines.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getLastTypeName">
+<span class="sig-name descname"><span class="pre">getLastTypeName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getLastTypeName" title="Link to this definition">¶</a></dt>
+<dd><p>The last type the module defines.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getNextType">
+<span class="sig-name descname"><span class="pre">getNextType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typeName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getNextType" title="Link to this definition">¶</a></dt>
+<dd><p>The type after this one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getTableColumns">
+<span class="sig-name descname"><span class="pre">getTableColumns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rowSymName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getTableColumns" title="Link to this definition">¶</a></dt>
+<dd><p>Return column metadata for a MIB table row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>modName</strong> – MIB module name (e.g. <code class="docutils literal notranslate"><span class="pre">'SNMPv2-MIB'</span></code>).</p></li>
+<li><p><strong>rowSymName</strong> – MIB symbol name of the table row/entry
+(e.g. <code class="docutils literal notranslate"><span class="pre">'sysOREntry'</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of <code class="docutils literal notranslate"><span class="pre">(colId,</span> <span class="pre">colName,</span> <span class="pre">colNode)</span></code> tuples — one per
+column in the row.  <code class="docutils literal notranslate"><span class="pre">colId</span></code> is the column number (last
+sub-OID), <code class="docutils literal notranslate"><span class="pre">colName</span></code> is the full OID tuple, and <code class="docutils literal notranslate"><span class="pre">colNode</span></code>
+is the <code class="docutils literal notranslate"><span class="pre">MibTableColumn</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.smi.error.SmiError" title="pysnmp.smi.error.SmiError"><strong>SmiError</strong></a> – if the module or symbol is not found.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibView</span> <span class="o">=</span> <span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cols</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getTableColumns</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysOREntry'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">colId</span><span class="p">,</span> <span class="n">colNode</span><span class="o">.</span><span class="n">getMaxAccess</span><span class="p">())</span> <span class="k">for</span> <span class="n">colId</span><span class="p">,</span> <span class="n">colName</span><span class="p">,</span> <span class="n">colNode</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+<span class="go">[(1, 'notaccessible'), (2, 'readonly'), (3, 'readonly'), (4, 'readonly')]</span>
+</pre></div>
+</div>
+<p>Column 1 is <code class="docutils literal notranslate"><span class="pre">sysORIndex</span></code>, the table’s INDEX. RFC 3418 declares it
+not-accessible; this example said <code class="docutils literal notranslate"><span class="pre">readonly</span></code> while the base layer was
+a 2017 freeze that got it wrong (pysnmp/pysnmp#198).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.resolveCellOid">
+<span class="sig-name descname"><span class="pre">resolveCellOid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rowSymName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.resolveCellOid" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve a table cell address into a full OID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>modName</strong> – MIB module name.</p></li>
+<li><p><strong>rowSymName</strong> – MIB symbol name of the table row/entry.</p></li>
+<li><p><strong>column</strong> – Column symbol name or number (last sub-OID).</p></li>
+<li><p><strong>indices</strong> – Typed index values (e.g. <code class="docutils literal notranslate"><span class="pre">'my-router'</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of ints — the full OID identifying the cell.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibView</span> <span class="o">=</span> <span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oid</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">resolveCellOid</span><span class="p">(</span><span class="s1">'SNMP-COMMUNITY-MIB'</span><span class="p">,</span>
+<span class="gp">... </span>                             <span class="s1">'snmpCommunityEntry'</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'my-router'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oid</span>
+<span class="go">(1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 2, 109, 121, 45, 114, 111, 117, 116, 101, 114)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.getTableCellInfo">
+<span class="sig-name descname"><span class="pre">getTableCellInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cellOid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.getTableCellInfo" title="Link to this definition">¶</a></dt>
+<dd><p>Split a table cell OID into its MIB names and typed indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cellOid</strong> – Complete table cell OID.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(moduleName,</span> <span class="pre">rowName,</span> <span class="pre">columnName,</span> <span class="pre">indices)</span></code>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.smi.error.SmiError" title="pysnmp.smi.error.SmiError"><strong>SmiError</strong></a> – if <em>cellOid</em> does not identify a table cell.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.get_table_columns">
+<span class="sig-name descname"><span class="pre">get_table_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rowSymName</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.get_table_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Return column metadata for a MIB table row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>modName</strong> – MIB module name (e.g. <code class="docutils literal notranslate"><span class="pre">'SNMPv2-MIB'</span></code>).</p></li>
+<li><p><strong>rowSymName</strong> – MIB symbol name of the table row/entry
+(e.g. <code class="docutils literal notranslate"><span class="pre">'sysOREntry'</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of <code class="docutils literal notranslate"><span class="pre">(colId,</span> <span class="pre">colName,</span> <span class="pre">colNode)</span></code> tuples — one per
+column in the row.  <code class="docutils literal notranslate"><span class="pre">colId</span></code> is the column number (last
+sub-OID), <code class="docutils literal notranslate"><span class="pre">colName</span></code> is the full OID tuple, and <code class="docutils literal notranslate"><span class="pre">colNode</span></code>
+is the <code class="docutils literal notranslate"><span class="pre">MibTableColumn</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.smi.error.SmiError" title="pysnmp.smi.error.SmiError"><strong>SmiError</strong></a> – if the module or symbol is not found.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibView</span> <span class="o">=</span> <span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cols</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">getTableColumns</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysOREntry'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">colId</span><span class="p">,</span> <span class="n">colNode</span><span class="o">.</span><span class="n">getMaxAccess</span><span class="p">())</span> <span class="k">for</span> <span class="n">colId</span><span class="p">,</span> <span class="n">colName</span><span class="p">,</span> <span class="n">colNode</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+<span class="go">[(1, 'notaccessible'), (2, 'readonly'), (3, 'readonly'), (4, 'readonly')]</span>
+</pre></div>
+</div>
+<p>Column 1 is <code class="docutils literal notranslate"><span class="pre">sysORIndex</span></code>, the table’s INDEX. RFC 3418 declares it
+not-accessible; this example said <code class="docutils literal notranslate"><span class="pre">readonly</span></code> while the base layer was
+a 2017 freeze that got it wrong (pysnmp/pysnmp#198).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.resolve_cell_oid">
+<span class="sig-name descname"><span class="pre">resolve_cell_oid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rowSymName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.resolve_cell_oid" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve a table cell address into a full OID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>modName</strong> – MIB module name.</p></li>
+<li><p><strong>rowSymName</strong> – MIB symbol name of the table row/entry.</p></li>
+<li><p><strong>column</strong> – Column symbol name or number (last sub-OID).</p></li>
+<li><p><strong>indices</strong> – Typed index values (e.g. <code class="docutils literal notranslate"><span class="pre">'my-router'</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of ints — the full OID identifying the cell.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibBuilder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">MibBuilder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mibView</span> <span class="o">=</span> <span class="n">MibViewController</span><span class="p">(</span><span class="n">mibBuilder</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oid</span> <span class="o">=</span> <span class="n">mibView</span><span class="o">.</span><span class="n">resolveCellOid</span><span class="p">(</span><span class="s1">'SNMP-COMMUNITY-MIB'</span><span class="p">,</span>
+<span class="gp">... </span>                             <span class="s1">'snmpCommunityEntry'</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'my-router'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oid</span>
+<span class="go">(1, 3, 6, 1, 6, 3, 18, 1, 1, 1, 2, 109, 121, 45, 114, 111, 117, 116, 101, 114)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pysnmp.smi.view.MibViewController.get_table_cell_info">
+<span class="sig-name descname"><span class="pre">get_table_cell_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cellOid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.smi.view.MibViewController.get_table_cell_info" title="Link to this definition">¶</a></dt>
+<dd><p>Split a table cell OID into its MIB names and typed indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cellOid</strong> – Complete table cell OID.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(moduleName,</span> <span class="pre">rowName,</span> <span class="pre">columnName,</span> <span class="pre">indices)</span></code>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.smi.error.SmiError" title="pysnmp.smi.error.SmiError"><strong>SmiError</strong></a> – if <em>cellOid</em> does not identify a table cell.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="synchronous-command-generators">
+<h2>Synchronous command generators<a class="headerlink" href="#synchronous-command-generators" title="Link to this heading">¶</a></h2>
+<p>These are the blocking counterparts of the coroutines in
+<a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html"><span class="doc">GET command</span></a> and its siblings. They take the same
+arguments and return the same tuple, having driven the event loop themselves.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="pysnmp.hlapi.getCmd">
+<span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.</span></span><span class="sig-name descname"><span class="pre">getCmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snmpEngine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transportTarget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contextData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">varBinds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pysnmp.hlapi.getCmd" title="Link to this definition">¶</a></dt>
+<dd><p>Blocking GET. Yields one result, then whatever bindings are sent back in.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pysnmp.hlapi.setCmd">
+<span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.</span></span><span class="sig-name descname"><span class="pre">setCmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snmpEngine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transportTarget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contextData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">varBinds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pysnmp.hlapi.setCmd" title="Link to this definition">¶</a></dt>
+<dd><p>Blocking SET. Yields one result, then whatever bindings are sent back in.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pysnmp.hlapi.nextCmd">
+<span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.</span></span><span class="sig-name descname"><span class="pre">nextCmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snmpEngine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transportTarget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contextData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">varBinds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pysnmp.hlapi.nextCmd" title="Link to this definition">¶</a></dt>
+<dd><p>Blocking GETNEXT, walking until the end of the subtree.</p>
+<p><cite>lexicographicMode</cite> decides whether the walk stops at the end of the subtree it
+started in or carries on to the end of the MIB; <cite>maxRows</cite> and <cite>maxCalls</cite> bound
+it either way.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pysnmp.hlapi.bulkCmd">
+<span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.</span></span><span class="sig-name descname"><span class="pre">bulkCmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snmpEngine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transportTarget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contextData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonRepeaters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxRepetitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">varBinds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pysnmp.hlapi.bulkCmd" title="Link to this definition">¶</a></dt>
+<dd><p>Blocking GETBULK, walking until the end of the subtree.</p>
+<p><cite>nonRepeaters</cite> is how many of the bindings are fetched once rather than walked,
+and <cite>maxRepetitions</cite> how many rows the agent should return per pass – a value
+larger than the response can hold is answered with fewer, not an error.</p>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="breaking-changes.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Breaking Changes</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="hlapi/asyncio/agent/ntforg/notification.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">TRAP/INFORM notification</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2005-2019, Ilya Etingof deceased 
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Errors and supporting types</a><ul>
+<li><a class="reference internal" href="#exceptions">Exceptions</a><ul>
+<li><a class="reference internal" href="#pysnmp.error.PySnmpError"><code class="docutils literal notranslate"><span class="pre">PySnmpError</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.error.PySnmpError.cause"><code class="docutils literal notranslate"><span class="pre">PySnmpError.cause</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.error.PySnmpError.__str__"><code class="docutils literal notranslate"><span class="pre">PySnmpError.__str__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pysnmp.smi.error.SmiError"><code class="docutils literal notranslate"><span class="pre">SmiError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#warnings">Warnings</a><ul>
+<li><a class="reference internal" href="#pysnmp.error.PySnmpCryptoWarning"><code class="docutils literal notranslate"><span class="pre">PySnmpCryptoWarning</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.error.PySnmpWeakCryptoWarning"><code class="docutils literal notranslate"><span class="pre">PySnmpWeakCryptoWarning</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.error.PySnmpNonStandardCryptoWarning"><code class="docutils literal notranslate"><span class="pre">PySnmpNonStandardCryptoWarning</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pysnmp.hlapi">Return types</a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.types.SnmpResponse"><code class="docutils literal notranslate"><span class="pre">SnmpResponse</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.types.SnmpResponse.errorIndication"><code class="docutils literal notranslate"><span class="pre">SnmpResponse.errorIndication</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.types.SnmpResponse.errorStatus"><code class="docutils literal notranslate"><span class="pre">SnmpResponse.errorStatus</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.types.SnmpResponse.errorIndex"><code class="docutils literal notranslate"><span class="pre">SnmpResponse.errorIndex</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.types.SnmpResponse.varBinds"><code class="docutils literal notranslate"><span class="pre">SnmpResponse.varBinds</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pysnmp.proto.rfc1905.endOfMibView"><code class="docutils literal notranslate"><span class="pre">endOfMibView</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.proto.rfc1902.ObjectName"><code class="docutils literal notranslate"><span class="pre">ObjectName</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#transport">Transport</a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT"><code class="docutils literal notranslate"><span class="pre">pysnmp.hlapi.transport.TransportAddrT</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.transport.AbstractTransportTarget"><code class="docutils literal notranslate"><span class="pre">AbstractTransportTarget</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.transport.AbstractTransportTarget.setLocalAddress"><code class="docutils literal notranslate"><span class="pre">AbstractTransportTarget.setLocalAddress()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pysnmp.smi.rfc1902">MIB services</a><ul>
+<li><a class="reference internal" href="#pysnmp.smi.builder.MibBuilder"><code class="docutils literal notranslate"><span class="pre">MibBuilder</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.smi.builder.MibBuilder.addMibSources"><code class="docutils literal notranslate"><span class="pre">MibBuilder.addMibSources()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.builder.MibBuilder.getMibSources"><code class="docutils literal notranslate"><span class="pre">MibBuilder.getMibSources()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.builder.MibBuilder.loadModules"><code class="docutils literal notranslate"><span class="pre">MibBuilder.loadModules()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.builder.MibBuilder.importSymbols"><code class="docutils literal notranslate"><span class="pre">MibBuilder.importSymbols()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController"><code class="docutils literal notranslate"><span class="pre">MibViewController</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.indexMib"><code class="docutils literal notranslate"><span class="pre">MibViewController.indexMib()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getOrderedModuleName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getOrderedModuleName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getFirstModuleName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getFirstModuleName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getLastModuleName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getLastModuleName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getNextModuleName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getNextModuleName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getNodeNameByOid"><code class="docutils literal notranslate"><span class="pre">MibViewController.getNodeNameByOid()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getNodeNameByDesc"><code class="docutils literal notranslate"><span class="pre">MibViewController.getNodeNameByDesc()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getNodeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getNodeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getOrderedNodeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getOrderedNodeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getFirstNodeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getFirstNodeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getLastNodeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getLastNodeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getNextNodeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getNextNodeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getParentNodeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getParentNodeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getNodeLocation"><code class="docutils literal notranslate"><span class="pre">MibViewController.getNodeLocation()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getTypeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getTypeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getOrderedTypeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getOrderedTypeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getFirstTypeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getFirstTypeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getLastTypeName"><code class="docutils literal notranslate"><span class="pre">MibViewController.getLastTypeName()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getNextType"><code class="docutils literal notranslate"><span class="pre">MibViewController.getNextType()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getTableColumns"><code class="docutils literal notranslate"><span class="pre">MibViewController.getTableColumns()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.resolveCellOid"><code class="docutils literal notranslate"><span class="pre">MibViewController.resolveCellOid()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.getTableCellInfo"><code class="docutils literal notranslate"><span class="pre">MibViewController.getTableCellInfo()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.get_table_columns"><code class="docutils literal notranslate"><span class="pre">MibViewController.get_table_columns()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.resolve_cell_oid"><code class="docutils literal notranslate"><span class="pre">MibViewController.resolve_cell_oid()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.smi.view.MibViewController.get_table_cell_info"><code class="docutils literal notranslate"><span class="pre">MibViewController.get_table_cell_info()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#synchronous-command-generators">Synchronous command generators</a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.getCmd"><code class="docutils literal notranslate"><span class="pre">getCmd()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.setCmd"><code class="docutils literal notranslate"><span class="pre">setCmd()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.nextCmd"><code class="docutils literal notranslate"><span class="pre">nextCmd()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.bulkCmd"><code class="docutils literal notranslate"><span class="pre">bulkCmd()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=cb01d673"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

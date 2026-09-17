@@ -1480,9 +1480,9 @@ time of search.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Please refer to <a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/localfile/filereader.html#pysmi.reader.localfile.FileReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileReader</span></code></a>,
-<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/httpclient/httpreader.html#pysmi.reader.httpclient.HttpReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpReader</span></code></a> and
-<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/zipreader/zipreader.html#pysmi.reader.zipreader.ZipReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZipReader</span></code></a> classes for
+<p>Please refer to <a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/localfile/filereader.html#pysmi.reader.localfile.FileReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileReader</span></code></a>,
+<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/httpclient/httpreader.html#pysmi.reader.httpclient.HttpReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpReader</span></code></a> and
+<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/zipreader/zipreader.html#pysmi.reader.zipreader.ZipReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZipReader</span></code></a> classes for
 in-depth information on ASN.1 MIB lookup.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysDescr'</span><span class="p">)</span><span class="o">.</span><span class="n">addAsn1MibSource</span><span class="p">(</span><span class="s1">'https://data.mibsdepot.com/asn1/@mib@'</span><span class="p">)</span>
@@ -1560,7 +1560,7 @@ variables resolution purposes.</p>
 events (exact details depends on many factors):</p>
 <ul class="simple">
 <li><p>ASN.1 MIB file downloaded and handed over to
-<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/compiler/mibcompiler.html#pysmi.compiler.MibCompiler" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MibCompiler</span></code></a> for conversion into
+<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/compiler/mibcompiler.html#pysmi.compiler.MibCompiler" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MibCompiler</span></code></a> for conversion into
 Python MIB module (based on pysnmp classes)</p></li>
 <li><p>Python MIB module is imported by SNMP engine, internal indices
 created</p></li>
@@ -1752,9 +1752,9 @@ time of search.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Please refer to <a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/localfile/filereader.html#pysmi.reader.localfile.FileReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileReader</span></code></a>,
-<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/httpclient/httpreader.html#pysmi.reader.httpclient.HttpReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpReader</span></code></a> and
-<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/zipreader/zipreader.html#pysmi.reader.zipreader.ZipReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZipReader</span></code></a> classes for
+<p>Please refer to <a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/localfile/filereader.html#pysmi.reader.localfile.FileReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileReader</span></code></a>,
+<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/httpclient/httpreader.html#pysmi.reader.httpclient.HttpReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpReader</span></code></a> and
+<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/zipreader/zipreader.html#pysmi.reader.zipreader.ZipReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZipReader</span></code></a> classes for
 in-depth information on ASN.1 MIB lookup.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'sysDescr'</span><span class="p">))</span><span class="o">.</span><span class="n">addAsn1MibSource</span><span class="p">(</span><span class="s1">'https://data.mibsdepot.com/asn1/@mib@'</span><span class="p">))</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr'), &lt;Null value object"</span><span class="p">)</span>
@@ -1998,9 +1998,9 @@ time of search.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Please refer to <a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/localfile/filereader.html#pysmi.reader.localfile.FileReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileReader</span></code></a>,
-<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/httpclient/httpreader.html#pysmi.reader.httpclient.HttpReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpReader</span></code></a> and
-<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/zipreader/zipreader.html#pysmi.reader.zipreader.ZipReader" title="(in SNMP SMI compiler v5.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZipReader</span></code></a> classes for
+<p>Please refer to <a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/localfile/filereader.html#pysmi.reader.localfile.FileReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileReader</span></code></a>,
+<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/httpclient/httpreader.html#pysmi.reader.httpclient.HttpReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpReader</span></code></a> and
+<a class="reference external" href="https://pysnmp.github.io/pysmi/stable/pysmi/reader/zipreader/zipreader.html#pysmi.reader.zipreader.ZipReader" title="(in SNMP SMI compiler v5.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ZipReader</span></code></a> classes for
 in-depth information on ASN.1 MIB lookup.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">NotificationType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s1">'SNMPv2-MIB'</span><span class="p">,</span> <span class="s1">'coldStart'</span><span class="p">),</span> <span class="p">(),</span> <span class="p">{})</span><span class="o">.</span><span class="n">addAsn1MibSource</span><span class="p">(</span><span class="s1">'https://data.mibsdepot.com/asn1/@mib@'</span><span class="p">)</span>
