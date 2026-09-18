@@ -18,6 +18,33 @@ from pysnmp.hlapi.auth import CommunityData, UsmUserData
 
 __all__ = ["CommandGeneratorLcdConfigurator", "NotificationOriginatorLcdConfigurator"]
 
+#: What makes two `UsmUserData` the same *credentials*, rather than merely the
+#: same user. The cache is keyed on the user name and security engine ID, which
+#: say which USM row is being configured but nothing about what is in it, so
+#: these are compared separately before a cached row is reused.
+#:
+#: The key types are in the list because they decide how the key is read -- a
+#: passphrase and a pre-localized key of the same bytes are different
+#: credentials -- and `securityName` because it is what the row maps the user
+#: on to.
+USM_CREDENTIAL_ATTRIBUTES = (
+    "authProtocol",
+    "authKey",
+    "authKeyType",
+    "privProtocol",
+    "privKey",
+    "privKeyType",
+    "securityName",
+)
+
+
+def _usmCredentialsDiffer(cached, incoming):
+    """Whether these two `UsmUserData` would configure the USM row differently."""
+    return any(
+        getattr(cached, attribute, None) != getattr(incoming, attribute, None)
+        for attribute in USM_CREDENTIAL_ATTRIBUTES
+    )
+
 
 class AbstractLcdConfigurator:
     nextID = nextid.Integer(0xFFFFFFFF)
@@ -78,7 +105,27 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
                 cache["auth"][authData.communityIndex] = authData
         elif isinstance(authData, UsmUserData):
             authDataKey = authData.userName, authData.securityEngineId
-            if authDataKey not in cache["auth"]:
+            cachedAuthData = cache["auth"].get(authDataKey)
+
+            # The key names the USM row; it says nothing about the credentials
+            # in it. Passing a UsmUserData with the same user name and a new
+            # authKey -- after a usmUserAuthKeyChange, or simply because the
+            # application rotated its credentials -- used to hit the cache and
+            # skip addV3User() entirely, so the engine kept the keys it was
+            # first given. The request then went out signed with the stale key
+            # and the agent answered wrongDigests, with nothing to say that the
+            # credentials just passed had been ignored.
+            if cachedAuthData is not None and _usmCredentialsDiffer(
+                cachedAuthData, authData
+            ):
+                # addV3User() on an existing row is not a replace, so the old
+                # row goes first.
+                config.delV3User(
+                    snmpEngine, authData.userName, authData.securityEngineId
+                )
+                cachedAuthData = None
+
+            if cachedAuthData is None:
                 config.addV3User(
                     snmpEngine,
                     authData.userName,
