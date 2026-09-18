@@ -12,6 +12,10 @@ downstream tools, with the following options:
   notifications from 127.0.0.0/8 only)
 * using Asyncio framework for network transport
 
+162 is where a relay listens, which is why it is what this example binds --
+and it is a privileged port, so run this as root or change `LISTEN_AT` below
+to something above 1024 and put the same port in the `snmptrap` commands.
+
 A notification receiver hands the application the bindings an SMIv2
 notification carries -- an SNMPv1 trap arrives converted, per :RFC:`2576`
 section 3.1 -- so forwarding is a matter of sending those same bindings on
@@ -35,8 +39,9 @@ relay:
 | $ snmptrap -v2c -c public 127.0.0.1 123 1.3.6.1.6.3.1.1.5.3 1.3.6.1.2.1.2.2.1.1.3 i 3
 | $ snmptrap -v1 -c public 127.0.0.1 1.3.6.1.4.1.20408.4.1.1.2 0.0.0.0 6 432 12345 1.3.6.1.2.1.1.1.0 s "my system"
 
-Running the receiver from `multiple-interfaces.py` on 127.0.0.1:1162 shows
-what comes out the other side.
+To see what comes out the other side, run `multiple-interfaces.py` with one of
+its listening ports changed to 1162, which is where the first destination below
+sends.
 
 """  #
 
@@ -66,6 +71,10 @@ SNMP_TRAP_ADDRESS = v2c.apiTrapPDU.snmpTrapAddress
 
 # linkDown and linkUp, the subset one of the destinations below asks for.
 LINK_STATE = ("1.3.6.1.6.3.1.1.5.3", "1.3.6.1.6.3.1.1.5.4")
+
+# Where notifications arrive. Binding 162 needs privilege; an unprivileged port
+# works the same way, and the `snmptrap` commands above have to name it too.
+LISTEN_AT = ("127.0.0.1", 162)
 
 log = logging.getLogger("forwarder")
 
@@ -211,7 +220,7 @@ async def main():
     config.addTransport(
         receivingEngine,
         udp.domainName + (1,),
-        udp.UdpTransport().openServerMode(("127.0.0.1", 162)),
+        udp.UdpTransport().openServerMode(LISTEN_AT),
     )
     config.addV1System(receivingEngine, "my-area", "public")
 
