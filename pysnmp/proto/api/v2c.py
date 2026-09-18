@@ -28,6 +28,7 @@ Counter64 = rfc1902.Counter64
 Bits = rfc1902.Bits
 Float = rfc1902.Float
 Double = rfc1902.Double
+decodeOpaque = rfc1902.decodeOpaque
 
 NoSuchObject = rfc1905.NoSuchObject
 NoSuchInstance = rfc1905.NoSuchInstance

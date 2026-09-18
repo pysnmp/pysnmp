@@ -45,7 +45,7 @@ from pysnmp.proto.rfc1902 import (
     Opaque,
     TimeTicks,
     Unsigned32,
-    decodeOpaqueReal,
+    decodeOpaque,
 )
 from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
 from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType

@@ -31,7 +31,7 @@ __all__ = [
     "Opaque",
     "TimeTicks",
     "Unsigned32",
-    "decodeOpaqueReal",
+    "decodeOpaque",
 ]
 
 
@@ -593,7 +593,7 @@ class Opaque(univ.OctetString):
     carried under a tag of its own -- see
     :py:class:`~pysnmp.proto.rfc1902.Float`,
     :py:class:`~pysnmp.proto.rfc1902.Double` and
-    :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal`. This class does not read
+    :py:func:`~pysnmp.proto.rfc1902.decodeOpaque`. This class does not read
     it; nothing reads an Opaque as a number unless asked.
 
     Parameters
@@ -684,7 +684,7 @@ class _OpaqueReal(Opaque):
     never automatic. An `Opaque` is a general envelope and agents put all
     sorts of things in it, so a value arrives as `Opaque` and becomes a number
     only when something asks: either by naming the type, ``Float(varBind[1])``,
-    or by letting :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal` read the
+    or by letting :py:func:`~pysnmp.proto.rfc1902.decodeOpaque` read the
     nested tag and decide. A MIB whose objects are always reals can name the
     type as their syntax in a behavior fragment
     (:py:mod:`pysnmp.smi.mibs.behavior`) and have every value cast on arrival.
@@ -812,7 +812,7 @@ class Float(_OpaqueReal):
     This is what net-snmp reports ``UCD-SNMP-MIB`` load averages as.
 
     Nothing decodes an `Opaque` as one of these on its own -- see
-    :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal`.
+    :py:func:`~pysnmp.proto.rfc1902.decodeOpaque`.
 
     Parameters
     ----------
@@ -825,7 +825,9 @@ class Float(_OpaqueReal):
     ------
         pyasn1.error.PyAsn1Error
             On a value too large for single precision, or octets that are not
-            a float-tagged nested value.
+            a float-tagged nested value. What is raised is
+            ``pysnmp.proto.error.ProtocolError``, which is one of these, so a
+            caster already catching pyasn1 errors handles it.
 
     Examples
     --------
@@ -861,7 +863,7 @@ class Double(_OpaqueReal):
     twice the width, and the width a Python float already is.
 
     Nothing decodes an `Opaque` as one of these on its own -- see
-    :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal`.
+    :py:func:`~pysnmp.proto.rfc1902.decodeOpaque`.
 
     Parameters
     ----------
@@ -873,7 +875,9 @@ class Double(_OpaqueReal):
     Raises
     ------
         pyasn1.error.PyAsn1Error
-            On octets that are not a double-tagged nested value.
+            On octets that are not a double-tagged nested value. What is
+            raised is ``pysnmp.proto.error.ProtocolError``, which is one of
+            these, so a caster already catching pyasn1 errors handles it.
 
     Examples
     --------
@@ -896,40 +900,48 @@ class Double(_OpaqueReal):
     decimalDigits = 17
 
 
-#: The real types, by the nested tag that identifies each.
-_OPAQUE_REAL_TYPES = {Float.nestedTag: Float, Double.nestedTag: Double}
+#: The nested types this version reads, by the tag that identifies each.
+#: draft-perkins-opaque-01 defines more of them -- Counter64 at 118, int64 at
+#: 122, unsigned64 at 123 -- and this is where each one lands when it is
+#: implemented.
+_OPAQUE_TYPES = {Float.nestedTag: Float, Double.nestedTag: Double}
 
 
-def decodeOpaqueReal(value):
-    """Read an `Opaque` as a real number where its own tag says it is one.
+def decodeOpaque(value):
+    """Read an `Opaque` as the value its own nested tag says it carries.
 
-    Returns a :py:class:`~pysnmp.proto.rfc1902.Float` or a
-    :py:class:`~pysnmp.proto.rfc1902.Double` where `value`'s octets are tagged
-    as one, and `value` unchanged where they are not -- so this can be applied
-    to every `Opaque` a walk turns up without assuming any of them is a
-    number.
+    Returns the decoded type where `value`'s octets are tagged as one this
+    version knows, and `value` unchanged where they are not -- so this can be
+    applied to every `Opaque` a walk turns up without assuming anything about
+    what is in them. Today that means
+    :py:class:`~pysnmp.proto.rfc1902.Float` and
+    :py:class:`~pysnmp.proto.rfc1902.Double`; draft-perkins-opaque-01 defines
+    other types over the same envelope, so a later version may recognize a tag
+    this one hands back untouched. Code that needs one exact type should name
+    it -- ``Float(varBind[1])`` -- rather than depending on what this leaves
+    alone.
 
-    Octets whose tag claims a real but whose payload will not decode as one
+    Octets whose tag claims a type but whose payload will not decode as one
     raise `pysnmp.proto.error.ProtocolError`, rather than passing for the
     Opaque they came in as: the sender said what it was sending.
 
     Examples
     --------
         >>> from pysnmp.proto.rfc1902 import *
-        >>> decodeOpaqueReal(Opaque(hexValue='9f78043fc00000')).prettyPrint()
+        >>> decodeOpaque(Opaque(hexValue='9f78043fc00000')).prettyPrint()
         '1.5'
-        >>> decodeOpaqueReal(Opaque('some apples')).prettyPrint()
+        >>> decodeOpaque(Opaque('some apples')).prettyPrint()
         'some apples'
         >>>
 
     """
     octets = value.asOctets() if isinstance(value, univ.OctetString) else bytes(value)
 
-    if len(octets) > 2 and octets[0] == _NESTED_TAG_PREFIX:
-        real = _OPAQUE_REAL_TYPES.get(octets[1])
+    if len(octets) >= 2 and octets[0] == _NESTED_TAG_PREFIX:
+        nested = _OPAQUE_TYPES.get(octets[1])
 
-        if real is not None:
-            return real(octets)
+        if nested is not None:
+            return nested(octets)
 
     return value
 

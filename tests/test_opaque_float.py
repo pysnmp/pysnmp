@@ -19,7 +19,7 @@ from pyasn1.codec.ber import decoder, encoder
 
 from pysnmp.proto import error, rfc1902, rfc1905
 from pysnmp.proto.api import v2c
-from pysnmp.proto.rfc1902 import Double, Float, Opaque, decodeOpaqueReal
+from pysnmp.proto.rfc1902 import Double, Float, Opaque, decodeOpaque
 
 # What net-snmp puts on the wire inside the Opaque, for a value each: the
 # two-octet high-tag-number form (0x9f, then the tag), a length, and the IEEE
@@ -64,7 +64,7 @@ def test_a_float_travels_as_the_opaque_a_var_bind_declares():
     assert not rest
     # What arrives is an Opaque. Reading it as a number is the caller's move.
     assert type(value) is Opaque
-    assert float(decodeOpaqueReal(value)) == float(Float(0.15))
+    assert float(decodeOpaque(value)) == float(Float(0.15))
 
 
 @pytest.mark.parametrize(
@@ -75,7 +75,7 @@ def test_a_float_travels_as_the_opaque_a_var_bind_declares():
     ],
 )
 def test_the_nested_tag_decides_which_real_it_is(octets, expected):
-    assert type(decodeOpaqueReal(Opaque(octets))) is expected
+    assert type(decodeOpaque(Opaque(octets))) is expected
 
 
 @pytest.mark.parametrize(
@@ -90,14 +90,29 @@ def test_the_nested_tag_decides_which_real_it_is(octets, expected):
 def test_an_opaque_carrying_anything_else_comes_back_as_it_was(payload):
     opaque = Opaque(payload)
 
-    assert decodeOpaqueReal(opaque) is opaque
+    assert decodeOpaque(opaque) is opaque
+
+
+@pytest.mark.parametrize(
+    "octets",
+    [
+        pytest.param(bytes.fromhex("9f78"), id="float-tag-alone"),
+        pytest.param(bytes.fromhex("9f79"), id="double-tag-alone"),
+    ],
+)
+def test_a_known_tag_with_nothing_after_it_is_reported(octets):
+    # The tag declares the type with no length or payload behind it, which is
+    # the same disagreement as a payload that will not decode, not an Opaque
+    # that happens to carry two octets.
+    with pytest.raises(error.ProtocolError):
+        decodeOpaque(Opaque(octets))
 
 
 def test_a_float_tagged_value_that_will_not_decode_is_reported():
     # The sender said it was sending a float, so this is a disagreement about
     # the protocol, not an Opaque that happens not to be one.
     with pytest.raises(error.ProtocolError):
-        decodeOpaqueReal(Opaque(bytes.fromhex("9f7802dead")))
+        decodeOpaque(Opaque(bytes.fromhex("9f7802dead")))
 
 
 @pytest.mark.parametrize(
@@ -232,7 +247,7 @@ def test_the_types_are_reachable_from_the_high_level_api():
 
     assert hlapi.Float is Float
     assert hlapi.Double is Double
-    assert hlapi.decodeOpaqueReal is decodeOpaqueReal
+    assert hlapi.decodeOpaque is decodeOpaque
 
 
 def test_the_tags_are_the_ones_the_draft_names():

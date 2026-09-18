@@ -58,6 +58,6 @@ from pysnmp.proto.rfc1902 import (
     Opaque,
     TimeTicks,
     Unsigned32,
-    decodeOpaqueReal,
+    decodeOpaque,
 )
 from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType

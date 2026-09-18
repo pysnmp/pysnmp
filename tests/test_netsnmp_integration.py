@@ -41,7 +41,7 @@ from pysnmp.proto.rfc1902 import (
     OctetString,
     Opaque,
     TimeTicks,
-    decodeOpaqueReal,
+    decodeOpaque,
 )
 from pysnmp.proto.rfc1905 import NoSuchInstance, NoSuchObject
 
@@ -278,7 +278,7 @@ def test_load_average_arrives_as_an_opaque_float():
     # What arrives is an Opaque, because that is all the wire says it is.
     assert isinstance(value, Opaque), type(value).__name__
 
-    load = decodeOpaqueReal(value)
+    load = decodeOpaque(value)
 
     assert isinstance(load, Float), (
         f"laLoadFloat should carry a float-tagged nested value, got "

@@ -386,7 +386,7 @@ Double type
 .. autoclass:: pysnmp.proto.rfc1902.Double(initializer)
    :members: asFloat
 
-.. autofunction:: pysnmp.proto.rfc1902.decodeOpaqueReal
+.. autofunction:: pysnmp.proto.rfc1902.decodeOpaque
 
 Counter64 type
 ++++++++++++++
