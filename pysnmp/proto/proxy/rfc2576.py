@@ -225,10 +225,20 @@ def v2ToV1(v2Pdu, origV1Pdu=None):
     # 3.2
     if pduType in rfc3411.notificationClassPDUs:
         # 3.2.1
+        # RFC 3416 section 4.2.6 puts sysUpTime.0 first and snmpTrapOID.0
+        # second, so a conformant notification always has at least two
+        # bindings. This is a network input rather than a local caller,
+        # though, and a truncated one used to index straight past the end
+        # and raise IndexError out of the protocol layer -- rather than the
+        # ProtocolError every other malformed case here raises.
+        if len(v2VarBinds) < 2:
+            raise error.ProtocolError(
+                "SNMP v2c TRAP PDU requires at least two var-binds"
+            )
+
         snmpTrapOID, snmpTrapOIDParam = v2VarBinds[1]
         if snmpTrapOID != v2c.apiTrapPDU.snmpTrapOID:
             raise error.ProtocolError("Second OID not snmpTrapOID")
-        snmpTrapOID, snmpTrapOIDParam = v2VarBinds[1]
         if snmpTrapOIDParam in __v2ToV1TrapMap:
             for oid, val in v2VarBinds:
                 if oid == v2c.apiTrapPDU.snmpTrapEnterprise:

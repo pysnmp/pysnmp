@@ -22,6 +22,70 @@ getNextHandle = nextid.Integer(0x7FFFFFFF)
 _POWER_OF_TWO = [2**exp for exp in range(7, -1, -1)]
 
 
+def orderNotificationVarBinds(varBinds, sysUpTime, snmpTrapOID):
+    """Put a notification's var-binds into the order RFC 3416 requires.
+
+    Section 4.2.6 says a notification PDU carries ``sysUpTime.0`` first and
+    ``snmpTrapOID.0`` second, whatever order the caller listed them in. The
+    rest keep the caller's order behind them.
+
+    `sysUpTime` and `snmpTrapOID` are the MIB instances, which supply both the
+    names to look for and, for the uptime, the value to read when the caller
+    did not pass one. Returns a new list; the argument is not modified.
+
+    Raises
+    ------
+        error.PySnmpError
+            If ``snmpTrapOID.0`` is not among *varBinds*.
+    """
+    sysUpTimeName = sysUpTime.getName()
+    snmpTrapOIDName = snmpTrapOID.getName()
+
+    ordered = list(varBinds)
+
+    # An uptime goes in front unconditionally -- including when the caller
+    # passed nothing at all. The insertion used to live inside
+    # `for idx in range(len(varBinds))`, which an empty list never enters, so
+    # a notification with no var-binds went out with no sysUpTime.0 at all.
+    if not ordered or ordered[0][0] != sysUpTimeName:
+        ordered.insert(
+            0,
+            (v2c.ObjectIdentifier(sysUpTimeName), sysUpTime.getSyntax().clone()),
+        )
+
+    # The caller's own sysUpTime.0, wherever they put it, replaces the one just
+    # inserted rather than being left behind as a second copy. The old code
+    # deleted at `idx` after an insert at 0 had already shifted everything
+    # right by one, so it removed the wrong binding and kept the caller's --
+    # four bindings in, six out, with both required ones duplicated.
+    for idx, varBind in enumerate(ordered[1:], start=1):
+        if varBind[0] == sysUpTimeName:
+            ordered[0] = varBind
+            del ordered[idx]
+            break
+
+    # snmpTrapOID.0 is what says which notification this is; a receiver cannot
+    # dispatch one without it.
+    for idx, varBind in enumerate(ordered[1:], start=1):
+        if varBind[0] == snmpTrapOIDName:
+            if idx != 1:
+                ordered.insert(1, ordered.pop(idx))
+            break
+    else:
+        # Previously a placeholder was inserted here carrying
+        # snmpTrapOID.getSyntax() -- the live MIB instance's own value object,
+        # uncloned. That aliases engine state into the PDU, and the value it
+        # carries is that instance's current one, which defaults to
+        # 1.3.6.1.6.3.1.1.5.1. So a caller who omitted the binding silently
+        # sent a coldStart instead of being told anything was missing.
+        raise error.PySnmpError(
+            "SNMP notification PDU requires SNMPv2-MIB::snmpTrapOID.0 "
+            "to be present among var-binds"
+        )
+
+    return ordered
+
+
 def _prepareFilterEntries(filterEntries):
     """Normalize notification filter masks without losing row precedence."""
     prepared = []
@@ -464,28 +528,7 @@ class NotificationOriginator:
             )
         )
 
-        for idx in range(len(varBinds)):
-            if idx and varBinds[idx][0] == sysUpTime.getName():
-                if varBinds[0][0] == sysUpTime.getName():
-                    varBinds[0] = varBinds[idx]
-                else:
-                    varBinds.insert(0, varBinds[idx])
-                    del varBinds[idx]
-
-            if varBinds[0][0] != sysUpTime.getName():
-                varBinds.insert(
-                    0,
-                    (
-                        v2c.ObjectIdentifier(sysUpTime.getName()),
-                        sysUpTime.getSyntax().clone(),
-                    ),
-                )
-
-        if len(varBinds) < 2 or varBinds[1][0] != snmpTrapOID.getName():
-            varBinds.insert(
-                1,
-                (v2c.ObjectIdentifier(snmpTrapOID.getName()), snmpTrapOID.getSyntax()),
-            )
+        varBinds = orderNotificationVarBinds(varBinds, sysUpTime, snmpTrapOID)
 
         sendRequestHandle = -1
         notificationsSent = 0
