@@ -1411,7 +1411,15 @@ class MibTableRow(MibTree):
         """Return column instance identification from indices."""
         try:
             return self.__idxToIdCache[indices]
-        except TypeError:
+        except (TypeError, PyAsn1Error):
+            # An index that cannot be a dict key is an ordinary reason to skip
+            # the cache, not to fail the request. Two things get us here: a
+            # plainly unhashable member, which raises TypeError, and a pyasn1
+            # *schema* object -- a type carrying no value -- which raises
+            # PyAsn1Error('Attempted operation on ASN.1 schema object',
+            # operation='__hash__') instead. PyAsn1Error does not inherit
+            # TypeError, so guarding on TypeError alone never caught the second
+            # and let it out of index resolution (etingof/pysnmp#444).
             cacheable = False
         except KeyError:
             cacheable = True
