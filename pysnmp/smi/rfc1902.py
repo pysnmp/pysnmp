@@ -503,7 +503,29 @@ class ObjectIdentity:
                     (rowNode,) = mibViewController.mibBuilder.importSymbols(
                         rowModName, rowSymName
                     )
-                    self.__indices = rowNode.getIndicesFromInstId(suffix)
+                    try:
+                        self.__indices = rowNode.getIndicesFromInstId(suffix)
+
+                    except SmiError as e:
+                        # A row whose index does not decode against the compiled
+                        # MIB -- a vendor agent that pads an index, or a MIB
+                        # compiled from a different revision -- must not end the
+                        # walk it turned up in. The rows around it resolved and
+                        # are worth having, and this OID is still a perfectly
+                        # good name for the object; only the index structure
+                        # inside it is unreadable.
+                        #
+                        # So keep the suffix whole as one opaque index, which is
+                        # what a node with no index structure gets just below,
+                        # and carry on. The same call with explicit indices
+                        # passed by the caller still raises, further down: there
+                        # the index came from this side and is a mistake to
+                        # report, not a peer's row to make the best of.
+                        debug.logger & debug.flagMIB and debug.logger(
+                            f"resolveWithMib: index of {prefix + suffix!r} left "
+                            f"undecoded: {e}"
+                        )
+                        self.__indices = (rfc1902.ObjectName(suffix),)
             elif suffix:
                 self.__indices = (rfc1902.ObjectName(suffix),)
             self.__state |= self.stClean
