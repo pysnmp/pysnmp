@@ -379,7 +379,38 @@ class IpAddress(OctetString):
             return ""
 
 
-class Counter32(univ.Integer):
+class _WrappingInteger(univ.Integer):
+    """An SMIv2 integer that wraps at its ceiling instead of overflowing.
+
+    Counter32, Counter64 and TimeTicks all say the same thing in their
+    definitions: the value increases until it reaches its maximum, "when it
+    wraps around and starts increasing again from zero" (:RFC:`2578#section-7.1.6`,
+    :RFC:`2578#section-7.1.10`, and modulo 2^32 for TimeTicks at
+    :RFC:`2578#section-7.1.8`). Nothing implemented that wrap, so crossing the
+    ceiling raised `ValueConstraintError` out of `clone()`'s constraint check --
+    which, on `sysUpTime` and on the engine's own statistics counters, is a
+    failure with nowhere useful to surface.
+
+    Gauge32 and Unsigned32 deliberately do not inherit this: a Gauge latches at
+    its maximum rather than wrapping (:RFC:`2578#section-7.1.7`).
+    """
+
+    #: 2 ** width. Subclasses set it; there is no sensible default.
+    wrapModulus: int
+
+    def __add__(self, value):
+        """Add, wrapping at the ceiling rather than raising."""
+        if not isinstance(value, (int, univ.Integer)):
+            return NotImplemented
+
+        return self.clone((self._value + int(value)) % self.wrapModulus)
+
+    def __radd__(self, value):
+        """Add, wrapping at the ceiling rather than raising."""
+        return self.__add__(value)
+
+
+class Counter32(_WrappingInteger):
     """Creates an instance of SNMP Counter32 class.
 
     :py:class:`~pysnmp.proto.rfc1902.Counter32` type represents
@@ -417,6 +448,7 @@ class Counter32(univ.Integer):
     subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
         0, 4294967295
     )
+    wrapModulus = 4294967296
 
 
 class Gauge32(univ.Integer):
@@ -498,7 +530,7 @@ class Unsigned32(univ.Integer):
     )
 
 
-class TimeTicks(univ.Integer):
+class TimeTicks(_WrappingInteger):
     """Creates an instance of SNMP TimeTicks class.
 
     :py:class:`~pysnmp.proto.rfc1902.TimeTicks` type represents
@@ -535,6 +567,7 @@ class TimeTicks(univ.Integer):
     subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
         0, 4294967295
     )
+    wrapModulus = 4294967296
 
 
 class Opaque(univ.OctetString):
@@ -587,7 +620,7 @@ class Opaque(univ.OctetString):
     )
 
 
-class Counter64(univ.Integer):
+class Counter64(_WrappingInteger):
     """Creates an instance of SNMP Counter64 class.
 
     :py:class:`~pysnmp.proto.rfc1902.Counter64` type represents
@@ -625,6 +658,7 @@ class Counter64(univ.Integer):
     subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueRangeConstraint(
         0, 18446744073709551615
     )
+    wrapModulus = 18446744073709551616
 
 
 class Bits(OctetString):
