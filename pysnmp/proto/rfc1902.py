@@ -5,14 +5,22 @@
 #
 """The SMIv2 types: what an SNMPv2 value can be."""
 
+import struct
+
+from pyasn1.codec.ber import decoder, encoder
+from pyasn1.error import PyAsn1Error
 from pyasn1.type import constraint, namedtype, namedval, tag, univ
 
 from pysnmp.proto import error
 
 __all__ = [
+    "OPAQUE_DOUBLE_TAG",
+    "OPAQUE_FLOAT_TAG",
     "Bits",
     "Counter32",
     "Counter64",
+    "Double",
+    "Float",
     "Gauge32",
     "Integer",
     "Integer32",
@@ -23,6 +31,7 @@ __all__ = [
     "Opaque",
     "TimeTicks",
     "Unsigned32",
+    "decodeOpaqueReal",
 ]
 
 
@@ -579,6 +588,14 @@ class Opaque(univ.OctetString):
     encoded as an OCTET STRING, in effect "double-wrapping" the original
     ASN.1 value (:RFC:`1902#section-7.1.9`).
 
+    What the inner value is, only the sender knows. One convention is common
+    enough to be worth naming: a real number, which SMIv2 has no syntax for,
+    carried under a tag of its own -- see
+    :py:class:`~pysnmp.proto.rfc1902.Float`,
+    :py:class:`~pysnmp.proto.rfc1902.Double` and
+    :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal`. This class does not read
+    it; nothing reads an Opaque as a number unless asked.
+
     Parameters
     ----------
     strValue : str
@@ -618,6 +635,303 @@ class Opaque(univ.OctetString):
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x04)
     )
+
+
+#: BER's high-tag-number form for a context class, primitive value: the tag
+#: numbers draft-perkins-opaque-01 uses are above 30, so that is how they have
+#: to be written. net-snmp spells this byte ``ASN_OPAQUE_TAG1``.
+_NESTED_TAG_PREFIX = 0x9F
+
+#: The tag a nested single-precision float carries
+#: (`draft-perkins-opaque-01 <https://datatracker.ietf.org/doc/html/draft-perkins-opaque-01>`_,
+#: ``ASN_OPAQUE_FLOAT`` to net-snmp).
+OPAQUE_FLOAT_TAG = 0x78
+
+#: The tag a nested double-precision float carries (``ASN_OPAQUE_DOUBLE``).
+OPAQUE_DOUBLE_TAG = 0x79
+
+
+def _nestedSyntax(tagId):
+    """The BER spec of the value an Opaque carries under `tagId`.
+
+    The payload is read and written as octets: what is inside them is an IEEE
+    754 number, which ASN.1 has no type for, so only the tag and the length
+    are ASN.1's to check.
+    """
+
+    class _Nested(univ.OctetString):
+        tagSet = univ.OctetString.tagSet.tagImplicitly(
+            tag.Tag(tag.tagClassContext, tag.tagFormatSimple, tagId)
+        )
+
+    return _Nested()
+
+
+class _OpaqueReal(Opaque):
+    """A real number carried inside an Opaque, the way net-snmp sends one.
+
+    SMIv2 has no floating point syntax, so an agent with a real number to
+    report wraps it in an `Opaque`: the octets are a nested BER value whose own
+    tag says which real type it is
+    (`draft-perkins-opaque-01 <https://datatracker.ietf.org/doc/html/draft-perkins-opaque-01>`_).
+    The draft never became a standard, but net-snmp implements it and emits it
+    -- ``UCD-SNMP-MIB``'s ``laLoadFloat`` is the everyday case -- so anything
+    polling an snmpd for load averages meets it.
+
+    On the wire this is an `Opaque` and nothing else: the tag is Opaque's, the
+    octets are the nested value, and a peer that has never heard of the
+    convention sees exactly what it saw before. Which is also why decoding is
+    never automatic. An `Opaque` is a general envelope and agents put all
+    sorts of things in it, so a value arrives as `Opaque` and becomes a number
+    only when something asks: either by naming the type, ``Float(varBind[1])``,
+    or by letting :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal` read the
+    nested tag and decide. A MIB whose objects are always reals can name the
+    type as their syntax in a behavior fragment
+    (:py:mod:`pysnmp.smi.mibs.behavior`) and have every value cast on arrival.
+
+    Comparison stays octet comparison, as for any `Opaque`; take ``float()``
+    of a value first to compare it as a number.
+    """
+
+    #: The nested value's tag. Subclasses set it; there is no default.
+    nestedTag: int
+
+    #: Spec of the nested value, built from `nestedTag`.
+    nestedSyntax: univ.OctetString
+
+    #: `struct` format of the payload the nested value carries, which fixes
+    #: its width as well as how it is read.
+    packFormat: str
+
+    #: Significant decimal digits enough to tell any two values of this width
+    #: apart, which is where rendering stops widening the number it prints.
+    decimalDigits: int
+
+    def prettyIn(self, value):
+        """Accept a Python number, or the nested BER octets carrying one.
+
+        A number -- or a string spelling one, or another real of either width
+        -- is encoded. Anything else is taken as the octets of a nested value
+        already, and read back to check the tag is this type's and the payload
+        the right width, then re-encoded so a value's octets do not depend on
+        which length form the sender chose.
+        """
+        if isinstance(value, _OpaqueReal):
+            return self._pack(value.asFloat())
+
+        if isinstance(value, (int, float)):
+            return self._pack(value)
+
+        if isinstance(value, str):
+            try:
+                number = float(value)
+            except ValueError as exc:
+                raise error.ProtocolError(
+                    f"Bad {self.__class__.__name__} value {value!r}"
+                ) from exc
+
+            return self._pack(number)
+
+        return self._pack(self._unpack(Opaque.prettyIn(self, value)))
+
+    def prettyOut(self, value):
+        """Render the number, not the octets it travels in."""
+        return self._prettyReal(self._unpack(value))
+
+    def asFloat(self):
+        """The number this value carries, as a Python float."""
+        return self._unpack(self._value)
+
+    def __float__(self):
+        """The number this value carries, as a Python float."""
+        return self.asFloat()
+
+    def _pack(self, number):
+        """`number` as a nested BER value, tagged and sized for this type."""
+        try:
+            payload = struct.pack(self.packFormat, number)
+        except (OverflowError, struct.error) as exc:
+            raise error.ProtocolError(
+                f"{number!r} does not fit a {self.__class__.__name__}"
+            ) from exc
+
+        return encoder.encode(self.nestedSyntax.clone(payload))
+
+    def _unpack(self, octets):
+        """The number `octets` carry, which must be this type's nested value."""
+        try:
+            nested, rest = decoder.decode(bytes(octets), asn1Spec=self.nestedSyntax)
+        except PyAsn1Error as exc:
+            raise error.ProtocolError(
+                f"Not a {self.__class__.__name__}: {exc}"
+            ) from exc
+
+        payload = nested.asOctets()
+        expected = struct.calcsize(self.packFormat)
+
+        if rest or len(payload) != expected:
+            raise error.ProtocolError(
+                f"Not a {self.__class__.__name__}: {expected} octets expected, "
+                f"{len(payload) + len(rest)} carried"
+            )
+
+        return struct.unpack(self.packFormat, payload)[0]
+
+    def _prettyReal(self, number):
+        """The shortest decimal that reads back as `number` at this width.
+
+        A single-precision value has no exact short decimal form -- the float
+        nearest 0.08 is 0.07999999821186066 as a Python float, which is a
+        double -- and printing all of that says more about IEEE 754 than about
+        what the agent reported. So widen the rendering until it round-trips,
+        and no further. A value near this width's ceiling has no rendering that
+        round-trips at all, since every rounding of it is past the ceiling, and
+        falls back to what Python makes of the number.
+        """
+        expected = struct.pack(self.packFormat, number)
+
+        for digits in range(1, self.decimalDigits + 1):
+            text = f"{number:.{digits}g}"
+
+            try:
+                if struct.pack(self.packFormat, float(text)) == expected:
+                    return text
+            except (OverflowError, struct.error):
+                continue
+
+        return repr(number)
+
+
+class Float(_OpaqueReal):
+    r"""Creates an instance of a single-precision float inside an SNMP Opaque.
+
+    The :py:class:`~pysnmp.proto.rfc1902.Float` type is an
+    :py:class:`~pysnmp.proto.rfc1902.Opaque` whose octets are a nested BER
+    value tagged 0x78, carrying an IEEE 754 single-precision number
+    (`draft-perkins-opaque-01 <https://datatracker.ietf.org/doc/html/draft-perkins-opaque-01>`_).
+    This is what net-snmp reports ``UCD-SNMP-MIB`` load averages as.
+
+    Nothing decodes an `Opaque` as one of these on its own -- see
+    :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal`.
+
+    Parameters
+    ----------
+    initializer : float
+        Python float or int, a string spelling one, or the octets of a nested
+        value already -- bytes, an :py:class:`~pysnmp.proto.rfc1902.Opaque`,
+        or another :py:class:`~pysnmp.proto.rfc1902.Float`.
+
+    Raises
+    ------
+        pyasn1.error.PyAsn1Error
+            On a value too large for single precision, or octets that are not
+            a float-tagged nested value.
+
+    Examples
+    --------
+        >>> from pysnmp.proto.rfc1902 import *
+        >>> Float(1.5)
+        <Float value object, payload [1.5]>
+        >>> float(Float(1.5))
+        1.5
+        >>> Float(1.5).asOctets()
+        b'\x9fx\x04?\xc0\x00\x00'
+        >>> Float(Opaque(hexValue='9f78043fc00000')).prettyPrint()
+        '1.5'
+        >>> Float(0.08).prettyPrint()
+        '0.08'
+        >>>
+
+    """
+
+    nestedTag = OPAQUE_FLOAT_TAG
+    nestedSyntax = _nestedSyntax(OPAQUE_FLOAT_TAG)
+    packFormat = ">f"
+    decimalDigits = 9
+
+
+class Double(_OpaqueReal):
+    r"""Creates an instance of a double-precision float inside an SNMP Opaque.
+
+    The :py:class:`~pysnmp.proto.rfc1902.Double` type is an
+    :py:class:`~pysnmp.proto.rfc1902.Opaque` whose octets are a nested BER
+    value tagged 0x79, carrying an IEEE 754 double-precision number
+    (`draft-perkins-opaque-01 <https://datatracker.ietf.org/doc/html/draft-perkins-opaque-01>`_).
+    It is the same convention as :py:class:`~pysnmp.proto.rfc1902.Float` at
+    twice the width, and the width a Python float already is.
+
+    Nothing decodes an `Opaque` as one of these on its own -- see
+    :py:func:`~pysnmp.proto.rfc1902.decodeOpaqueReal`.
+
+    Parameters
+    ----------
+    initializer : float
+        Python float or int, a string spelling one, or the octets of a nested
+        value already -- bytes, an :py:class:`~pysnmp.proto.rfc1902.Opaque`,
+        or another :py:class:`~pysnmp.proto.rfc1902.Double`.
+
+    Raises
+    ------
+        pyasn1.error.PyAsn1Error
+            On octets that are not a double-tagged nested value.
+
+    Examples
+    --------
+        >>> from pysnmp.proto.rfc1902 import *
+        >>> Double(1.5)
+        <Double value object, payload [1.5]>
+        >>> float(Double(0.1))
+        0.1
+        >>> Double(1.5).asOctets()
+        b'\x9fy\x08?\xf8\x00\x00\x00\x00\x00\x00'
+        >>> Double(Opaque(hexValue='9f79083ff8000000000000')).prettyPrint()
+        '1.5'
+        >>>
+
+    """
+
+    nestedTag = OPAQUE_DOUBLE_TAG
+    nestedSyntax = _nestedSyntax(OPAQUE_DOUBLE_TAG)
+    packFormat = ">d"
+    decimalDigits = 17
+
+
+#: The real types, by the nested tag that identifies each.
+_OPAQUE_REAL_TYPES = {Float.nestedTag: Float, Double.nestedTag: Double}
+
+
+def decodeOpaqueReal(value):
+    """Read an `Opaque` as a real number where its own tag says it is one.
+
+    Returns a :py:class:`~pysnmp.proto.rfc1902.Float` or a
+    :py:class:`~pysnmp.proto.rfc1902.Double` where `value`'s octets are tagged
+    as one, and `value` unchanged where they are not -- so this can be applied
+    to every `Opaque` a walk turns up without assuming any of them is a
+    number.
+
+    Octets whose tag claims a real but whose payload will not decode as one
+    raise `pysnmp.proto.error.ProtocolError`, rather than passing for the
+    Opaque they came in as: the sender said what it was sending.
+
+    Examples
+    --------
+        >>> from pysnmp.proto.rfc1902 import *
+        >>> decodeOpaqueReal(Opaque(hexValue='9f78043fc00000')).prettyPrint()
+        '1.5'
+        >>> decodeOpaqueReal(Opaque('some apples')).prettyPrint()
+        'some apples'
+        >>>
+
+    """
+    octets = value.asOctets() if isinstance(value, univ.OctetString) else bytes(value)
+
+    if len(octets) > 2 and octets[0] == _NESTED_TAG_PREFIX:
+        real = _OPAQUE_REAL_TYPES.get(octets[1])
+
+        if real is not None:
+            return real(octets)
+
+    return value
 
 
 class Counter64(_WrappingInteger):

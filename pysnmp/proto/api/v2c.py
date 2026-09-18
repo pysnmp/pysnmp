@@ -26,6 +26,8 @@ TimeTicks = rfc1902.TimeTicks
 Opaque = rfc1902.Opaque
 Counter64 = rfc1902.Counter64
 Bits = rfc1902.Bits
+Float = rfc1902.Float
+Double = rfc1902.Double
 
 NoSuchObject = rfc1905.NoSuchObject
 NoSuchInstance = rfc1905.NoSuchInstance
