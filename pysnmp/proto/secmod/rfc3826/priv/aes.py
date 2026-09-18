@@ -20,6 +20,15 @@ from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 # RFC3826
 
 
+def _asOctets(data):
+    """The raw bytes of a payload that may arrive as a pyasn1 OctetString.
+
+    The padding this module used to do coerced one on its way past; without it
+    the coercion has to be asked for, since the cipher wants bytes.
+    """
+    return data.asOctets() if isinstance(data, univ.OctetString) else data
+
+
 class Aes(base.AbstractEncryptionService):
     """CFB128-AES-128.
 
@@ -116,13 +125,12 @@ class Aes(base.AbstractEncryptionService):
         # 3.3.1.3
         aesObj = AES.new(aesKey, AES.MODE_CFB, iv, segment_size=128)
 
-        # PyCrypto seems to require padding
-        dataToEncrypt = (
-            dataToEncrypt
-            + univ.OctetString((0,) * (16 - len(dataToEncrypt) % 16)).asOctets()
-        )
-
-        ciphertext = aesObj.encrypt(dataToEncrypt)
+        # No padding: RFC 3826 section 3.1.4 specifies CFB128, a stream mode, so
+        # the ciphertext is the same length as the plaintext and a partial
+        # trailing segment is fine. (Contrast DES, whose CBC mode genuinely does
+        # need the plaintext brought to a block boundary -- RFC 3414 section
+        # 8.1.1.2 -- which is why priv/des.py still pads.)
+        ciphertext = aesObj.encrypt(_asOctets(dataToEncrypt))
 
         # 3.3.1.4
         return univ.OctetString(ciphertext), univ.OctetString(salt)
@@ -151,11 +159,5 @@ class Aes(base.AbstractEncryptionService):
 
         aesObj = AES.new(aesKey, AES.MODE_CFB, iv, segment_size=128)
 
-        # PyCrypto seems to require padding
-        encryptedData = (
-            encryptedData
-            + univ.OctetString((0,) * (16 - len(encryptedData) % 16)).asOctets()
-        )
-
-        # 3.3.2.4-6
-        return aesObj.decrypt(encryptedData.asOctets())
+        # 3.3.2.4-6 -- unpadded, as above.
+        return aesObj.decrypt(_asOctets(encryptedData))
