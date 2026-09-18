@@ -36,6 +36,22 @@ from pysnmp.smi.error import SmiError
 from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 
 
+@pytest.fixture(scope="module")
+def anInterface():
+    """Some interface this host actually has, as ``(name, index)``.
+
+    The IPv6 zone tests need a name `if_nametoindex` will resolve. They used to
+    name ``lo``, which is not an interface Windows has -- and Windows joins the
+    matrix whenever a run carries ``ci:full-matrix`` -- so ask the host what it
+    has rather than assuming.
+    """
+    for index, name in socket.if_nameindex():
+        if index:
+            return name, index
+
+    pytest.skip("host reports no network interfaces")
+
+
 class TestSnmpEngine:
     def test_creation(self):
         engine = SnmpEngine()
@@ -474,17 +490,13 @@ class TestIPv6ScopeReachesTheSocket:
 
         return tuple(address)
 
-    def test_a_scope_survives_from_the_transport_target_to_sendto(self):
+    def test_a_scope_survives_from_the_transport_target_to_sendto(self, anInterface):
         # The whole path the issue asks about: what the caller typed, through
         # the target's resolution, to the sockaddr the socket is given.
-        target = Udp6TransportTarget(("fe80::1%lo", 161))
+        name, index = anInterface
+        target = Udp6TransportTarget((f"fe80::1%{name}", 161))
 
-        assert self._sentAddress(target.transportAddr) == (
-            "fe80::1",
-            161,
-            0,
-            socket.if_nametoindex("lo"),
-        )
+        assert self._sentAddress(target.transportAddr) == ("fe80::1", 161, 0, index)
 
     def test_a_global_address_is_sent_unscoped(self):
         target = Udp6TransportTarget(("::1", 161))
@@ -561,12 +573,12 @@ class TestUnboundLocalAddress:
         address = transport.normalizeAddress(("fe80::1", 161, 0, 7))
         assert address == ("fe80::1", 161, 0, 7)
 
-    def test_udp6_normalize_address_resolves_an_interface_name(self):
+    def test_udp6_normalize_address_resolves_an_interface_name(self, anInterface):
         # A name the sockaddr cannot carry becomes the index the kernel wants.
-        expected = socket.if_nametoindex("lo")
+        name, expected = anInterface
         transport = udp6.Udp6AsyncioTransport()
         transport.transport = _UnnamedSocketTransport()
-        address = transport.normalizeAddress(("fe80::1%lo", 161, 0, 0))
+        address = transport.normalizeAddress((f"fe80::1%{name}", 161, 0, 0))
         assert address == ("fe80::1", 161, 0, expected)
 
     def test_udp6_normalize_address_drops_flowinfo(self):
@@ -576,12 +588,21 @@ class TestUnboundLocalAddress:
         address = transport.normalizeAddress(("fe80::1", 161, 99, 7))
         assert address == ("fe80::1", 161, 0, 7)
 
-    def test_udp6_normalize_address_tolerates_an_unknown_interface(self):
+    def test_udp6_normalize_address_tolerates_an_unknown_interface(self, monkeypatch):
         # Failing to send is a better diagnostic than a socket exception out of
         # address normalization, and 0 is what this did before either way.
+        #
+        # The refusal is forced rather than named: a host is free to have an
+        # interface by any name this test might invent, and then it would
+        # assert the opposite of what it means to.
+        def refuse(zone):
+            raise OSError("no such interface")
+
+        monkeypatch.setattr(socket, "if_nametoindex", refuse)
+
         transport = udp6.Udp6AsyncioTransport()
         transport.transport = _UnnamedSocketTransport()
-        address = transport.normalizeAddress(("fe80::1%nosuchif0", 161, 0, 0))
+        address = transport.normalizeAddress(("fe80::1%someInterface", 161, 0, 0))
         assert address == ("fe80::1", 161, 0, 0)
 
     def test_udp6_normalize_address_leaves_a_global_address_unscoped(self):
