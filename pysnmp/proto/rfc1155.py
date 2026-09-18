@@ -97,6 +97,29 @@ class NetworkAddress(univ.Choice):
             cloned.setComponentByType(tagSet, value)
         return cloned
 
+    def prettyPrint(self, scope=0):
+        """Render as the address, not as a dump of the Choice wrapping it.
+
+        `prettyPrint()` is what the hlapi uses to render a var-bind value, so the
+        inherited `Choice` rendering put a multi-line type dump where every other
+        address type prints an address::
+
+            NetworkAddress:
+             internet=192.0.2.1
+
+        `RFC1213-MIB::atNetAddress` is the one that turns up in practice.
+
+        An unset Choice has no component to delegate to, and `prettyPrint()` is
+        the wrong place to raise -- it is most often reached while rendering
+        something for a human to read, including a traceback -- so the inherited
+        rendering stands in.
+        """
+        try:
+            return self.getComponent().prettyPrint(scope)
+
+        except PyAsn1Error:
+            return univ.Choice.prettyPrint(self, scope)
+
     # RFC 1212, section 4.1.6:
     #
     #    "(5)  NetworkAddress-valued: `n+1' sub-identifiers, where `n'

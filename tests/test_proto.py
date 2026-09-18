@@ -221,6 +221,36 @@ class TestRfc1155Types:
         assert cloned is not None
         assert remainder == (99,)
 
+    def test_network_address_prints_as_an_address(self):
+        # prettyPrint() is what the hlapi renders a var-bind value with, so the
+        # inherited Choice rendering put a multi-line type dump where every
+        # other address type prints an address. RFC1213-MIB::atNetAddress is
+        # the one that turns up in practice.
+        na = rfc1155.NetworkAddress()
+        na["internet"] = rfc1155.IpAddress("192.0.2.1")
+
+        assert na.prettyPrint() == "192.0.2.1"
+
+    def test_network_address_from_clone_prints_as_an_address(self):
+        na = rfc1155.NetworkAddress().clone(rfc1155.IpAddress("10.0.0.1"))
+
+        assert na.prettyPrint() == "10.0.0.1"
+
+    def test_network_address_from_clone_from_name_prints_as_an_address(self):
+        na = rfc1155.NetworkAddress()
+        cloned, _ = na.cloneFromName((1, 192, 168, 1, 1), False, None, None)
+
+        assert cloned.prettyPrint() == "192.168.1.1"
+
+    def test_an_unset_network_address_prints_rather_than_raising(self):
+        # No component to delegate to. prettyPrint() is most often reached while
+        # rendering something for a human -- including a traceback -- so it is
+        # the wrong place to raise.
+        rendered = rfc1155.NetworkAddress().prettyPrint()
+
+        assert isinstance(rendered, str)
+        assert "NetworkAddress" in rendered
+
 
 class TestRfc1157Message:
     def test_message_creation(self):
