@@ -31,29 +31,63 @@ class Udp6AsyncioTransport(DgramAsyncioProtocol):
     unboundLocalAddress = ("::", 0, 0, 0)
 
     def normalizeAddress(self, transportAddress):
-        """Coerce to a four-part IPv6 address, dropping the zone ID and scope.
+        """Coerce to a four-part IPv6 address, keeping the scope and dropping flowinfo.
 
-        A link-local address arrives carrying a zone (`fe80::1%eth0`) and asyncio
-        reports flowinfo and scope alongside it, none of which mean anything to the
-        peer. Two addresses that differ only in those parts are the same endpoint, so
-        they are stripped to make addresses comparable.
+        The scope is not decoration. A link-local destination has no meaning without
+        it -- `fe80::1` names a different host on every interface -- so the kernel
+        requires a scope ID to pick the outgoing one, and `sendto()` fails with
+        EINVAL without it. This method's result is what goes to `sendto()`, so
+        stripping the zone here made every link-local address unusable, which is how
+        you reach an unconfigured switch.
+
+        `flowinfo` is zeroed, since that genuinely does not identify an endpoint.
+
+        A zone may arrive as a name (`fe80::1%eth0`), which the sockaddr cannot carry:
+        it is resolved to the interface index the kernel wants.
         """
         localAddress = None
         if isinstance(transportAddress, AbstractTransportAddress):
             localAddress = transportAddress.getLocalAddress()
 
+        host, _, zone = transportAddress[0].partition("%")
+
+        if len(transportAddress) > 3 and transportAddress[3]:
+            scopeId = transportAddress[3]
+        elif zone:
+            scopeId = self._scopeIdOf(zone)
+        else:
+            scopeId = 0
+
         normalizedAddress = self.addressType(
             (
-                transportAddress[0].split("%")[0],  # strip zone ID
+                host,
                 transportAddress[1],
                 0,  # flowinfo
-                0,  # scopeid
+                scopeId,
             )
         )
         if localAddress:
             normalizedAddress.setLocalAddress(localAddress)
 
         return DgramAsyncioProtocol.normalizeAddress(self, normalizedAddress)
+
+    @staticmethod
+    def _scopeIdOf(zone):
+        """The interface index a zone names, or the zone itself if already numeric.
+
+        An unknown interface name yields 0 rather than raising: that is the
+        unscoped behaviour this had before, and failing to send is a better
+        diagnostic from `sendto()` than a `socket` exception out of address
+        normalization.
+        """
+        if zone.isdigit():
+            return int(zone)
+
+        try:
+            return socket.if_nametoindex(zone)
+
+        except OSError:
+            return 0
 
 
 Udp6Transport = Udp6AsyncioTransport
