@@ -339,6 +339,107 @@ class TestInetAddress:
         assert decoded[1].asOctets() == b"\xc0\x00\x02\x01"
         assert decoded[4].asOctets() == b"\xc0\x00\x02\xfe"
 
+    def test_a_paired_index_resolves_a_real_ip_mib_row(self, builder):
+        # The other real-world shape, and the one the length prefix was actually
+        # losing: ipAddressEntry INDEXes on ipAddressAddrType then ipAddressAddr,
+        # the RFC 4001 pair, neither IMPLIED. net-snmp and every agent in the
+        # field address ipAddressIfIndex for 192.0.2.1 as
+        # 1.3.6.1.2.1.4.34.1.3.1.4.192.0.2.1 -- the trailing 4 is the address
+        # length, and is what we used to omit.
+        builder.loadModules("IP-MIB")
+        (row,) = builder.importSymbols("IP-MIB", "ipAddressEntry")
+        (column,) = builder.importSymbols("IP-MIB", "ipAddressIfIndex")
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+
+        instId = row.getInstIdFromIndices(
+            inetAddressType("ipv4"), inetAddress(b"\xc0\x00\x02\x01")
+        )
+
+        assert instId == (1, 4, 192, 0, 2, 1)
+        assert column.name + instId == (
+            1,
+            3,
+            6,
+            1,
+            2,
+            1,
+            4,
+            34,
+            1,
+            3,
+            1,
+            4,
+            192,
+            0,
+            2,
+            1,
+        )
+
+        addrType, address = row.getIndicesFromInstId(instId)
+
+        assert int(addrType) == inetAddressType.namedValues["ipv4"]
+        assert address.asOctets() == b"\xc0\x00\x02\x01"
+
+    def test_an_ipv6_ip_mib_row_round_trips(self, builder):
+        builder.loadModules("IP-MIB")
+        (row,) = builder.importSymbols("IP-MIB", "ipAddressEntry")
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        address = b" \x01\r\xb8" + b"\x00" * 11 + b"\x01"
+
+        instId = row.getInstIdFromIndices(inetAddressType("ipv6"), inetAddress(address))
+
+        assert instId == (2, 16) + tuple(address)
+        assert row.getIndicesFromInstId(instId)[1].asOctets() == address
+
+    # RFC 4001 section 4.1: unknown(0) is the one named InetAddressType with no
+    # concrete type behind it, and it "MUST be used if the value of the
+    # corresponding InetAddress object is a zero-length string".
+
+    def test_unknown_with_a_zero_length_address_resolves(self, builder):
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("unknown"),)
+
+        encoded = inetAddress(b"").cloneAsName(False, row, preceding)
+
+        assert encoded == (0,)
+
+        decoded, rest = inetAddress.cloneFromName(
+            encoded + (99,), False, row, preceding
+        )
+
+        assert decoded.asOctets() == b""
+        assert rest == (99,)
+
+    @pytest.mark.parametrize("direction", ["encode", "decode"])
+    def test_unknown_with_a_non_empty_address_raises(self, builder, direction):
+        # The sibling index and the value contradict each other. Inferring a
+        # family from the length here would paper over that, so it reports --
+        # in both directions, since only one of them has the type to hand.
+        from pysnmp.smi import error
+
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("unknown"),)
+
+        with pytest.raises(error.SmiError, match="zero-length"):
+            if direction == "encode":
+                inetAddress(b"\xc0\x00\x02\x01").cloneAsName(False, row, preceding)
+            else:
+                inetAddress.cloneFromName((4, 192, 0, 2, 1), False, row, preceding)
+
 
 class TestSnmpTag:
     """RFC 3413 section 4.1.1: delimiters in tag values and tag lists."""

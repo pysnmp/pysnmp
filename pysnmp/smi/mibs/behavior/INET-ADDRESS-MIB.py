@@ -92,6 +92,24 @@ def _joinIndex(value, impliedFlag):
     return (len(value),) + value.asNumbers()
 
 
+def _checkUnknown(parentIndex, octets):
+    """Enforce what `unknown(0)` promises about the address beside it.
+
+    `unknown` is the one InetAddressType named value with no entry in typeMap,
+    because it names no concrete type. RFC 4001 section 4.1 is specific about
+    what it does mean: it "MUST be used if the value of the corresponding
+    InetAddress object is a zero-length string". So a zero-length address is
+    exactly right and is carried as the declared InetAddress, while any other
+    length is the sibling index and the value contradicting each other -- which
+    is worth reporting rather than resolving by guessing at the length.
+    """
+    if octets:
+        raise _error.SmiError(
+            f"InetAddressType {parentIndex.prettyPrint()} requires a zero-length "
+            f"InetAddress, got {len(octets)} octets"
+        )
+
+
 def _cloneFromName(cls, value, impliedFlag, parentRow, parentIndices):
     octets, rest = _splitIndex(value, impliedFlag)
 
@@ -100,7 +118,8 @@ def _cloneFromName(cls, value, impliedFlag, parentRow, parentIndices):
             try:
                 concreteType = cls.typeMap[int(parentIndex)]
             except KeyError:
-                continue
+                _checkUnknown(parentIndex, octets)
+                return cls(octets), rest
 
             # The octets, not a str of them. A TextualConvention given a str
             # parses it through the DISPLAY-HINT, so passing text would ask
@@ -126,7 +145,8 @@ def _cloneAsName(self, impliedFlag, parentRow, parentIndices):
             try:
                 concreteType = self.typeMap[int(parentIndex)]
             except KeyError:
-                continue
+                _checkUnknown(parentIndex, self.asOctets())
+                return _joinIndex(self, impliedFlag)
 
             # Bytes go in unparsed, as above.
             return _joinIndex(concreteType.clone(self.asOctets()), impliedFlag)
