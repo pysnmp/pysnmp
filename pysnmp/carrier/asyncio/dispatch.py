@@ -35,6 +35,7 @@ import asyncio
 import traceback
 
 from pysnmp.carrier.base import AbstractTransportDispatcher
+from pysnmp.carrier.error import CarrierError
 from pysnmp.error import PySnmpError
 
 
@@ -119,9 +120,23 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         # transport created before the dispatcher), adopt its loop so
         # that datagram reception works on the same loop.
         transportLoop = getattr(transport, "loop", None)
-        if transportLoop is not None and not self.loop.is_running():
-            if transportLoop is not self.loop:
-                self.loop = transportLoop
+        if transportLoop is not None and transportLoop is not self.loop:
+            # Only while this is the first transport. Adopting a second one's
+            # loop used to leave the first bound to a loop nothing runs any
+            # more: its socket stays open and never reads again, which is a
+            # silent deafness rather than a failure. An agent serving two
+            # transports -- UDP and TCP, or IPv4 and IPv6 -- is exactly the
+            # case that hits it, so say so instead.
+            if self.__transportCount or self.loop.is_running():
+                raise CarrierError(
+                    f"Transport {transport!r} is bound to a different asyncio "
+                    f"event loop than the dispatcher it is being registered "
+                    f"with. Every transport on one dispatcher has to share its "
+                    f"loop, or only the last one registered would receive. "
+                    f"Build them with the same loop=... argument, or build "
+                    f"them inside the running loop."
+                )
+            self.loop = transportLoop
 
         if (
             self.loopingcall is None

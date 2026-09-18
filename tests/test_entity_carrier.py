@@ -1021,3 +1021,52 @@ class TestEntityConfig:
             100,
             3,
         )
+
+
+# --- one dispatcher, several transports -----------------------------------
+
+
+def test_a_transport_bound_to_another_event_loop_is_refused():
+    """Adopting its loop would leave the transport already registered unread.
+
+    A transport built outside a running loop makes a loop of its own. The
+    dispatcher used to adopt whichever loop came last, which left every earlier
+    transport bound to a loop nothing runs again: its socket stays open and
+    never reads, so the transport goes deaf with no error anywhere. An agent
+    serving two transports -- UDP and TCP, or IPv4 and IPv6 -- is exactly the
+    configuration that hits it.
+    """
+    loop = asyncio.new_event_loop()
+    dispatcher = AsyncioDispatcher(loop=loop)
+
+    try:
+        dispatcher.registerTransport(udp.domainName, udp.UdpTransport(loop=loop))
+
+        strayTransport = udp.UdpTransport()
+        assert strayTransport.loop is not loop
+
+        with pytest.raises(CarrierError, match="share its loop"):
+            dispatcher.registerTransport(udp6.domainName, strayTransport)
+
+        # The transport that was already registered is untouched.
+        assert dispatcher.getTransport(udp.domainName).loop is loop
+
+    finally:
+        dispatcher.closeDispatcher()
+        loop.close()
+
+
+def test_transports_sharing_one_loop_register_together():
+    loop = asyncio.new_event_loop()
+    dispatcher = AsyncioDispatcher(loop=loop)
+
+    try:
+        dispatcher.registerTransport(udp.domainName, udp.UdpTransport(loop=loop))
+        dispatcher.registerTransport(udp6.domainName, udp6.Udp6Transport(loop=loop))
+
+        assert dispatcher.getTransport(udp.domainName).loop is loop
+        assert dispatcher.getTransport(udp6.domainName).loop is loop
+
+    finally:
+        dispatcher.closeDispatcher()
+        loop.close()
