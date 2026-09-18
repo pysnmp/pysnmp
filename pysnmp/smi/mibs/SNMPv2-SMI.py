@@ -1377,8 +1377,14 @@ class MibTableRow(MibTree):
 
     def getIndicesFromInstId(self, instId):
         """Return index values for instance identification."""
-        if instId in self.__idToIdxCache:
-            return self.__idToIdxCache[instId]
+        # What the caller asked about, kept whole. `instId` below is rebound by
+        # every setFromName() to the part of the OID that index did not consume,
+        # so by the foot of this method it is the remainder -- () after a
+        # successful parse -- and is no longer a key any reader would ask for.
+        cacheKey = instId
+
+        if cacheKey in self.__idToIdxCache:
+            return self.__idToIdxCache[cacheKey]
 
         indices = []
         for impliedFlag, modName, symName in self.indexNames:
@@ -1391,9 +1397,13 @@ class MibTableRow(MibTree):
                 debug.logger & debug.flagIns and debug.logger(
                     f"error resolving table indices at {self.__class__.__name__}, {instId}: {e}"
                 )
-                indices = [instId]
-                instId = ()
-                break
+                # The unconsumed remainder standing in for the row's real
+                # indices. Returned rather than raised, as before -- what a
+                # caller should see when a row's index does not match the
+                # compiled MIB is #252's question, not this method's. It is not
+                # cached either way: it describes nothing that a later lookup
+                # could correctly be answered with.
+                return (instId,)
 
             indices.append(syntax)  # to avoid cyclic refs
 
@@ -1403,7 +1413,7 @@ class MibTableRow(MibTree):
             )
 
         indices = tuple(indices)
-        self.__idToIdxCache[instId] = indices
+        self.__idToIdxCache[cacheKey] = indices
 
         return indices
 
@@ -1411,7 +1421,15 @@ class MibTableRow(MibTree):
         """Return column instance identification from indices."""
         try:
             return self.__idxToIdCache[indices]
-        except TypeError:
+        except (TypeError, PyAsn1Error):
+            # An index that cannot be a dict key is an ordinary reason to skip
+            # the cache, not to fail the request. Two things get us here: a
+            # plainly unhashable member, which raises TypeError, and a pyasn1
+            # *schema* object -- a type carrying no value -- which raises
+            # PyAsn1Error('Attempted operation on ASN.1 schema object',
+            # operation='__hash__') instead. PyAsn1Error does not inherit
+            # TypeError, so guarding on TypeError alone never caught the second
+            # and let it out of index resolution (etingof/pysnmp#444).
             cacheable = False
         except KeyError:
             cacheable = True

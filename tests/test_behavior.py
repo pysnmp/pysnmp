@@ -114,7 +114,7 @@ class TestInetAddress:
 
         encoded = inetAddress(b"\x7f\x00\x00\x01").cloneAsName(False, row, (preceding,))
 
-        assert encoded == (127, 0, 0, 1)
+        assert encoded == (4, 127, 0, 0, 1)
 
     def test_raw_octets_are_not_parsed_as_display_hint_text(self, builder):
         # The bug the octets-not-str form fixes: an address whose bytes are not
@@ -131,18 +131,314 @@ class TestInetAddress:
             False, row, (inetAddressType("ipv4"),)
         )
 
-        assert encoded == (10, 0, 0, 1)
+        assert encoded == (4, 10, 0, 0, 1)
 
-    def test_without_a_preceding_type_it_raises(self, builder):
+    # RFC 2578 section 7.7 rule 3: the declared type is OCTET STRING
+    # (SIZE (0..255)), so the index carries a leading length whatever concrete
+    # subtype InetAddressType resolves it to.
+
+    @pytest.mark.parametrize(
+        ("addressType", "octets", "expected"),
+        [
+            ("ipv4", b"\xc0\x00\x02\x01", (4, 192, 0, 2, 1)),
+            (
+                "ipv4z",
+                b"\xc0\x00\x02\x01\x00\x00\x00\x07",
+                (8, 192, 0, 2, 1, 0, 0, 0, 7),
+            ),
+            (
+                "ipv6",
+                b" \x01\r\xb8" + b"\x00" * 11 + b"\x01",
+                (16, 32, 1, 13, 184) + (0,) * 11 + (1,),
+            ),
+            ("dns", b"host.example", (12,) + tuple(b"host.example")),
+        ],
+    )
+    def test_index_carries_its_length_prefix(
+        self, builder, addressType, octets, expected
+    ):
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = inetAddressType(addressType)
+
+        assert inetAddress(octets).cloneAsName(False, row, (preceding,)) == expected
+
+    @pytest.mark.parametrize(
+        ("addressType", "octets"),
+        [
+            ("ipv4", b"\xc0\x00\x02\x01"),
+            ("ipv4z", b"\xc0\x00\x02\x01\x00\x00\x00\x07"),
+            ("ipv6", b" \x01\r\xb8" + b"\x00" * 11 + b"\x01"),
+            ("ipv6z", b" \x01\r\xb8" + b"\x00" * 11 + b"\x01\x00\x00\x00\x07"),
+            ("dns", b"host.example"),
+        ],
+    )
+    def test_index_round_trips(self, builder, addressType, octets):
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType(addressType),)
+
+        encoded = inetAddress(octets).cloneAsName(False, row, preceding)
+        # A trailing sub-identifier stands in for the rest of the row, so the
+        # remainder is checked to be exactly what this index did not consume.
+        decoded, rest = inetAddress.cloneFromName(
+            encoded + (99,), False, row, preceding
+        )
+
+        assert decoded.asOctets() == octets
+        assert rest == (99,)
+
+    def test_implied_index_omits_the_length(self, builder):
+        # RFC 2578 section 7.7: an IMPLIED index runs to the end of the OID, so
+        # there is nothing to delimit and no length to carry.
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("ipv4"),)
+
+        encoded = inetAddress(b"\xc0\x00\x02\x01").cloneAsName(True, row, preceding)
+
+        assert encoded == (192, 0, 2, 1)
+
+        decoded, rest = inetAddress.cloneFromName(encoded, True, row, preceding)
+
+        assert decoded.asOctets() == b"\xc0\x00\x02\x01"
+        assert rest == ()
+
+    def test_index_shorter_than_its_declared_length_raises(self, builder):
         from pysnmp.smi import error
 
-        (inetAddress,) = builder.importSymbols("INET-ADDRESS-MIB", "InetAddress")
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
         (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
 
         row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
 
         with pytest.raises(error.SmiError):
-            inetAddress(b"\x7f\x00\x00\x01").cloneAsName(False, row, ())
+            inetAddress.cloneFromName(
+                (4, 192, 0), False, row, (inetAddressType("ipv4"),)
+            )
+
+    # RFC 4001 section 4 recommends pairing an InetAddress index with an
+    # InetAddressType one, but does not require it: MPLS-VPN-MIB indexes on a
+    # bare InetAddress and fixes the family in its DESCRIPTION clause instead.
+
+    @pytest.mark.parametrize(
+        ("octets", "expected", "inferredType"),
+        [
+            (b"\xc0\x00\x02\x01", (4, 192, 0, 2, 1), "InetAddressIPv4"),
+            (
+                b"\xc0\x00\x02\x01\x00\x00\x00\x07",
+                (8, 192, 0, 2, 1, 0, 0, 0, 7),
+                "InetAddressIPv4z",
+            ),
+            (
+                b" \x01\r\xb8" + b"\x00" * 11 + b"\x01",
+                (16, 32, 1, 13, 184) + (0,) * 11 + (1,),
+                "InetAddressIPv6",
+            ),
+            # No family claims this length, so the declared type is kept rather
+            # than a family being guessed at.
+            (b"host.example", (12,) + tuple(b"host.example"), "InetAddress"),
+        ],
+    )
+    def test_without_a_preceding_type_it_infers_from_length(
+        self, builder, octets, expected, inferredType
+    ):
+        (inetAddress,) = builder.importSymbols("INET-ADDRESS-MIB", "InetAddress")
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+
+        encoded = inetAddress(octets).cloneAsName(False, row, ())
+
+        assert encoded == expected
+
+        decoded, rest = inetAddress.cloneFromName(encoded + (99,), False, row, ())
+
+        assert decoded.asOctets() == octets
+        assert type(decoded).__name__ == inferredType
+        assert rest == (99,)
+
+    def test_a_bare_index_encodes_the_same_as_a_paired_one(self, builder):
+        # The length prefix comes from the declared type, so losing the
+        # InetAddressType changes how the value renders, never the OID.
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        address = inetAddress(b"\xc0\x00\x02\x01")
+
+        assert address.cloneAsName(False, row, ()) == address.cloneAsName(
+            False, row, (inetAddressType("ipv4"),)
+        )
+
+    def test_a_preceding_type_still_wins_over_the_length(self, builder):
+        # ipv4z and a DNS name are both 8 octets here; the declared type index
+        # is authoritative and the length fallback must not second-guess it.
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("dns"),)
+
+        decoded, _ = inetAddress.cloneFromName(
+            (8,) + tuple(b"host.com"), False, row, preceding
+        )
+
+        assert type(decoded).__name__ == "InetAddressDNS"
+
+    def test_a_bare_index_resolves_a_real_mpls_vpn_mib_row(self, builder):
+        # etingof/pysnmp#305: mplsVpnVrfRouteEntry indexes on mplsVpnVrfRouteDest,
+        # an InetAddress, with no address-type column in the INDEX clause.
+        from pysnmp.proto.rfc1902 import OctetString
+
+        builder.loadModules("MPLS-VPN-MIB")
+        (row,) = builder.importSymbols("MPLS-VPN-MIB", "mplsVpnVrfRouteEntry")
+
+        indices = (
+            OctetString("vrf1"),
+            OctetString(b"\xc0\x00\x02\x01"),
+            OctetString(b"\xff\xff\xff\x00"),
+            0,
+            OctetString(b"\xc0\x00\x02\xfe"),
+        )
+
+        instId = row.getInstIdFromIndices(*indices)
+
+        assert instId == (
+            (4,)
+            + tuple(b"vrf1")
+            + (4, 192, 0, 2, 1)
+            + (4, 255, 255, 255, 0)
+            + (0,)
+            + (4, 192, 0, 2, 254)
+        )
+
+        # And back: five indices in, five indices out -- not one fabricated
+        # index holding the whole unconsumed remainder.
+        decoded = row.getIndicesFromInstId(instId)
+
+        assert len(decoded) == 5
+        assert decoded[1].asOctets() == b"\xc0\x00\x02\x01"
+        assert decoded[4].asOctets() == b"\xc0\x00\x02\xfe"
+
+    def test_a_paired_index_resolves_a_real_ip_mib_row(self, builder):
+        # The other real-world shape, and the one the length prefix was actually
+        # losing: ipAddressEntry INDEXes on ipAddressAddrType then ipAddressAddr,
+        # the RFC 4001 pair, neither IMPLIED. net-snmp and every agent in the
+        # field address ipAddressIfIndex for 192.0.2.1 as
+        # 1.3.6.1.2.1.4.34.1.3.1.4.192.0.2.1 -- the trailing 4 is the address
+        # length, and is what we used to omit.
+        builder.loadModules("IP-MIB")
+        (row,) = builder.importSymbols("IP-MIB", "ipAddressEntry")
+        (column,) = builder.importSymbols("IP-MIB", "ipAddressIfIndex")
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+
+        instId = row.getInstIdFromIndices(
+            inetAddressType("ipv4"), inetAddress(b"\xc0\x00\x02\x01")
+        )
+
+        assert instId == (1, 4, 192, 0, 2, 1)
+        assert column.name + instId == (
+            1,
+            3,
+            6,
+            1,
+            2,
+            1,
+            4,
+            34,
+            1,
+            3,
+            1,
+            4,
+            192,
+            0,
+            2,
+            1,
+        )
+
+        addrType, address = row.getIndicesFromInstId(instId)
+
+        assert int(addrType) == inetAddressType.namedValues["ipv4"]
+        assert address.asOctets() == b"\xc0\x00\x02\x01"
+
+    def test_an_ipv6_ip_mib_row_round_trips(self, builder):
+        builder.loadModules("IP-MIB")
+        (row,) = builder.importSymbols("IP-MIB", "ipAddressEntry")
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        address = b" \x01\r\xb8" + b"\x00" * 11 + b"\x01"
+
+        instId = row.getInstIdFromIndices(inetAddressType("ipv6"), inetAddress(address))
+
+        assert instId == (2, 16) + tuple(address)
+        assert row.getIndicesFromInstId(instId)[1].asOctets() == address
+
+    # RFC 4001 section 4.1: unknown(0) is the one named InetAddressType with no
+    # concrete type behind it, and it "MUST be used if the value of the
+    # corresponding InetAddress object is a zero-length string".
+
+    def test_unknown_with_a_zero_length_address_resolves(self, builder):
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("unknown"),)
+
+        encoded = inetAddress(b"").cloneAsName(False, row, preceding)
+
+        assert encoded == (0,)
+
+        decoded, rest = inetAddress.cloneFromName(
+            encoded + (99,), False, row, preceding
+        )
+
+        assert decoded.asOctets() == b""
+        assert rest == (99,)
+
+    @pytest.mark.parametrize("direction", ["encode", "decode"])
+    def test_unknown_with_a_non_empty_address_raises(self, builder, direction):
+        # The sibling index and the value contradict each other. Inferring a
+        # family from the length here would paper over that, so it reports --
+        # in both directions, since only one of them has the type to hand.
+        from pysnmp.smi import error
+
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("unknown"),)
+
+        with pytest.raises(error.SmiError, match="zero-length"):
+            if direction == "encode":
+                inetAddress(b"\xc0\x00\x02\x01").cloneAsName(False, row, preceding)
+            else:
+                inetAddress.cloneFromName((4, 192, 0, 2, 1), False, row, preceding)
 
 
 class TestSnmpTag:
