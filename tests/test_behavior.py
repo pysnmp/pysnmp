@@ -13,7 +13,9 @@ specification the code has -- there is nothing in the module to compare against.
 """
 
 import os
+import platform
 import shutil
+from unittest import mock
 
 import pytest
 
@@ -545,6 +547,86 @@ class TestSnmpEngineID:
         from pysnmp.entity.engine import SnmpEngine
 
         assert SnmpEngine().snmpEngineID.asOctets()[:4] == b"\x80\x00\x4f\xb8"
+
+    # The local system name is what distinguishes one host's engine from
+    # another's. os.uname() does not exist on Windows, so reading it there
+    # raised into a bare `except` and the name contributed nothing at all --
+    # leaving four varying octets, part of which is an object address.
+
+    @staticmethod
+    def _derivedFor(hostname, windows=False):
+        """The default engine ID a host of this name derives.
+
+        The fragment computes it while it executes, and it executes once per
+        MibBuilder, so a fresh builder under a patched host name is what makes
+        this observable.
+
+        `windows` removes `os.uname`, which is the condition the defect needed:
+        the old code read `os.uname()[1]` inside a bare `except`, so on a
+        platform without it the AttributeError was swallowed and the host name
+        contributed nothing. Without this, a patch of `platform.node()` proves
+        nothing on Linux -- the old code would read the real host name through
+        `os.uname()` and look fine.
+        """
+        with (
+            mock.patch.object(platform, "node", return_value=hostname),
+            mock.patch.object(os, "uname", create=True) as uname,
+        ):
+            if windows:
+                del os.uname
+            else:
+                uname.return_value = ("", hostname, "", "", "")
+
+            built = MibBuilder()
+            built.loadModules("SNMP-FRAMEWORK-MIB")
+            (engineIdType,) = built.importSymbols("SNMP-FRAMEWORK-MIB", "SnmpEngineID")
+
+            return bytes(engineIdType.defaultValue)
+
+    @pytest.mark.parametrize("windows", [False, True], ids=["posix", "windows"])
+    def test_the_default_carries_the_host_name(self, windows):
+        assert b"host-alpha" in self._derivedFor("host-alpha", windows=windows)
+
+    @pytest.mark.parametrize("windows", [False, True], ids=["posix", "windows"])
+    def test_each_host_name_appears_only_in_its_own_identifier(self, windows):
+        # Stronger than "the two differ", which holds anyway because the PID and
+        # object-address octets vary between two builders in one process. What
+        # the host name is *for* is telling two hosts apart.
+        alpha = self._derivedFor("host-alpha", windows=windows)
+        beta = self._derivedFor("host-beta", windows=windows)
+
+        assert b"host-alpha" in alpha and b"host-alpha" not in beta
+        assert b"host-beta" in beta and b"host-beta" not in alpha
+
+    def test_a_non_ascii_host_name_is_encoded_not_ordinal(self):
+        # ord() over the characters happened to work for Latin-1 and produced
+        # the wrong octets -- 'ø' as 0xF8 rather than its UTF-8 0xC3 0xB8.
+        derived = self._derivedFor("høst-æøå")
+
+        assert derived[:4] == b"\x80\x00\x4f\xb8"
+        assert "høst-æøå".encode()[:16] in derived
+
+    def test_a_host_name_above_latin_1_still_contributes(self):
+        # Not a Windows-only defect. ord() above U+00FF is outside range(0, 256)
+        # and OctetString raises ValueError -- which the old bare `except`
+        # swallowed, so a POSIX host with a CJK name silently lost it too.
+        derived = self._derivedFor("主機-tokyo")
+
+        assert "主機-tokyo".encode()[:16] in derived
+
+    def test_a_host_with_no_name_still_derives_one(self):
+        # platform.node() answers "" rather than raising where it cannot tell.
+        derived = self._derivedFor("")
+
+        assert derived[:4] == b"\x80\x00\x4f\xb8"
+
+    @pytest.mark.parametrize("hostname", ["", "vm", "host-alpha", "a" * 64, "høst-æøå"])
+    def test_the_identifier_stays_within_the_rfc_3411_size(self, hostname):
+        # RFC 3411 section 5: SnmpEngineID is 5..32 octets. A long host name
+        # must not push it past that, which is what the 16-octet bound is for.
+        derived = self._derivedFor(hostname)
+
+        assert 5 <= len(derived) <= 32
 
 
 class TestIdempotence:
