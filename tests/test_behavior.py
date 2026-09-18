@@ -141,7 +141,11 @@ class TestInetAddress:
         ("addressType", "octets", "expected"),
         [
             ("ipv4", b"\xc0\x00\x02\x01", (4, 192, 0, 2, 1)),
-            ("ipv4z", b"\xc0\x00\x02\x01\x00\x00\x00\x07", (8, 192, 0, 2, 1, 0, 0, 0, 7)),
+            (
+                "ipv4z",
+                b"\xc0\x00\x02\x01\x00\x00\x00\x07",
+                (8, 192, 0, 2, 1, 0, 0, 0, 7),
+            ),
             (
                 "ipv6",
                 b" \x01\r\xb8" + b"\x00" * 11 + b"\x01",
@@ -319,7 +323,11 @@ class TestInetAddress:
         instId = row.getInstIdFromIndices(*indices)
 
         assert instId == (
-            (4,) + tuple(b"vrf1") + (4, 192, 0, 2, 1) + (4, 255, 255, 255, 0) + (0,)
+            (4,)
+            + tuple(b"vrf1")
+            + (4, 192, 0, 2, 1)
+            + (4, 255, 255, 255, 0)
+            + (0,)
             + (4, 192, 0, 2, 254)
         )
 
