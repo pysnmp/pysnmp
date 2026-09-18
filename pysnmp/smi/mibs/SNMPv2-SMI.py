@@ -38,7 +38,6 @@
 import traceback
 
 from pyasn1.error import PyAsn1Error
-from pyasn1.type import univ
 
 from pysnmp import cache, debug
 from pysnmp.proto import rfc1902
@@ -716,7 +715,17 @@ class MibScalarInstance(MibTree):
 
     def setValue(self, value, name, idx):
         if value is None:
-            value = univ.noValue
+            # "No value supplied -- take the column default", which is what row
+            # creation passes for every column the manager did not name. Handing
+            # pyasn1's noValue to the syntax's own setValue() is what used to
+            # break it: a textual convention whose setValue() compares the
+            # incoming value against something -- TestAndIncr, in the standard
+            # MIBs -- performs __ne__ against a pyasn1 schema object, which
+            # pyasn1 refuses. One TestAndIncr column anywhere in a table then
+            # made every row in it un-creatable (etingof/pysnmp#316). clone()
+            # with no arguments is the default, and asks nothing of the syntax.
+            return self.syntax.clone()
+
         try:
             if hasattr(self.syntax, "setValue"):
                 return self.syntax.setValue(value)
@@ -764,13 +773,22 @@ class MibScalarInstance(MibTree):
 
     # Read operation
 
+    # An instance whose syntax carries no value -- a pyasn1 schema object rather
+    # than a value object -- is the normal state of an agent-side scalar an
+    # application has declared but not yet populated. RFC 3416 section 4.2.1
+    # defines noSuchInstance for exactly that, so the four read methods below
+    # gate on `syntax.isValue` as well as on the OID. Without the gate,
+    # getValue()'s clone() hands back another schema object and it is returned
+    # as though it were a value: the failure then surfaces during BER encoding,
+    # or as a nonsense var-bind, a long way from the cause.
+
     def readTest(self, name, val, idx, acInfo):
-        if name != self.name:
+        if name != self.name or not self.syntax.isValue:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readGet(self, name, val, idx, acInfo):
         # Return current variable (name, value)
-        if name == self.name:
+        if name == self.name and self.syntax.isValue:
             debug.logger & debug.flagIns and debug.logger(
                 f"readGet: {self.name}={self.syntax!r}"
             )
@@ -779,11 +797,13 @@ class MibScalarInstance(MibTree):
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readTestNext(self, name, val, idx, acInfo, oName=None):
-        if name != self.name or name <= oName:
+        if name != self.name or name <= oName or not self.syntax.isValue:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readGetNext(self, name, val, idx, acInfo, oName=None):
-        if name == self.name and name > oName:
+        # A GETNEXT walk skips an unpopulated instance and carries on to the
+        # next one, rather than stopping on it.
+        if name == self.name and name > oName and self.syntax.isValue:
             debug.logger & debug.flagIns and debug.logger(
                 f"readGetNext: {self.name}={self.syntax!r}"
             )
