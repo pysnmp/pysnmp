@@ -20,15 +20,62 @@ InetAddress.typeMap = {
 }
 
 
+def _splitIndex(value, impliedFlag):
+    """Take one InetAddress off the front of an instance OID, with its length.
+
+    The encoding rule comes from the type the MIB *declares*, not from whatever
+    InetAddressType names: InetAddress is OCTET STRING (SIZE (0..255)), so RFC
+    2578 section 7.7 rule 3 puts a length sub-identifier in front of it, and
+    resolving the concrete subtype does not take that away.
+
+    That is why this cannot delegate to MibTableRow.setFromName() once the
+    subtype is known. setFromName() reads the rule off the object it is handed,
+    and InetAddressIPv4/IPv6/IPv4z/IPv6z are all fixed-length, so it would omit
+    the prefix and read the address one sub-identifier short. Only
+    InetAddressDNS -- variable-length, like the declared type -- came out right
+    that way.
+    """
+    if impliedFlag:
+        return tuple(value), ()
+
+    length = value[0]
+    octets = tuple(value[1 : length + 1])
+
+    if len(octets) != length:
+        raise _error.SmiError(
+            f"Short InetAddress index: {length} octets declared, "
+            f"{len(octets)} present in {value!r}"
+        )
+
+    return octets, value[length + 1 :]
+
+
+def _joinIndex(value, impliedFlag):
+    """Render one InetAddress into an instance OID, with its length.
+
+    The inverse of `_splitIndex`, and fixed-length-blind for the same reason.
+    """
+    if impliedFlag:
+        return value.asNumbers()
+
+    return (len(value),) + value.asNumbers()
+
+
 def _cloneFromName(cls, value, impliedFlag, parentRow, parentIndices):
-    for parentIndex in reversed(parentIndices):
+    octets, rest = _splitIndex(value, impliedFlag)
+
+    for parentIndex in reversed(parentIndices or ()):
         if isinstance(parentIndex, InetAddressType):
             try:
-                return parentRow.setFromName(
-                    cls.typeMap[int(parentIndex)], value, impliedFlag, parentIndices
-                )
+                concreteType = cls.typeMap[int(parentIndex)]
             except KeyError:
-                pass
+                continue
+
+            # The octets, not a str of them. A TextualConvention given a str
+            # parses it through the DISPLAY-HINT, so passing text would ask
+            # InetAddressIPv4 to read four raw address bytes as "1d.1d.1d.1d"
+            # -- which fails for every address not spelled in digits and dots.
+            return concreteType.clone(octets), rest
 
     raise _error.SmiError(
         f"{cls.__name__} object encountered without preceding "
@@ -37,21 +84,15 @@ def _cloneFromName(cls, value, impliedFlag, parentRow, parentIndices):
 
 
 def _cloneAsName(self, impliedFlag, parentRow, parentIndices):
-    for parentIndex in reversed(parentIndices):
+    for parentIndex in reversed(parentIndices or ()):
         if isinstance(parentIndex, InetAddressType):
             try:
-                # The octets, not a str of them. A TextualConvention given a
-                # str parses it through the DISPLAY-HINT, so decoding first
-                # asks InetAddressIPv4 to read four raw address bytes as the
-                # text "1d.1d.1d.1d" -- which fails for every address that is
-                # not spelled in digits and dots. Bytes go in unparsed.
-                return parentRow.getAsName(
-                    self.typeMap[int(parentIndex)].clone(self.asOctets()),
-                    impliedFlag,
-                    parentIndices,
-                )
+                concreteType = self.typeMap[int(parentIndex)]
             except KeyError:
-                pass
+                continue
+
+            # Bytes go in unparsed, as above.
+            return _joinIndex(concreteType.clone(self.asOctets()), impliedFlag)
 
     raise _error.SmiError(
         f"{self.__class__.__name__} object encountered without preceding "

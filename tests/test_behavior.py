@@ -114,7 +114,7 @@ class TestInetAddress:
 
         encoded = inetAddress(b"\x7f\x00\x00\x01").cloneAsName(False, row, (preceding,))
 
-        assert encoded == (127, 0, 0, 1)
+        assert encoded == (4, 127, 0, 0, 1)
 
     def test_raw_octets_are_not_parsed_as_display_hint_text(self, builder):
         # The bug the octets-not-str form fixes: an address whose bytes are not
@@ -131,7 +131,101 @@ class TestInetAddress:
             False, row, (inetAddressType("ipv4"),)
         )
 
-        assert encoded == (10, 0, 0, 1)
+        assert encoded == (4, 10, 0, 0, 1)
+
+    # RFC 2578 section 7.7 rule 3: the declared type is OCTET STRING
+    # (SIZE (0..255)), so the index carries a leading length whatever concrete
+    # subtype InetAddressType resolves it to.
+
+    @pytest.mark.parametrize(
+        ("addressType", "octets", "expected"),
+        [
+            ("ipv4", b"\xc0\x00\x02\x01", (4, 192, 0, 2, 1)),
+            ("ipv4z", b"\xc0\x00\x02\x01\x00\x00\x00\x07", (8, 192, 0, 2, 1, 0, 0, 0, 7)),
+            (
+                "ipv6",
+                b" \x01\r\xb8" + b"\x00" * 11 + b"\x01",
+                (16, 32, 1, 13, 184) + (0,) * 11 + (1,),
+            ),
+            ("dns", b"host.example", (12,) + tuple(b"host.example")),
+        ],
+    )
+    def test_index_carries_its_length_prefix(
+        self, builder, addressType, octets, expected
+    ):
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = inetAddressType(addressType)
+
+        assert inetAddress(octets).cloneAsName(False, row, (preceding,)) == expected
+
+    @pytest.mark.parametrize(
+        ("addressType", "octets"),
+        [
+            ("ipv4", b"\xc0\x00\x02\x01"),
+            ("ipv4z", b"\xc0\x00\x02\x01\x00\x00\x00\x07"),
+            ("ipv6", b" \x01\r\xb8" + b"\x00" * 11 + b"\x01"),
+            ("ipv6z", b" \x01\r\xb8" + b"\x00" * 11 + b"\x01\x00\x00\x00\x07"),
+            ("dns", b"host.example"),
+        ],
+    )
+    def test_index_round_trips(self, builder, addressType, octets):
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType(addressType),)
+
+        encoded = inetAddress(octets).cloneAsName(False, row, preceding)
+        # A trailing sub-identifier stands in for the rest of the row, so the
+        # remainder is checked to be exactly what this index did not consume.
+        decoded, rest = inetAddress.cloneFromName(
+            encoded + (99,), False, row, preceding
+        )
+
+        assert decoded.asOctets() == octets
+        assert rest == (99,)
+
+    def test_implied_index_omits_the_length(self, builder):
+        # RFC 2578 section 7.7: an IMPLIED index runs to the end of the OID, so
+        # there is nothing to delimit and no length to carry.
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("ipv4"),)
+
+        encoded = inetAddress(b"\xc0\x00\x02\x01").cloneAsName(True, row, preceding)
+
+        assert encoded == (192, 0, 2, 1)
+
+        decoded, rest = inetAddress.cloneFromName(encoded, True, row, preceding)
+
+        assert decoded.asOctets() == b"\xc0\x00\x02\x01"
+        assert rest == ()
+
+    def test_index_shorter_than_its_declared_length_raises(self, builder):
+        from pysnmp.smi import error
+
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+
+        with pytest.raises(error.SmiError):
+            inetAddress.cloneFromName(
+                (4, 192, 0), False, row, (inetAddressType("ipv4"),)
+            )
 
     def test_without_a_preceding_type_it_raises(self, builder):
         from pysnmp.smi import error
