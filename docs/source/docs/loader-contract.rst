@@ -34,7 +34,7 @@ Versioning
 
    >>> from pysnmp.smi.builder import MibBuilder
    >>> MibBuilder.loaderContract
-   (1, 0)
+   (1, 1)
 
 A generator targets a contract version rather than a pysnmp version. The two
 move at different rates: ``version`` changes every release, ``loaderContract``
@@ -153,6 +153,36 @@ From ``SNMPv2-CONF``:
 **``setReference`` is available on every class that carries it above, including
 the four conformance classes.** RFC 2580 permits REFERENCE on those macros, and
 pysnmp accepts it. A generator must not suppress REFERENCE for them.
+
+Base types
+~~~~~~~~~~
+
+``SNMPv2-SMI`` exports the RFC 2578 base types a generated module names in a
+SYNTAX clause -- ``Integer32``, ``IpAddress``, ``Counter32``, ``Gauge32``,
+``Unsigned32``, ``TimeTicks``, ``Opaque``, ``Counter64``, ``Bits`` -- and, at
+contract **v1.1**, one type RFC 2578 does not define:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 74
+
+   * - Symbol
+     - Guarantee
+   * - ``NetworkAddress``
+     - SMIv1's ``NetworkAddress`` (:rfc:`1155` section 3.2.3.1), importable
+       from ``SNMPv2-SMI`` since contract v1.1.
+
+SMIv2 dropped ``NetworkAddress``, so RFC 2578 does not define it and
+``RFC1155-SMI`` is not a module pysnmp loads. A generator compiling an SMIv1
+module therefore has nowhere else to import it from, and rewriting it to
+``IpAddress`` is not equivalent: :rfc:`1212` section 4.1.6 gives a
+``NetworkAddress``-valued index ``n+1`` sub-identifiers where an
+``IpAddress``-valued one takes ``n``, the leading one naming the address
+family. ``RFC1213-MIB::atEntry`` is indexed by one, and the rewrite left every
+row identifier a sub-identifier short.
+
+A generator targeting v1.0 must keep rewriting it, since a v1.0 builder does
+not export it.
 
 Argument shapes
 ~~~~~~~~~~~~~~~

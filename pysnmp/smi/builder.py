@@ -626,7 +626,7 @@ class MibBuilder:
     #: Bumped only when the contract changes, which is far less often than
     #: ``version``. ``docs/source/docs/loader-contract.rst`` states what each
     #: version covers, and ``tests/test_loader_contract.py`` enforces it.
-    loaderContract = (1, 0)
+    loaderContract = (1, 1)
 
     def __init__(self) -> None:
         """Assemble the search path, in the order modules are looked for.

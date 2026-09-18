@@ -40,7 +40,7 @@ import traceback
 from pyasn1.error import PyAsn1Error
 
 from pysnmp import cache, debug
-from pysnmp.proto import rfc1902
+from pysnmp.proto import rfc1155, rfc1902
 from pysnmp.smi import error, exval
 from pysnmp.smi.indices import OidOrderedDict
 
@@ -75,6 +75,18 @@ Unsigned32 = rfc1902.Unsigned32
 TimeTicks = rfc1902.TimeTicks
 Opaque = rfc1902.Opaque
 Counter64 = rfc1902.Counter64
+
+# SMIv1's NetworkAddress (RFC 1155 section 3.2.3.1), which SMIv2 dropped and
+# RFC 2578 therefore does not define. It is not IpAddress: RFC 1212 section
+# 4.1.6 gives a NetworkAddress-valued index `n+1' sub-identifiers where an
+# IpAddress-valued one takes `n', the leading one naming the address family,
+# and rfc1155.NetworkAddress implements that in cloneAsName/cloneFromName.
+#
+# It is exported from here because here is where a compiled module can reach
+# it: pysmi rewrites an SMIv1 IMPORTS onto SNMPv2-SMI, RFC1155-SMI not being
+# a module pysnmp loads. RFC1213-MIB::atNetAddress is the one that turns up
+# in practice.
+NetworkAddress = rfc1155.NetworkAddress
 
 
 class ExtUTCTime(OctetString):
@@ -1587,6 +1599,7 @@ mibBuilder.exportSymbols(
     Integer32=Integer32,
     Bits=Bits,
     IpAddress=IpAddress,
+    NetworkAddress=NetworkAddress,
     Counter32=Counter32,
     Gauge32=Gauge32,
     Unsigned32=Unsigned32,

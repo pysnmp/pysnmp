@@ -139,11 +139,14 @@ STATUS_CORRECTIONS = {
 
 #: The syntax changes in the convergence set.
 #:
-#: RFC 1213 declares ``atNetAddress SYNTAX NetworkAddress``; RFC 1155 defines
-#: NetworkAddress as ``CHOICE { internet IpAddress }`` -- a choice with exactly
-#: one arm. The current generator resolves it to that arm. Same values either
-#: way, and the constraint set widens from the choice-tag to IpAddress's own
-#: sizes.
+#: ``RFC1213-MIB::atNetAddress`` used to be here. RFC 1213 declares it ``SYNTAX
+#: NetworkAddress``, and RFC 1155 defines NetworkAddress as ``CHOICE { internet
+#: IpAddress }`` -- a choice with exactly one arm, which the generator resolved
+#: to that arm. The values are the same, but the OID sub-identifiers are not:
+#: RFC 1212 section 4.1.6 gives a NetworkAddress-valued index ``n+1`` of them to
+#: IpAddress's ``n``, so ``atEntry`` was indexed one short. pysmi 6 emits the
+#: declared type and SNMPv2-SMI.py exports it, which is the 2017 answer again,
+#: so there is no divergence left to classify.
 #:
 #: RFC 3411 declares ``snmpEngineTime SYNTAX INTEGER (0..2147483647)`` and no
 #: textual convention over it -- the module's only TCs are SnmpEngineID,
@@ -152,7 +155,6 @@ STATUS_CORRECTIONS = {
 #: ``test_no_dropped_symbol_is_declared_by_its_mib`` would not have caught
 #: because the name was never exported. Integer32 is what the MIB says.
 SYNTAX_CHANGES = {
-    ("RFC1213-MIB", "atNetAddress"): ("NetworkAddress", "IpAddress"),
     ("SNMP-FRAMEWORK-MIB", "snmpEngineTime"): ("SnmpEngineTime", "Integer32"),
 }
 
