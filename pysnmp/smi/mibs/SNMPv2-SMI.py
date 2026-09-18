@@ -38,7 +38,6 @@
 import traceback
 
 from pyasn1.error import PyAsn1Error
-from pyasn1.type import univ
 
 from pysnmp import cache, debug
 from pysnmp.proto import rfc1902
@@ -716,7 +715,17 @@ class MibScalarInstance(MibTree):
 
     def setValue(self, value, name, idx):
         if value is None:
-            value = univ.noValue
+            # "No value supplied -- take the column default", which is what row
+            # creation passes for every column the manager did not name. Handing
+            # pyasn1's noValue to the syntax's own setValue() is what used to
+            # break it: a textual convention whose setValue() compares the
+            # incoming value against something -- TestAndIncr, in the standard
+            # MIBs -- performs __ne__ against a pyasn1 schema object, which
+            # pyasn1 refuses. One TestAndIncr column anywhere in a table then
+            # made every row in it un-creatable (etingof/pysnmp#316). clone()
+            # with no arguments is the default, and asks nothing of the syntax.
+            return self.syntax.clone()
+
         try:
             if hasattr(self.syntax, "setValue"):
                 return self.syntax.setValue(value)
