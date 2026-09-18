@@ -20,8 +20,11 @@ RUN set -eux; \
             >> /etc/apt/sources.list; \
     fi; \
     apt-get update; \
+    # `file` is not a convenience: the libtool configure macro refuses to run
+    # without it ("file program not found although it is needed by libtool"),
+    # and the slim image does not carry it.
     apt-get install --yes --no-install-recommends \
-        ca-certificates dpkg-dev gcc libc6-dev libssl-dev make; \
+        ca-certificates dpkg-dev file gcc libc6-dev libssl-dev make; \
     mkdir -p /usr/src/net-snmp; \
     cd /usr/src/net-snmp; \
     apt-get source net-snmp; \
@@ -35,7 +38,7 @@ RUN set -eux; \
         --without-perl-modules \
         --disable-embedded-perl \
         --disable-manuals; \
-    # 5.9.4 leaves these two autoconf variables unsubstituted in apps/Makefile,
+    # 5.9.x leaves these two autoconf variables unsubstituted in apps/Makefile,
     # so the link lines hand them to ld as if they were filenames. Neither is
     # needed here -- they belong to the applications, not to the agent.
     sed -i 's/@LIBCRYPTO@/-lcrypto/g; s/@LIBWRAP@//g' apps/Makefile; \
