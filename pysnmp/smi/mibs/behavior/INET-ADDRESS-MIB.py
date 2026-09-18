@@ -20,6 +20,37 @@ InetAddress.typeMap = {
 }
 
 
+#: RFC 4001 section 4.1 gives each concrete address family one fixed size, so a
+#: bare InetAddress index -- one with no InetAddressType beside it to say what
+#: it holds -- can still be read back as the family whose size it matches.
+#: InetAddressDNS is deliberately absent: it is SIZE (1..255) and so matches
+#: nothing in particular, and a DNS name happening to be 4 or 16 octets long is
+#: the one case this cannot tell apart. The MIB's DESCRIPTION clause is the only
+#: thing that could, and it is prose.
+_lengthToTypeName = {
+    4: "ipv4",
+    8: "ipv4z",
+    16: "ipv6",
+    20: "ipv6z",
+}
+
+
+def _inferType(octets):
+    """The concrete subtype an index of this length must be, or None.
+
+    None means "no family claims this length" -- a DNS name, or something the
+    RFC does not describe. The caller keeps the declared InetAddress in that
+    case: it is variable-length and unconstrained, so it round-trips whatever
+    the index actually held rather than guessing at it.
+    """
+    try:
+        typeName = _lengthToTypeName[len(octets)]
+    except KeyError:
+        return None
+
+    return InetAddress.typeMap[InetAddressType.namedValues[typeName]]
+
+
 def _splitIndex(value, impliedFlag):
     """Take one InetAddress off the front of an instance OID, with its length.
 
@@ -77,10 +108,16 @@ def _cloneFromName(cls, value, impliedFlag, parentRow, parentIndices):
             # -- which fails for every address not spelled in digits and dots.
             return concreteType.clone(octets), rest
 
-    raise _error.SmiError(
-        f"{cls.__name__} object encountered without preceding "
-        f"InetAddressType-like index: {value!r}"
-    )
+    # No InetAddressType beside it. RFC 4001 recommends the pair but does not
+    # require it, and shipped MIBs do not always follow the recommendation --
+    # MPLS-VPN-MIB::mplsVpnVrfRouteEntry indexes on an InetAddress with no
+    # address-type column anywhere in the INDEX clause. Raising here made every
+    # table of that shape unusable, and because SmiError is a PyAsn1Error the
+    # raise was swallowed by MibTableRow.getIndicesFromInstId(), which returned
+    # the whole unconsumed remainder as one fabricated index instead.
+    inferredType = _inferType(octets)
+
+    return (cls(octets) if inferredType is None else inferredType.clone(octets)), rest
 
 
 def _cloneAsName(self, impliedFlag, parentRow, parentIndices):
@@ -94,10 +131,11 @@ def _cloneAsName(self, impliedFlag, parentRow, parentIndices):
             # Bytes go in unparsed, as above.
             return _joinIndex(concreteType.clone(self.asOctets()), impliedFlag)
 
-    raise _error.SmiError(
-        f"{self.__class__.__name__} object encountered without preceding "
-        f"InetAddressType-like index: {self!r}"
-    )
+    # No InetAddressType beside it -- see _cloneFromName. The encoding is the
+    # same either way, since the length prefix comes from the declared type and
+    # the octets are the octets; resolving the family only decides how the value
+    # renders once it is read back.
+    return _joinIndex(self, impliedFlag)
 
 
 InetAddress.cloneFromName = classmethod(_cloneFromName)

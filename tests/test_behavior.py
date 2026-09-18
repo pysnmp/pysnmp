@@ -227,16 +227,109 @@ class TestInetAddress:
                 (4, 192, 0), False, row, (inetAddressType("ipv4"),)
             )
 
-    def test_without_a_preceding_type_it_raises(self, builder):
-        from pysnmp.smi import error
+    # RFC 4001 section 4 recommends pairing an InetAddress index with an
+    # InetAddressType one, but does not require it: MPLS-VPN-MIB indexes on a
+    # bare InetAddress and fixes the family in its DESCRIPTION clause instead.
 
+    @pytest.mark.parametrize(
+        ("octets", "expected", "inferredType"),
+        [
+            (b"\xc0\x00\x02\x01", (4, 192, 0, 2, 1), "InetAddressIPv4"),
+            (
+                b"\xc0\x00\x02\x01\x00\x00\x00\x07",
+                (8, 192, 0, 2, 1, 0, 0, 0, 7),
+                "InetAddressIPv4z",
+            ),
+            (
+                b" \x01\r\xb8" + b"\x00" * 11 + b"\x01",
+                (16, 32, 1, 13, 184) + (0,) * 11 + (1,),
+                "InetAddressIPv6",
+            ),
+            # No family claims this length, so the declared type is kept rather
+            # than a family being guessed at.
+            (b"host.example", (12,) + tuple(b"host.example"), "InetAddress"),
+        ],
+    )
+    def test_without_a_preceding_type_it_infers_from_length(
+        self, builder, octets, expected, inferredType
+    ):
         (inetAddress,) = builder.importSymbols("INET-ADDRESS-MIB", "InetAddress")
         (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
 
         row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
 
-        with pytest.raises(error.SmiError):
-            inetAddress(b"\x7f\x00\x00\x01").cloneAsName(False, row, ())
+        encoded = inetAddress(octets).cloneAsName(False, row, ())
+
+        assert encoded == expected
+
+        decoded, rest = inetAddress.cloneFromName(encoded + (99,), False, row, ())
+
+        assert decoded.asOctets() == octets
+        assert type(decoded).__name__ == inferredType
+        assert rest == (99,)
+
+    def test_a_bare_index_encodes_the_same_as_a_paired_one(self, builder):
+        # The length prefix comes from the declared type, so losing the
+        # InetAddressType changes how the value renders, never the OID.
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        address = inetAddress(b"\xc0\x00\x02\x01")
+
+        assert address.cloneAsName(False, row, ()) == address.cloneAsName(
+            False, row, (inetAddressType("ipv4"),)
+        )
+
+    def test_a_preceding_type_still_wins_over_the_length(self, builder):
+        # ipv4z and a DNS name are both 8 octets here; the declared type index
+        # is authoritative and the length fallback must not second-guess it.
+        (inetAddress, inetAddressType) = builder.importSymbols(
+            "INET-ADDRESS-MIB", "InetAddress", "InetAddressType"
+        )
+        (rowClass,) = builder.importSymbols("SNMPv2-SMI", "MibTableRow")
+
+        row = rowClass((1, 3, 6, 1, 2, 1, 4, 34, 1))
+        preceding = (inetAddressType("dns"),)
+
+        decoded, _ = inetAddress.cloneFromName(
+            (8,) + tuple(b"host.com"), False, row, preceding
+        )
+
+        assert type(decoded).__name__ == "InetAddressDNS"
+
+    def test_a_bare_index_resolves_a_real_mpls_vpn_mib_row(self, builder):
+        # etingof/pysnmp#305: mplsVpnVrfRouteEntry indexes on mplsVpnVrfRouteDest,
+        # an InetAddress, with no address-type column in the INDEX clause.
+        from pysnmp.proto.rfc1902 import OctetString
+
+        builder.loadModules("MPLS-VPN-MIB")
+        (row,) = builder.importSymbols("MPLS-VPN-MIB", "mplsVpnVrfRouteEntry")
+
+        indices = (
+            OctetString("vrf1"),
+            OctetString(b"\xc0\x00\x02\x01"),
+            OctetString(b"\xff\xff\xff\x00"),
+            0,
+            OctetString(b"\xc0\x00\x02\xfe"),
+        )
+
+        instId = row.getInstIdFromIndices(*indices)
+
+        assert instId == (
+            (4,) + tuple(b"vrf1") + (4, 192, 0, 2, 1) + (4, 255, 255, 255, 0) + (0,)
+            + (4, 192, 0, 2, 254)
+        )
+
+        # And back: five indices in, five indices out -- not one fabricated
+        # index holding the whole unconsumed remainder.
+        decoded = row.getIndicesFromInstId(instId)
+
+        assert len(decoded) == 5
+        assert decoded[1].asOctets() == b"\xc0\x00\x02\x01"
+        assert decoded[4].asOctets() == b"\xc0\x00\x02\xfe"
 
 
 class TestSnmpTag:
