@@ -658,17 +658,21 @@ class TestBuilderUnchangedWithoutACorpus:
     def test_missing_module_still_raises_mib_not_found(self):
         builder = MibBuilder()
 
-        # loadModule, not loadModules: with no compiler configured the plural
-        # form swallows MibNotFoundError, and has since long before any of
-        # this. Pinned here because the corpus fallback lives in the singular
-        # form, so a change there must not start or stop that happening.
+        # The corpus fallback lives in the singular form, so a change there
+        # must not start or stop this happening.
         with pytest.raises(error.MibNotFoundError):
             builder.loadModule("NO-SUCH-MIB")
 
-    def test_loadmodules_still_swallows_a_missing_module(self):
+    def test_loadmodules_reports_a_missing_module(self):
+        # The plural form used to swallow MibNotFoundError when no compiler was
+        # configured -- which this class pinned, since the corpus fallback must
+        # not change it either way. It now reports, and the thing being pinned
+        # is unchanged: whatever loadModules() does about a missing module, a
+        # corpus is not what decides it.
         builder = MibBuilder()
 
-        builder.loadModules("NO-SUCH-MIB")
+        with pytest.raises(error.MibNotFoundError):
+            builder.loadModules("NO-SUCH-MIB")
 
         assert "NO-SUCH-MIB" not in builder.mibSymbols
 

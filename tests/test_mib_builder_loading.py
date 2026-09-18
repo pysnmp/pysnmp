@@ -1,7 +1,9 @@
-"""A MIB source MibBuilder refused to serve: the PEP 420 namespace package.
+"""Two ways MibBuilder used to fail to load a MIB without saying so.
 
-A plain directory of MIBs beside your script is one of these, which is what
-made the refusal an everyday problem rather than an exotic one.
+One refused a source it should have served -- a PEP 420 namespace package, which
+is what a plain directory of MIBs beside your script is. The other swallowed
+"no such module" outright when no compiler was attached, and returned as though
+the load had worked.
 """
 
 import sys
@@ -9,6 +11,7 @@ import textwrap
 
 import pytest
 
+from pysnmp.smi import error
 from pysnmp.smi.builder import DirMibSource, MibBuilder, ZipMibSource
 
 #: A minimal generated MIB module, enough to load and export one symbol.
@@ -107,3 +110,98 @@ class TestNamespacePackageSource:
         built.loadModules("SNMPv2-MIB")
 
         assert "SNMPv2-MIB" in built.mibSymbols
+
+
+class StubCompiler:
+    """Stands in for a pysmi compiler, recording what it was asked to build."""
+
+    def __init__(self, status):
+        self.status = status
+        self.compiled = []
+
+    def compile(self, modName, **kwargs):
+        self.compiled.append(modName)
+        return {modName: self.status}
+
+
+class TestMissingModuleIsReported:
+    """etingof/pysnmp#5a1cb3ff: no compiler meant no error either."""
+
+    def test_without_a_compiler_a_missing_module_raises(self):
+        built = MibBuilder()
+
+        with pytest.raises(error.MibNotFoundError) as raised:
+            built.loadModules("NO-SUCH-MIB-AT-ALL")
+
+        assert "NO-SUCH-MIB-AT-ALL" in str(raised.value)
+
+    def test_without_a_compiler_nothing_is_silently_returned(self):
+        # The shape of the defect: it returned `self`, so a caller chaining off
+        # loadModules() saw success and got no module.
+        built = MibBuilder()
+
+        with pytest.raises(error.MibNotFoundError):
+            built.loadModules("NO-SUCH-MIB-AT-ALL")
+
+        assert "NO-SUCH-MIB-AT-ALL" not in built.mibSymbols
+
+    def test_with_a_compiler_the_compile_is_still_attempted(self, tmp_path):
+        # Behaviour with a compiler attached is unchanged: compile is tried,
+        # and a compile that reports success is followed by a second load.
+        built = MibBuilder()
+        compiler = StubCompiler("compiled")
+        built.setMibCompiler(compiler, str(tmp_path))
+
+        with pytest.raises(error.MibNotFoundError):
+            built.loadModules("NO-SUCH-MIB-AT-ALL")
+
+        assert compiler.compiled == ["NO-SUCH-MIB-AT-ALL"]
+
+    @pytest.mark.parametrize("status", ["failed", "missing"])
+    def test_a_compile_failure_still_raises_with_its_diagnostics(
+        self, tmp_path, status
+    ):
+        built = MibBuilder()
+        built.setMibCompiler(StubCompiler(status), str(tmp_path))
+
+        with pytest.raises(error.MibNotFoundError) as raised:
+            built.loadModules("NO-SUCH-MIB-AT-ALL")
+
+        assert "compilation error" in str(raised.value)
+
+    def test_a_module_that_exists_still_loads(self):
+        built = MibBuilder()
+        built.loadModules("IF-MIB")
+
+        assert "IF-MIB" in built.mibSymbols
+
+    def test_several_names_load_together(self):
+        built = MibBuilder()
+        built.loadModules("IF-MIB", "SNMPv2-MIB")
+
+        assert "IF-MIB" in built.mibSymbols
+        assert "SNMPv2-MIB" in built.mibSymbols
+
+    def test_one_missing_name_among_several_raises(self):
+        built = MibBuilder()
+
+        with pytest.raises(error.MibNotFoundError):
+            built.loadModules("IF-MIB", "NO-SUCH-MIB-AT-ALL")
+
+    def test_the_no_argument_form_is_unaffected(self):
+        # The issue asked whether raising here makes `loadModules()` with no
+        # names noisy, since that enumerates every source. It does not: those
+        # names all came from listdir(), so they exist, and MibNotFoundError --
+        # the only thing this change re-raises -- is not what that path hits.
+        #
+        # It does raise, from a bundled module whose dependency is missing, but
+        # that is MibLoadError and predates this change; asserting the type
+        # keeps the two apart if it is ever fixed.
+        built = MibBuilder()
+
+        try:
+            built.loadModules()
+        except error.MibNotFoundError:  # pragma: no cover - would be this change
+            raise
+        except error.MibLoadError:
+            pass
