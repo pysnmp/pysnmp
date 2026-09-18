@@ -113,6 +113,9 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
 
     Examples
     --------
+    A link-local address keeps its scope, in the ``%`` form :RFC:`4007#section-11`
+    defines, since such an address means nothing without one.
+
     >>> from pysnmp.hlapi.asyncio import Udp6TransportTarget
     >>> Udp6TransportTarget(('::1', 161))
     Udp6TransportTarget(('::1', 161), timeout=1, retries=5, tagList=b'')
@@ -133,25 +136,41 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
 
     def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int]:
         try:
-            # An AF_INET6 sockaddr is (host, port, flowinfo, scopeid); the
-            # slice keeps the first two, which is what the transport wants and
-            # what the previous annotation of this method got wrong.
-            return cast(
-                tuple[str, int],
+            # An AF_INET6 sockaddr is (host, port, flowinfo, scopeid).
+            # getaddrinfo() resolves a zone for us -- 'fe80::1%eth0' comes back
+            # as ('fe80::1', 161, 0, 7) -- and that scope ID is how the kernel
+            # picks the outgoing interface for a link-local destination.
+            # Truncating to (host, port) threw it away before it could reach
+            # sendto(), which made link-local addresses unusable.
+            # AF_INET6 pins the sockaddr to four parts, but getaddrinfo is
+            # typed over every address family it can return, so the shape has
+            # to be narrowed by hand -- as in UdpTransportTarget above.
+            host, port, _, scopeId = cast(
+                tuple[str, int, int, int],
                 socket.getaddrinfo(
                     transportAddr[0],
                     transportAddr[1],
                     socket.AF_INET6,
                     socket.SOCK_DGRAM,
                     socket.IPPROTO_UDP,
-                )[0][4][:2],
+                )[0][4],
             )
+
         except socket.gaierror as e:
             raise PySnmpError(
                 "Bad IPv6/UDP transport address {}: {}".format(
                     "@".join([str(x) for x in transportAddr]), e
                 )
             ) from e
+
+        # The scope rides in the host string, in the RFC 4007 section 11 form
+        # that produced it, rather than widening this tuple: the transport
+        # resolves it back to a sockaddr scope ID in normalizeAddress(). That
+        # keeps a target's address the (host, port) pair every other transport
+        # uses, and keeps the numeric zone -- which is what getaddrinfo gives
+        # us -- rather than the interface name, which may not survive a trip
+        # through the target address table.
+        return (f"{host}%{scopeId}" if scopeId else host, port)
 
 
 class UnixTransportTarget(AbstractTransportTarget[str]):

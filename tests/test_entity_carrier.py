@@ -22,7 +22,7 @@ from pysnmp.entity.rfc3413 import cmdgen as rfc3413_cmdgen
 from pysnmp.entity.rfc3413 import config as rfc3413_config
 from pysnmp.entity.rfc3413 import context as rfc3413_context
 from pysnmp.entity.rfc3413 import ntfrcv
-from pysnmp.hlapi.asyncio.transport import UdpTransportTarget
+from pysnmp.hlapi.asyncio.transport import Udp6TransportTarget, UdpTransportTarget
 from pysnmp.hlapi.auth import CommunityData, UsmUserData
 from pysnmp.hlapi.context import ContextData
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
@@ -442,6 +442,69 @@ class _UnnamedSocketTransport:
         return None
 
 
+class _RecordingSocketTransport:
+    """asyncio transport that records what `sendto()` was handed."""
+
+    def __init__(self):
+        self.sent = []
+
+    def get_extra_info(self, name, default=None):
+        return None
+
+    def sendto(self, data, address):
+        self.sent.append((data, address))
+
+
+class TestIPv6ScopeReachesTheSocket:
+    """etingof/pysnmp#445: a link-local destination needs its scope at sendto().
+
+    `fe80::1` names a different host on every interface, so the kernel requires
+    a scope ID to pick the outgoing one and `sendto()` fails with EINVAL
+    without it. `normalizeAddress()` is what builds the address handed to
+    `sendto()`, and it used to strip the zone -- which made link-local
+    addressing, the way you reach an unconfigured switch, impossible.
+    """
+
+    def _sentAddress(self, transportAddress):
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _RecordingSocketTransport()
+        transport.sendMessage(b"pdu", transportAddress)
+
+        ((_, address),) = transport.transport.sent
+
+        return tuple(address)
+
+    def test_a_scope_survives_from_the_transport_target_to_sendto(self):
+        # The whole path the issue asks about: what the caller typed, through
+        # the target's resolution, to the sockaddr the socket is given.
+        target = Udp6TransportTarget(("fe80::1%lo", 161))
+
+        assert self._sentAddress(target.transportAddr) == (
+            "fe80::1",
+            161,
+            0,
+            socket.if_nametoindex("lo"),
+        )
+
+    def test_a_global_address_is_sent_unscoped(self):
+        target = Udp6TransportTarget(("::1", 161))
+
+        assert self._sentAddress(target.transportAddr) == ("::1", 161, 0, 0)
+
+    def test_a_queued_send_keeps_the_scope_too(self):
+        # A send before the loop has a socket is held and replayed from
+        # connection_made(), which normalizes separately.
+        transport = udp6.Udp6AsyncioTransport()
+        transport.sendMessage(b"pdu", ("fe80::1%2", 161))
+
+        recorder = _RecordingSocketTransport()
+        transport.connection_made(recorder)
+
+        ((_, address),) = recorder.sent
+
+        assert tuple(address) == ("fe80::1", 161, 0, 2)
+
+
 class TestUnboundLocalAddress:
     """getLocalAddress() on an endpoint opened with no local address.
 
@@ -469,21 +532,63 @@ class TestUnboundLocalAddress:
         address = transport.normalizeAddress(("127.0.0.1", 161))
         assert address.getLocalAddress() == ("0.0.0.0", 0)
 
-    def test_udp6_normalize_address_strips_zone_and_stores_the_wildcard(self):
+    def test_udp6_normalize_address_resolves_a_zone_and_stores_the_wildcard(self):
+        # The zone moves out of the host string and into the scope ID, where
+        # the sockaddr carries it. A numeric zone keeps this independent of
+        # which interfaces the test host happens to have.
         transport = udp6.Udp6AsyncioTransport()
         transport.transport = _UnnamedSocketTransport()
-        address = transport.normalizeAddress(("fe80::1%eth0", 161, 0, 0))
-        assert address == ("fe80::1", 161, 0, 0)
+        address = transport.normalizeAddress(("fe80::1%2", 161, 0, 0))
+        assert address == ("fe80::1", 161, 0, 2)
         assert address.getLocalAddress() == ("::", 0, 0, 0)
 
     def test_udp6_normalize_address_keeps_an_explicit_local_address(self):
         transport = udp6.Udp6AsyncioTransport()
         transport.transport = _UnnamedSocketTransport()
-        address = udp6.Udp6TransportAddress(("fe80::1%eth0", 161, 0, 0))
+        address = udp6.Udp6TransportAddress(("fe80::1%2", 161, 0, 0))
         address.setLocalAddress(("::1", 12345, 0, 0))
         normalized = transport.normalizeAddress(address)
-        assert normalized == ("fe80::1", 161, 0, 0)
+        assert normalized == ("fe80::1", 161, 0, 2)
         assert normalized.getLocalAddress() == ("::1", 12345, 0, 0)
+
+    def test_udp6_normalize_address_keeps_a_scope_id_already_in_the_tuple(self):
+        # The everyday path once the transport target has resolved: the zone is
+        # gone from the host string and the scope is the fourth part. Zeroing
+        # it here is what made a link-local destination unreachable, since this
+        # result is what goes to sendto().
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = transport.normalizeAddress(("fe80::1", 161, 0, 7))
+        assert address == ("fe80::1", 161, 0, 7)
+
+    def test_udp6_normalize_address_resolves_an_interface_name(self):
+        # A name the sockaddr cannot carry becomes the index the kernel wants.
+        expected = socket.if_nametoindex("lo")
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = transport.normalizeAddress(("fe80::1%lo", 161, 0, 0))
+        assert address == ("fe80::1", 161, 0, expected)
+
+    def test_udp6_normalize_address_drops_flowinfo(self):
+        # flowinfo, unlike the scope, genuinely does not identify an endpoint.
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = transport.normalizeAddress(("fe80::1", 161, 99, 7))
+        assert address == ("fe80::1", 161, 0, 7)
+
+    def test_udp6_normalize_address_tolerates_an_unknown_interface(self):
+        # Failing to send is a better diagnostic than a socket exception out of
+        # address normalization, and 0 is what this did before either way.
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = transport.normalizeAddress(("fe80::1%nosuchif0", 161, 0, 0))
+        assert address == ("fe80::1", 161, 0, 0)
+
+    def test_udp6_normalize_address_leaves_a_global_address_unscoped(self):
+        transport = udp6.Udp6AsyncioTransport()
+        transport.transport = _UnnamedSocketTransport()
+        address = transport.normalizeAddress(("2001:db8::1", 161, 0, 0))
+        assert address == ("2001:db8::1", 161, 0, 0)
 
     def test_udp_client_mode_reports_the_wildcard(self):
         loop = asyncio.new_event_loop()
