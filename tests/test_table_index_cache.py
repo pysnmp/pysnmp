@@ -59,3 +59,57 @@ class TestIndicesToInstId:
     def test_a_hashable_index_still_caches(self, ifEntry):
         assert ifEntry.getInstIdFromIndices(11) == (11,)
         assert ifEntry.getInstIdFromIndices(11) == (11,)
+
+
+class TestInstIdToIndices:
+    """``getIndicesFromInstId()`` -- instance OID in, indices out."""
+
+    def test_distinct_instance_oids_resolve_to_distinct_indices(self, ifEntry):
+        assert [int(x) for x in ifEntry.getIndicesFromInstId((7,))] == [7]
+        assert [int(x) for x in ifEntry.getIndicesFromInstId((9,))] == [9]
+
+    def test_the_empty_instance_oid_is_not_polluted_by_earlier_lookups(self, ifEntry):
+        # The cache used to be written under the *remainder* left after parsing,
+        # which is () on every success. So every call overwrote one shared entry,
+        # and getIndicesFromInstId(()) handed back whichever row was parsed last
+        # -- [9] here rather than the empty tuple a row with no indices left has.
+        ifEntry.getIndicesFromInstId((7,))
+        ifEntry.getIndicesFromInstId((9,))
+
+        # An empty instance OID is too short for a row that declares an index,
+        # so the honest answer is the short-OID stand-in -- never row 9's.
+        assert ifEntry.getIndicesFromInstId(()) == ((),)
+
+    def test_a_repeated_lookup_returns_the_same_indices(self, ifEntry):
+        # Reads keyed on the full instance OID and writes keyed on the remainder
+        # meant the cache never once answered a real lookup. It should now, and
+        # what it answers with has to be right.
+        first = ifEntry.getIndicesFromInstId((13,))
+        second = ifEntry.getIndicesFromInstId((13,))
+
+        assert [int(x) for x in first] == [13]
+        assert [int(x) for x in second] == [13]
+
+    def test_a_cached_lookup_survives_an_unrelated_one(self, ifEntry):
+        # The pollution in the other direction: a second row's parse used to
+        # overwrite the single () entry, so whichever entry did exist was never
+        # the one being asked for.
+        assert [int(x) for x in ifEntry.getIndicesFromInstId((21,))] == [21]
+        assert [int(x) for x in ifEntry.getIndicesFromInstId((22,))] == [22]
+        assert [int(x) for x in ifEntry.getIndicesFromInstId((21,))] == [21]
+
+    def test_an_unparseable_index_is_not_cached_as_if_it_were_valid(self):
+        # A row whose index does not match the compiled MIB returns the
+        # unconsumed remainder standing in for its indices. Whatever is decided
+        # about that (see #252), it must not reach the cache, where it would be
+        # served to a later caller asking about a different OID entirely.
+        built = MibBuilder()
+        built.loadModules("SNMP-VIEW-BASED-ACM-MIB")
+        (row,) = built.importSymbols("SNMP-VIEW-BASED-ACM-MIB", "vacmAccessEntry")
+
+        # Far too few sub-identifiers for this row's four indices.
+        assert row.getIndicesFromInstId((1,)) == ((1,),)
+
+        # If that remainder had been cached it would have been cached under (),
+        # and this lookup would hand back ((1,),) instead of its own stand-in.
+        assert row.getIndicesFromInstId(()) == ((),)
