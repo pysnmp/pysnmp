@@ -23,6 +23,7 @@ See pysnmp/pysnmp#197.
 
 import pytest
 
+from pysnmp.proto import rfc1155
 from pysnmp.smi import error
 from pysnmp.smi.builder import MibBuilder
 
@@ -323,3 +324,59 @@ class TestExportSymbols:
     def test_empty_module_name_is_refused(self):
         with pytest.raises(error.SmiError, match="empty MIB module name"):
             MibBuilder().importSymbols("", "anything")
+
+
+class TestSmiV1Types:
+    """SMIv1 types a generated module imports from SNMPv2-SMI.
+
+    RFC 2578 does not define NetworkAddress -- SMIv2 dropped it -- but pysmi
+    rewrites an SMIv1 IMPORTS onto SNMPv2-SMI, RFC1155-SMI not being a module
+    pysnmp loads. So SNMPv2-SMI is the only module a compiled SMIv1 MIB can
+    name for it, and exporting it is part of this contract rather than an
+    implementation detail of that module.
+    """
+
+    def test_network_address_is_exported_from_snmpv2_smi(self, mib_builder):
+        (networkAddress,) = mib_builder.importSymbols("SNMPv2-SMI", "NetworkAddress")
+
+        assert networkAddress is rfc1155.NetworkAddress
+
+    def test_a_network_address_index_takes_one_more_sub_identifier(self, mib_builder):
+        """RFC 1212 section 4.1.6: ``n+1`` sub-identifiers, not IpAddress's ``n``.
+
+        The leading one names the address family, and 1 is ``internet``. This
+        is the whole reason the type is carried through rather than resolved to
+        its single arm: ``RFC1213-MIB::atEntry`` is indexed by one, and
+        resolving it to IpAddress left every row identifier a sub-identifier
+        short.
+        """
+        MibTableRow, MibTableColumn, Integer32, NetworkAddress = (
+            mib_builder.importSymbols(
+                "SNMPv2-SMI",
+                "MibTableRow",
+                "MibTableColumn",
+                "Integer32",
+                "NetworkAddress",
+            )
+        )
+        row = MibTableRow((1, 3, 6, 1, 2, 1, 3, 1, 1))
+        mib_builder.exportSymbols(
+            "AT-TEST-MIB",
+            atEntry=row,
+            atIfIndex=MibTableColumn((1, 3, 6, 1, 2, 1, 3, 1, 1, 1), Integer32()),
+            atNetAddress=MibTableColumn(
+                (1, 3, 6, 1, 2, 1, 3, 1, 1, 3), NetworkAddress()
+            ),
+        )
+        row.setIndexNames(
+            (0, "AT-TEST-MIB", "atIfIndex"), (0, "AT-TEST-MIB", "atNetAddress")
+        )
+
+        instId = row.getInstIdFromIndices(1, "10.0.0.1")
+
+        assert instId == (1, 1, 10, 0, 0, 1)
+
+        ifIndex, netAddress = row.getIndicesFromInstId(instId)
+
+        assert int(ifIndex) == 1
+        assert netAddress.prettyPrint() == "10.0.0.1"

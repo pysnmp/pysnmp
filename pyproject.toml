@@ -53,26 +53,27 @@ dependencies = [
 # longer a sibling rc to integrate against, and nothing here resolves to a
 # prerelease. See [tool.uv] below, which is what holds that.
 #
-# 4.0.0 rather than 3.x is a separate question from the rc one, and the answer
-# has not changed: the major is pysmi dropping its mibs/behavior splice
-# (pysnmp/pysmi#245). A module it generates no longer carries the runtime
-# behavior no code generator can derive from ASN.1, because pysnmp owns that now
-# and applies it from pysnmp/smi/mibs/behavior (#215). Anything still on pysmi
-# 3.x gets that behavior twice, which is harmless -- the fragments are
-# idempotent -- and anything on 4.x gets it once, from here. Regenerating with a
-# 3.x pysmi would write those fragments back into the committed modules and
-# tests/test_generated_mibs.py would fail against a 4.x one.
+# 6.0.0 rather than 4.0.0 is where the floor sits now, and this time the major
+# is in the generated code itself. pysmi 6 stops resolving SMIv1's
+# NetworkAddress to IpAddress and emits the declared type, imported from
+# SNMPv2-SMI, because the two are not interchangeable as a table index: RFC 1212
+# section 4.1.6 gives a NetworkAddress-valued index `n+1' sub-identifiers to
+# IpAddress's `n'. SNMPv2-SMI.py exports NetworkAddress for it to import, and no
+# released pysnmp before this one does -- so a module pysmi 6 compiled fails to
+# load on an older pysnmp with "No symbol SNMPv2-SMI::NetworkAddress", and a
+# module pysmi 5 compiled still indexes RFC1213-MIB::atTable one sub-identifier
+# short on this one. Neither half is usable without the other, which is what a
+# floor rather than a ceiling says. The reasons the floor was 4.0.0 -- pysmi
+# dropping its mibs/behavior splice (pysnmp/pysmi#245), so a generated module no
+# longer carries the runtime behavior pysnmp now applies from
+# pysnmp/smi/mibs/behavior (#215) -- are subsumed by it.
 #
-# The ceiling admits pysmi 5 because what this extra buys -- pysmi's pysnmp
-# code generator -- is byte-identical between 4.1.1 and 5.0.0, and
-# tests/test_generated_mibs.py is what says so rather than a reading of the
-# changelog. pysmi 5 is a corpus release: core.db schema 2, the registry
-# parsers, the site emitter, none of which is on the path this extra exists
-# for. Holding the ceiling at 5 would have made a deployment that compiles at
-# run time choose between this package and a current pysmi, over a major that
-# does not touch what it compiles.
+# The ceiling is the next major, on the same reading as before: what this extra
+# buys is pysmi's pysnmp code generator, and a pysmi major is where that is
+# allowed to change. tests/test_generated_mibs.py re-renders the committed
+# modules and is what would say so.
 [project.optional-dependencies]
-compile = ["pysnmp-pysmi >=4.0.0,<6"]
+compile = ["pysnmp-pysmi >=6.0.0,<7"]
 
 [project.urls]
 repository = "https://github.com/pysnmp/pysnmp"
@@ -89,14 +90,16 @@ repository = "https://github.com/pysnmp/pysnmp"
 # pysmi.corpus.conformance. Development needs pysmi whether or not an install
 # does.
 #
-# The floor is 5.0.0 where the extra's is 4.0.0, and the difference is the
-# fixture. pysmi.corpus.conformance is the reader contract, and its vectors
-# move with the schema: the provenance vectors and the schema_version one
-# exist only in the 5.x fixture, so testing pysnmp/smi/corpus.py against a
-# 4.x pysmi would test it against the schema it no longer only reads.
+# The floor tracks the extra's rather than sitting below it, as it did while
+# the extra admitted 4.x: pysmi.corpus.conformance is the reader contract
+# tests/test_corpus.py builds its fixture from, and its vectors move with the
+# schema, so development testing against an older pysmi than an install may
+# resolve tests pysnmp/smi/corpus.py against a schema it no longer only reads.
+# tests/test_base_layer_equivalence.py needs 6.x for the same reason the extra
+# does: it reads what pysmi says RFC1213-MIB::atNetAddress declares.
 [dependency-groups]
 dev = [
-    "pysnmp-pysmi >=5.0.0,<6",
+    "pysnmp-pysmi >=6.0.0,<7",
     # documentation toolchain is marker-guarded the way pyasn1 already does
     # it. Both CI jobs that build docs run 3.12 or newer.
     "sphinx >=9.1.0,<10.0.0; python_version >= '3.12'",
@@ -111,7 +114,7 @@ dev = [
 # General availability wherever there is one, enforced rather than reviewed.
 #
 # Every requirement above names a final release -- pysnmp-pyasn1 2.0.2 and
-# pysnmp-pysmi 4.0.0 and 5.0.0 are GA -- but a specifier is a statement about
+# pysnmp-pysmi 6.0.0 are GA -- but a specifier is a statement about
 # one requirement, and the thing worth guaranteeing is a property of the whole
 # resolution: nothing this repository installs is a prerelease of a package
 # that has a release, including something a transitive dependency asks for.
