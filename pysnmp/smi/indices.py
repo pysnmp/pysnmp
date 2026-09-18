@@ -102,9 +102,18 @@ class OrderedDict(dict):
             for k, v in kwargs.items():
                 self[k] = v
 
+    def sortingKey(self, key):
+        """The value a key sorts by. Identity here; OID order overrides it.
+
+        `nextKey` bisects against this rather than against the key itself, so the
+        search and the sort cannot order the keys differently. It has to accept a
+        key that is not present, because that is exactly what GETNEXT asks about.
+        """
+        return key
+
     def sortingFun(self, keys):
-        """Sort the keys in place. Subclasses override this to order differently."""
-        keys.sort()
+        """Sort the keys in place. Subclasses order differently via `sortingKey`."""
+        keys.sort(key=self.sortingKey)
 
     def __order(self):
         """Sort the keys and note the distinct key lengths, longest first."""
@@ -123,11 +132,14 @@ class OrderedDict(dict):
 
         keys = self.__keys
 
-        if key in keys:
-            nextIdx = keys.index(key) + 1
-
-        else:
-            nextIdx = bisect(keys, key)
+        # bisect_right returns the index *after* an equal element, so one search
+        # answers both cases -- a key that is present and one that is not. The
+        # present case used to be special-cased with `key in keys` and then
+        # `keys.index(key)`, two full linear scans of a sorted list; and since
+        # reaching the bisect at all meant paying the `in` scan first, both
+        # branches were O(n). This is the agent's GETNEXT/GETBULK step, called
+        # once per var-bind, so a walk of an n-row table cost O(n**2).
+        nextIdx = bisect(keys, self.sortingKey(key), key=self.sortingKey)
 
         if nextIdx < len(keys):
             return keys[nextIdx]
@@ -178,11 +190,21 @@ class OidOrderedDict(OrderedDict):
         if key in self.__keysCache:
             del self.__keysCache[key]
 
-    def sortingFun(self, keys):
+    def sortingKey(self, key):
         """Sort by OID component rather than lexically.
 
         This is what puts 1.3.6.1.10 after 1.3.6.1.9 instead of before it, and a walk
         that sorted the other way would return rows in the wrong order and never
         terminate correctly.
+
+        A key that is not in the mapping is converted on the spot rather than
+        refused: `nextKey` bisects with this, and the OID it is asked about is
+        usually one that does not exist.
         """
-        keys.sort(key=lambda k, d=self.__keysCache: d[k])
+        try:
+            return self.__keysCache[key]
+
+        except (KeyError, TypeError):
+            return (
+                key if isinstance(key, tuple) else [int(x) for x in key.split(".") if x]
+            )

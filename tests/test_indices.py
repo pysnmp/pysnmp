@@ -65,3 +65,124 @@ class TestOidOrderedDict:
         for key in ((1, 3, 6, 1, 9), (1, 3, 6, 1, 10), (1, 3, 6, 1, 2)):
             d[key] = key
         assert list(d) == [(1, 3, 6, 1, 2), (1, 3, 6, 1, 9), (1, 3, 6, 1, 10)]
+
+
+class TestNextKey:
+    """`nextKey` -- the agent's GETNEXT step.
+
+    It used to special-case a key that is present, with `key in keys` followed
+    by `keys.index(key)`: two full linear scans of a sorted list. Reaching the
+    bisect at all meant paying the `in` scan first, so both branches were O(n)
+    and a walk of an n-row table was O(n**2). One `bisect_right` answers both
+    cases, because it already returns the index *after* an equal element.
+
+    The equivalence is the whole argument for the change, so it is pinned here
+    rather than left to inspection.
+    """
+
+    def _built(self):
+        d = OidOrderedDict()
+        for i in (1, 3, 5, 7):
+            d[(1, 3, 6, 1, i)] = i
+        return d
+
+    def test_a_present_key_yields_its_successor(self):
+        assert self._built().nextKey((1, 3, 6, 1, 3)) == (1, 3, 6, 1, 5)
+
+    def test_an_absent_key_between_two_present_ones_yields_the_later(self):
+        assert self._built().nextKey((1, 3, 6, 1, 4)) == (1, 3, 6, 1, 5)
+
+    def test_an_absent_key_before_the_first_yields_the_first(self):
+        assert self._built().nextKey((1, 3, 6, 1, 0)) == (1, 3, 6, 1, 1)
+
+    def test_a_longer_key_under_a_present_one_yields_the_next_sibling(self):
+        # The everyday GETNEXT shape: the manager asks about an instance OID
+        # below a row, which is never itself a key.
+        assert self._built().nextKey((1, 3, 6, 1, 3, 0)) == (1, 3, 6, 1, 5)
+
+    def test_the_last_key_raises(self):
+        import pytest
+
+        with pytest.raises(KeyError):
+            self._built().nextKey((1, 3, 6, 1, 7))
+
+    def test_past_the_last_key_raises(self):
+        import pytest
+
+        with pytest.raises(KeyError):
+            self._built().nextKey((1, 3, 6, 1, 9))
+
+    def test_successive_calls_walk_the_whole_mapping(self):
+        d = self._built()
+        walked = []
+        key = (1, 3, 6, 1, 0)
+        while True:
+            try:
+                key = d.nextKey(key)
+            except KeyError:
+                break
+            walked.append(key)
+
+        assert walked == d.keys()
+
+    def test_the_search_follows_oid_order_not_string_order(self):
+        # The bisect has to order keys the way the sort did. With string keys
+        # the two used to disagree: sorting is numeric per arc, while a plain
+        # bisect compares the strings, which would put 1.3.6.1.2 after
+        # 1.3.6.1.10.
+        d = OidOrderedDict()
+        for key in ("1.3.6.1.9", "1.3.6.1.10", "1.3.6.1.2"):
+            d[key] = key
+
+        assert d.nextKey("1.3.6.1.2") == "1.3.6.1.9"
+        assert d.nextKey("1.3.6.1.9") == "1.3.6.1.10"
+
+        # An *absent* key is where the two orderings used to part company: only
+        # a present key took the exact-match branch, so everything else was
+        # bisected lexically against an OID-sorted list. 1.3.6.1.11 is past the
+        # last key numerically, but sorts before 1.3.6.1.2 as a string, so the
+        # old code returned the first key instead of running off the end.
+        import pytest
+
+        with pytest.raises(KeyError):
+            d.nextKey("1.3.6.1.11")
+
+    def test_the_base_class_still_orders_plainly(self):
+        d = OrderedDict()
+        for key in ("charlie", "alpha", "bravo"):
+            d[key] = key
+
+        assert d.nextKey("alpha") == "bravo"
+        assert d.nextKey("alphb") == "bravo"
+
+    def test_a_mapping_mutated_after_a_search_re_sorts(self):
+        d = self._built()
+
+        assert d.nextKey((1, 3, 6, 1, 3)) == (1, 3, 6, 1, 5)
+
+        d[(1, 3, 6, 1, 4)] = 4
+
+        assert d.nextKey((1, 3, 6, 1, 3)) == (1, 3, 6, 1, 4)
+
+    def test_it_is_not_linear_in_the_number_of_keys(self):
+        # A bound rather than a benchmark: two mappings an order of magnitude
+        # apart in size, both searched at their far end, where the old linear
+        # scan was worst. O(log n) puts the ratio near 1; the old code was
+        # ~10x. The threshold is loose enough not to be a flake and tight
+        # enough that a reintroduced scan fails it.
+        import time
+
+        def elapsed(rows):
+            d = OidOrderedDict()
+            for i in range(rows):
+                d[(1, 3, 6, 1, 2, 1, i)] = i
+            target = (1, 3, 6, 1, 2, 1, rows - 2)
+            start = time.perf_counter()
+            for _ in range(2000):
+                d.nextKey(target)
+            return time.perf_counter() - start
+
+        small = elapsed(2000)
+        large = elapsed(20000)
+
+        assert large < small * 3
