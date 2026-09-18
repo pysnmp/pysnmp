@@ -18,6 +18,11 @@ from pysnmp.hlapi.auth import CommunityData, UsmUserData
 
 __all__ = ["CommandGeneratorLcdConfigurator", "NotificationOriginatorLcdConfigurator"]
 
+#: The finest resolution AbstractTransportDispatcher.setTimerResolution()
+#: accepts. Mirrored rather than imported so lowering the clock cannot raise
+#: out of configure() for a caller who merely asked for a small timeout.
+MIN_TIMER_RESOLUTION = 0.01
+
 #: What makes two `UsmUserData` the same *credentials*, rather than merely the
 #: same user. The cache is keyed on the user name and security engine ID, which
 #: say which USM row is being configured but nothing about what is in it, so
@@ -44,6 +49,46 @@ def _usmCredentialsDiffer(cached, incoming):
         getattr(cached, attribute, None) != getattr(incoming, attribute, None)
         for attribute in USM_CREDENTIAL_ATTRIBUTES
     )
+
+
+#: How many dispatcher ticks a request timeout should span.
+#:
+#: Expiry is counted in ticks, not seconds, so a timeout finer than one tick
+#: cannot be measured at all. Two is what the stock pairing already gives -- a
+#: 1 second timeout against the default 0.5 second resolution -- so requiring
+#: the same of a finer timeout keeps its precision the same rather than making
+#: it better than the default's.
+TICKS_PER_TIMEOUT = 2
+
+
+def _alignTimerResolution(snmpEngine, timeout):
+    """Make the dispatcher's clock fine enough to measure *timeout* seconds.
+
+    A target's timeout is stored faithfully, in centiseconds, and then expires
+    on a clock that ticks once per the dispatcher's timer resolution -- 0.5
+    seconds by default. So `UdpTransportTarget(addr, timeout=0.2)` was accepted,
+    reported back by __repr__, and then rounded up to the next tick by the thing
+    that acts on it. Sub-second timeouts are the normal ask for polling a large
+    estate on a LAN, where that floor sets the pace of the whole run.
+
+    The resolution is dispatcher-wide while timeouts are per-target, so this
+    only ever lowers it: fine enough for the finest target that has been
+    configured, and never coarser than it already was. It stays inside the
+    dispatcher's own 10ms floor, since the tick drives a periodic callback whose
+    cost is not free -- a timeout below that is still honoured as well as the
+    clock allows rather than being refused.
+    """
+    dispatcher = snmpEngine.transportDispatcher
+
+    if dispatcher is None or not timeout:
+        return
+
+    required = float(timeout) / TICKS_PER_TIMEOUT
+
+    if required >= dispatcher.getTimerResolution():
+        return
+
+    dispatcher.setTimerResolution(max(required, MIN_TIMER_RESOLUTION))
 
 
 class AbstractLcdConfigurator:
@@ -167,6 +212,8 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
             transport = transportTarget.openClientMode()
             config.addTransport(snmpEngine, transportTarget.transportDomain, transport)
             cache["tran"][transportTarget.transportDomain] = transport, 1
+
+        _alignTimerResolution(snmpEngine, transportTarget.timeout)
 
         transportKey = (
             paramsName,
