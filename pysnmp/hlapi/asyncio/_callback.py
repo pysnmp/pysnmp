@@ -25,18 +25,20 @@ def make_callback(
         varBinds: Any,
         cbCtx: Any,
     ) -> None:
-        lookupMib, future = cbCtx
+        lookupMib, ignoreValueErrors, future = cbCtx
         if future.cancelled():
             return
 
         try:
             if multi_row:
                 varBindsUnmade = [
-                    unmake_fn(snmpEngine, varBindTableRow, lookupMib)
+                    unmake_fn(snmpEngine, varBindTableRow, lookupMib, ignoreValueErrors)
                     for varBindTableRow in varBinds
                 ]
             else:
-                varBindsUnmade = unmake_fn(snmpEngine, varBinds, lookupMib)
+                varBindsUnmade = unmake_fn(
+                    snmpEngine, varBinds, lookupMib, ignoreValueErrors
+                )
         except Exception as ex:  # noqa: BLE001 - whatever unmaking the var-binds raises belongs to the caller, through the future
             future.set_exception(ex)
         else:

@@ -122,9 +122,11 @@ def test_execution_context_rejects_mapping_and_keywords():
 
 def test_callback_unmakes_flat_varbinds():
     future = _Future()
-    callback = make_callback(lambda engine, varBinds, lookupMib: tuple(varBinds))
+    callback = make_callback(
+        lambda engine, varBinds, lookupMib, ignoreValueErrors: tuple(varBinds)
+    )
 
-    callback(None, None, None, 0, 0, [1, 2], (True, future))
+    callback(None, None, None, 0, 0, [1, 2], (True, None, future))
 
     assert future.result == (None, 0, 0, (1, 2))
     assert future.exception is None
@@ -133,10 +135,11 @@ def test_callback_unmakes_flat_varbinds():
 def test_callback_unmakes_each_table_row():
     future = _Future()
     callback = make_callback(
-        lambda engine, varBinds, lookupMib: tuple(varBinds), multi_row=True
+        lambda engine, varBinds, lookupMib, ignoreValueErrors: tuple(varBinds),
+        multi_row=True,
     )
 
-    callback(None, None, None, 0, 0, [[1], [2]], (True, future))
+    callback(None, None, None, 0, 0, [[1], [2]], (True, None, future))
 
     assert future.result == (None, 0, 0, [(1,), (2,)])
 
@@ -145,11 +148,11 @@ def test_callback_propagates_unmake_exception_to_future():
     failure = ValueError("bad varbind")
     future = _Future()
 
-    def fail(engine, varBinds, lookupMib):
+    def fail(engine, varBinds, lookupMib, ignoreValueErrors):
         raise failure
 
     callback = make_callback(fail)
-    callback(None, None, None, 0, 0, [], (True, future))
+    callback(None, None, None, 0, 0, [], (True, None, future))
 
     assert future.exception is failure
     assert future.result is None
@@ -158,14 +161,45 @@ def test_callback_propagates_unmake_exception_to_future():
 def test_callback_ignores_cancelled_future():
     future = _Future(cancelled=True)
 
-    def fail_if_called(engine, varBinds, lookupMib):
+    def fail_if_called(engine, varBinds, lookupMib, ignoreValueErrors):
         pytest.fail("cancelled callback should not process varbinds")
 
     callback = make_callback(fail_if_called)
-    callback(None, None, None, 0, 0, [], (True, future))
+    callback(None, None, None, 0, 0, [], (True, None, future))
 
     assert future.result is None
     assert future.exception is None
+
+
+@pytest.mark.parametrize("flag", [None, False, True])
+def test_callback_passes_ignore_value_errors_through(flag):
+    # The option only reaches resolveWithMib if the callback carries it, and
+    # cbCtx is the only thing between the command generator and the processor.
+    seen = []
+    callback = make_callback(
+        lambda engine, varBinds, lookupMib, ignoreValueErrors: (
+            seen.append(ignoreValueErrors) or []
+        )
+    )
+
+    callback(None, None, None, 0, 0, [], (True, flag, _Future()))
+
+    assert seen == [flag]
+
+
+@pytest.mark.parametrize("flag", [None, False, True])
+def test_callback_passes_ignore_value_errors_through_each_row(flag):
+    seen = []
+    callback = make_callback(
+        lambda engine, varBinds, lookupMib, ignoreValueErrors: (
+            seen.append(ignoreValueErrors) or []
+        ),
+        multi_row=True,
+    )
+
+    callback(None, None, None, 0, 0, [[1], [2]], (True, flag, _Future()))
+
+    assert seen == [flag, flag]
 
 
 def test_usm_error_helper_preserves_exact_key_set():
