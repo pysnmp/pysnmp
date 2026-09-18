@@ -948,7 +948,21 @@ class ObjectType:
         mibNode = self.__args[0].getMibNode()
 
         if not isinstance(mibNode, (MibScalar, MibTableColumn)):
-            if ignoreErrors and not isinstance(self.__args[1], SimpleAsn1Type):
+            # The name resolved to a real node that is not a scalar or a
+            # column. That is not by itself an error on either side: GETNEXT
+            # and GETBULK are *started* from a subtree root -- 1.3.6.1.2.1.1 to
+            # walk `system` -- and a subtree root is a MibIdentifier. The only
+            # question left is whether the value can be carried without a
+            # syntax to cast it against, and a SimpleAsn1Type can: a request
+            # binding holds Null, and a response holds whatever the peer sent.
+            #
+            # `ignoreErrors` used to gate this, which conflated two different
+            # things. Whether the caller wants failures reported has no bearing
+            # on whether this value can be represented, and the flag could not
+            # be honoured here anyway without rejecting every walk that starts
+            # at a subtree root. It gates the value-casting branch below, where
+            # there is a real cast to fail and a real choice to make.
+            if not isinstance(self.__args[1], SimpleAsn1Type):
                 raise SmiError(
                     f"MIB object {self.__args[0]!r} is not OBJECT-TYPE (MIB not loaded?)"
                 )
