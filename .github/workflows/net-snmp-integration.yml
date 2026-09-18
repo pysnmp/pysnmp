@@ -17,18 +17,31 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # `tests` selects the module a profile is for. The v3-dh profile runs
+          # a different agent, built with snmp-usm-dh-objects-mib, and its user
+          # is re-keyed by the tests -- so the general suite, which assumes a
+          # stable passphrase, does not run against it and vice versa.
           - name: v1
             profile: v1
+            tests: tests/test_netsnmp_integration.py
           - name: v2c
             profile: v2c
+            tests: tests/test_netsnmp_integration.py
           - name: v3-noauth
             profile: v3-noauth
+            tests: tests/test_netsnmp_integration.py
           - name: v3-auth-no-priv
             profile: v3-sha
+            tests: tests/test_netsnmp_integration.py
           - name: v3-auth-priv-des
             profile: v3-des
+            tests: tests/test_netsnmp_integration.py
           - name: v3-auth-priv
             profile: v3-aes
+            tests: tests/test_netsnmp_integration.py
+          - name: v3-diffie-hellman
+            profile: v3-dh
+            tests: tests/test_netsnmp_usm_dh.py
     env:
       NETSNMP_PROFILE: ${{ matrix.profile }}
     steps:
@@ -49,7 +62,7 @@ jobs:
           --env SNMP_PROFILE=${{ matrix.profile }}
           pysnmp-ci-net-snmp:local
       - name: Exercise the selected SNMP version and security profile
-        run: uv run --locked --group dev pytest tests/test_netsnmp_integration.py -v -s
+        run: uv run --locked --group dev pytest ${{ matrix.tests }} -v -s
       - name: Show agent logs on completion
         if: always()
         run: docker logs pysnmp-ci-net-snmp
