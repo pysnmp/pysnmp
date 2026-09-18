@@ -362,7 +362,32 @@ class ZipMibSource(__AbstractMibSource):
                     sourceId=self._sourceId,
                 ).init()
             else:
-                raise error.MibLoadError(f"{p} access error")
+                # A PEP 420 namespace package -- a directory with no
+                # __init__.py -- imports fine and has no __file__ at all, so
+                # the branch above cannot see it and this used to be refused
+                # outright. Its directories are on the spec instead.
+                #
+                # MibBuilder.DEFAULT_MISC_MIBS names "pysnmp_mibs", so the
+                # everyday case was someone keeping a plain pysnmp_mibs/ folder
+                # of MIBs beside their script -- which is what the "drop your
+                # MIBs here" advice produces -- and finding that MIB loading
+                # broke until they deleted it.
+                searchLocations = getattr(
+                    getattr(p, "__spec__", None), "submodule_search_locations", None
+                )
+
+                if not searchLocations:
+                    raise error.MibLoadError(f"{p} access error")
+
+                # A namespace package can span several directories; taking the
+                # first matches what the regular-package branch does with
+                # __file__. Serving all of them is a larger change to how one
+                # source maps to a directory, and worth deciding deliberately.
+                return DirMibSource(
+                    next(iter(searchLocations)),
+                    kind=self.mibSourceKind,
+                    sourceId=self._sourceId,
+                ).init()
 
         except ImportError:
             # Dir relative to CWD
@@ -1196,27 +1221,36 @@ class MibBuilder:
                 self.loadModule(modName, **userCtx)
 
             except error.MibNotFoundError as exc:
-                if self.__mibCompiler:
-                    debug.logger & debug.flagBld and debug.logger(
-                        f"loadModules: calling MIB compiler for {modName}"
-                    )
-                    status = self.__mibCompiler.compile(
-                        modName, genTexts=self.loadTexts
-                    )
-                    errs = "; ".join(
-                        [
-                            hasattr(x, "error") and str(x.error) or x
-                            for x in status.values()
-                            if x in ("failed", "missing")
-                        ]
-                    )
-                    if errs:
-                        raise error.MibNotFoundError(
-                            f"{modName} compilation error(s): {errs}"
-                        ) from exc
+                if not self.__mibCompiler:
+                    # No compiler attached -- the default, and the only state
+                    # possible without pysnmp-pysmi installed. There was no
+                    # `else` here, so the error was caught and dropped and
+                    # loadModules() returned self as though the load had
+                    # succeeded. The caller got no error and no module, and the
+                    # first sign of trouble was an unrelated SmiError from
+                    # importSymbols() further along, or a var-bind that silently
+                    # failed to resolve -- a poor place to start debugging a
+                    # typo in a module name.
+                    raise
 
-                    # compilation succeeded, MIB might load now
-                    self.loadModule(modName, **userCtx)
+                debug.logger & debug.flagBld and debug.logger(
+                    f"loadModules: calling MIB compiler for {modName}"
+                )
+                status = self.__mibCompiler.compile(modName, genTexts=self.loadTexts)
+                errs = "; ".join(
+                    [
+                        hasattr(x, "error") and str(x.error) or x
+                        for x in status.values()
+                        if x in ("failed", "missing")
+                    ]
+                )
+                if errs:
+                    raise error.MibNotFoundError(
+                        f"{modName} compilation error(s): {errs}"
+                    ) from exc
+
+                # compilation succeeded, MIB might load now
+                self.loadModule(modName, **userCtx)
 
         return self
 
