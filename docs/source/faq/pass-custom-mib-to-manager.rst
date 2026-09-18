@@ -7,8 +7,13 @@ Q. How to make use of random MIBs at my Manager application?
 A. Starting from PySNMP 4.3.x, plain-text (ASN.1) MIBs can be
    automatically parsed into PySNMP form by the
    `PySMI <https://github.com/pysnmp/pysmi>`_ tool.  PySNMP will call PySMI
-   automatically, parsed PySNMP MIB will be cached in
-   $HOME/.pysnmp/mibs/ (default location).
+   automatically, parsed PySNMP MIB will be cached in your user cache
+   directory: ``$XDG_CACHE_HOME/pysnmp/mibs`` (or ``~/.cache/pysnmp/mibs``)
+   on Linux and the BSDs, ``~/Library/Caches/pysnmp/mibs`` on macOS, and
+   ``%LOCALAPPDATA%\pysnmp\Cache\mibs`` on Windows. An older
+   ``~/.pysnmp/mibs`` that already exists keeps being used, so upgrading
+   does not orphan a cache you already have. Passing ``destination=`` to
+   ``addMibCompiler()`` overrides all of it.
 
    PySMI bundles the standard MIB set -- ``SNMPv2-SMI``, ``IF-MIB`` and the
    rest of what a vendor MIB imports -- and searches it alongside whatever
