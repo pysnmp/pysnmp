@@ -916,7 +916,9 @@ class ObjectType:
         self.__args[0].loadMibs(*modNames)
         return self
 
-    def resolveWithMib(self, mibViewController, ignoreErrors=True):
+    def resolveWithMib(
+        self, mibViewController, ignoreErrors=True, ignoreValueErrors=None
+    ):
         """Perform MIB variable ID and associated value conversion.
 
         Parameters
@@ -929,6 +931,24 @@ class ObjectType:
         ignoreErrors: :py:class:`bool`
             If `True` (default), ignore MIB object name or value casting
             failures if possible.
+
+        ignoreValueErrors: :py:class:`bool` or :py:obj:`None`
+            Whether to ignore a *value* that will not cast to the syntax its
+            MIB object declares. `None` (default) follows `ignoreErrors`, which
+            is what this method has always done.
+
+            The two are worth separating because they are not the same failure.
+            A name that does not resolve to a leaf is ordinary -- a walk is
+            *started* from a subtree root, and a peer is free to answer under a
+            MIB this side has not loaded -- so a response path has to tolerate
+            it or stop walking. A value that contradicts the syntax its own MIB
+            declares is a real disagreement with the peer, and silently handing
+            back the uncast value means the caller sees the wrong textual
+            convention with nothing to say why.
+
+            So a response path can pass ``ignoreValueErrors=False`` with
+            ``ignoreErrors`` left alone, and be told about the second without
+            being stopped by the first.
 
         Returns
         -------
@@ -958,6 +978,9 @@ class ObjectType:
         >>>
 
         """
+        if ignoreValueErrors is None:
+            ignoreValueErrors = ignoreErrors
+
         if self.__state & self.stClean:
             return self
 
@@ -970,7 +993,21 @@ class ObjectType:
         mibNode = self.__args[0].getMibNode()
 
         if not isinstance(mibNode, (MibScalar, MibTableColumn)):
-            if ignoreErrors and not isinstance(self.__args[1], SimpleAsn1Type):
+            # The name resolved to a real node that is not a scalar or a
+            # column. That is not by itself an error on either side: GETNEXT
+            # and GETBULK are *started* from a subtree root -- 1.3.6.1.2.1.1 to
+            # walk `system` -- and a subtree root is a MibIdentifier. The only
+            # question left is whether the value can be carried without a
+            # syntax to cast it against, and a SimpleAsn1Type can: a request
+            # binding holds Null, and a response holds whatever the peer sent.
+            #
+            # `ignoreErrors` used to gate this, which conflated two different
+            # things. Whether the caller wants failures reported has no bearing
+            # on whether this value can be represented, and the flag could not
+            # be honoured here anyway without rejecting every walk that starts
+            # at a subtree root. It gates the value-casting branch below, where
+            # there is a real cast to fail and a real choice to make.
+            if not isinstance(self.__args[1], SimpleAsn1Type):
                 raise SmiError(
                     f"MIB object {self.__args[0]!r} is not OBJECT-TYPE (MIB not loaded?)"
                 )
@@ -998,7 +1035,7 @@ class ObjectType:
         except PyAsn1Error as e:
             err = f"MIB object {self.__args[0].prettyPrint()!r} having type {mibNode.getSyntax().__class__.__name__!r} failed to cast value {self.__args[1]!r}: {e}"
 
-            if not ignoreErrors or not isinstance(self.__args[1], SimpleAsn1Type):
+            if not ignoreValueErrors or not isinstance(self.__args[1], SimpleAsn1Type):
                 raise SmiError(err) from e
 
         if rfc1902.ObjectIdentifier().isSuperTypeOf(
@@ -1280,7 +1317,9 @@ class NotificationType:
         """Whether the notification and every object it carries have resolved."""
         return self.__state & self.stClean
 
-    def resolveWithMib(self, mibViewController, ignoreErrors=True):
+    def resolveWithMib(
+        self, mibViewController, ignoreErrors=True, ignoreValueErrors=None
+    ):
         """Perform MIB variable ID conversion and notification objects expansion.
 
         Parameters
@@ -1293,6 +1332,12 @@ class NotificationType:
         ignoreErrors: :py:class:`bool`
             If `True` (default), ignore MIB object name or value casting
             failures if possible.
+
+        ignoreValueErrors: :py:class:`bool` or :py:obj:`None`
+            Whether to ignore a value that will not cast to the syntax its MIB
+            object declares. `None` (default) follows `ignoreErrors`. Passed
+            down to every `ObjectType` this notification expands to; see
+            :py:meth:`ObjectType.resolveWithMib` for why the two are separable.
 
         Returns
         -------
@@ -1326,6 +1371,9 @@ class NotificationType:
         >>>
 
         """
+        if ignoreValueErrors is None:
+            ignoreValueErrors = ignoreErrors
+
         if self.__state & self.stClean:
             return self
 
@@ -1334,7 +1382,7 @@ class NotificationType:
         self.__varBinds.append(
             ObjectType(
                 ObjectIdentity(v2c.apiTrapPDU.snmpTrapOID), self.__objectIdentity
-            ).resolveWithMib(mibViewController, ignoreErrors)
+            ).resolveWithMib(mibViewController, ignoreErrors, ignoreValueErrors)
         )
 
         (SmiNotificationType,) = mibViewController.mibBuilder.importSymbols(
@@ -1354,7 +1402,7 @@ class NotificationType:
                     ObjectType(
                         objectIdentity,
                         self.__objects.get(notificationObject, rfc1905.unSpecified),
-                    ).resolveWithMib(mibViewController, ignoreErrors)
+                    ).resolveWithMib(mibViewController, ignoreErrors, ignoreValueErrors)
                 )
                 varBindsLocation[objectIdentity] = len(self.__varBinds) - 1
         else:
@@ -1365,7 +1413,7 @@ class NotificationType:
         for varBinds in self.__additionalVarBinds:
             if not isinstance(varBinds, ObjectType):
                 varBinds = ObjectType(ObjectIdentity(varBinds[0]), varBinds[1])
-            varBinds.resolveWithMib(mibViewController, ignoreErrors)
+            varBinds.resolveWithMib(mibViewController, ignoreErrors, ignoreValueErrors)
             if varBinds[0] in varBindsLocation:
                 self.__varBinds[varBindsLocation[varBinds[0]]] = varBinds
             else:

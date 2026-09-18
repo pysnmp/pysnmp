@@ -70,6 +70,17 @@ async def sendNotification(
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
+            * `ignoreValueErrors` - what to do about a response value that
+              will not cast to the syntax its MIB object declares. Default is
+              `None`, which tolerates it and hands back the uncast value.
+              `False` reports it as
+              :py:class:`~pysnmp.smi.error.SmiError` instead.
+
+              A name the peer answered under a MIB this side has not loaded is
+              a different matter and stays tolerated either way: it comes back
+              as a bare OID, because raising would end a walk at the first such
+              binding. Only `lookupMib` turns resolution off altogether.
+
     Result
     ------
     errorIndication : str
@@ -123,7 +134,11 @@ async def sendNotification(
         contextData.contextName,
         vbProcessor.makeVarBinds(snmpEngine, varBinds),
         __cbFun,
-        (options.get("lookupMib", True), future),
+        (
+            options.get("lookupMib", True),
+            options.get("ignoreValueErrors"),
+            future,
+        ),
     )
 
     if notifyType == "trap":

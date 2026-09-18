@@ -499,6 +499,55 @@ class TestObjectTypeRowPointerValues:
         )
 
 
+class TestObjectTypeOnANonObjectType:
+    """A name that resolves to a node which is not a scalar or a column.
+
+    This is not by itself an error on either side. GETNEXT and GETBULK are
+    *started* from a subtree root -- ``1.3.6.1.2.1.1`` to walk `system` -- and a
+    subtree root is a MibIdentifier, so rejecting one would reject the ordinary
+    way to walk a device. The same shape turns up when the MIB that would have
+    defined a name as OBJECT-TYPE was never loaded.
+
+    The only question left is whether the value can be carried with no syntax to
+    cast it against, which a SimpleAsn1Type can and a raw Python object cannot.
+    `ignoreErrors` used to gate this, conflating that question with whether the
+    caller wants failures reported; it could not be honoured here anyway without
+    breaking every walk, and with ``ignoreErrors=False`` -- which is what the
+    request path passes -- the branch silently accepted a value it could not
+    represent.
+    """
+
+    @pytest.fixture
+    def mvc(self):
+        return view.MibViewController(builder.MibBuilder())
+
+    @pytest.mark.parametrize("ignore_errors", [True, False])
+    def test_a_subtree_root_is_accepted_so_walks_start(self, mvc, ignore_errors):
+        # The binding nextCmd/bulkCmd build to walk `system`. Null is what a
+        # request carries, and it is a SimpleAsn1Type.
+        ot = ObjectType(ObjectIdentity("1.3.6.1.2.1.1"))
+
+        assert ot.resolveWithMib(mvc, ignoreErrors=ignore_errors) is ot
+
+    @pytest.mark.parametrize("ignore_errors", [True, False])
+    def test_a_simple_value_is_kept_as_it_stands(self, mvc, ignore_errors):
+        ot = ObjectType(ObjectIdentity("SNMPv2-MIB", "system"), OctetString("x"))
+
+        ot.resolveWithMib(mvc, ignoreErrors=ignore_errors)
+
+        assert ot[1] == OctetString("x")
+
+    @pytest.mark.parametrize("ignore_errors", [True, False])
+    def test_a_value_that_cannot_be_carried_is_reported(self, mvc, ignore_errors):
+        # A raw tuple has no syntax to cast it against and no representation to
+        # fall back on. With ignoreErrors=False -- the request path -- this was
+        # accepted in silence.
+        ot = ObjectType(ObjectIdentity("SNMPv2-MIB", "system"), (1, 2, 3))
+
+        with pytest.raises(error.SmiError, match="is not OBJECT-TYPE"):
+            ot.resolveWithMib(mvc, ignoreErrors=ignore_errors)
+
+
 class TestBundledMibs:
     """Test that each bundled MIB loads through the public MibBuilder."""
 

@@ -62,13 +62,45 @@ class CommandGeneratorVarBinds(AbstractVarBinds):
         return __varBinds
 
     def unmakeVarBinds(
-        self, snmpEngine: Any, varBinds: Any, lookupMib: bool = True
+        self,
+        snmpEngine: Any,
+        varBinds: Any,
+        lookupMib: bool = True,
+        ignoreValueErrors: "bool | None" = None,
     ) -> list[Any]:
-        """Resolve a response's bindings back to MIB names, unless asked not to."""
+        """Resolve a response's bindings back to MIB names, unless asked not to.
+
+        Resolution failures are tolerated by default, which is not the same as
+        them not mattering. A name the peer answered under a MIB this side has
+        not loaded comes back as a bare OID, and that has to stay tolerated:
+        walking a device whose vendor MIBs you do not have is routine, and
+        raising would end the walk at the first such binding.
+
+        A *value* that will not cast to the syntax its own MIB declares is a
+        different thing -- a real disagreement with the peer -- and tolerating
+        it hands the caller the uncast value with the wrong textual convention
+        and nothing to say why. Pass ``ignoreValueErrors=False`` to be told
+        about that one, as `SmiError`, without giving up the first.
+
+        Args:
+            snmpEngine: the engine whose MIB view resolves the bindings.
+            varBinds: the bindings as they came off the wire.
+            lookupMib: whether to resolve at all. With this off nothing below
+                applies, since nothing is looked up.
+            ignoreValueErrors: `None` (default) keeps the tolerant behaviour
+                this method has always had. `False` reports a value that
+                contradicts its MIB.
+
+        Returns
+        -------
+            The bindings, resolved unless `lookupMib` said not to.
+        """
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [
-                ObjectType(ObjectIdentity(x[0]), x[1]).resolveWithMib(mibViewController)
+                ObjectType(ObjectIdentity(x[0]), x[1]).resolveWithMib(
+                    mibViewController, ignoreValueErrors=ignoreValueErrors
+                )
                 for x in varBinds
             ]
 
@@ -102,17 +134,27 @@ class NotificationOriginatorVarBinds(AbstractVarBinds):
         return __varBinds
 
     def unmakeVarBinds(
-        self, snmpEngine: Any, varBinds: Any, lookupMib: bool = False
+        self,
+        snmpEngine: Any,
+        varBinds: Any,
+        lookupMib: bool = False,
+        ignoreValueErrors: "bool | None" = None,
     ) -> list[Any]:
         """Resolve bindings back to MIB names, which for notifications is off by default.
 
         The bindings of a notification were built on this side and are already what the
         caller passed in, so there is normally nothing to look up.
+
+        `ignoreValueErrors` means what it does on the command generator, and is
+        accepted here so that the two processors stay interchangeable to the
+        callback that drives them.
         """
         if lookupMib:
             mibViewController = self.getMibViewController(snmpEngine)
             varBinds = [
-                ObjectType(ObjectIdentity(x[0]), x[1]).resolveWithMib(mibViewController)
+                ObjectType(ObjectIdentity(x[0]), x[1]).resolveWithMib(
+                    mibViewController, ignoreValueErrors=ignoreValueErrors
+                )
                 for x in varBinds
             ]
         return varBinds
