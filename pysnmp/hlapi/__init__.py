@@ -35,6 +35,8 @@ from pysnmp.proto.rfc1902 import (
     Bits,
     Counter32,
     Counter64,
+    Double,
+    Float,
     Gauge32,
     Integer,
     Integer32,
@@ -45,6 +47,7 @@ from pysnmp.proto.rfc1902 import (
     Opaque,
     TimeTicks,
     Unsigned32,
+    decodeOpaque,
 )
 from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
 from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType

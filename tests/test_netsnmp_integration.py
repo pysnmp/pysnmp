@@ -40,8 +40,14 @@ from pysnmp.hlapi.asyncio import (
 from pysnmp.hlapi.asyncio import (
     getCmd as async_getCmd,
 )
-from pysnmp.proto.rfc1902 import OctetString, TimeTicks
-from pysnmp.proto.rfc1905 import NoSuchInstance
+from pysnmp.proto.rfc1902 import (
+    Float,
+    OctetString,
+    Opaque,
+    TimeTicks,
+    decodeOpaque,
+)
+from pysnmp.proto.rfc1905 import NoSuchInstance, NoSuchObject
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("NETSNMP_PROFILE"),
@@ -61,6 +67,11 @@ IF_ADMIN_STATUS_1 = "1.3.6.1.2.1.2.2.1.7.1"
 # A non-existent instance used to exercise noSuch* semantics.
 MISSING_IF_DESCR = "1.3.6.1.2.1.2.2.1.2.999"
 IF_DESCR_COLUMN = "1.3.6.1.2.1.2.2.1.2"
+
+# --- UCD-SNMP-MIB ---------------------------------------------------------
+# laLoadFloat.1: the one-minute load average, which net-snmp reports as a
+# single-precision float nested inside an Opaque (draft-perkins-opaque-01).
+LA_LOAD_FLOAT = "1.3.6.1.4.1.2021.10.1.6.1"
 
 AGENT_HOST = ("127.0.0.1", 1161)
 
@@ -247,6 +258,48 @@ def test_system_identity_is_well_formed():
     assert var_binds[2][1].asOctets() == f"pysnmp-ci-{profile()}".encode(), (
         f"sysName.0 mismatch: {var_binds[2][1].prettyPrint()}"
     )
+
+
+def test_load_average_arrives_as_an_opaque_float():
+    """laLoadFloat is an Opaque carrying a float, and reads back as a number.
+
+    SMIv2 has no floating point syntax, so net-snmp carries one inside an
+    Opaque as draft-perkins-opaque-01 describes. This is the agent that emits
+    the convention, so it is what says our reading of it is right. See #286.
+    """
+    error_indication, error_status, _error_index, var_binds = next(
+        getCmd(
+            SnmpEngine(),
+            credentials(),
+            target(),
+            ContextData(),
+            ObjectType(ObjectIdentity(LA_LOAD_FLOAT)),
+        )
+    )
+
+    assert error_indication is None, error_indication
+
+    # An agent built without the load-average module has nothing to report
+    # here, and says so differently per version: v1 by error status, v2c and
+    # v3 by an exception value.
+    if error_status or isinstance(var_binds[0][1], (NoSuchObject, NoSuchInstance)):
+        pytest.skip("this agent does not implement UCD-SNMP-MIB load averages")
+
+    _, value = var_binds[0]
+
+    # What arrives is an Opaque, because that is all the wire says it is.
+    assert isinstance(value, Opaque), type(value).__name__
+
+    load = decodeOpaque(value)
+
+    assert isinstance(load, Float), (
+        f"laLoadFloat should carry a float-tagged nested value, got "
+        f"{value.prettyPrint()}"
+    )
+    assert float(load) >= 0.0, load.prettyPrint()
+    # Rendering it and reading that back lands on the same value the agent
+    # sent, octet for octet.
+    assert Float(load.prettyPrint()).asOctets() == value.asOctets()
 
 
 # --- GETBULK / GETNEXT differentiation -----------------------------------

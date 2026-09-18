@@ -396,6 +396,20 @@ Opaque type
 
 .. autoclass:: pysnmp.proto.rfc1902.Opaque(initializer)
 
+Float type
+++++++++++
+
+.. autoclass:: pysnmp.proto.rfc1902.Float(initializer)
+   :members: asFloat
+
+Double type
++++++++++++
+
+.. autoclass:: pysnmp.proto.rfc1902.Double(initializer)
+   :members: asFloat
+
+.. autofunction:: pysnmp.proto.rfc1902.decodeOpaque
+
 Counter64 type
 ++++++++++++++
 
