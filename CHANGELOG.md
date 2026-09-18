@@ -3,6 +3,12 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is [published with the documentation](https://pysnmp.github.io/pysnmp/latest/changelog-history.html).
 
+## [6.0.0-rc.15](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.14...v6.0.0-rc.15) (2026-09-18)
+
+### Bug Fixes
+
+* **smi:** render the MIB modules target configuration needs ([323d7e0](https://github.com/pysnmp/pysnmp/commit/323d7e0fd501325b0ada40f916ea0b69dce343ff))
+
 ## [6.0.0-rc.14](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.13...v6.0.0-rc.14) (2026-09-17)
 
 ## [6.0.0-rc.13](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.12...v6.0.0-rc.13) (2026-09-16)
