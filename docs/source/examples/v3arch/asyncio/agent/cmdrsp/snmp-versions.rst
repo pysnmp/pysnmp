@@ -14,4 +14,14 @@ Various SNMP versions
 
 :download:`Download</../../examples/v3arch/asyncio/agent/cmdrsp/multiple-usm-users.py>` script.
 
+.. include:: /../../examples/v3arch/asyncio/agent/cmdrsp/listening-on-udp-and-tcp.py
+   :start-after: """
+   :end-before: """  #
+
+.. literalinclude:: /../../examples/v3arch/asyncio/agent/cmdrsp/listening-on-udp-and-tcp.py
+   :start-after: """  #
+   :language: python
+
+:download:`Download</../../examples/v3arch/asyncio/agent/cmdrsp/listening-on-udp-and-tcp.py>` script.
+
 See also: :doc:`library reference </docs/api-reference>`.

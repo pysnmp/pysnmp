@@ -18,6 +18,7 @@ from pysnmp.hlapi import (
     ObjectIdentity,
     ObjectType,
     SnmpEngine,
+    TcpTransportTarget,
     UdpTransportTarget,
     UsmUserData,
     getCmd,
@@ -26,6 +27,9 @@ from pysnmp.hlapi import (
     usmAesCfb128Protocol,
     usmDESPrivProtocol,
     usmHMACSHAAuthProtocol,
+)
+from pysnmp.hlapi.asyncio import (
+    TcpTransportTarget as AsyncTcpTransportTarget,
 )
 from pysnmp.hlapi.asyncio import (
     UdpTransportTarget as AsyncUdpTransportTarget,
@@ -141,6 +145,14 @@ def target():
 
 def async_target():
     return AsyncUdpTransportTarget(AGENT_HOST, timeout=2, retries=3)
+
+
+def tcp_target():
+    return TcpTransportTarget(AGENT_HOST, timeout=2, retries=3)
+
+
+def async_tcp_target():
+    return AsyncTcpTransportTarget(AGENT_HOST, timeout=2, retries=3)
 
 
 def assert_success(result):
@@ -410,4 +422,190 @@ def test_concurrent_requests_all_succeed():
     failures = [ind for ind in indications if ind is not None]
     assert not failures, (
         f"{len(failures)}/{len(indications)} concurrent GETs failed: {failures}"
+    )
+
+
+# --- SNMP over TCP, RFC 3430 ----------------------------------------------
+# The agent listens on TCP as well as UDP (see .github/ci/net-snmp/entrypoint.sh).
+# Our own framing is covered against our own agent in tests/test_tcp_carrier.py;
+# what these add is the half that cannot be checked that way -- that what we put
+# on the wire is what an implementation which is not ours expects to read, and
+# that we can read back what it writes.
+
+
+def test_get_over_tcp():
+    """The same GET as over UDP, carried by a stream instead of a datagram."""
+    var_binds = assert_success(
+        next(
+            getCmd(
+                SnmpEngine(),
+                credentials(),
+                tcp_target(),
+                ContextData(),
+                ObjectType(ObjectIdentity(SYS_DESCR)),
+                lookupMib=False,
+            )
+        )
+    )
+    assert str(var_binds[0][0]) == SYS_DESCR
+    assert var_binds[0][1].asOctets(), "sysDescr.0 came back empty over TCP"
+
+
+def test_get_over_tcp_agrees_with_udp():
+    """Same agent, same object, two transports: the value cannot differ."""
+
+    def sysname(transport_target):
+        return assert_success(
+            next(
+                getCmd(
+                    SnmpEngine(),
+                    credentials(),
+                    transport_target,
+                    ContextData(),
+                    ObjectType(ObjectIdentity(SYS_NAME)),
+                    lookupMib=False,
+                )
+            )
+        )[0][1].asOctets()
+
+    assert sysname(tcp_target()) == sysname(target())
+
+
+def test_getnext_over_tcp():
+    var_binds = assert_success(
+        next(
+            nextCmd(
+                SnmpEngine(),
+                credentials(),
+                tcp_target(),
+                ContextData(),
+                ObjectType(ObjectIdentity(SYS_DESCR)),
+                lookupMib=False,
+            )
+        )
+    )
+    assert str(var_binds[0][0]) == SYS_OBJECT_ID
+
+
+def test_getbulk_over_tcp_returns_a_response_worth_framing():
+    """A reply spanning several reads is what the framing has to survive.
+
+    Over UDP the same request risks fragmentation or a `tooBig`; over TCP it is
+    a stream the receiver reassembles, which is the reason RFC 3430 exists.
+    """
+    if is_v1():
+        pytest.skip("GETBULK is not available for SNMPv1")
+
+    async def one_bulk():
+        return await async_bulkCmd(
+            SnmpEngine(),
+            credentials(),
+            async_tcp_target(),
+            ContextData(),
+            0,  # non-repeaters
+            25,  # max-repetitions
+            ObjectType(ObjectIdentity(MIB2_ROOT)),
+            lookupMib=False,
+        )
+
+    error_indication, error_status, _error_index, var_bind_table = asyncio.run(
+        one_bulk()
+    )
+    assert error_indication is None, f"GETBULK over TCP failed: {error_indication}"
+    assert not error_status, f"GETBULK over TCP error status: {error_status}"
+    assert len(var_bind_table) >= 2, (
+        f"GETBULK over TCP should return several rows, got {len(var_bind_table)}"
+    )
+
+
+def test_successive_requests_over_one_tcp_connection():
+    """Several messages back to back on one connection, with no framing between.
+
+    RFC 3430 section 3 puts them on the stream with nothing separating them, so
+    this is where a reader that assumed one message per read would come apart.
+    """
+    engine = SnmpEngine()
+    transport_target = tcp_target()
+
+    for _ in range(5):
+        var_binds = assert_success(
+            next(
+                getCmd(
+                    engine,
+                    credentials(),
+                    transport_target,
+                    ContextData(),
+                    ObjectType(ObjectIdentity(SYS_UPTIME)),
+                    lookupMib=False,
+                )
+            )
+        )
+        assert isinstance(var_binds[0][1], TimeTicks)
+
+
+def test_set_over_tcp_round_trips():
+    """A SET is a write the agent has to have read correctly off the stream."""
+    if is_v1():
+        pytest.skip("The v1 profile's community is exercised for SET over UDP")
+
+    def get_location():
+        return assert_success(
+            next(
+                getCmd(
+                    SnmpEngine(),
+                    credentials(),
+                    tcp_target(),
+                    ContextData(),
+                    ObjectType(ObjectIdentity(SYS_LOCATION)),
+                    lookupMib=False,
+                )
+            )
+        )[0][1]
+
+    def set_location(value):
+        assert_success(
+            next(
+                setCmd(
+                    SnmpEngine(),
+                    credentials(),
+                    tcp_target(),
+                    ContextData(),
+                    ObjectType(ObjectIdentity(SYS_LOCATION), value),
+                    lookupMib=False,
+                )
+            )
+        )
+
+    original = get_location()
+    marker = OctetString(f"pysnmp-ci-{profile()}-tcp-marker")
+    try:
+        set_location(marker)
+        assert get_location().asOctets() == marker.asOctets(), (
+            "sysLocation.0 did not take the SET value sent over TCP"
+        )
+    finally:
+        set_location(original)
+
+
+def test_concurrent_requests_over_tcp_all_succeed():
+    """Interleaved responses on one transport still frame and match up."""
+
+    async def one_get():
+        error_indication, _es, _ei, _vb = await async_getCmd(
+            SnmpEngine(),
+            credentials(),
+            async_tcp_target(),
+            ContextData(),
+            ObjectType(ObjectIdentity(SYS_UPTIME)),
+            lookupMib=False,
+        )
+        return error_indication
+
+    async def main():
+        return await asyncio.gather(*(one_get() for _ in range(10)))
+
+    indications = asyncio.run(main())
+    failures = [ind for ind in indications if ind is not None]
+    assert not failures, (
+        f"{len(failures)}/{len(indications)} concurrent TCP GETs failed: {failures}"
     )

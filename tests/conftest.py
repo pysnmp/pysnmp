@@ -11,11 +11,19 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def snmpsim_endpoint(tmp_path_factory):
-    """Start snmpsim on an ephemeral loopback UDP port for the test session."""
+def _snmpsim_process(tmp_path_factory):
+    """Start snmpsim on ephemeral loopback UDP and TCP ports for the session.
+
+    One simulator serves both, so a TCP test costs no second process. It yields
+    both ports; `snmpsim_endpoint` and `snmpsim_tcp_endpoint` pick one each.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        tcp_port = sock.getsockname()[1]
 
     data_dir = Path(__file__).parent / "snmpsimdata"
     work_dir = tmp_path_factory.mktemp("snmpsim")
@@ -65,6 +73,7 @@ def snmpsim_endpoint(tmp_path_factory):
                 "--v3-auth-key=authkey1",
                 "--v3-auth-proto=MD5",
                 f"--agent-udpv4-endpoint=127.0.0.1:{port}",
+                f"--agent-tcpv4-endpoint=127.0.0.1:{tcp_port}",
                 "--log-level=info",
             ],
             stdout=subprocess.DEVNULL,
@@ -76,7 +85,7 @@ def snmpsim_endpoint(tmp_path_factory):
         while time.monotonic() < deadline:
             if process.poll() is not None:
                 pytest.fail(f"snmpsim exited early:\n{log_path.read_text()}")
-            if "Listening at UDP/IPv4 endpoint" in log_path.read_text():
+            if "Listening at TCP/IPv4 endpoint" in log_path.read_text():
                 break
             time.sleep(0.05)
         else:
@@ -85,7 +94,7 @@ def snmpsim_endpoint(tmp_path_factory):
             pytest.fail(f"snmpsim did not become ready:\n{log_path.read_text()}")
 
     try:
-        yield "127.0.0.1", port
+        yield port, tcp_port
     finally:
         process.terminate()
         try:
@@ -93,3 +102,17 @@ def snmpsim_endpoint(tmp_path_factory):
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait()
+
+
+@pytest.fixture(scope="session")
+def snmpsim_endpoint(_snmpsim_process):
+    """Where the simulator answers over UDP."""
+    port, _ = _snmpsim_process
+    return "127.0.0.1", port
+
+
+@pytest.fixture(scope="session")
+def snmpsim_tcp_endpoint(_snmpsim_process):
+    """Where the simulator answers over TCP (:RFC:`3430`)."""
+    _, tcp_port = _snmpsim_process
+    return "127.0.0.1", tcp_port

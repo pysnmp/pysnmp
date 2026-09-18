@@ -46,6 +46,7 @@ jobs:
         run: >-
           docker run --detach --name pysnmp-ci-net-snmp
           --publish 127.0.0.1:1161:161/udp
+          --publish 127.0.0.1:1161:161/tcp
           --env SNMP_PROFILE=${{ matrix.profile }}
           pysnmp-ci-net-snmp:local
       - name: Exercise the selected SNMP version and security profile

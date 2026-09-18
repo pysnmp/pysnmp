@@ -17,6 +17,7 @@ from typing import Any
 
 from pysnmp import debug, error
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
+from pysnmp.carrier.asyncio.stream import tcp, tcp6
 from pysnmp.proto import rfc1902, rfc1905
 from pysnmp.proto.secmod import cipherbackend
 from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
@@ -32,6 +33,8 @@ from pysnmp.smi import error as smi_error
 snmpUDPDomain = udp.snmpUDPDomain
 snmpUDP6Domain = udp6.snmpUDP6Domain
 snmpLocalDomain = unix.snmpLocalDomain
+snmpTCPDomain = tcp.snmpTCPDomain
+snmpTCP6Domain = tcp6.snmpTCP6Domain
 
 # Auth protocol
 usmHMACMD5AuthProtocol = hmacmd5.HmacMd5.serviceID
@@ -635,6 +638,27 @@ def addTargetAddr(
             sourceAddress = ("0.0.0.0", 0)  # noqa: S104
         sourceAddress = SnmpUDPAddress(sourceAddress)
     elif transportDomain[: len(snmpUDP6Domain)] == snmpUDP6Domain:
+        (TransportAddressIPv6,) = mibBuilder.importSymbols(
+            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
+        )
+        transportAddress = TransportAddressIPv6(transportAddress)
+        if sourceAddress is None:
+            sourceAddress = ("::", 0)
+        sourceAddress = TransportAddressIPv6(sourceAddress)
+    elif transportDomain[: len(snmpTCPDomain)] == snmpTCPDomain:
+        # RFC 3430 takes its domains from the TRANSPORT-ADDRESS-MIB, so a TCP
+        # target address is the same six octets a UDP/IPv4 one would be under
+        # that module -- address then port -- rather than SNMPv2-TM's
+        # SnmpUDPAddress.
+        (TransportAddressIPv4,) = mibBuilder.importSymbols(
+            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv4"
+        )
+        transportAddress = TransportAddressIPv4(transportAddress)
+        if sourceAddress is None:
+            # The unspecified address: any source, not a bind address.
+            sourceAddress = ("0.0.0.0", 0)  # noqa: S104
+        sourceAddress = TransportAddressIPv4(sourceAddress)
+    elif transportDomain[: len(snmpTCP6Domain)] == snmpTCP6Domain:
         (TransportAddressIPv6,) = mibBuilder.importSymbols(
             "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
         )

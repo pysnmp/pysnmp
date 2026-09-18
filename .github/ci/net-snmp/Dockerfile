@@ -8,5 +8,6 @@ COPY entrypoint.sh /usr/local/bin/net-snmp-agent
 RUN chmod 0755 /usr/local/bin/net-snmp-agent
 
 EXPOSE 161/udp
+EXPOSE 161/tcp
 
 ENTRYPOINT ["/usr/local/bin/net-snmp-agent"]
