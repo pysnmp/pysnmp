@@ -1070,3 +1070,50 @@ def test_transports_sharing_one_loop_register_together():
     finally:
         dispatcher.closeDispatcher()
         loop.close()
+
+
+# --- asynchronous transport failures --------------------------------------
+
+
+def test_a_transport_failure_reaches_every_registered_receiver():
+    """The path a connection-oriented transport reports a dead peer over.
+
+    A datagram transport raises from `sendMessage` while its caller is still on
+    the stack. A connection-oriented one cannot -- the message is queued and the
+    connection fails afterwards -- so it reports here instead.
+    """
+    reported = []
+    dispatcher = AsyncioDispatcher()
+    transport = udp.UdpTransport(loop=dispatcher.loop)
+
+    try:
+        dispatcher.registerRecvCbFun(lambda *args: None)
+        dispatcher.registerErrorCbFun(
+            lambda dispatcher, transportDomain, transportAddress, transportError: (
+                reported.append((transportDomain, transportAddress, transportError))
+            )
+        )
+        dispatcher.registerTransport(udp.domainName, transport)
+
+        failure = CarrierError("connection refused")
+        transport._errorCbFun(transport, ("127.0.0.1", 161), failure)
+
+        assert reported == [(udp.domainName, ("127.0.0.1", 161), failure)]
+
+    finally:
+        dispatcher.closeDispatcher()
+
+
+def test_a_failure_from_an_unregistered_transport_is_ignored():
+    """A dispatcher closing while a connection is failing is a race, not a fault."""
+    reported = []
+    dispatcher = AsyncioDispatcher()
+
+    dispatcher.registerErrorCbFun(lambda *args: reported.append(args))
+    dispatcher._errorCbFun(
+        udp.UdpTransport(loop=dispatcher.loop),
+        ("127.0.0.1", 161),
+        CarrierError("too late"),
+    )
+
+    assert reported == []
