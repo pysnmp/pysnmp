@@ -75,3 +75,78 @@ class TestSetValueWithoutAValue:
 
         with pytest.raises(error.WrongValueError):
             instance.setValue(OctetString("not an integer"), instance.name, 0)
+
+
+class TestReadingAnUninitialisedInstance:
+    """RFC 3416 section 4.2.1: noSuchInstance, not a schema object."""
+
+    @pytest.fixture
+    def uninitialised(self, smi):
+        return smi["MibScalarInstance"]((1, 3, 6, 1, 2, 1, 99, 5), (0,), OctetString())
+
+    def test_get_reports_no_such_instance(self, uninitialised):
+        with pytest.raises(error.NoSuchInstanceError):
+            uninitialised.readGet(uninitialised.name, None, 0, None)
+
+    def test_test_reports_no_such_instance(self, uninitialised):
+        with pytest.raises(error.NoSuchInstanceError):
+            uninitialised.readTest(uninitialised.name, None, 0, None)
+
+    def test_get_next_reports_no_such_instance(self, uninitialised):
+        with pytest.raises(error.NoSuchInstanceError):
+            uninitialised.readGetNext(uninitialised.name, None, 0, None, ())
+
+    def test_test_next_reports_no_such_instance(self, uninitialised):
+        with pytest.raises(error.NoSuchInstanceError):
+            uninitialised.readTestNext(uninitialised.name, None, 0, None, ())
+
+    def test_setting_a_value_makes_it_readable_again(self, smi, uninitialised):
+        uninitialised.writeTest(uninitialised.name, OctetString("now set"), 0, None)
+        uninitialised.writeCommit(uninitialised.name, OctetString("now set"), 0, None)
+
+        name, value = uninitialised.readGet(uninitialised.name, None, 0, None)
+
+        assert name == uninitialised.name
+        assert value == OctetString("now set")
+
+    def test_a_populated_instance_is_unaffected(self, smi):
+        instance = smi["MibScalarInstance"](
+            (1, 3, 6, 1, 2, 1, 99, 6), (0,), OctetString("value")
+        )
+
+        assert instance.readGet(instance.name, None, 0, None) == (
+            instance.name,
+            OctetString("value"),
+        )
+        assert instance.readTest(instance.name, None, 0, None) is None
+
+
+class TestWalkingPastAnUninitialisedInstance:
+    """A GETNEXT walk steps over the hole rather than stopping on it."""
+
+    def test_get_next_reaches_the_following_populated_scalar(self, smi):
+        base = (1, 3, 6, 1, 2, 1, 99, 10)
+        tree = smi["MibTree"](base)
+
+        first = smi["MibScalar"](base + (1,), OctetString())
+        second = smi["MibScalar"](base + (2,), OctetString())
+        third = smi["MibScalar"](base + (3,), OctetString())
+        tree.registerSubtrees(first, second, third)
+
+        first.registerSubtrees(
+            smi["MibScalarInstance"](base + (1,), (0,), OctetString("first"))
+        )
+        # Declared, never populated -- the hole.
+        second.registerSubtrees(
+            smi["MibScalarInstance"](base + (2,), (0,), OctetString())
+        )
+        third.registerSubtrees(
+            smi["MibScalarInstance"](base + (3,), (0,), OctetString("third"))
+        )
+
+        # (acFun, acCtx): no access-control callback, so every node is readable
+        # and only the isValue gate can skip one.
+        name, value = tree.readGetNext(base + (1, 0), None, 0, (None, None))
+
+        assert name == base + (3, 0)
+        assert value == OctetString("third")

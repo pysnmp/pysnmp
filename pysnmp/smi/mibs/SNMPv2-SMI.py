@@ -773,13 +773,22 @@ class MibScalarInstance(MibTree):
 
     # Read operation
 
+    # An instance whose syntax carries no value -- a pyasn1 schema object rather
+    # than a value object -- is the normal state of an agent-side scalar an
+    # application has declared but not yet populated. RFC 3416 section 4.2.1
+    # defines noSuchInstance for exactly that, so the four read methods below
+    # gate on `syntax.isValue` as well as on the OID. Without the gate,
+    # getValue()'s clone() hands back another schema object and it is returned
+    # as though it were a value: the failure then surfaces during BER encoding,
+    # or as a nonsense var-bind, a long way from the cause.
+
     def readTest(self, name, val, idx, acInfo):
-        if name != self.name:
+        if name != self.name or not self.syntax.isValue:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readGet(self, name, val, idx, acInfo):
         # Return current variable (name, value)
-        if name == self.name:
+        if name == self.name and self.syntax.isValue:
             debug.logger & debug.flagIns and debug.logger(
                 f"readGet: {self.name}={self.syntax!r}"
             )
@@ -788,11 +797,13 @@ class MibScalarInstance(MibTree):
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readTestNext(self, name, val, idx, acInfo, oName=None):
-        if name != self.name or name <= oName:
+        if name != self.name or name <= oName or not self.syntax.isValue:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readGetNext(self, name, val, idx, acInfo, oName=None):
-        if name == self.name and name > oName:
+        # A GETNEXT walk skips an unpopulated instance and carries on to the
+        # next one, rather than stopping on it.
+        if name == self.name and name > oName and self.syntax.isValue:
             debug.logger & debug.flagIns and debug.logger(
                 f"readGetNext: {self.name}={self.syntax!r}"
             )
