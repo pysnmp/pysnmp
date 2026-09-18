@@ -142,6 +142,11 @@ async def getCmd(
     """
     __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
+
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName
     )
@@ -251,6 +256,11 @@ async def setCmd(
 
     """
     __cbFun = make_callback(vbProcessor.unmakeVarBinds)
+
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
 
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName
@@ -365,6 +375,11 @@ async def nextCmd(
 
     """
     __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
+
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
 
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName
@@ -511,6 +526,11 @@ async def bulkCmd(
 
     """
     __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
+
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
 
     addrName, paramsName = lcd.configure(
         snmpEngine, authData, transportTarget, contextData.contextName
