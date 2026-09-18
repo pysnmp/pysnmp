@@ -22,6 +22,17 @@ def ifEntry():
     return row
 
 
+@pytest.fixture(scope="module")
+def usm_view():
+    """A view over ``usmUserEntry``, whose two OCTET STRING indices are length-prefixed."""
+    from pysnmp.smi import view
+
+    built = MibBuilder()
+    built.loadModules("SNMP-USER-BASED-SM-MIB", "SNMPv2-MIB")
+
+    return view.MibViewController(built)
+
+
 class TestIndicesToInstId:
     """``getInstIdFromIndices()`` -- indices in, instance OID out."""
 
@@ -113,3 +124,88 @@ class TestInstIdToIndices:
         # If that remainder had been cached it would have been cached under (),
         # and this lookup would hand back ((1,),) instead of its own stand-in.
         assert row.getIndicesFromInstId(()) == ((),)
+
+
+class TestAnUndecodableIndexDoesNotEndTheWalk:
+    """The other half of #255: one bad row used to take the response with it.
+
+    ``getIndicesFromInstId`` raises ``Excessive instance identifier sub-OIDs
+    left`` when the sub-identifiers do not divide up the way the compiled MIB
+    says they should -- a vendor agent that pads an index, or a MIB compiled
+    from a different revision. That propagated out of resolution and ended the
+    walk, taking every remaining row with it, including the ones that would
+    have resolved. The upstream reporter had already read several rows
+    successfully before it happened.
+
+    The story this lands on is the one #252 settled: a *name* that will not
+    resolve is tolerated, because a response path cannot stop over one, while a
+    value that contradicts its MIB is reportable. The OID here is still a good
+    name for the object; only the index structure inside it is unreadable.
+    """
+
+    # usmUserEntry INDEX is { usmUserEngineID, usmUserName }, both
+    # variable-length OCTET STRINGs and so length-prefixed in the instance OID.
+    COLUMN = "1.3.6.1.6.3.15.1.2.2.1.13"
+    # The engineID length octet says 5, but 8 sub-identifiers follow it, so the
+    # row's indices do not consume the OID and sub-identifiers are left over.
+    UNDECODABLE = COLUMN + ".5.128.0.0.0.1.2.3.4.3.97.98.99"
+    DECODABLE = COLUMN + ".5.128.0.0.0.1.3.97.98.99"
+
+    def test_the_row_resolves_instead_of_raising(self, usm_view):
+        from pysnmp.smi.rfc1902 import ObjectIdentity
+
+        oid = ObjectIdentity(self.UNDECODABLE).resolveWithMib(usm_view)
+
+        assert oid.prettyPrint() == (
+            "SNMP-USER-BASED-SM-MIB::usmUserStatus.5.128.0.0.0.1.2.3.4.3.97.98.99"
+        )
+
+    def test_the_suffix_is_kept_whole_as_one_opaque_index(self, usm_view):
+        from pysnmp.smi.rfc1902 import ObjectIdentity
+
+        oid = ObjectIdentity(self.UNDECODABLE).resolveWithMib(usm_view)
+
+        # The same shape a node with no index structure at all gets: everything
+        # below the column, undivided, because nothing can say how to divide it.
+        (index,) = oid.getMibSymbol()[2]
+        assert tuple(index) == (5, 128, 0, 0, 0, 1, 2, 3, 4, 3, 97, 98, 99)
+
+    def test_the_rows_around_it_still_resolve(self, usm_view):
+        from pysnmp.proto.rfc1902 import Integer
+        from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
+
+        # A walk with the bad row in the middle: the whole response used to be
+        # lost, not just the row that could not be read.
+        resolved = [
+            ObjectType(ObjectIdentity(oid), Integer(1))
+            .resolveWithMib(usm_view)[0]
+            .prettyPrint()
+            for oid in (self.DECODABLE, self.UNDECODABLE, self.DECODABLE)
+        ]
+
+        assert resolved[0] == resolved[2]
+        assert (
+            resolved[0] == 'SNMP-USER-BASED-SM-MIB::usmUserStatus."0x8000000001"."abc"'
+        )
+        assert resolved[1].startswith("SNMP-USER-BASED-SM-MIB::usmUserStatus.5.")
+
+    def test_a_decodable_index_is_unaffected(self, usm_view):
+        from pysnmp.smi.rfc1902 import ObjectIdentity
+
+        oid = ObjectIdentity(self.DECODABLE).resolveWithMib(usm_view)
+
+        assert oid.prettyPrint() == (
+            'SNMP-USER-BASED-SM-MIB::usmUserStatus."0x8000000001"."abc"'
+        )
+
+    def test_an_index_the_caller_supplied_is_still_reported(self, usm_view):
+        from pysnmp.smi import error
+        from pysnmp.smi.rfc1902 import ObjectIdentity
+
+        # The tolerance is for a peer's row. An index built on this side that
+        # will not convert is the caller's own mistake, and reporting it before
+        # anything goes on the wire is the point of that path.
+        with pytest.raises(error.SmiError, match="conversion failure"):
+            ObjectIdentity(
+                "SNMP-USER-BASED-SM-MIB", "usmUserStatus", "x", "y", "z"
+            ).resolveWithMib(usm_view)

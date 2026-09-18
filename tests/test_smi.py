@@ -456,19 +456,36 @@ class TestObjectTypeRowPointerValues:
     UNDECODABLE = USM_USER_STATUS + ".5.128.0.0.0.1.2.3.4.3.97.98.99"
     DECODABLE = USM_USER_STATUS + ".5.128.0.0.0.1.3.97.98.99"
 
-    def test_undecodable_row_pointer_resolves_standalone_raises(self, usm_view):
-        """Guard the premise: resolving it as an ObjectIdentity does raise."""
-        with pytest.raises(error.SmiError):
-            ObjectIdentity(self.UNDECODABLE).resolveWithMib(usm_view)
+    # What an undecodable index renders as: the column named, the index left
+    # as the raw sub-identifiers, because that is all anything can say about it.
+    UNDECODABLE_RENDERED = (
+        "SNMP-USER-BASED-SM-MIB::usmUserStatus.5.128.0.0.0.1.2.3.4.3.97.98.99"
+    )
+
+    def test_undecodable_row_pointer_resolves_standalone(self, usm_view):
+        """Resolving it as an ObjectIdentity degrades rather than raising.
+
+        This used to assert `pytest.raises`, as a guard on the premise that the
+        tolerance below was needed for. That raise was the defect: it ended the
+        walk the row turned up in. The OID is still a good name for the object
+        -- only the index structure inside it is unreadable -- so it resolves
+        with the suffix kept whole as one opaque index.
+        """
+        oid = ObjectIdentity(self.UNDECODABLE).resolveWithMib(usm_view)
+
+        assert oid.prettyPrint() == self.UNDECODABLE_RENDERED
 
     @pytest.mark.parametrize("ignore_errors", [True, False])
     def test_undecodable_row_pointer_value_is_tolerated(self, usm_view, ignore_errors):
+        # Still tolerated, and now rendered by MIB name rather than left a bare
+        # numeric OID, because resolving it no longer raises for the value path
+        # to swallow.
         ot = ObjectType(
             ObjectIdentity("SNMPv2-MIB", "sysObjectID", 0),
             ObjectIdentifier(self.UNDECODABLE),
         )
         ot.resolveWithMib(usm_view, ignoreErrors=ignore_errors)
-        assert ot[1].prettyPrint() == self.UNDECODABLE
+        assert ot[1].prettyPrint() == self.UNDECODABLE_RENDERED
 
     def test_decodable_row_pointer_value_still_resolves(self, usm_view):
         ot = ObjectType(
