@@ -193,8 +193,16 @@ jobs:
   # pysmi. tests/test_no_pysmi.py blocks the import to get close, but a blocked
   # import is a simulation -- it says nothing about what the wheel's metadata
   # actually pulls in. This installs the wheel with no extras into a clean
-  # environment and starts an engine in it, which is the only check that fails
+  # environment and carries out SNMP in it, which is the only check that fails
   # if `compile` stops being optional in the packaging rather than in the code.
+  #
+  # Carries out SNMP, not just starts an engine: this job and that test both
+  # stopped at addTargetParams() and neither noticed that addTargetAddr() --
+  # the next call every manager and every notification originator makes -- was
+  # importing a module no pysmi-less install had. Two checks with one blind
+  # spot, because the script below was a copy of the test. So the operations
+  # are run from tests/end_to_end.py, which the pytest suite runs too, rather
+  # than from a second inline copy that can drift from it again.
   test-no-pysmi:
     name: test-no-pysmi
     runs-on: ubuntu-latest
@@ -262,6 +270,36 @@ jobs:
               sys.exit("the compiler did not refuse without pysmi")
 
           print("engine started, names resolved, compiler refused cleanly")
+          PY
+      - name: Send a trap and poll an agent without pysmi
+        run: |
+          # Run from a directory that is not the checkout, or `pysnmp` would
+          # resolve from the source tree and the installed wheel -- the thing
+          # under test -- would never be loaded.
+          mkdir -p "${RUNNER_TEMP}/no-pysmi"
+          cp tests/end_to_end.py "${RUNNER_TEMP}/no-pysmi/"
+          cd "${RUNNER_TEMP}/no-pysmi"
+          "${GITHUB_WORKSPACE}/.venv-bare/bin/python" - <<'PY'
+          import importlib.util
+          import pathlib
+
+          assert importlib.util.find_spec("pysmi") is None, "pysmi is importable"
+
+          import pysnmp
+
+          installed = pathlib.Path(pysnmp.__file__).resolve()
+          assert "site-packages" in installed.parts, installed
+
+          from end_to_end import SNMP_TRAP_OID, SYS_DESCR, pollRoundTrip, trapRoundTrip
+
+          for mpModel, version in ((1, "v2c"), (0, "v1")):
+              varBinds = dict(trapRoundTrip(mpModel))
+              assert varBinds[SNMP_TRAP_OID] == "1.3.6.1.6.3.1.1.5.1", varBinds
+              print(f"an SNMP{version} trap made the round trip")
+
+          ((oid, value),) = pollRoundTrip()
+          assert oid == SYS_DESCR, oid
+          print("a GET made the round trip")
           PY
       - name: Install the compile extra and check the compiler appears
         run: |

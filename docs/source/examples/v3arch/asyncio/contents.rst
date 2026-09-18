@@ -33,6 +33,7 @@ Notification Receiver Applications
 .. toctree::
 
    /examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks
+   /examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps
 
 For more details on PySNMP programming model and interfaces, please 
 refer to the documentation

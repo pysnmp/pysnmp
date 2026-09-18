@@ -437,12 +437,12 @@ class TestOidsAreStable:
 class TestTheFreezeIsGone:
     """The deletion itself, so it cannot be quietly undone.
 
-    Seven of these modules are shipped by pysnmp again, and that is not a
+    The engine layer's modules are shipped by pysnmp again, and that is not a
     re-freeze. What made the 2017 tree a freeze was not that pysnmp shipped
     the files -- it was that they were hand-edited, stated no revision, and so
     took the tie against pysmi's copy and won it silently and for good.
 
-    The seven are rendered by ``tools/regenerate_mibs.py`` from pysmi's own
+    They are rendered by ``tools/regenerate_mibs.py`` from pysmi's own
     ASN.1 with pysmi's own code generator, they state a revision, and
     ``tests/test_generated_mibs.py`` fails the suite if a committed one stops
     matching its source. They are here so that an engine starts without pysmi
@@ -454,7 +454,7 @@ class TestTheFreezeIsGone:
     """
 
     def test_only_the_engine_layer_is_shipped_by_pysnmp(self):
-        """Shipping a converged module beyond these seven is the old mistake.
+        """Shipping a converged module beyond the engine layer is the old mistake.
 
         Each one is a copy that has to be kept current by hand or by tooling,
         and the reason to accept that cost for the engine layer -- an engine
