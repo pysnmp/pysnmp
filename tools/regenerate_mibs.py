@@ -55,20 +55,34 @@ OWN_MODULES = ("PYSNMP-MIB", "PYSNMP-SOURCE-MIB", "PYSNMP-USM-MIB")
 #: The standard modules an ``SnmpEngine`` resolves during start-up and
 #: configuration, from pysmi's bundled ASN.1.
 #:
-#: Measured, not guessed: build an engine, add a v3 user, a VACM entry and a
-#: target params entry, then ask the builder which modules it loaded. These
-#: seven are what it reaches for, and their import closure adds nothing --
-#: everything they import is already in ``pysnmp/smi/mibs``.
-#: ``tests/test_engine_mibs.py`` re-measures it, so a new import fails the
-#: suite rather than surfacing as an ImportError in a pysmi-less install.
+#: Measured, not guessed: build an engine, add a v3 user, a VACM entry, target
+#: params, a target address and a notification target, then ask the builder
+#: which modules it loaded. These ten are what it reaches for, and their import
+#: closure adds nothing -- everything they import is already in
+#: ``pysnmp/smi/mibs``. ``tests/test_engine_mibs.py`` re-measures it, so a new
+#: import fails the suite rather than surfacing as an ImportError in a
+#: pysmi-less install.
+#:
+#: The last three arrived late, and how they were missed is the argument for
+#: measuring the whole configuration surface rather than the calls a test
+#: happened to make. ``addTargetAddr()`` reaches for ``SNMPv2-TM`` and
+#: ``TRANSPORT-ADDRESS-MIB``, ``addNotificationTarget()`` for
+#: ``SNMP-NOTIFICATION-MIB``, and nothing in ``tests/test_no_pysmi.py`` called
+#: either -- so a pysmi-less install could start an engine and configure a v3
+#: user, then raise ``MibNotFoundError`` the moment it named somewhere to send
+#: a request or a trap, which is every manager and every notification
+#: originator.
 ENGINE_MODULES = (
     "SNMP-COMMUNITY-MIB",
     "SNMP-FRAMEWORK-MIB",
     "SNMP-MPD-MIB",
+    "SNMP-NOTIFICATION-MIB",
     "SNMP-TARGET-MIB",
     "SNMP-USER-BASED-SM-MIB",
     "SNMP-VIEW-BASED-ACM-MIB",
     "SNMPv2-MIB",
+    "SNMPv2-TM",
+    "TRANSPORT-ADDRESS-MIB",
 )
 
 #: Everything this renders.

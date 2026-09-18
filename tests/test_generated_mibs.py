@@ -9,7 +9,7 @@ years. The 2017 rendering had ``pysnmpUsmSecretAuthKey`` and five sibling
 columns readable when their ASN.1 says ``not-accessible``, and carried a
 ``DEFVAL`` on each that no clause in the module asks for.
 
-The seven engine modules are not pysnmp's to define -- the RFCs define them and
+The engine modules are not pysnmp's to define -- the RFCs define them and
 pysmi's bundle carries the ASN.1 -- but pysnmp commits a rendering of them so
 that starting an engine needs no pysmi. A committed rendering is a copy, and a
 copy drifts, which is the whole reason the first set is checked. So the same

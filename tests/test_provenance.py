@@ -15,7 +15,7 @@ that a corpus was supposed to replace, and the two are indistinguishable until
 something reports them.
 
 The compatibility promise runs through all of it: a stock install configures
-seven shadowed modules before a caller has done anything, because pysnmp carries
+the engine modules as shadowed before a caller has done anything, because pysnmp carries
 its own copies of the engine MIBs and the wheel carries them too. Reporting that
 would mean the default install warns, so it is excluded by name and the
 exclusion is tested as carefully as the reporting is.

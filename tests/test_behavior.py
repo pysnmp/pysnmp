@@ -369,14 +369,20 @@ class TestFragmentNamespace:
 
 pysmi_corpus = pytest.importorskip("pysmi.corpus.driver")
 
+#: The modules the corpus under test carries, and so the ones the directory
+#: source must not.
+CORPUS_MODULES = ("SNMPv2-TM", "SNMP-TARGET-MIB")
+
 
 @pytest.fixture(scope="module")
 def synthesized(tmp_path_factory):
     """A builder that can only get these modules by synthesizing them.
 
     pysmi bundles generated copies of all three, so a builder with its default
-    sources would never reach the corpus. The sources are cut back to pysnmp's
-    own, which no longer carry them.
+    sources would never reach the corpus. The sources are cut back to a copy of
+    pysnmp's own with the modules under test removed: pysnmp ships a rendering
+    of the engine layer, and both of these are in it, so pointing at the real
+    directory would resolve them from a file and measure nothing.
     """
     import pysmi
     from pysmi.corpus.driver import CorpusDriver, CorpusOutputs
@@ -389,7 +395,7 @@ def synthesized(tmp_path_factory):
     source = tmp_path_factory.mktemp("asn1")
     output = tmp_path_factory.mktemp("corpus")
 
-    for module in ("SNMPv2-TM", "SNMP-TARGET-MIB"):
+    for module in CORPUS_MODULES:
         shutil.copy(os.path.join(asn1, module), str(source / module))
 
     outputs = CorpusOutputs(json=str(output / "json"), core_db=str(output / "core.db"))
@@ -401,10 +407,14 @@ def synthesized(tmp_path_factory):
     import pysnmp.smi.mibs as mibs
 
     core = os.path.dirname(mibs.__file__)
+    without = str(tmp_path_factory.mktemp("core"))
+    shutil.copytree(core, without, dirs_exist_ok=True)
+    for module in CORPUS_MODULES:
+        os.remove(os.path.join(without, f"{module}.py"))
 
     built = MibBuilder()
     built.setMibSources(
-        DirMibSource(core), DirMibSource(os.path.join(core, "instances"))
+        DirMibSource(without), DirMibSource(os.path.join(without, "instances"))
     )
     built.setMibCorpus(MibCorpus(outputs.core_db))
 

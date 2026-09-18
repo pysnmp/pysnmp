@@ -88,8 +88,8 @@ CONFLICT_SEVERITIES = ("warn", "error", "silent")
 #: The one shadowing pysnmp arranges itself, and so does not report.
 #:
 #: `defaultCoreMibs` exists to be searched ahead of `defaultGeneratedMibs`:
-#: pysnmp carries its own copy of the seven modules the engine needs and the
-#: wheel carries them too. Every stock install is therefore shadowing seven
+#: pysnmp carries its own copy of the modules the engine needs and the wheel
+#: carries them too. Every stock install is therefore shadowing each of those
 #: modules before a caller has configured anything, and warning about it would
 #: mean the default install warns -- which is both noise and a broken promise,
 #: since nothing about that install has changed.
@@ -943,8 +943,8 @@ class MibBuilder:
 
         `FRAMEWORK_SHADOW` is left out -- pysnmp's own copies of the engine
         modules shadowing the wheel's is what the search order is for, and a
-        stock install would otherwise warn seven times having configured
-        nothing. `shadowedModules` still reports it, being a question about
+        stock install would otherwise warn once per engine module having
+        configured nothing. `shadowedModules` still reports it, being a question about
         the sources rather than about the configuration.
 
         Raises
