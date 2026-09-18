@@ -80,6 +80,7 @@ class AbstractTransportDispatcher:
         self.__transportDomainMap = {}
         self.__jobs = {}
         self.__recvCallables = {}
+        self.__errorCallables = {}
         self.__timerCallables = []
         self.__ticks = 0
         self.__timerResolution = 0.5
@@ -116,6 +117,33 @@ class AbstractTransportDispatcher:
                 f'No callback for "{recvId!r}" found - loosing incoming event'
             )
 
+    def _errorCbFun(self, incomingTransport, transportAddress, transportError):
+        """Report a transport failure that no `sendMessage` caller is left to see.
+
+        A connectionless transport fails while its caller is still on the stack, so
+        it raises and is done. A connection-oriented one cannot: the message is
+        queued, `sendMessage` returns, and the connection fails after that. Without
+        somewhere to say so, a refused connection is indistinguishable from a silent
+        peer and the request waits out its whole retry schedule -- which is exactly
+        the distinction :RFC:`3430` is worth having.
+
+        Every registered receiver hears it, since an error carries no message for
+        the routing function to look at, and an unheard failure is no worse than the
+        silence it replaces -- so unlike `_cbFun`, this does not raise on one.
+
+        A transport unregistered between the failure and this call is likewise not
+        an error: delivery is deferred to the event loop, so a dispatcher closing
+        with a connection still failing is an ordinary race, and there is nothing
+        left to report to.
+        """
+        if incomingTransport not in self.__transportDomainMap:
+            return
+
+        transportDomain = self.__transportDomainMap[incomingTransport]
+
+        for errorCb in list(self.__errorCallables.values()):
+            errorCb(self, transportDomain, transportAddress, transportError)
+
     # Dispatcher API
 
     def registerRoutingCbFun(self, routingCbFun):
@@ -144,6 +172,21 @@ class AbstractTransportDispatcher:
         if recvId in self.__recvCallables:
             del self.__recvCallables[recvId]
 
+    def registerErrorCbFun(self, errorCb, recvId=None):
+        """Register a transport-failure callback, `recvId` naming the receiver."""
+        if recvId in self.__errorCallables:
+            raise error.CarrierError(
+                "Transport error callback {!r} already registered".format(
+                    recvId is None and "<default>" or recvId
+                )
+            )
+        self.__errorCallables[recvId] = errorCb
+
+    def unregisterErrorCbFun(self, recvId=None):
+        """Drop a transport-failure callback. Unknown ids are ignored."""
+        if recvId in self.__errorCallables:
+            del self.__errorCallables[recvId]
+
     def registerTimerCbFun(self, timerCbFun, tickInterval=None):
         """Register a periodic callback, defaulting to the dispatcher's own resolution."""
         if not tickInterval:
@@ -162,6 +205,7 @@ class AbstractTransportDispatcher:
         if tDomain in self.__transports:
             raise error.CarrierError(f"Transport {tDomain} already registered")
         transport.registerCbFun(self._cbFun)
+        transport.registerErrorCbFun(self._errorCbFun)
         self.__transports[tDomain] = transport
         self.__transportDomainMap[transport] = tDomain
 
@@ -170,6 +214,7 @@ class AbstractTransportDispatcher:
         if tDomain not in self.__transports:
             raise error.CarrierError(f"Transport {tDomain} not registered")
         self.__transports[tDomain].unregisterCbFun()
+        self.__transports[tDomain].unregisterErrorCbFun()
         del self.__transportDomainMap[self.__transports[tDomain]]
         del self.__transports[tDomain]
 
@@ -262,6 +307,7 @@ class AbstractTransportDispatcher:
             self.unregisterTransport(tDomain)
         self.__transports.clear()
         self.unregisterRecvCbFun()
+        self.unregisterErrorCbFun()
         self.unregisterTimerCbFun()
 
 
@@ -303,6 +349,7 @@ class AbstractTransport:
     protoTransportDispatcher: type[AbstractTransportDispatcher] | None = None
     addressType = AbstractTransportAddress
     _cbFun = None
+    _errorCbFun = None
 
     @classmethod
     def isCompatibleWithDispatcher(cls, transportDispatcher):
@@ -325,9 +372,23 @@ class AbstractTransport:
         """Drop the receive callback."""
         self._cbFun = None
 
+    def registerErrorCbFun(self, errorCbFun):
+        """Set the callback asynchronous transport failures go to.
+
+        Only a transport that can fail after `sendMessage` has returned needs this
+        -- which means a connection-oriented one. A datagram transport raises from
+        `sendMessage` instead and never calls it.
+        """
+        self._errorCbFun = errorCbFun
+
+    def unregisterErrorCbFun(self):
+        """Drop the transport-failure callback."""
+        self._errorCbFun = None
+
     def closeTransport(self):
         """Stop delivering inbound messages. Subclasses close the socket too."""
         self.unregisterCbFun()
+        self.unregisterErrorCbFun()
 
     # Public API
 

@@ -18,6 +18,8 @@ from pysnmp.hlapi.asyncio.device import (
 )
 from pysnmp.hlapi.asyncio.ntforg import sendNotification
 from pysnmp.hlapi.asyncio.transport import (
+    Tcp6TransportTarget,
+    TcpTransportTarget,
     Udp6TransportTarget,
     UdpTransportTarget,
     UnixTransportTarget,

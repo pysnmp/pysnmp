@@ -4,7 +4,13 @@ set -eu
 : "${SNMP_PROFILE:?SNMP_PROFILE is required}"
 
 cat > /etc/snmp/snmpd.conf <<EOF
-agentAddress udp:161
+# TCP as well as UDP: the TCP mapping (RFC 3430) is what tests/test_tcp_carrier.py
+# exercises against our own agent, and this is where it meets an implementation
+# that is not ours. Net-SNMP builds the TCP transport in by default -- Debian's
+# libnetsnmp exports netsnmp_tcp_transport and netsnmp_tcp_ctor -- and snmpd
+# refuses to start on an endpoint it cannot open, so a build without it fails
+# this job loudly rather than quietly skipping the coverage.
+agentAddress udp:161,tcp:161
 # Note: sysLocation is intentionally NOT set here. A sysLocation directive
 # marks sysLocation.0 read-only in snmpd; leaving it unset keeps sysLocation.0
 # writable (default "Unknown") so the SET roundtrip test can exercise it.

@@ -16,6 +16,7 @@ from pyasn1.error import PyAsn1Error
 
 from pysnmp import debug
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
+from pysnmp.carrier.asyncio.stream import tcp, tcp6
 from pysnmp.entity.observer import execution_context
 from pysnmp.proto import errind, error
 from pysnmp.proto.secmod import base
@@ -221,6 +222,22 @@ class SnmpV1SecurityModel(base.AbstractSecurityModel):
                     targetAddrTAddress = tuple(SnmpUDPAddress(targetAddrTAddress))
                 elif (
                     targetAddrTDomain[: len(udp6.snmpUDP6Domain)] == udp6.snmpUDP6Domain
+                ):
+                    (TransportAddressIPv6,) = (
+                        snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
+                        )
+                    )
+                    targetAddrTAddress = tuple(TransportAddressIPv6(targetAddrTAddress))
+                elif targetAddrTDomain[: len(tcp.snmpTCPDomain)] == tcp.snmpTCPDomain:
+                    (TransportAddressIPv4,) = (
+                        snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                            "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv4"
+                        )
+                    )
+                    targetAddrTAddress = tuple(TransportAddressIPv4(targetAddrTAddress))
+                elif (
+                    targetAddrTDomain[: len(tcp6.snmpTCP6Domain)] == tcp6.snmpTCP6Domain
                 ):
                     (TransportAddressIPv6,) = (
                         snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(

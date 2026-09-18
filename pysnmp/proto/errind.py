@@ -116,6 +116,22 @@ class RequestTimedOut(ErrorIndication):
 requestTimedOut = RequestTimedOut("No SNMP response received before timeout")
 
 
+class TransportFailure(ErrorIndication):
+    """The transport could not deliver the message, and said so.
+
+    Only a connection-oriented transport reports this: a refused or unreachable
+    TCP peer (:RFC:`3430`) is a fact the transport learns, as against the silence
+    a lost datagram leaves behind, which can only ever time out. Telling the two
+    apart is what lets an application distinguish a device that declined to
+    answer from one it could not reach.
+    """
+
+    pass
+
+
+transportFailure = TransportFailure("SNMP transport connection failed")
+
+
 class EmptyResponse(ErrorIndication):
     """The response carried no PDU."""
 

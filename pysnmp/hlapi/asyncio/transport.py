@@ -4,7 +4,7 @@
 # Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 
-"""Where to send a request: UDP, UDP/IPv6 and Unix domain targets.
+"""Where to send a request: UDP, TCP, their IPv6 forms, and Unix domain targets.
 
 A target pairs a transport with an address, and resolves a hostname to one
 before the engine needs it.
@@ -14,10 +14,17 @@ import socket
 from typing import cast
 
 from pysnmp.carrier.asyncio.dgram import udp, udp6, unix
+from pysnmp.carrier.asyncio.stream import tcp, tcp6
 from pysnmp.error import PySnmpError
 from pysnmp.hlapi.transport import AbstractTransportTarget
 
-__all__ = ["Udp6TransportTarget", "UdpTransportTarget", "UnixTransportTarget"]
+__all__ = [
+    "Tcp6TransportTarget",
+    "TcpTransportTarget",
+    "Udp6TransportTarget",
+    "UdpTransportTarget",
+    "UnixTransportTarget",
+]
 
 
 class UdpTransportTarget(AbstractTransportTarget[tuple[str, int]]):
@@ -196,6 +203,155 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
         # uses, and keeps the numeric zone -- which is what getaddrinfo gives
         # us -- rather than the interface name, which may not survive a trip
         # through the target address table.
+        return (f"{host}%{scopeId}" if scopeId else host, port)
+
+
+class TcpTransportTarget(AbstractTransportTarget[tuple[str, int]]):
+    """Creates TCP/IPv4 configuration entry and initialize socket API if needed.
+
+    This object can be used for adding new entries to Local Configuration
+    Datastore (LCD) managed by :py:class:`~pysnmp.hlapi.SnmpEngine`
+    class instance.
+
+    See :RFC:`3430` for more information on the TCP transport mapping.
+
+    TCP is worth reaching for in three situations. A response too large for the
+    path MTU arrives instead of being fragmented or dropped, which is what the
+    `tooBig` retry loop on a wide table is really about. A connection crosses a
+    stateful NAT or a filtered path where a return datagram would not. And a
+    refused connection is reported as such, so an application can tell a device
+    that declined to answer from one it could not reach -- a distinction UDP
+    cannot make, and the reason a failed poll over UDP can look like a device
+    fault when it is not.
+
+    :RFC:`3430` is a transport mapping only and implies no security of its own:
+    the same SNMP messages travel it, protected by whatever USM or community
+    the caller configured, and nothing more. It is not TLS.
+
+    Parameters
+    ----------
+    transportAddr : tuple
+        Indicates remote address in Python :py:mod:`socket` module format
+        which is a tuple of FQDN, port where FQDN is a string representing
+        either hostname or IPv4 address in quad-dotted form, port is an
+        integer. :RFC:`3430#section-3` recommends port 161 for command
+        responders and 162 for notification receivers.
+    timeout : int
+        Response timeout in seconds.
+    retries : int
+        Maximum number of request retries, 0 retries means just a single
+        request.
+    tagList : str
+        Arbitrary string that contains a list of tag values which are used
+        to select target addresses for a particular operation
+        (:RFC:`3413#section-4.1.4`).
+
+
+    Notes
+    -----
+    Built inside a running event loop, address resolution is deferred so that a
+    slow resolver cannot stall it; every hlapi command awaits it for you. See
+    :py:class:`~pysnmp.hlapi.asyncio.UdpTransportTarget` for the detail, and
+    :py:meth:`~pysnmp.hlapi.transport.AbstractTransportTarget.resolve` to await
+    it yourself.
+
+    Examples
+    --------
+    >>> from pysnmp.hlapi.asyncio import TcpTransportTarget
+    >>> TcpTransportTarget(('127.0.0.1', 161))
+    TcpTransportTarget(('127.0.0.1', 161), timeout=1, retries=5, tagList=b'')
+    >>>
+
+    """
+
+    transportDomain = tcp.domainName
+    protoTransport = tcp.TcpAsyncioTransport
+
+    def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int]:
+        try:
+            # AF_INET pins the sockaddr to (host, port); the cast narrows what
+            # getaddrinfo is typed to return, as in UdpTransportTarget.
+            return cast(
+                tuple[str, int],
+                socket.getaddrinfo(
+                    transportAddr[0],
+                    transportAddr[1],
+                    socket.AF_INET,
+                    socket.SOCK_STREAM,
+                    socket.IPPROTO_TCP,
+                )[0][4][:2],
+            )
+        except socket.gaierror as e:
+            raise PySnmpError(
+                "Bad IPv4/TCP transport address {}: {}".format(
+                    "@".join([str(x) for x in transportAddr]), e
+                )
+            ) from e
+
+
+class Tcp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
+    """Creates TCP/IPv6 configuration entry and initialize socket API if needed.
+
+    The IPv6 form of :py:class:`~pysnmp.hlapi.asyncio.TcpTransportTarget`; see
+    there for what the TCP mapping (:RFC:`3430`) is for.
+
+    Parameters
+    ----------
+    transportAddr : tuple
+        Indicates remote address in Python :py:mod:`socket` module format
+        which is a tuple of FQDN, port where FQDN is a string representing
+        either hostname or IPv6 address in one of three conventional forms
+        (:RFC:`1924#section-3`), port is an integer.
+    timeout : int
+        Response timeout in seconds.
+    retries : int
+        Maximum number of request retries, 0 retries means just a single
+        request.
+    tagList : str
+        Arbitrary string that contains a list of tag values which are used
+        to select target addresses for a particular operation
+        (:RFC:`3413#section-4.1.4`).
+
+
+    Examples
+    --------
+    A link-local address keeps its scope, in the ``%`` form :RFC:`4007#section-11`
+    defines, since such an address means nothing without one.
+
+    >>> from pysnmp.hlapi.asyncio import Tcp6TransportTarget
+    >>> Tcp6TransportTarget(('::1', 161))
+    Tcp6TransportTarget(('::1', 161), timeout=1, retries=5, tagList=b'')
+    >>>
+
+    """
+
+    transportDomain = tcp6.domainName
+    protoTransport = tcp6.Tcp6AsyncioTransport
+
+    def _resolveAddr(self, transportAddr: tuple[str, int]) -> tuple[str, int]:
+        try:
+            # An AF_INET6 sockaddr is (host, port, flowinfo, scopeid).
+            host, port, _, scopeId = cast(
+                tuple[str, int, int, int],
+                socket.getaddrinfo(
+                    transportAddr[0],
+                    transportAddr[1],
+                    socket.AF_INET6,
+                    socket.SOCK_STREAM,
+                    socket.IPPROTO_TCP,
+                )[0][4],
+            )
+
+        except socket.gaierror as e:
+            raise PySnmpError(
+                "Bad IPv6/TCP transport address {}: {}".format(
+                    "@".join([str(x) for x in transportAddr]), e
+                )
+            ) from e
+
+        # The scope rides in the host string, as it does for UDP/IPv6 -- but
+        # here it stays there: `create_connection` resolves the zone itself,
+        # where `sendto` needs it already turned into a sockaddr scope ID.
         return (f"{host}%{scopeId}" if scopeId else host, port)
 
 

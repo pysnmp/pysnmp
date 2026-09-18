@@ -61,6 +61,14 @@ saves its configuration for the lifetime of SNMP engine object.
    :members: setLocalAddress
    :no-index:
 
+.. autoclass:: pysnmp.hlapi.TcpTransportTarget
+   :members: setLocalAddress
+   :no-index:
+
+.. autoclass:: pysnmp.hlapi.Tcp6TransportTarget
+   :members: setLocalAddress
+   :no-index:
+
 Command Generator
 
 .. toctree::
@@ -88,6 +96,12 @@ Transport configuration
    :members: setLocalAddress
 
 .. autoclass:: pysnmp.hlapi.asyncio.Udp6TransportTarget
+   :members: setLocalAddress
+
+.. autoclass:: pysnmp.hlapi.asyncio.TcpTransportTarget
+   :members: setLocalAddress
+
+.. autoclass:: pysnmp.hlapi.asyncio.Tcp6TransportTarget
    :members: setLocalAddress
 
 Asynchronous: asyncio
@@ -126,6 +140,14 @@ Transport configuration
    :no-index:
 
 .. autoclass:: pysnmp.hlapi.asyncio.Udp6TransportTarget
+   :members: setLocalAddress
+   :no-index:
+
+.. autoclass:: pysnmp.hlapi.asyncio.TcpTransportTarget
+   :members: setLocalAddress
+   :no-index:
+
+.. autoclass:: pysnmp.hlapi.asyncio.Tcp6TransportTarget
    :members: setLocalAddress
    :no-index:
 

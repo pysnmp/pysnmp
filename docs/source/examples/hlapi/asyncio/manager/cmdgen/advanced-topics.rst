@@ -26,4 +26,15 @@ Advanced Command Generator
 :download:`Download</../../examples/hlapi/asyncio/manager/cmdgen/multiple-sequential-queries.py>` script.
 
 
+.. include:: /../../examples/hlapi/asyncio/manager/cmdgen/get-over-tcp.py
+   :start-after: """
+   :end-before: """  #
+
+.. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/get-over-tcp.py
+   :start-after: """  #
+   :language: python
+
+:download:`Download</../../examples/hlapi/asyncio/manager/cmdgen/get-over-tcp.py>` script.
+
+
 See also: :doc:`library reference </docs/api-reference>`.

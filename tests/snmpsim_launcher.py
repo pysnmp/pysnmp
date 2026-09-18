@@ -3,15 +3,18 @@
 
 This replaces the old snmpsimd.py from snmpsim 0.4.7 which used the
 now-removed pysnmp.carrier.asynsock API. It reads .snmprec data files
-and serves them over UDP using the asyncio carrier.
+and serves them over UDP, and over TCP (:RFC:`3430`) when asked, using the
+asyncio carrier.
 """
 
+import asyncio
 import getopt
 import os
 import sys
 import traceback
 
 from pysnmp.carrier.asyncio.dgram import udp
+from pysnmp.carrier.asyncio.stream import tcp
 from pysnmp.entity import config, engine
 from pysnmp.entity.rfc3413 import cmdrsp, context
 from pysnmp.proto import rfc1902
@@ -122,6 +125,7 @@ def main():
     """Run the SNMP agent simulator."""
     data_dir = None
     endpoint = "127.0.0.1:1161"
+    tcp_endpoint = None
     v3_user = None
     v3_auth_key = None
     v3_auth_proto = None
@@ -136,6 +140,7 @@ def main():
                 "data-dir=",
                 "cache-dir=",
                 "agent-udpv4-endpoint=",
+                "agent-tcpv4-endpoint=",
                 "v3-user=",
                 "v3-auth-key=",
                 "v3-auth-proto=",
@@ -154,6 +159,8 @@ def main():
             data_dir = val
         elif opt == "--agent-udpv4-endpoint":
             endpoint = val
+        elif opt == "--agent-tcpv4-endpoint":
+            tcp_endpoint = val
         elif opt == "--v3-user":
             v3_user = val
         elif opt == "--v3-auth-key":
@@ -169,18 +176,35 @@ def main():
         sys.stderr.write("Error: --data-dir is required\n")
         sys.exit(1)
 
-    # Parse endpoint
-    host, _, port = endpoint.rpartition(":")
-    if not host:
-        host = "127.0.0.1"
-    port = int(port)
+    def parse_endpoint(value):
+        host, _, port = value.rpartition(":")
+        return (host or "127.0.0.1", int(port))
+
+    host, port = parse_endpoint(endpoint)
 
     snmpEngine = engine.SnmpEngine()
 
+    # One loop for both transports. A transport built outside a running loop
+    # makes one of its own, and every transport on a dispatcher has to share
+    # the loop the dispatcher runs -- otherwise only one of them would ever
+    # read. The dispatcher refuses the mismatch rather than going quietly deaf.
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     # Set up transport
     config.addTransport(
-        snmpEngine, udp.domainName, udp.UdpTransport().openServerMode((host, port))
+        snmpEngine,
+        udp.domainName,
+        udp.UdpTransport(loop=loop).openServerMode((host, port)),
     )
+
+    if tcp_endpoint:
+        tcp_host, tcp_port = parse_endpoint(tcp_endpoint)
+        config.addTransport(
+            snmpEngine,
+            tcp.domainName,
+            tcp.TcpTransport(loop=loop).openServerMode((tcp_host, tcp_port)),
+        )
 
     # Set up SNMPv1/v2c community
     config.addV1System(snmpEngine, "public", "public", securityName="public")
@@ -240,6 +264,8 @@ def main():
     cmdrsp.BulkCommandResponder(snmpEngine, snmpContext)
 
     sys.stderr.write(f"Listening at UDP/IPv4 endpoint {host}:{port}\n")
+    if tcp_endpoint:
+        sys.stderr.write(f"Listening at TCP/IPv4 endpoint {tcp_host}:{tcp_port}\n")
     sys.stderr.flush()
 
     snmpEngine.transportDispatcher.runDispatcher()

@@ -21,6 +21,25 @@ from pysnmp.proto.api import verdec  # XXX
 from pysnmp.smi import builder, instrum
 
 
+def _sameTransportAddress(cachedAddress, transportAddress):
+    """Whether two transport addresses name the same peer.
+
+    Compared by value rather than by identity or type: the same peer reaches the
+    request cache as whatever the target address table produced -- a MIB object,
+    often -- and reaches a transport as that transport's own address type.
+    """
+    if cachedAddress is None:
+        return False
+
+    try:
+        return tuple(cachedAddress) == tuple(transportAddress)
+
+    except TypeError:
+        # An address shape that is not a sequence at all, such as the
+        # filesystem path a Unix-domain transport is named by.
+        return cachedAddress == transportAddress
+
+
 class MsgAndPduDispatcher:
     """SNMP engine PDU & message dispatcher.
 
@@ -671,6 +690,44 @@ class MsgAndPduDispatcher:
             cachedParams["cbCtx"],
         )
         return True
+
+    def receiveTransportError(
+        self, snmpEngine, transportDomain, transportAddress, transportError
+    ):
+        """Fail every outstanding request bound for an address the transport lost.
+
+        The transport reports this when it learns a peer cannot be reached -- a
+        refused or unanswered TCP connection -- which a datagram transport never
+        can. Failing the requests now is the whole point: they would otherwise sit
+        through their full retry schedule to arrive at `requestTimedOut`, which
+        says something weaker and says it much later.
+
+        Requests to other peers on the same transport are untouched: one stream
+        carrier serves every peer of its domain, and only this one failed.
+        """
+        statusInformation = error.StatusInformation(
+            errorIndication=errind.TransportFailure(str(transportError))
+        )
+
+        def failMatchingRequest(cacheKey, cachedParams, snmpEngine):
+            if cachedParams.get("transportDomain") != transportDomain:
+                return None
+
+            if not _sameTransportAddress(
+                cachedParams.get("transportAddress"), transportAddress
+            ):
+                return None
+
+            debug.logger & debug.flagDsp and debug.logger(
+                f"receiveTransportError: failing request to {transportAddress!r}: "
+                f"{transportError}"
+            )
+
+            return self.__expireRequest(
+                cacheKey, cachedParams, snmpEngine, statusInformation
+            )
+
+        self.__cache.expire(failMatchingRequest, snmpEngine)
 
     # noinspection PyUnusedLocal
     def receiveTimerTick(self, snmpEngine, timeNow):

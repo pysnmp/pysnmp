@@ -271,6 +271,18 @@ class SnmpEngine:
             self, transportDomain, transportAddress, wholeMsg
         )
 
+    def __receiveTransportErrorCbFun(
+        self,
+        transportDispatcher: Any,
+        transportDomain: Any,
+        transportAddress: Any,
+        transportError: Any,
+    ) -> None:
+        """Hand a transport failure to the message dispatcher, to fail its requests."""
+        self.msgAndPduDsp.receiveTransportError(
+            self, transportDomain, transportAddress, transportError
+        )
+
     def __receiveTimerTickCbFun(self, timeNow: int) -> None:
         """Pass the tick to the dispatcher and to every model that keeps timed state.
 
@@ -298,6 +310,9 @@ class SnmpEngine:
         ):
             raise error.PySnmpError("Transport dispatcher already registered")
         transportDispatcher.registerRecvCbFun(self.__receiveMessageCbFun, recvId)
+        transportDispatcher.registerErrorCbFun(
+            self.__receiveTransportErrorCbFun, recvId
+        )
         if self.transportDispatcher is None:
             transportDispatcher.registerTimerCbFun(self.__receiveTimerTickCbFun)
             self.transportDispatcher = transportDispatcher
@@ -307,6 +322,7 @@ class SnmpEngine:
         if self.transportDispatcher is None:
             raise error.PySnmpError("Transport dispatcher not registered")
         self.transportDispatcher.unregisterRecvCbFun(recvId)
+        self.transportDispatcher.unregisterErrorCbFun(recvId)
         self.transportDispatcher.unregisterTimerCbFun()
         self.transportDispatcher = None
 

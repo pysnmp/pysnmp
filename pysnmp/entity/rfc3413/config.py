@@ -100,6 +100,26 @@ def getTargetAddr(snmpEngine, snmpTargetAddrName):
             snmpTargetAddrTAddress = transport.addressType(
                 TransportAddressIPv6(snmpTargetAddrTAddress)
             ).setLocalAddress(TransportAddressIPv6(snmpSourceAddrTAddress))
+        elif snmpTargetAddrTDomain[: len(config.snmpTCPDomain)] == config.snmpTCPDomain:
+            (TransportAddressIPv4,) = (
+                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                    "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv4"
+                )
+            )
+            snmpTargetAddrTAddress = transport.addressType(
+                TransportAddressIPv4(snmpTargetAddrTAddress)
+            ).setLocalAddress(TransportAddressIPv4(snmpSourceAddrTAddress))
+        elif (
+            snmpTargetAddrTDomain[: len(config.snmpTCP6Domain)] == config.snmpTCP6Domain
+        ):
+            (TransportAddressIPv6,) = (
+                snmpEngine.msgAndPduDsp.mibInstrumController.mibBuilder.importSymbols(
+                    "TRANSPORT-ADDRESS-MIB", "TransportAddressIPv6"
+                )
+            )
+            snmpTargetAddrTAddress = transport.addressType(
+                TransportAddressIPv6(snmpTargetAddrTAddress)
+            ).setLocalAddress(TransportAddressIPv6(snmpSourceAddrTAddress))
         elif (
             snmpTargetAddrTDomain[: len(config.snmpLocalDomain)]
             == config.snmpLocalDomain
