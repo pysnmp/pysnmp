@@ -14,6 +14,8 @@ from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi import auth
 from pysnmp.hlapi.asyncio.device import DeviceReport as DeviceReport
 from pysnmp.hlapi.asyncio.device import SysOREntry as SysOREntry
+from pysnmp.hlapi.asyncio.dh import DHKeyChangeError as DHKeyChangeError
+from pysnmp.hlapi.asyncio.dh import DHKeyChangeResult as DHKeyChangeResult
 
 # default is a synchronous facade over the asyncio API
 from pysnmp.hlapi.asyncio.sync import (
@@ -21,6 +23,8 @@ from pysnmp.hlapi.asyncio.sync import (
     UdpTransportTarget,
     UnixTransportTarget,
     bulkCmd,
+    dh_key_change,
+    dhKeyChange,
     get_device_report,
     getCmd,
     getDeviceReport,

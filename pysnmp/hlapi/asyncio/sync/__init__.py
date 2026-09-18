@@ -2,6 +2,7 @@
 
 from pysnmp.hlapi.asyncio.sync.cmdgen import bulkCmd, getCmd, nextCmd, setCmd
 from pysnmp.hlapi.asyncio.sync.device import get_device_report, getDeviceReport
+from pysnmp.hlapi.asyncio.sync.dh import dh_key_change, dhKeyChange
 from pysnmp.hlapi.asyncio.sync.ntforg import sendNotification
 from pysnmp.hlapi.asyncio.transport import (
     Udp6TransportTarget,
