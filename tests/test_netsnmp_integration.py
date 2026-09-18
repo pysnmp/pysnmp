@@ -523,14 +523,21 @@ def test_successive_requests_over_one_tcp_connection():
 
     RFC 3430 section 3 puts them on the stream with nothing separating them, so
     this is where a reader that assumed one message per read would come apart.
-    """
-    engine = SnmpEngine()
-    transport_target = tcp_target()
 
-    for _ in range(5):
-        var_binds = assert_success(
-            next(
-                getCmd(
+    Driven through the coroutine API on one engine, because that is what keeps a
+    connection open across requests: the synchronous facade closes the transport
+    dispatcher when each call returns, so a second call on the same engine would
+    be a fresh connection at best.
+    """
+
+    async def several_gets():
+        engine = SnmpEngine()
+        transport_target = async_tcp_target()
+        results = []
+
+        for _ in range(5):
+            results.append(
+                await async_getCmd(
                     engine,
                     credentials(),
                     transport_target,
@@ -539,7 +546,16 @@ def test_successive_requests_over_one_tcp_connection():
                     lookupMib=False,
                 )
             )
+
+        return results
+
+    for error_indication, error_status, _error_index, var_binds in asyncio.run(
+        several_gets()
+    ):
+        assert error_indication is None, (
+            f"unexpected error indication: {error_indication}"
         )
+        assert not error_status, f"error status: {error_status}"
         assert isinstance(var_binds[0][1], TimeTicks)
 
 
