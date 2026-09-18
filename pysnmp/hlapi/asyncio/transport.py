@@ -46,6 +46,23 @@ class UdpTransportTarget(AbstractTransportTarget[tuple[str, int]]):
         to select target addresses for a particular operation
         (:RFC:`3413#section-4.1.4`).
 
+
+    Notes
+    -----
+    Resolving `transportAddr` calls `socket.getaddrinfo`, which blocks. Built
+    outside a running event loop this happens in the constructor, as it always
+    has. Built *inside* one -- which is where an asyncio application builds
+    things -- it is deferred instead, so a slow resolver cannot stall the loop,
+    and `transportAddr` raises until something has awaited
+    :py:meth:`~pysnmp.hlapi.transport.AbstractTransportTarget.resolve`.
+
+    Every hlapi command awaits it for you, so passing a freshly built target
+    straight to ``getCmd`` and friends needs no change. Await it yourself only
+    if you read the resolved address before issuing a request::
+
+        target = await UdpTransportTarget(('example.com', 161)).resolve()
+        print(target.transportAddr)
+
     Examples
     --------
     >>> from pysnmp.hlapi.asyncio import UdpTransportTarget
@@ -111,6 +128,15 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
         to select target addresses for a particular operation
         (:RFC:`3413#section-4.1.4`).
 
+
+    Notes
+    -----
+    Built inside a running event loop, address resolution is deferred so that a
+    slow resolver cannot stall it; every hlapi command awaits it for you. See
+    :py:class:`~pysnmp.hlapi.asyncio.UdpTransportTarget` for the detail, and
+    :py:meth:`~pysnmp.hlapi.transport.AbstractTransportTarget.resolve` to await
+    it yourself.
+
     Examples
     --------
     A link-local address keeps its scope, in the ``%`` form :RFC:`4007#section-11`
@@ -174,7 +200,15 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
 
 
 class UnixTransportTarget(AbstractTransportTarget[str]):
-    """A Unix domain socket to send to, named by its filesystem path."""
+    """A Unix domain socket to send to, named by its filesystem path.
+
+    A path is not looked up anywhere, so unlike the IP transports there is
+    nothing here that could stall an event loop, and resolution is never
+    deferred: a bad path is rejected by the constructor in every context.
+    """
+
+    #: Resolving a path only checks its type -- see the class docstring.
+    resolutionBlocks = False
 
     transportDomain = unix.domainName
     protoTransport = unix.UnixAsyncioTransport

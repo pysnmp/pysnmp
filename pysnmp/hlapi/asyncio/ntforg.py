@@ -121,6 +121,11 @@ async def sendNotification(
     """
     __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
+
     notifyName = lcd.configure(
         snmpEngine, authData, transportTarget, notifyType, contextData.contextName
     )
