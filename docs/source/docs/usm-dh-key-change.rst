@@ -54,6 +54,37 @@ Anything that fails raises :class:`~pysnmp.hlapi.asyncio.DHKeyChangeError` rathe
 returning an error indication, because a key change that half happened leaves
 the caller unable to reach the agent.
 
+When the SET is the step that fails
+-----------------------------------
+
+Everything the result needs is derived before the SET, so a parameter or key
+length that cannot produce a key is refused while the agent is still untouched.
+
+The SET itself is the step that cannot be taken back, and its failure is
+ambiguous. SNMP over UDP gives no way to tell a refused SET from one that
+committed and whose response was lost, and :RFC:`2786` defines no recovery for
+that. A transport target with retries makes it likelier to surface as
+``wrongValue`` than as a timeout, because a successful SET makes the agent
+publish a fresh public value, so the retransmitted copy no longer matches the
+half it echoes.
+
+So the exception carries what is needed to find out:
+
+.. code-block:: python
+
+   try:
+       result = dh_key_change(engine, current, target, ContextData())
+   except DHKeyChangeError as exc:
+       if exc.candidate is not None:
+           # The agent may have re-keyed to this. Try it before concluding
+           # that the old credentials are still live.
+           ...
+       raise
+
+Pass a transport target with ``retries=0`` if a timeout is the clearer signal
+for your recovery path; the exchange does not override the retry policy it is
+given.
+
 Finding the row
 ---------------
 

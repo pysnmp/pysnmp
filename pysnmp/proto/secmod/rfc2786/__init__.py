@@ -182,7 +182,7 @@ def decodeDHParameters(substrate: bytes) -> DHParameters:
     prime = int(parameter["prime"])
     base = int(parameter["base"])
 
-    if prime < 3:
+    if prime <= 3:
         raise ValueError(f"usmDHParameters names an unusable prime {prime}")
     if not 1 < base < prime:
         raise ValueError(f"usmDHParameters names an unusable base {base}")
@@ -242,8 +242,14 @@ def generateKeyPair(parameters: DHParameters) -> DHKeyPair:
 
     The exponent comes from :mod:`secrets`, and is drawn from the interval the
     DHKeyChange convention gives: `2^(l-1) <= x < 2^l` when the parameters carry
-    a private-value length, and `0 <= x < p-1` otherwise. Exponents below 2 are
-    redrawn, since they would publish a public value of 1 or `g`.
+    a private-value length, and `0 <= x < p-1` otherwise, narrowed at the bottom
+    to exclude 0 and 1 -- either would publish a public value of 1 or `g` and
+    give the exponent away.
+
+    Drawn in one go rather than by redrawing until the value is usable. The
+    parameters come from the agent, so a loop conditioned on them is a loop the
+    agent controls: `p = 3` leaves nothing but 0 and 1 to draw, and redrawing
+    would spin forever on a coroutine that never awaits.
 
     Parameters
     ----------
@@ -254,18 +260,28 @@ def generateKeyPair(parameters: DHParameters) -> DHKeyPair:
     -------
     DHKeyPair
         The private exponent and the public value to put on the wire.
+
+    Raises
+    ------
+    ValueError
+        If the prime is too small to draw an exponent from. Parameters that came
+        through :func:`decodeDHParameters` are already refused there; this also
+        covers a `DHParameters` built by hand. Primality itself is not checked.
     """
     prime = parameters.prime
     length = parameters.privateValueLength
 
-    while True:
-        if length is None:
-            private = secrets.randbelow(prime - 1)
-        else:
-            lower = 1 << (length - 1)
-            private = lower + secrets.randbelow(lower)
-        if private > 1:
-            break
+    if prime <= 3:
+        raise ValueError(f"Cannot generate a key pair over the prime {prime}")
+
+    if length is None:
+        # [2, p-2], one draw: randbelow(p-3) spans p-3 values from 0.
+        private = 2 + secrets.randbelow(prime - 3)
+    else:
+        # [2^(l-1), 2^l), whose floor is at least 2 because l > 1 is validated
+        # wherever the length is read.
+        lower = 1 << (length - 1)
+        private = lower + secrets.randbelow(lower)
 
     public = pow(parameters.base, private, prime)
     return DHKeyPair(private=private, public=_toOctets(public))

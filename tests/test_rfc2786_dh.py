@@ -94,6 +94,10 @@ class TestParameters:
         "parameters",
         [
             DHParameters(prime=2, base=2),
+            # p = 3 leaves only 0 and 1 to draw an exponent from, so a
+            # reject-and-redraw generator never terminates on it. Refused here
+            # rather than hanging later on parameters the agent chose.
+            DHParameters(prime=3, base=2),
             DHParameters(prime=OAKLEY_GROUP_2.prime, base=1),
             DHParameters(prime=OAKLEY_GROUP_2.prime, base=OAKLEY_GROUP_2.prime),
         ],
@@ -131,6 +135,28 @@ class TestAgreement:
         """An exponent of 0 or 1 would publish 1 or g and give away the secret."""
         for _ in range(16):
             assert generateKeyPair(OAKLEY_GROUP_2).private > 1
+
+    @pytest.mark.parametrize("prime", [2, 3])
+    def test_key_generation_refuses_a_prime_with_nothing_to_draw(self, prime):
+        """Also guarded in the generator, for parameters not built by decoding."""
+        with pytest.raises(ValueError):
+            generateKeyPair(DHParameters(prime=prime, base=2))
+
+    def test_key_generation_terminates_on_small_primes(self):
+        """One draw, no rejection loop: small primes return instead of spinning.
+
+        The parameters come from the agent, so any loop conditioned on them is a
+        loop the agent controls.
+        """
+        for prime in (5, 7, 11, 13):
+            keyPair = generateKeyPair(DHParameters(prime=prime, base=2))
+            assert 2 <= keyPair.private <= prime - 2
+
+    def test_exponent_stays_in_the_usable_interval(self):
+        """0, 1 and p-1 are excluded; the rest of [2, p-2] is fair game."""
+        for _ in range(64):
+            private = generateKeyPair(OAKLEY_GROUP_2).private
+            assert 2 <= private <= OAKLEY_GROUP_2.prime - 2
 
     def test_private_value_length_bounds_the_exponent(self):
         """When the parameters carry l, the exponent comes from [2^(l-1), 2^l)."""

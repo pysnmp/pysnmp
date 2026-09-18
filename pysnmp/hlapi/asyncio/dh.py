@@ -60,7 +60,20 @@ class DHKeyChangeError(PySnmpError):
     Raised rather than returned, because a key change that half happened leaves
     the caller unable to talk to the agent, and a return value is too easy to
     ignore.
+
+    Attributes
+    ----------
+    candidate : DHKeyChangeResult or None
+        Set when the SET was the step that failed, and then the failure is
+        ambiguous: the agent may have applied the change and lost the response.
+        :RFC:`2786` defines no recovery for that, so the way to find out is to
+        try this key. None for every other step, where nothing was changed.
     """
+
+    def __init__(self, message: str, candidate: DHKeyChangeResult | None = None):
+        """Record the message and, for a failed SET, the key that may be live."""
+        super().__init__(message)
+        self.candidate = candidate
 
 
 class DHKeyChangeResult(NamedTuple):
@@ -336,8 +349,13 @@ async def dh_key_change(
     Raises
     ------
     DHKeyChangeError
-        If any step fails. The agent's key is unchanged unless the SET itself
-        was the step that failed.
+        If any step fails. Everything is derived before the SET, so the agent's
+        key is unchanged unless the SET itself was the step that failed -- and
+        that case carries a `candidate` result, because a failed SET may still
+        have been applied. A transport target with retries turns a lost response
+        into a `wrongValue` on the retransmission rather than a timeout; pass a
+        target with ``retries=0`` if a timeout is the clearer signal for your
+        recovery path.
 
     Examples
     --------
@@ -401,6 +419,26 @@ async def dh_key_change(
             "DHKeyChange value"
         )
 
+    # Everything the result needs is computable before the SET, and the SET is
+    # the one step that cannot be undone. Deriving first means a peer public
+    # value out of range, a key length that cannot be met, or an index that does
+    # not parse costs nothing; deriving afterwards would leave the agent re-keyed
+    # with the caller holding no key for it.
+    try:
+        secret = computeSharedSecret(parameters, keyPair.private, agentPublic)
+        candidate = DHKeyChangeResult(
+            key=deriveKey(secret, wanted),
+            securityEngineId=parseKeyChangeInstance(column, instance)[0],
+            instance=instance,
+            parameters=parameters,
+        )
+    except ValueError as exc:
+        raise DHKeyChangeError(
+            f"Refusing the key change, because its result could not be derived "
+            f"and the agent would have been left re-keyed to an unknown value: "
+            f"{exc}"
+        ) from exc
+
     errorIndication, errorStatus, _errorIndex, _varBinds = await setCmd(
         snmpEngine,
         authData,
@@ -412,25 +450,23 @@ async def dh_key_change(
         ),
         **options,
     )
-    _failed(errorIndication, errorStatus, "Setting the DHKeyChange object")
 
-    try:
-        secret = computeSharedSecret(parameters, keyPair.private, agentPublic)
-        key = deriveKey(secret, wanted)
-    except ValueError as exc:
-        # The SET has already committed, so the agent has re-keyed and we cannot
-        # say to what. Nothing to undo, everything to report.
+    if errorIndication or errorStatus:
+        # A failed SET does not mean the key is unchanged. No response at all may
+        # be a lost reply to a SET that committed, and a `wrongValue` may be the
+        # agent refusing a retransmission of a SET it has already applied -- it
+        # publishes a fresh public value on success, so the second copy no longer
+        # matches. Hand back the candidate rather than leaving the caller to
+        # assume the old key still works.
+        detail = errorIndication or errorStatus.prettyPrint()
         raise DHKeyChangeError(
-            f"The agent accepted the key change but its public value is "
-            f"unusable, so the new key cannot be derived: {exc}"
-        ) from exc
+            f"Setting the DHKeyChange object: {detail}. The agent may still have "
+            f"applied it, so try authenticating with the candidate key on this "
+            f"error before assuming the old key is live",
+            candidate=candidate,
+        )
 
-    return DHKeyChangeResult(
-        key=key,
-        securityEngineId=parseKeyChangeInstance(column, instance)[0],
-        instance=instance,
-        parameters=parameters,
-    )
+    return candidate
 
 
 # Preserve the camel-case spelling used by this branch's legacy HLAPI.
