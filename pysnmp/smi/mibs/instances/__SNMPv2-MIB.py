@@ -114,7 +114,14 @@ class SysUpTime(TimeTicks):
 
     def clone(self, **kwargs):
         if "value" not in kwargs:
-            kwargs["value"] = int((time() - self.createdAt) * 100)
+            # Modulo 2^32, as TimeTicks is defined to be. (time() - createdAt)
+            # * 100 crosses 4294967295 after 2**32 / 100 seconds -- about 497
+            # days -- and without the mask every read of sysUpTime past that
+            # point raised ValueConstraintError out of the constraint check
+            # below. sysUpTime.0 is bound into every notification and is read
+            # by the command responder, so the engine stopped answering at all
+            # rather than degrading.
+            kwargs["value"] = int((time() - self.createdAt) * 100) % 0x100000000
         return TimeTicks.clone(self, **kwargs)
 
 
