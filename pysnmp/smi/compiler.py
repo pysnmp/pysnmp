@@ -12,6 +12,7 @@ Without it `addMibCompiler` raises `SmiError` naming the missing import.
 import os
 import re
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -88,10 +89,105 @@ def sourcesFromEnvironment(value: "str | None" = None) -> "list[str] | None":
     return sources or None
 
 
-if sys.platform[:3] == "win":
-    defaultDest = str(Path.home() / "PySNMP Configuration" / "mibs")
-else:
-    defaultDest = str(Path.home() / ".pysnmp" / "mibs")
+#: The environment variable the XDG Base Directory specification defines as
+#: the root of a user's cache.
+#:
+#: Only consulted where the spec applies. An entry that is not absolute is
+#: ignored, which the spec requires.
+CACHE_HOME_ENV = "XDG_CACHE_HOME"
+
+#: Where Windows puts per-machine user data, cache included.
+LOCAL_APP_DATA_ENV = "LOCALAPPDATA"
+
+
+def _legacyCacheDirectory(home: Path, platform: str) -> Path:
+    """Where releases before this one compiled to."""
+    if platform[:3] == "win":
+        return home / "PySNMP Configuration" / "mibs"
+
+    return home / ".pysnmp" / "mibs"
+
+
+def cacheDirectory(
+    home: "str | Path | None" = None,
+    platform: "str | None" = None,
+    environ: "Mapping[str, str] | None" = None,
+) -> str:
+    """Where compiled MIBs are written, and read back from, by default.
+
+    Compiled MIBs are regenerable, user-specific and non-essential, which is
+    what every platform's cache convention is for. The old ``~/.pysnmp/mibs``
+    was none of those things to a backup tool, which swept a regenerable cache
+    into the user's home-directory archive.
+
+    Args:
+        home: the user's home directory, read from the environment when not
+            given.
+        platform: the `sys.platform` string, read from the running
+            interpreter when not given.
+        environ: the environment, read from `os.environ` when not given.
+            These three are injected by the tests, which have no business
+            editing the real ones for something this small.
+
+    Returns
+    -------
+        The directory, as a string, in the form the compiler wants.
+
+    Notes
+    -----
+        A populated legacy directory wins, so that upgrading does not orphan a
+        cache someone already has and silently recompile everything in it. The
+        new location is used only where there is nothing to keep.
+
+        Otherwise the platform's own convention applies: ``$XDG_CACHE_HOME``
+        and then ``~/.cache`` on Linux and the BSDs, ``~/Library/Caches`` on
+        macOS, ``%LOCALAPPDATA%`` on Windows. An explicitly set
+        ``XDG_CACHE_HOME`` is honoured on macOS too -- it is not that
+        platform's convention, but someone who set it meant it.
+
+        This is the default and nothing more: ``destination=`` passed to
+        `addMibCompiler` still wins, as it always did.
+
+        The rules are short enough to write out, so they are written out rather
+        than taken as a dependency. `platformdirs` implements the same three
+        conventions and more, and is the right answer for a package that can
+        afford another install-time requirement; pysnmp has two and would
+        rather keep it that way.
+    """
+    homePath = Path.home() if home is None else Path(home)
+    platformName = sys.platform if platform is None else platform
+    variables: Mapping[str, str] = os.environ if environ is None else environ
+
+    legacy = _legacyCacheDirectory(homePath, platformName)
+    if legacy.is_dir():
+        return str(legacy)
+
+    if platformName[:3] == "win":
+        localAppData = variables.get(LOCAL_APP_DATA_ENV)
+        base = (
+            Path(localAppData)
+            if localAppData and os.path.isabs(localAppData)
+            else homePath / "AppData" / "Local"
+        )
+        # LOCALAPPDATA holds configuration as well as cache, so the
+        # convention there is a "Cache" segment to tell them apart.
+        return str(base / "pysnmp" / "Cache" / "mibs")
+
+    cacheHome = variables.get(CACHE_HOME_ENV)
+    if cacheHome and os.path.isabs(cacheHome):
+        base = Path(cacheHome)
+    elif platformName == "darwin":
+        base = homePath / "Library" / "Caches"
+    else:
+        base = homePath / ".cache"
+
+    return str(base / "pysnmp" / "mibs")
+
+
+#: Where `addMibCompiler` writes compiled MIBs when no ``destination=`` says
+#: otherwise. Settled once, at import, so that it does not change under a
+#: running application.
+defaultDest = cacheDirectory()
 
 defaultBorrowers: list[Any] = []
 
