@@ -174,7 +174,42 @@ pull request carrying the ``ci:full-matrix`` label.
      - 3.10 – 3.14
      - 3.10 and 3.14
 
-That is five jobs on an ordinary pull request and nine on a broad run.
+PyPy 3.11 runs on Linux on every trigger, in addition to the table above.
+That is six jobs on an ordinary pull request and ten on a broad run.
+
+It blocks a merge like every other leg, and runs the whole suite: nothing
+is skipped there. Five test files build a MIB corpus and could not, until
+pysmi 6.0.1 -- its corpus writer left the cursor behind ``PRAGMA
+journal_mode`` open, which CPython's ``sqlite3`` tolerates and PyPy's
+refuses at the next commit. That is why ``pyproject.toml`` floors pysmi at
+6.0.1 (`pysnmp/pysmi#332 <https://github.com/pysnmp/pysmi/pull/332>`_); the
+skip those five carried is gone with it.
+
+Blocking rather than tolerated is deliberate: a job that may fail for any
+reason would not have caught either of the two things adding PyPy found,
+and would not catch the next one.
+
+The PyPy leg measures no coverage. ``coverage`` ships no C tracer for
+PyPy and falls back to a pure-Python one that costs an order of
+magnitude, which is enough to fail a test that asserts a walk of 100 OIDs
+finishes inside five seconds -- under the tracer the same walk took ten.
+The five CPython legs report coverage, and a sixth figure from PyPy would
+say nothing they do not.
+
+It is worth having even so. PyPy is the other implementation this package
+is expected to work on, nothing here had ever run it before
+`#320 <https://github.com/pysnmp/pysnmp/pull/320>`_ — which found that
+pysnmp could not be imported on PyPy at all — and a pure-Python package's
+second interpreter is exactly where a CPython-only assumption hides. Two
+turned up immediately: a leak test that counted descriptors before
+finalisation had run, and an engine module that tripped a bug in PyPy's
+own compiler.
+
+Test jobs install the ``test`` dependency group rather than ``dev``.
+``dev`` carries the documentation and typing toolchain, and mypy depends
+on a Rust extension with no PyPy wheel, so installing it fails on that leg
+before a test runs. The two groups are declared in ``pyproject.toml``,
+where ``dev`` includes ``test``.
 
 The reasoning is worth stating, because it is the opposite of the usual
 "test everything everywhere" instinct. These are pure-Python projects, so

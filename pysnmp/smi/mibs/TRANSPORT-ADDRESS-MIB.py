@@ -2,7 +2,7 @@
 # PySNMP MIB module TRANSPORT-ADDRESS-MIB (https://pysnmp.github.io/pysmi/)
 # ASN.1 source TRANSPORT-ADDRESS-MIB
 # Source digest sha256:0e5c6fa9323c20e5ffd84851d2c65707265022bb3a24fb49455005df1d340463
-# Produced by pysmi-6.0.0
+# Produced by pysmi-6.0.1
 #
 PYSNMP_MODULE_REVISION = "200211010000Z"
 

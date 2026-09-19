@@ -23,6 +23,13 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    # Both implementations the test matrix runs, and it runs them because
+    # this is claimed here: an installer reads these to decide whether the
+    # package is for the interpreter in front of it, and until PyPy was in
+    # CI, claiming it would have been a guess. It is not one now -- see
+    # docs/source/ci-and-releases.rst.
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Communications",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -77,12 +84,22 @@ dependencies = [
 # longer carries the runtime behavior pysnmp now applies from
 # pysnmp/smi/mibs/behavior (#215) -- are subsumed by it.
 #
+# The patch digit is 6.0.1 rather than 6.0.0 because 6.0.0 cannot build a
+# corpus on PyPy: its `_connect` leaves the cursor behind `PRAGMA journal_mode`
+# unclosed, and that PRAGMA answers with a row, so the statement is still open
+# when write_db() commits. CPython frees the cursor as the call returns and
+# never notices; PyPy frees it later and the commit meets "cannot commit
+# transaction - SQL statements in progress". Fixed in pysnmp/pysmi#332 and
+# released as 6.0.1. On CPython the two are the same behavior, so this floor
+# costs a CPython install nothing and is what lets the PyPy leg run the whole
+# suite.
+#
 # The ceiling is the next major, on the same reading as before: what this extra
 # buys is pysmi's pysnmp code generator, and a pysmi major is where that is
 # allowed to change. tests/test_generated_mibs.py re-renders the committed
 # modules and is what would say so.
 [project.optional-dependencies]
-compile = ["pysnmp-pysmi >=6.0.0,<7"]
+compile = ["pysnmp-pysmi >=6.0.1,<7"]
 
 [project.urls]
 repository = "https://github.com/pysnmp/pysnmp"
@@ -107,17 +124,37 @@ repository = "https://github.com/pysnmp/pysnmp"
 # tests/test_base_layer_equivalence.py needs 6.x for the same reason the extra
 # does: it reads what pysmi says RFC1213-MIB::atNetAddress declares.
 [dependency-groups]
+# What it takes to run the suite, and nothing else. Split out of `dev` so that
+# the suite can run on an interpreter the rest of the toolchain does not
+# install on: mypy depends on ast-serialize, a Rust extension with no PyPy
+# wheel, so `uv sync --group dev` fails on PyPy while compiling it -- before a
+# single test has run. Every test job installs this group rather than `dev`,
+# which also means none of them waits for Sphinx.
+test = [
+    "pytest >=9.0.3,<10.0.0",
+    "coverage[toml] >=7.2.0,<8.0.0",
+    # Not optional for the suite the way it is optional for an install:
+    # tools/regenerate_mibs.py renders with pysmi's code generator,
+    # tests/test_generated_mibs.py re-renders to check for drift, and
+    # tests/test_corpus.py builds its fixture from pysmi.corpus.conformance.
+    "pysnmp-pysmi >=6.0.1,<7",
+    # A formatter in a test group looks wrong until you see what renders the
+    # modules: tools/regenerate_mibs.py pipes pysmi's output through
+    # `python -m ruff format`, so the rendering test cannot compare anything
+    # without it. It is in `dev` for linting as well, which is why this was
+    # missed -- every job used to install `dev`, and the drift test failed on
+    # CI the first time one did not.
+    "ruff >=0.4.0,<1.0.0",
+]
+
 dev = [
-    "pysnmp-pysmi >=6.0.0,<7",
+    {include-group = "test"},
     # documentation toolchain is marker-guarded the way pyasn1 already does
     # it. Both CI jobs that build docs run 3.12 or newer.
     "sphinx >=9.1.0,<10.0.0; python_version >= '3.12'",
     "myst-parser >=5.1.0,<6.0.0; python_version >= '3.12'",
     "furo >=2025.12.19; python_version >= '3.12'",
-    "pytest >=9.0.3,<10.0.0",
-    "coverage[toml] >=7.2.0,<8.0.0",
     "mypy >=1.15.0,<3.0.0",
-    "ruff >=0.4.0,<1.0.0",
 ]
 
 # General availability wherever there is one, enforced rather than reviewed.
