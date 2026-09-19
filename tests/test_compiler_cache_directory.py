@@ -74,11 +74,18 @@ class TestXdgOnLinux:
         )
 
     def test_set_is_honoured(self, tmp_path):
+        # An absolute path in the *host's* terms, for the reason
+        # `TestWindows.test_local_app_data_is_used` spells out: absoluteness is
+        # judged under the interpreter's own rules, and since Python 3.13 those
+        # no longer count a driveless "/somewhere/else" as absolute on Windows,
+        # where this suite also runs.
+        elsewhere = tmp_path / "elsewhere"
+
         assert cacheDirectory(
             home=tmp_path,
             platform="linux",
-            environ={CACHE_HOME_ENV: "/somewhere/else"},
-        ) == str(Path("/somewhere/else") / "pysnmp" / "mibs")
+            environ={CACHE_HOME_ENV: str(elsewhere)},
+        ) == str(elsewhere / "pysnmp" / "mibs")
 
     def test_empty_is_treated_as_unset(self, tmp_path):
         # "If $XDG_CACHE_HOME is either not set or empty, a default equal to
@@ -111,12 +118,15 @@ class TestMacOS:
         )
 
     def test_an_explicit_xdg_cache_home_is_honoured(self, tmp_path):
-        # Not the platform convention, but someone who set it meant it.
+        # Not the platform convention, but someone who set it meant it. Host
+        # absolute, for the reason `TestXdgOnLinux.test_set_is_honoured` gives.
+        elsewhere = tmp_path / "elsewhere"
+
         assert cacheDirectory(
             home=tmp_path,
             platform="darwin",
-            environ={CACHE_HOME_ENV: "/somewhere/else"},
-        ) == str(Path("/somewhere/else") / "pysnmp" / "mibs")
+            environ={CACHE_HOME_ENV: str(elsewhere)},
+        ) == str(elsewhere / "pysnmp" / "mibs")
 
 
 class TestWindows:
