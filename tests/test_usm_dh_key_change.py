@@ -351,9 +351,9 @@ class TestAnAgentWhosePublicValueCameOutShort:
     def test_the_key_change_still_agrees(self, monkeypatch):
         fake = _FakeAgent()
         fake.keyPair = _shortKeyPair(fake.parameters, 127)
-        monkeypatch.setattr(dh_module, "getCmd", fake.getCmd)
-        monkeypatch.setattr(dh_module, "nextCmd", fake.nextCmd)
-        monkeypatch.setattr(dh_module, "setCmd", fake.setCmd)
+        monkeypatch.setattr(dh_module, "get_cmd", fake.get_cmd)
+        monkeypatch.setattr(dh_module, "next_cmd", fake.next_cmd)
+        monkeypatch.setattr(dh_module, "set_cmd", fake.set_cmd)
         monkeypatch.setattr(dh_module, "buildKeyChangeValue", fake.keyChangeValue)
 
         result = change()
