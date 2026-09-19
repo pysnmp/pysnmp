@@ -29,9 +29,9 @@ from pysnmp.hlapi.asyncio import (
     SnmpEngine,
     Tcp6TransportTarget,
     TcpTransportTarget,
-    bulkCmd,
-    getCmd,
-    nextCmd,
+    bulk_cmd,
+    get_cmd,
+    next_cmd,
 )
 
 SYS_DESCR = "1.3.6.1.2.1.1.1.0"
@@ -376,7 +376,7 @@ async def test_a_peer_that_accepts_and_then_closes_fails_the_request():
     startedAt = loop.time()
 
     try:
-        errorIndication, _errorStatus, _errorIndex, _varBinds = await getCmd(
+        errorIndication, _errorStatus, _errorIndex, _varBinds = await get_cmd(
             SnmpEngine(),
             CommunityData("public", mpModel=1),
             TcpTransportTarget(("127.0.0.1", port), timeout=10, retries=2),
@@ -439,7 +439,7 @@ async def test_the_dispatcher_routes_a_transport_failure_to_its_error_callback()
 @runOnItsOwnLoop
 async def test_get_over_tcp(snmpsim_tcp_endpoint):
     engine = SnmpEngine()
-    errorIndication, errorStatus, _errorIndex, varBinds = await getCmd(
+    errorIndication, errorStatus, _errorIndex, varBinds = await get_cmd(
         engine,
         CommunityData("public", mpModel=1),
         TcpTransportTarget(snmpsim_tcp_endpoint, timeout=5, retries=1),
@@ -456,7 +456,7 @@ async def test_get_over_tcp(snmpsim_tcp_endpoint):
 @runOnItsOwnLoop
 async def test_getnext_over_tcp(snmpsim_tcp_endpoint):
     engine = SnmpEngine()
-    errorIndication, _errorStatus, _errorIndex, varBindTable = await nextCmd(
+    errorIndication, _errorStatus, _errorIndex, varBindTable = await next_cmd(
         engine,
         CommunityData("public", mpModel=1),
         TcpTransportTarget(snmpsim_tcp_endpoint, timeout=5, retries=1),
@@ -472,7 +472,7 @@ async def test_getnext_over_tcp(snmpsim_tcp_endpoint):
 async def test_getbulk_over_tcp(snmpsim_tcp_endpoint):
     """The case TCP exists for: a reply too wide to be sure of over a datagram."""
     engine = SnmpEngine()
-    errorIndication, _errorStatus, _errorIndex, varBindTable = await bulkCmd(
+    errorIndication, _errorStatus, _errorIndex, varBindTable = await bulk_cmd(
         engine,
         CommunityData("public", mpModel=1),
         TcpTransportTarget(snmpsim_tcp_endpoint, timeout=5, retries=1),
@@ -493,7 +493,7 @@ async def test_successive_requests_share_one_connection(snmpsim_tcp_endpoint):
     target = TcpTransportTarget(snmpsim_tcp_endpoint, timeout=5, retries=1)
 
     for _ in range(5):
-        errorIndication, _errorStatus, _errorIndex, varBinds = await getCmd(
+        errorIndication, _errorStatus, _errorIndex, varBinds = await get_cmd(
             engine,
             CommunityData("public", mpModel=1),
             target,
@@ -512,7 +512,7 @@ async def test_concurrent_requests_over_tcp_all_succeed(snmpsim_tcp_endpoint):
     """Responses that arrive interleaved still frame and match up."""
 
     async def one_get():
-        errorIndication, _errorStatus, _errorIndex, _varBinds = await getCmd(
+        errorIndication, _errorStatus, _errorIndex, _varBinds = await get_cmd(
             SnmpEngine(),
             CommunityData("public", mpModel=1),
             TcpTransportTarget(snmpsim_tcp_endpoint, timeout=5, retries=1),
@@ -536,7 +536,7 @@ async def test_a_refused_port_fails_the_request_instead_of_timing_out():
     loop = asyncio.get_running_loop()
     startedAt = loop.time()
 
-    errorIndication, _errorStatus, _errorIndex, _varBinds = await getCmd(
+    errorIndication, _errorStatus, _errorIndex, _varBinds = await get_cmd(
         SnmpEngine(),
         CommunityData("public", mpModel=1),
         TcpTransportTarget(("127.0.0.1", freePort()), timeout=10, retries=2),

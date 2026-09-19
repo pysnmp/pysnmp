@@ -40,8 +40,8 @@ class CommunityData:
     """Creates SNMP v1/v2c configuration entry.
 
     This object can be used by
-    :py:func:`~pysnmp.hlapi.asyncio.getCmd` and the other command-generator
-    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.sendNotification`,
+    :py:func:`~pysnmp.hlapi.asyncio.get_cmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.send_notification`,
     for adding new entries to Local Configuration
     Datastore (LCD) managed by :py:class:`~pysnmp.hlapi.SnmpEngine`
     class instance.
@@ -273,8 +273,8 @@ class UsmUserData:
     """Creates SNMP v3 User Security Model (USM) configuration entry.
 
     This object can be used by
-    :py:func:`~pysnmp.hlapi.asyncio.getCmd` and the other command-generator
-    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.sendNotification`,
+    :py:func:`~pysnmp.hlapi.asyncio.get_cmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.send_notification`,
     for adding new entries to Local Configuration
     Datastore (LCD) managed by :py:class:`~pysnmp.hlapi.SnmpEngine`
     class instance.

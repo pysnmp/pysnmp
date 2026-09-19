@@ -13,19 +13,20 @@
 import asyncio
 from typing import Any
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.entity.rfc3413 import ntforg
 from pysnmp.hlapi.asyncio._callback import make_callback
 from pysnmp.hlapi.lcd import NotificationOriginatorLcdConfigurator
 from pysnmp.hlapi.types import SnmpResponse
 from pysnmp.hlapi.varbinds import NotificationOriginatorVarBinds
 
-__all__ = ["sendNotification"]
+__all__ = ["send_notification"]
 
 vbProcessor = NotificationOriginatorVarBinds()
 lcd = NotificationOriginatorLcdConfigurator()
 
 
-async def sendNotification(
+async def send_notification(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -105,7 +106,7 @@ async def sendNotification(
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     send_result = await sendNotification(
+    ...     send_result = await send_notification(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('localhost', 162)),
@@ -157,3 +158,11 @@ async def sendNotification(
         loop.call_soon(__trapFun, future)
 
     return await future
+
+
+#: The camelCase spelling this name used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using it warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {"sendNotification": "send_notification"}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

@@ -99,7 +99,7 @@ class TestANameUnderAnUnloadedMib:
 
     @pytest.mark.parametrize("ignore_value_errors", [None, True, False])
     def test_a_subtree_root_still_starts_a_walk(self, mvc, ignore_value_errors):
-        # 1.3.6.1.2.1.1 is `system`; nextCmd and bulkCmd are started from it.
+        # 1.3.6.1.2.1.1 is `system`; next_cmd and bulk_cmd are started from it.
         ot = ObjectType(ObjectIdentity("1.3.6.1.2.1.1"))
 
         assert ot.resolveWithMib(mvc, ignoreValueErrors=ignore_value_errors) is ot

@@ -20,7 +20,7 @@ from pysnmp.hlapi import (
     SnmpEngine,
     UdpTransportTarget,
     UsmUserData,
-    getCmd,
+    get_cmd,
     usmAesBlumenthalCfb192Protocol,
     usmAesBlumenthalCfb256Protocol,
     usmAesCfb128Protocol,
@@ -127,7 +127,7 @@ def _start_snmpsim(tmp_path, auth_proto, priv_proto, auth_key, priv_key):
 def _do_get(host, port, auth_proto_oid, auth_key, priv_proto_oid, priv_key):
     """Perform an SNMPv3 GET and return the result."""
     return next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             UsmUserData(
                 "testuser",

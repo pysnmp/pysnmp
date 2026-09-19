@@ -20,7 +20,7 @@ class SnmpResponse(NamedTuple):
     This is a ``NamedTuple`` subclass of ``tuple``, so existing code that
     unpacks the 4-tuple positionally continues to work unchanged::
 
-        errorIndication, errorStatus, errorIndex, varBinds = await getCmd(...)
+        errorIndication, errorStatus, errorIndex, varBinds = await get_cmd(...)
 
     Attributes
     ----------

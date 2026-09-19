@@ -31,8 +31,8 @@ from pysnmp.hlapi.asyncio import (
     ObjectType,
     SnmpEngine,
     UdpTransportTarget,
-    getCmd,
-    sendNotification,
+    get_cmd,
+    send_notification,
 )
 
 #: sysUpTime.0 and snmpTrapOID.0, the two an SMIv2 notification must carry.
@@ -99,7 +99,7 @@ async def _trap(mpModel: int) -> list[tuple[str, str]]:
 
     sender = SnmpEngine()
     try:
-        errorIndication, errorStatus, errorIndex, varBinds = await sendNotification(
+        errorIndication, errorStatus, errorIndex, varBinds = await send_notification(
             sender,
             CommunityData("public", mpModel=mpModel),
             UdpTransportTarget(("127.0.0.1", port)),
@@ -134,7 +134,7 @@ async def _poll() -> list[tuple[str, str]]:
 
     manager = SnmpEngine()
     try:
-        errorIndication, errorStatus, errorIndex, varBinds = await getCmd(
+        errorIndication, errorStatus, errorIndex, varBinds = await get_cmd(
             manager,
             CommunityData("public", mpModel=1),
             UdpTransportTarget(("127.0.0.1", port), timeout=5, retries=1),

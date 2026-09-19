@@ -227,7 +227,7 @@ class TestTheHlapiResolvesBeforeUse:
             target = UdpTransportTarget(("slow.invalid", 161))
 
             with pytest.raises(Stop):
-                await cmdgen.getCmd(
+                await cmdgen.get_cmd(
                     SnmpEngine(), CommunityData("public"), target, ContextData()
                 )
 

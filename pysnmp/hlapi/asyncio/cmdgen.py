@@ -36,24 +36,25 @@
 import asyncio
 from typing import Any
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.entity.rfc3413 import cmdgen
 from pysnmp.hlapi.asyncio._callback import make_callback
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.hlapi.types import SnmpResponse
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 
-__all__ = ["bulkCmd", "getCmd", "isEndOfMib", "nextCmd", "setCmd"]
+__all__ = ["bulk_cmd", "get_cmd", "is_end_of_mib", "next_cmd", "set_cmd"]
 
 vbProcessor = CommandGeneratorVarBinds()
 lcd = CommandGeneratorLcdConfigurator()
 
 
-def isEndOfMib(x):
+def is_end_of_mib(x):
     """Whether a walk has run off the end of every subtree it was following."""
     return not cmdgen.getNextVarBinds(x)[1]
 
 
-async def getCmd(
+async def get_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -126,7 +127,7 @@ async def getCmd(
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     result_get = await getCmd(
+    ...     result_get = await get_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('localhost', 161)),
@@ -169,7 +170,7 @@ async def getCmd(
     return await future
 
 
-async def setCmd(
+async def set_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -242,7 +243,7 @@ async def setCmd(
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     errorIndication, errorStatus, errorIndex, varBinds = await setCmd(
+    ...     errorIndication, errorStatus, errorIndex, varBinds = await set_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('localhost', 161)),
@@ -284,7 +285,7 @@ async def setCmd(
     return await future
 
 
-async def nextCmd(
+async def next_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -361,7 +362,7 @@ async def nextCmd(
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     errorIndication, errorStatus, errorIndex, varBinds = await nextCmd(
+    ...     errorIndication, errorStatus, errorIndex, varBinds = await next_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('localhost', 161)),
@@ -403,7 +404,7 @@ async def nextCmd(
     return await future
 
 
-async def bulkCmd(
+async def bulk_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -510,7 +511,7 @@ async def bulkCmd(
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     result_bulk = await bulkCmd(
+    ...     result_bulk = await bulk_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
     ...         UdpTransportTarget(('localhost', 161)),
@@ -554,3 +555,17 @@ async def bulkCmd(
         ),
     )
     return await future
+
+
+#: The camelCase spellings these names used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using one warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {
+    "bulkCmd": "bulk_cmd",
+    "getCmd": "get_cmd",
+    "isEndOfMib": "is_end_of_mib",
+    "nextCmd": "next_cmd",
+    "setCmd": "set_cmd",
+}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

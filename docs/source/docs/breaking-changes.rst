@@ -8,6 +8,41 @@ This release is not backwards compatible with the 5.0 series. The changes
 below require source modifications in applications that used the removed
 interfaces. See :doc:`/changelog` for the complete list of changes.
 
+The high-level API is snake_case, and camelCase is deprecated
+-------------------------------------------------------------
+
+The high-level API followed camelCase, which PEP 8 does not call for. The
+canonical spelling is snake_case now:
+
+=============================  ============================
+Was                            Now
+=============================  ============================
+``getCmd``                     ``get_cmd``
+``nextCmd``                    ``next_cmd``
+``setCmd``                     ``set_cmd``
+``bulkCmd``                    ``bulk_cmd``
+``isEndOfMib``                 ``is_end_of_mib``
+``sendNotification``           ``send_notification``
+``getDeviceReport``            ``get_device_report``
+``dhKeyChange``                ``dh_key_change``
+=============================  ============================
+
+**Nothing has been removed.** Every old name still resolves to the same
+function and behaves identically; using one emits a ``DeprecationWarning``
+naming its replacement. Existing code keeps working untouched, so this is a
+rename to migrate to at your own pace rather than a break to fix before
+upgrading.
+
+To find what needs changing, run with deprecation warnings visible::
+
+    python -W error::DeprecationWarning your_app.py
+
+The names match `lextudio/pysnmp <https://github.com/lextudio/pysnmp>`_, the
+other active fork, so code written against either one ports on names alone.
+
+The protocol constants (``usmHMAC192SHA256AuthProtocol`` and friends) are
+**not** part of this change and keep their current spelling.
+
 Python 3.10 is the minimum supported version
 --------------------------------------------
 

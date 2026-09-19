@@ -68,7 +68,7 @@ class _FakeAgent:
         self.setValues = []
         self.setCalls = 0
 
-    async def getCmd(self, _engine, _auth, _target, _context, *_varBinds, **_options):
+    async def get_cmd(self, _engine, _auth, _target, _context, *_varBinds, **_options):
         """usmDHParameters.0 -- the only GET the flow makes by default."""
         return (
             None,
@@ -82,11 +82,11 @@ class _FakeAgent:
             ],
         )
 
-    async def nextCmd(self, _engine, _auth, _target, _context, *_varBinds, **_options):
+    async def next_cmd(self, _engine, _auth, _target, _context, *_varBinds, **_options):
         """One row of usmDHUserKeyTable, carrying this agent's public value."""
         return (None, 0, 0, [[(self.instance, OctetString(self.keyPair.public))]])
 
-    async def setCmd(self, _engine, _auth, _target, _context, *_varBinds, **_options):
+    async def set_cmd(self, _engine, _auth, _target, _context, *_varBinds, **_options):
         """Answer the SET as configured. The value is captured by `keyChangeValue`.
 
         An unresolved ObjectType will not be indexed -- it needs a MIB view
@@ -112,9 +112,9 @@ class _FakeAgent:
 def agent(monkeypatch):
     """Put a fake agent behind the three commands the flow issues."""
     fake = _FakeAgent()
-    monkeypatch.setattr(dh_module, "getCmd", fake.getCmd)
-    monkeypatch.setattr(dh_module, "nextCmd", fake.nextCmd)
-    monkeypatch.setattr(dh_module, "setCmd", fake.setCmd)
+    monkeypatch.setattr(dh_module, "get_cmd", fake.get_cmd)
+    monkeypatch.setattr(dh_module, "next_cmd", fake.next_cmd)
+    monkeypatch.setattr(dh_module, "set_cmd", fake.set_cmd)
     monkeypatch.setattr(dh_module, "buildKeyChangeValue", fake.keyChangeValue)
     return fake
 
@@ -193,9 +193,9 @@ class TestFailedSetIsAmbiguous:
     def test_candidate_key_is_attached(self, monkeypatch, failure):
         """Both shapes of failure can mean the agent re-keyed and we missed it."""
         fake = _FakeAgent(setFailure=failure)
-        monkeypatch.setattr(dh_module, "getCmd", fake.getCmd)
-        monkeypatch.setattr(dh_module, "nextCmd", fake.nextCmd)
-        monkeypatch.setattr(dh_module, "setCmd", fake.setCmd)
+        monkeypatch.setattr(dh_module, "get_cmd", fake.get_cmd)
+        monkeypatch.setattr(dh_module, "next_cmd", fake.next_cmd)
+        monkeypatch.setattr(dh_module, "set_cmd", fake.set_cmd)
         monkeypatch.setattr(dh_module, "buildKeyChangeValue", fake.keyChangeValue)
 
         with pytest.raises(DHKeyChangeError) as raised:

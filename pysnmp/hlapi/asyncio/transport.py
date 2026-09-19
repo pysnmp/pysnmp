@@ -64,7 +64,7 @@ class UdpTransportTarget(AbstractTransportTarget[tuple[str, int]]):
     :py:meth:`~pysnmp.hlapi.transport.AbstractTransportTarget.resolve`.
 
     Every hlapi command awaits it for you, so passing a freshly built target
-    straight to ``getCmd`` and friends needs no change. Await it yourself only
+    straight to ``get_cmd`` and friends needs no change. Await it yourself only
     if you read the resolved address before issuing a request::
 
         target = await UdpTransportTarget(('example.com', 161)).resolve()
@@ -109,8 +109,8 @@ class Udp6TransportTarget(AbstractTransportTarget[tuple[str, int]]):
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
     This object can be used by
-    :py:func:`~pysnmp.hlapi.asyncio.getCmd` and the other command-generator
-    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.sendNotification`,
+    :py:func:`~pysnmp.hlapi.asyncio.get_cmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.send_notification`,
     for adding new entries to Local Configuration
     Datastore (LCD) managed by :py:class:`~pysnmp.hlapi.SnmpEngine`
     class instance.

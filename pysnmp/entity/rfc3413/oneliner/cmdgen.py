@@ -12,7 +12,18 @@ from pyasn1.type import univ
 
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi.asyncio import sync
-from pysnmp.hlapi.asyncio.cmdgen import bulkCmd, getCmd, nextCmd, setCmd
+from pysnmp.hlapi.asyncio.cmdgen import (
+    bulk_cmd as _bulk_cmd,
+)
+from pysnmp.hlapi.asyncio.cmdgen import (
+    get_cmd as _get_cmd,
+)
+from pysnmp.hlapi.asyncio.cmdgen import (
+    next_cmd as _next_cmd,
+)
+from pysnmp.hlapi.asyncio.cmdgen import (
+    set_cmd as _set_cmd,
+)
 from pysnmp.hlapi.context import ContextData
 from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
@@ -103,7 +114,7 @@ class AsynCommandGenerator:
         if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return getCmd(
+        return _get_cmd(
             self.snmpEngine,
             authData,
             transportTarget,
@@ -152,7 +163,7 @@ class AsynCommandGenerator:
         if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return setCmd(
+        return _set_cmd(
             self.snmpEngine,
             authData,
             transportTarget,
@@ -201,7 +212,7 @@ class AsynCommandGenerator:
         if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return nextCmd(
+        return _next_cmd(
             self.snmpEngine,
             authData,
             transportTarget,
@@ -252,7 +263,7 @@ class AsynCommandGenerator:
         if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return bulkCmd(
+        return _bulk_cmd(
             self.snmpEngine,
             authData,
             transportTarget,
