@@ -182,3 +182,17 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         AbstractTransportDispatcher.closeDispatcher(self)
         self._cancel_timer()
         self.__transportCount = 0
+
+    async def closeDispatcherAsync(self):
+        """Close every transport and stop the timer, waiting for the ticker to stop.
+
+        `closeDispatcher()` cannot wait when it is called from inside the running
+        loop -- the loop it would have to run is the one calling it -- so the timer
+        task is left cancelled but not yet finished, which asyncio reports as a task
+        destroyed while pending. Awaiting this instead closes the same things and
+        then lets the cancellation land.
+        """
+        loopingcall = self.loopingcall
+        self.closeDispatcher()
+        if loopingcall is not None:
+            await asyncio.gather(loopingcall, return_exceptions=True)

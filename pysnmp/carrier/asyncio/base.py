@@ -33,9 +33,28 @@
 
 from pysnmp.carrier.asyncio.dispatch import AsyncioDispatcher
 from pysnmp.carrier.base import AbstractTransport
+from pysnmp.carrier.error import CarrierError
 
 
 class AbstractAsyncioTransport(AbstractTransport):
     """What every asyncio transport shares, to be used with `AsyncioDispatcher`."""
 
     protoTransportDispatcher = AsyncioDispatcher
+
+    def _checkLoopIsUsable(self) -> None:
+        """Refuse to open a socket on an event loop that has been closed.
+
+        A transport keeps the loop it was built on. Reusing it after that loop was
+        closed -- which is what tearing down the engine it was built for does --
+        fails inside asyncio with `Event loop is closed`, wrapped by the callers
+        here in a formatted traceback that says nothing about the cause. Say what
+        happened instead.
+        """
+        loop = getattr(self, "loop", None)
+        if loop is not None and loop.is_closed():
+            raise CarrierError(
+                f"Transport {self!r} is bound to an asyncio event loop that has "
+                f"already been closed, so no socket can be opened on it. This "
+                f"usually means the transport outlived the engine it was built "
+                f"for. Build a new transport, or pass a live loop=... to this one."
+            )

@@ -760,9 +760,12 @@ def delTransport(snmpEngine: Any, transportDomain: Any) -> Any:
             automaticTransportDispatcher=automaticTransportDispatcher
         )
         if not automaticTransportDispatcher:
-            snmpEngine.transportDispatcher.closeDispatcher()
-            snmpEngine.unregisterTransportDispatcher()
-            snmpEngine.delUserContext(automaticTransportDispatcher)
+            snmpEngine.closeDispatcher()
+            # The name of the context, not the counter that was in it. Passing
+            # the counter dropped "__0", leaving the real entry behind at zero
+            # -- so a dispatcher the caller registered next was read as one
+            # this module had created, and closed out from under them.
+            snmpEngine.delUserContext("automaticTransportDispatcher")
     return transport
 
 
