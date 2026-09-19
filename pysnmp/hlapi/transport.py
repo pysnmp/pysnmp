@@ -134,6 +134,18 @@ class AbstractTransportTarget(Generic[TransportAddrT]):
                 return self
 
             lookup = self._resolveLookup
+
+            # A lookup that finished without an answer -- it raised, or it was
+            # cancelled outright -- is not something to hand the next caller:
+            # keeping it would make every later resolve() re-raise the first
+            # failure and never try again. Decided here, where the lookup is
+            # picked up, rather than from its done callback, because the two
+            # are scheduled independently and which of them runs first is not
+            # something asyncio promises.
+            if lookup is not None and lookup.done():
+                if lookup.cancelled() or lookup.exception() is not None:
+                    lookup = self._resolveLookup = None
+
             if lookup is None:
                 loop = asyncio.get_running_loop()
                 lookup = self._resolveLookup = loop.run_in_executor(
@@ -155,11 +167,11 @@ class AbstractTransportTarget(Generic[TransportAddrT]):
     def _lookupDone(self, lookup: asyncio.Future[TransportAddrT]) -> None:
         """Take the result off a finished lookup, whether or not anyone waited."""
         if lookup.cancelled() or lookup.exception() is not None:
-            # A lookup that raised -- a resolver that is down, a name that does
-            # not exist -- is not an answer, and caching the failed future would
-            # make every later resolve() re-raise it without ever trying again.
-            # Forget it instead, so the next caller starts a fresh lookup.
-            self._resolveLookup = None
+            # Reading the exception is the point: a lookup whose callers were
+            # all cancelled has nobody to raise to, and an asyncio future whose
+            # exception is never retrieved is reported as an error when it is
+            # collected. Discarding the failed lookup is `resolve`'s job -- see
+            # there for why it cannot be done from here.
             return
 
         self._resolvedTransportAddr = lookup.result()
