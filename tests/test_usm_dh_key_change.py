@@ -13,6 +13,8 @@ driver returns is checked against a peer rather than against itself.
 """
 
 import asyncio
+import secrets
+import time
 
 import pytest
 
@@ -22,6 +24,7 @@ from pysnmp.hlapi.auth import UsmUserData, usmHMACSHAAuthProtocol
 from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.proto.secmod.rfc2786 import (
     OAKLEY_GROUP_2,
+    DHKeyPair,
     buildKeyChangeValue,
     computeSharedSecret,
     deriveKey,
@@ -209,3 +212,159 @@ class TestFailedSetIsAmbiguous:
         assert candidate.key == deriveKey(
             fake.sharedSecret(managerPublic), SHA1_KEY_LENGTH
         )
+
+
+def _longPair():
+    """A pair whose public value occupies the prime's full width."""
+    return DHKeyPair(private=2, public=b"\x01" * 128)
+
+
+def _fittingPair(width):
+    """A pair whose public value is narrow enough for `width`."""
+    return DHKeyPair(private=3, public=b"\x02" * width)
+
+
+class TestDrawingAPublicValueThatFits:
+    """The agent splits the value down the middle, so our half cannot be wider.
+
+    A public value encodes short only when its leading octet comes out zero,
+    about one draw in 256. So when the agent's own value came out short, ours
+    has to come out short too: the redraw is *waiting for* that one-in-256
+    event, not escaping it. The bound was 8 on the opposite reading, which
+    cleared it 3% of the time.
+    """
+
+    def test_a_first_draw_that_fits_is_the_only_draw(self, monkeypatch):
+        drawn = []
+
+        def generate(_parameters):
+            drawn.append(1)
+            return _longPair()
+
+        monkeypatch.setattr(dh_module, "generateKeyPair", generate)
+
+        pair = dh_module._drawKeyPairFitting(OAKLEY_GROUP_2, 128)
+
+        assert len(drawn) == 1  # the ordinary case costs nothing
+        assert pair.public == _longPair().public
+
+    def test_it_keeps_drawing_past_the_old_bound(self, monkeypatch):
+        # 500 is far beyond the 8 draws the bound used to allow and far below
+        # the 2048 it allows now, so this passes only because it was raised.
+        drawn = []
+
+        def generate(_parameters):
+            drawn.append(1)
+            return _longPair() if len(drawn) <= 500 else _fittingPair(127)
+
+        monkeypatch.setattr(dh_module, "generateKeyPair", generate)
+
+        pair = dh_module._drawKeyPairFitting(OAKLEY_GROUP_2, 127)
+
+        assert len(drawn) == 501
+        assert len(pair.public) == 127
+
+    def test_it_gives_up_after_the_bound_rather_than_spinning(self, monkeypatch):
+        drawn = []
+
+        def generate(_parameters):
+            drawn.append(1)
+            return _longPair()
+
+        monkeypatch.setattr(dh_module, "generateKeyPair", generate)
+
+        with pytest.raises(DHKeyChangeError, match="fits the agent's half"):
+            dh_module._drawKeyPairFitting(OAKLEY_GROUP_2, 127)
+
+        assert len(drawn) == dh_module._PUBLIC_VALUE_ATTEMPTS
+
+
+class TestTheSearchStaysOffTheEventLoop:
+    """A draw is a modular exponentiation, and the search can need hundreds.
+
+    Run inline that stalls every other task on the loop for as long as it
+    takes, which at the bound the driver now allows is measured in seconds. It
+    goes to an executor instead, so the loop keeps serving everything else.
+    """
+
+    def test_a_concurrent_task_makes_progress_during_the_search(
+        self, agent, monkeypatch
+    ):
+        async def run():
+            ticks = 0
+            stop = asyncio.Event()
+
+            async def count():
+                nonlocal ticks
+                while not stop.is_set():
+                    ticks += 1
+                    await asyncio.sleep(0.01)
+
+            real = dh_module.generateKeyPair
+
+            def slow(parameters):
+                time.sleep(0.15)
+                return real(parameters)
+
+            monkeypatch.setattr(dh_module, "generateKeyPair", slow)
+
+            counter = asyncio.create_task(count())
+            await asyncio.sleep(0.02)  # let it get going
+
+            await dh_key_change(None, credentials(), None, None, "auth")
+
+            stop.set()
+            await counter
+
+            # A stalled loop manages only the two or three ticks from
+            # before the search started; a healthy one gets roughly fifteen
+            # more. The floor sits far below that, so a loaded CI runner
+            # cannot fail this on timing alone.
+            assert ticks > 6
+
+        asyncio.run(run())
+
+
+def _shortKeyPair(parameters, width):
+    """A real key pair whose public value encodes to `width` octets.
+
+    Stands in for an agent whose own public value came out with a zero leading
+    octet. Stepping `g^x -> g^(x+1)` by multiplication rather than redrawing
+    keeps it cheap: the search is the same one-in-256 event the driver faces,
+    and a few hundred modular exponentiations would make the test slow enough
+    to notice. Sound here because nothing about this pair has to be
+    unpredictable -- it only has to be one the agreement works with.
+    """
+    private = 2 + secrets.randbelow(parameters.prime - 3)
+    public = pow(parameters.base, private, parameters.prime)
+
+    while (public.bit_length() + 7) // 8 > width:
+        public = public * parameters.base % parameters.prime
+        private += 1
+
+    return DHKeyPair(private=private, public=public.to_bytes(width, "big"))
+
+
+class TestAnAgentWhosePublicValueCameOutShort:
+    """The case that failed in CI: the agent's half is 127 octets, not 128."""
+
+    def test_the_key_change_still_agrees(self, monkeypatch):
+        fake = _FakeAgent()
+        fake.keyPair = _shortKeyPair(fake.parameters, 127)
+        monkeypatch.setattr(dh_module, "getCmd", fake.getCmd)
+        monkeypatch.setattr(dh_module, "nextCmd", fake.nextCmd)
+        monkeypatch.setattr(dh_module, "setCmd", fake.setCmd)
+        monkeypatch.setattr(dh_module, "buildKeyChangeValue", fake.keyChangeValue)
+
+        result = change()
+
+        peerPublic, ownPublic = splitKeyChangeValue(fake.setValues[0])
+
+        # Both halves at the agent's width, and the first one is what it
+        # published -- anything else is a wrongValue.
+        assert len(peerPublic) == 127
+        assert len(ownPublic) == 127
+        assert peerPublic == fake.keyPair.public
+
+        # And the key really is the one the agent would install.
+        assert result.key == deriveKey(fake.sharedSecret(ownPublic), SHA1_KEY_LENGTH)
