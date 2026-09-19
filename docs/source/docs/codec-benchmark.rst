@@ -87,9 +87,12 @@ decoder path stands in for all of them.
 Findings
 --------
 
-Measured on CPython 3.14 on an x86-64 Linux container, net-snmp 5.9.4, pysnmp
-6.0.0-rc.15, pyasn1 2.0.2. Absolute figures move with the machine; the ratios
-and the shape are what to read.
+From the first matrix run, `35446805277
+<https://github.com/pysnmp/pysnmp/actions/runs/35446805277>`_: CPython 3.14.7
+on GitHub's ubuntu runner, net-snmp 5.9.4, pysnmp 6.0.0-rc.15, pyasn1 2.0.2.
+Absolute figures move with the machine -- the same run's Windows and macOS
+legs differ by up to a factor of two -- so the ratios and the shape are what to
+read.
 
 .. list-table:: PDU layer, microseconds per operation
    :header-rows: 1
@@ -103,40 +106,40 @@ and the shape are what to read.
      - pysnmp / netsnmp
    * - decode, single
      - 1
-     - 110
-     - 106
-     - 2.2
-     - 51x
+     - 78
+     - 74
+     - 1.4
+     - 56x
    * - decode, poll
      - 10
-     - 601
-     - 591
-     - 3.7
-     - 165x
+     - 429
+     - 407
+     - 2.4
+     - 180x
    * - decode, bulk
      - 50
-     - 2848
-     - 2779
-     - 9.4
-     - 303x
+     - 1961
+     - 1866
+     - 6.6
+     - 296x
    * - encode, single
      - 1
-     - 42
-     - 42
-     - 1.4
-     - 30x
+     - 29
+     - 29
+     - 0.9
+     - 31x
    * - encode, poll
      - 10
-     - 210
-     - 207
-     - 2.1
-     - 100x
+     - 152
+     - 151
+     - 1.5
+     - 105x
    * - encode, bulk
      - 50
-     - 925
-     - 920
-     - 4.9
-     - 191x
+     - 689
+     - 680
+     - 3.7
+     - 188x
 
 **pysnmp's own type layer is not where the time is.** The bare-pyasn1 mirror of
 the same message decodes within a couple of per cent of pysnmp's spec, and the
@@ -144,16 +147,16 @@ profile puts 0.4% of decode self time and none of encode in pysnmp's package.
 The constraints, the named values and the ``pysnmp.proto.rfc1902``
 subclasses -- the obvious suspects -- cost close to nothing at codec time.
 
-**The codec is pyasn1**, which takes 85% of decode self time and 89% of
+**The codec is pyasn1**, which takes 84.7% of decode self time and 88.1% of
 encode. Of what remains, roughly a tenth is interpreter builtins (dictionary
-updates, mostly) and 3-4% is ``logging.Logger.isEnabledFor``: pyasn1's
-debug hooks ask whether debugging is on 577 times per ten-binding decode, and
-the answer is always no.
+updates, mostly) and 3-5% is ``logging.Logger.isEnabledFor``: pyasn1's debug
+hooks ask whether debugging is on 577 times per ten-binding decode, and the
+answer is always no.
 
 **The cost is per binding, not per message.** Across the three workloads decode
-fits ``54 us + 56 us per binding`` and encode ``24 us + 18 us per binding``
-to within a few per cent. Anything that would matter has to make a *binding* cheaper;
-there is no per-message overhead worth attacking.
+fits ``39 us + 38 us per binding`` and encode ``15 us + 14 us per binding`` to
+within a couple of per cent. Anything that would matter has to make a *binding*
+cheaper; there is no per-message overhead worth attacking.
 
 **Against a C codec the gap is two orders of magnitude, not six times.** That
 is not the reporter's comparison restated -- what "libsnmp" named in 2017 is
@@ -163,9 +166,13 @@ measures. Read the netsnmp column as the floor, and the pysnmp-versus-pyasn1
 column as the only one that says anything about this repository's own code.
 
 **The interpreter moves the number more than anything in this repository
-does.** The same decode costs about 880 us on CPython 3.10 and about 600 us on
-3.14 -- a third off, for changing nothing. Which is also why the on-demand
-matrix covers both ends of the supported range rather than one interpreter.
+does**, and not in one direction. On the same Linux runner the ten-binding
+decode costs 937 us on CPython 3.10 and 429 us on 3.14 -- 2.2 times faster for
+changing nothing -- and 322 us on the free-threaded 3.14t build, faster again
+on a single thread than the build with the GIL. On Windows the same pair
+inverts: 693 us on 3.10 against 900 us on 3.14. That is one run of one
+workload and wants confirming before anything is built on it, but it is exactly
+the kind of claim the matrix exists to make checkable rather than assumed.
 
 **PyPy cannot run pysnmp at all today**, which the original report's second
 table makes worth stating. ``import pysnmp.proto.rfc1902`` ends in a
