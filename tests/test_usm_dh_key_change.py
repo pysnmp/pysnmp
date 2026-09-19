@@ -214,76 +214,11 @@ class TestFailedSetIsAmbiguous:
         )
 
 
-def _longPair():
-    """A pair whose public value occupies the prime's full width."""
-    return DHKeyPair(private=2, public=b"\x01" * 128)
-
-
-def _fittingPair(width):
-    """A pair whose public value is narrow enough for `width`."""
-    return DHKeyPair(private=3, public=b"\x02" * width)
-
-
-class TestDrawingAPublicValueThatFits:
-    """The agent splits the value down the middle, so our half cannot be wider.
-
-    A public value encodes short only when its leading octet comes out zero,
-    about one draw in 256. So when the agent's own value came out short, ours
-    has to come out short too: the redraw is *waiting for* that one-in-256
-    event, not escaping it. The bound was 8 on the opposite reading, which
-    cleared it 3% of the time.
-    """
-
-    def test_a_first_draw_that_fits_is_the_only_draw(self, monkeypatch):
-        drawn = []
-
-        def generate(_parameters):
-            drawn.append(1)
-            return _longPair()
-
-        monkeypatch.setattr(dh_module, "generateKeyPair", generate)
-
-        pair = dh_module._drawKeyPairFitting(OAKLEY_GROUP_2, 128)
-
-        assert len(drawn) == 1  # the ordinary case costs nothing
-        assert pair.public == _longPair().public
-
-    def test_it_keeps_drawing_past_the_old_bound(self, monkeypatch):
-        # 500 is far beyond the 8 draws the bound used to allow and far below
-        # the 2048 it allows now, so this passes only because it was raised.
-        drawn = []
-
-        def generate(_parameters):
-            drawn.append(1)
-            return _longPair() if len(drawn) <= 500 else _fittingPair(127)
-
-        monkeypatch.setattr(dh_module, "generateKeyPair", generate)
-
-        pair = dh_module._drawKeyPairFitting(OAKLEY_GROUP_2, 127)
-
-        assert len(drawn) == 501
-        assert len(pair.public) == 127
-
-    def test_it_gives_up_after_the_bound_rather_than_spinning(self, monkeypatch):
-        drawn = []
-
-        def generate(_parameters):
-            drawn.append(1)
-            return _longPair()
-
-        monkeypatch.setattr(dh_module, "generateKeyPair", generate)
-
-        with pytest.raises(DHKeyChangeError, match="fits the agent's half"):
-            dh_module._drawKeyPairFitting(OAKLEY_GROUP_2, 127)
-
-        assert len(drawn) == dh_module._PUBLIC_VALUE_ATTEMPTS
-
-
 class TestTheSearchStaysOffTheEventLoop:
-    """A draw is a modular exponentiation, and the search can need hundreds.
+    """The search costs a modular exponentiation, and the agent picks the prime.
 
-    Run inline that stalls every other task on the loop for as long as it
-    takes, which at the bound the driver now allows is measured in seconds. It
+    Run inline that stalls every other task on the loop for as long as the
+    exponentiation takes, which is not this machine's business to assume. It
     goes to an executor instead, so the loop keeps serving everything else.
     """
 
@@ -300,13 +235,13 @@ class TestTheSearchStaysOffTheEventLoop:
                     ticks += 1
                     await asyncio.sleep(0.01)
 
-            real = dh_module.generateKeyPair
+            real = dh_module.generateKeyPairFitting
 
-            def slow(parameters):
+            def slow(parameters, width):
                 time.sleep(0.15)
-                return real(parameters)
+                return real(parameters, width)
 
-            monkeypatch.setattr(dh_module, "generateKeyPair", slow)
+            monkeypatch.setattr(dh_module, "generateKeyPairFitting", slow)
 
             counter = asyncio.create_task(count())
             await asyncio.sleep(0.02)  # let it get going
