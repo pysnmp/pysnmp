@@ -137,6 +137,14 @@ request against the conventions above. It runs on pull requests only, so
 it is not part of the release path, but it does gate a merge wherever
 branch protection names it as a required check.
 
+``codec-benchmark.yml`` runs on neither path. It measures BER encode and
+decode throughput across the platform and interpreter matrix, and it is
+asked for rather than scheduled: dispatch it against a branch, or label a
+pull request ``ci:benchmark`` to have it run and post its table there.
+Nothing in it asserts a threshold, so there is nothing for a push to
+break and no reason to spend runner minutes on every one. See
+:doc:`/docs/codec-benchmark`.
+
 The test matrix
 ---------------
 

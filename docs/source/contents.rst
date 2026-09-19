@@ -71,6 +71,7 @@ Documentation
    /docs/mib-tools
    /docs/mib-corpus
    /docs/loader-contract
+   /docs/codec-benchmark
 
 Examples
 --------
