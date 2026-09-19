@@ -3,6 +3,28 @@ set -eu
 
 : "${SNMP_PROFILE:?SNMP_PROFILE is required}"
 
+# The v3-dh profile is the odd one out: RFC 2786 needs the agent built with
+# snmp-usm-dh-objects-mib, which the Debian package is not, so this profile runs
+# the agent installed under /opt instead. Two users, because the key change is
+# destructive -- ci-dh is the one the tests rotate, and ci-dh-static stays on its
+# original passphrase so read-only checks do not depend on rotation order.
+if [ "${SNMP_PROFILE}" = "v3-dh" ]; then
+  DH_PREFIX=/opt/net-snmp-dh
+  mkdir -p "${DH_PREFIX}/var"
+  cat > "${DH_PREFIX}/snmpd.conf" <<EOF
+agentAddress udp:161
+sysContact pysnmp-ci@example.invalid
+sysName pysnmp-ci-${SNMP_PROFILE}
+dontLogTCPWrappersConnects yes
+createUser ci-dh SHA ciAuthPass123
+createUser ci-dh-static SHA ciAuthPass123
+rwuser ci-dh auth .1
+rouser ci-dh-static auth .1
+EOF
+  exec "${DH_PREFIX}/sbin/snmpd" -f -Lo -C -c "${DH_PREFIX}/snmpd.conf" \
+    --persistentDir="${DH_PREFIX}/var"
+fi
+
 cat > /etc/snmp/snmpd.conf <<EOF
 # TCP as well as UDP: the TCP mapping (RFC 3430) is what tests/test_tcp_carrier.py
 # exercises against our own agent, and this is where it meets an implementation

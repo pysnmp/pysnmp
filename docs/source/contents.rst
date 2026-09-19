@@ -67,6 +67,7 @@ Documentation
    /docs/security-considerations
    /docs/smi-table-api
    /docs/device-report
+   /docs/usm-dh-key-change
    /docs/mib-tools
    /docs/mib-corpus
    /docs/loader-contract

@@ -1,6 +1,17 @@
 Revision 5.0.25, released 2026-08-29
 ------------------------------------
 
+- Added Diffie-Hellman USM key management (RFC 2786): the manager side of
+  `SNMP-USM-DH-OBJECTS-MIB`, as `pysnmp.proto.secmod.rfc2786` for the agreement
+  itself and `dh_key_change`/`dhKeyChange` in the HLAPI for the exchange that
+  drives it. A key can now be rotated without either key crossing the wire and
+  without knowing the old one, which `usmUserAuthKeyChange` cannot do. Needs no
+  cryptographic library: the agreement is `pow` and the kickstart derivation is
+  PBKDF2 from `hashlib` (#280)
+- Added a `v3-dh` profile to the Net-SNMP integration matrix, running an agent
+  built with the `snmp-usm-dh-objects-mib` module the Debian package omits, and
+  an interop test that authenticates with the derived key rather than only
+  checking that the exchange completed (#280)
 - Moved `Cryptodome.Cipher` imports behind a lazy `pysnmp.proto.secmod.cipherbackend`
   helper; pysnmp now imports and serves SNMPv1, SNMPv2c and the SNMPv3
   noAuthNoPriv/authNoPriv security levels when pycryptodomex is absent, and

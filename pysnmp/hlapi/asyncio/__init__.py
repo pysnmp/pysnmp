@@ -16,6 +16,12 @@ from pysnmp.hlapi.asyncio.device import (
     get_device_report,
     getDeviceReport,
 )
+from pysnmp.hlapi.asyncio.dh import (
+    DHKeyChangeError,
+    DHKeyChangeResult,
+    dh_key_change,
+    dhKeyChange,
+)
 from pysnmp.hlapi.asyncio.ntforg import sendNotification
 from pysnmp.hlapi.asyncio.transport import (
     Tcp6TransportTarget,
