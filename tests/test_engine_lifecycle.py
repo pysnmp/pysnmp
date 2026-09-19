@@ -9,7 +9,9 @@ run it on the exception path too.
 """
 
 import asyncio
+import gc
 import os
+import platform
 import warnings
 from pathlib import Path
 
@@ -26,7 +28,29 @@ LOCALHOST = ("127.0.0.1", 0)
 
 
 def _openFdCount() -> int:
-    """How many descriptors this process holds, on a platform that will say."""
+    """How many descriptors this process holds, on a platform that will say.
+
+    Counted after finalisation has actually run, which is not free on every
+    interpreter. CPython closes a socket the moment its last reference goes,
+    so the count is already right; PyPy collects, queues finalisers and runs
+    them on a later pass, so a count taken straight after the work reads every
+    not-yet-finalised socket as a leak. Fifty cycles of this test read 209
+    descriptors against a baseline of 9 on PyPy, and 5 after the collections
+    below -- nothing was leaking, the descriptors had simply not been closed
+    yet.
+
+    Collecting to a fixed point rather than a set number of times: how many
+    passes it takes is an implementation detail, and on PyPy it took three.
+    """
+    if platform.python_implementation() != "CPython":
+        previous = -1
+        for _ in range(10):
+            gc.collect()
+            current = len(os.listdir("/proc/self/fd"))
+            if current == previous:
+                break
+            previous = current
+
     return len(os.listdir("/proc/self/fd"))
 
 

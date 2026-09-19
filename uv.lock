@@ -976,6 +976,12 @@ dev = [
     { name = "ruff" },
     { name = "sphinx", marker = "python_full_version >= '3.12'" },
 ]
+test = [
+    { name = "coverage", extra = ["toml"] },
+    { name = "pysnmp-pysmi" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -995,6 +1001,12 @@ dev = [
     { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", marker = "python_full_version >= '3.12'", specifier = ">=9.1.0,<10.0.0" },
+]
+test = [
+    { name = "coverage", extras = ["toml"], specifier = ">=7.2.0,<8.0.0" },
+    { name = "pysnmp-pysmi", specifier = ">=6.0.0,<7" },
+    { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
+    { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
 ]
 
 [[package]]
