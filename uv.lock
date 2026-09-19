@@ -940,15 +940,15 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pysmi"
-version = "6.0.0"
+version = "6.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ply" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/f6/93766e4a0763c5fc1a8a793a0cfbf00420b882ec4acc5c3524bae2af2f12/pysnmp_pysmi-6.0.0.tar.gz", hash = "sha256:0b2bcf91cbb9af1f01ab25e7ad09bc25b505b7c70fd003f282867438117ebd4f", size = 4669812, upload-time = "2026-09-18T20:30:48.925Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/54/19f13ae1693f605cbe91e9295d2245dac5d854fee6e25a0bf6b4eea9bdc3/pysnmp_pysmi-6.0.1.tar.gz", hash = "sha256:f0e4c0c64dae07afa370b320ca848e32cdea82b58d03cd0536af896d8362d639", size = 4670807, upload-time = "2026-09-19T22:25:25.73Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d5/37/873235f788c48065f7baebee2411fc1d9bcf75b24a28c981e68cb28138ed/pysnmp_pysmi-6.0.0-py3-none-any.whl", hash = "sha256:30ca3fa60aa73510c82c1e996a596c382d11c6186c26234a6f85ec254b45ae01", size = 6398575, upload-time = "2026-09-18T20:30:46.781Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/d3/cc55e3bfae2c96aac37b3a07963ccfe8f138ebd2b8b956239b53c2e934cb/pysnmp_pysmi-6.0.1-py3-none-any.whl", hash = "sha256:97c259ae6c5587a8dd2182aba711a6f8dc5caddc84bc8bd4b410a39690419c78", size = 6398861, upload-time = "2026-09-19T22:25:24.021Z" },
 ]
 
 [[package]]
@@ -987,7 +987,7 @@ test = [
 requires-dist = [
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
     { name = "pysnmp-pyasn1", specifier = ">=2.0.3,<3.0.0" },
-    { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=6.0.0,<7" },
+    { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=6.0.1,<7" },
 ]
 provides-extras = ["compile"]
 
@@ -997,14 +997,14 @@ dev = [
     { name = "furo", marker = "python_full_version >= '3.12'", specifier = ">=2025.12.19" },
     { name = "mypy", specifier = ">=1.15.0,<3.0.0" },
     { name = "myst-parser", marker = "python_full_version >= '3.12'", specifier = ">=5.1.0,<6.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=6.0.0,<7" },
+    { name = "pysnmp-pysmi", specifier = ">=6.0.1,<7" },
     { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
     { name = "sphinx", marker = "python_full_version >= '3.12'", specifier = ">=9.1.0,<10.0.0" },
 ]
 test = [
     { name = "coverage", extras = ["toml"], specifier = ">=7.2.0,<8.0.0" },
-    { name = "pysnmp-pysmi", specifier = ">=6.0.0,<7" },
+    { name = "pysnmp-pysmi", specifier = ">=6.0.1,<7" },
     { name = "pytest", specifier = ">=9.0.3,<10.0.0" },
     { name = "ruff", specifier = ">=0.4.0,<1.0.0" },
 ]

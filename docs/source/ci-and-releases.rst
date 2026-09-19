@@ -177,17 +177,17 @@ pull request carrying the ``ci:full-matrix`` label.
 PyPy 3.11 runs on Linux on every trigger, in addition to the table above.
 That is six jobs on an ordinary pull request and ten on a broad run.
 
-It blocks a merge like every other leg. One thing there cannot pass and is
-not pysnmp's to fix: pysmi's corpus writer commits SQLite while a
-statement is still open, which CPython's ``sqlite3`` tolerates and PyPy's
-refuses. The five test files that build a corpus skip themselves on any
-interpreter that is not CPython -- ``tests/conftest.py`` names them, says
-why, and says what would have to change for the skip to go. The other 1751
-tests are required to pass.
+It blocks a merge like every other leg, and runs the whole suite: nothing
+is skipped there. Five test files build a MIB corpus and could not, until
+pysmi 6.0.1 -- its corpus writer left the cursor behind ``PRAGMA
+journal_mode`` open, which CPython's ``sqlite3`` tolerates and PyPy's
+refuses at the next commit. That is why ``pyproject.toml`` floors pysmi at
+6.0.1 (`pysnmp/pysmi#332 <https://github.com/pysnmp/pysmi/pull/332>`_); the
+skip those five carried is gone with it.
 
-Skipping those five rather than tolerating the whole leg is deliberate: a
-job that may fail for any reason would not have caught either of the two
-things adding PyPy found, and would not catch the next one.
+Blocking rather than tolerated is deliberate: a job that may fail for any
+reason would not have caught either of the two things adding PyPy found,
+and would not catch the next one.
 
 The PyPy leg measures no coverage. ``coverage`` ships no C tracer for
 PyPy and falls back to a pure-Python one that costs an order of

@@ -2,7 +2,7 @@
 # PySNMP MIB module SNMP-NOTIFICATION-MIB (https://pysnmp.github.io/pysmi/)
 # ASN.1 source SNMP-NOTIFICATION-MIB
 # Source digest sha256:91e6ae8c9a3409459d8659f0824431751f46fc3c334593c3cb9e9f9178445f23
-# Produced by pysmi-6.0.0
+# Produced by pysmi-6.0.1
 #
 PYSNMP_MODULE_REVISION = "200210140000Z"
 
