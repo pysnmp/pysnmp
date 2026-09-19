@@ -189,6 +189,13 @@ Skipping those five rather than tolerating the whole leg is deliberate: a
 job that may fail for any reason would not have caught either of the two
 things adding PyPy found, and would not catch the next one.
 
+The PyPy leg measures no coverage. ``coverage`` ships no C tracer for
+PyPy and falls back to a pure-Python one that costs an order of
+magnitude, which is enough to fail a test that asserts a walk of 100 OIDs
+finishes inside five seconds -- under the tracer the same walk took ten.
+The five CPython legs report coverage, and a sixth figure from PyPy would
+say nothing they do not.
+
 It is worth having even so. PyPy is the other implementation this package
 is expected to work on, nothing here had ever run it before
 `#320 <https://github.com/pysnmp/pysnmp/pull/320>`_ — which found that
