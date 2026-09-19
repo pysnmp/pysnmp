@@ -1,15 +1,19 @@
 Revision 5.0.25, released 2026-08-29
 ------------------------------------
 
-- Fixed the three test failures that had left `next` red on Windows since the
-  merge of #298. The engine-ID tests simulated Windows by deleting `os.uname`
-  under `mock.patch.object(..., create=True)`, whose teardown then deleted an
+- Fixed the five test failures that had left `next` red on Windows. The
+  engine-ID tests simulated Windows by deleting `os.uname` under
+  `mock.patch.object(..., create=True)`, whose teardown then deleted an
   attribute that was already gone -- so the test that simulates Windows was the
   one that failed there. The IPv6 zone fixture took an interface name from
   `if_nameindex()`, which on Windows reports names like `ethernet_0` that
   `getaddrinfo` will not parse in a scoped literal; the scope is now probed,
   preferring the name and falling back to the numeric zone ID that every
-  platform accepts
+  platform accepts. Two cache-directory tests passed `XDG_CACHE_HOME=/somewhere/else`
+  and expected it to be honoured, but absoluteness is judged under the running
+  interpreter's rules and Python 3.13 stopped counting a driveless rooted path
+  as absolute on Windows, so on Windows 3.13 and later the value was ignored;
+  they now use a path the host itself built, as the Windows cases already did
 
 - Replaced the wall-clock assertion in the `nextKey` scaling test with a count
   of key comparisons. It allowed a 3x ratio where a correct implementation
