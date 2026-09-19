@@ -174,7 +174,30 @@ pull request carrying the ``ci:full-matrix`` label.
      - 3.10 – 3.14
      - 3.10 and 3.14
 
-That is five jobs on an ordinary pull request and nine on a broad run.
+PyPy 3.11 runs on Linux on every trigger, in addition to the table above.
+That is six jobs on an ordinary pull request and ten on a broad run.
+
+The PyPy leg is ``continue-on-error``, and for a reason outside this
+repository rather than an unproven one: pysmi's corpus writer commits
+SQLite while a statement is still open, which CPython's ``sqlite3``
+tolerates and PyPy's refuses, so the five test files that build a corpus
+error there. The other 1751 tests pass. Make the leg blocking once pysmi
+no longer does that.
+
+It is worth having even so. PyPy is the other implementation this package
+is expected to work on, nothing here had ever run it before
+`#320 <https://github.com/pysnmp/pysnmp/pull/320>`_ — which found that
+pysnmp could not be imported on PyPy at all — and a pure-Python package's
+second interpreter is exactly where a CPython-only assumption hides. Two
+turned up immediately: a leak test that counted descriptors before
+finalisation had run, and an engine module that tripped a bug in PyPy's
+own compiler.
+
+Test jobs install the ``test`` dependency group rather than ``dev``.
+``dev`` carries the documentation and typing toolchain, and mypy depends
+on a Rust extension with no PyPy wheel, so installing it fails on that leg
+before a test runs. The two groups are declared in ``pyproject.toml``,
+where ``dev`` includes ``test``.
 
 The reasoning is worth stating, because it is the opposite of the usual
 "test everything everywhere" instinct. These are pure-Python projects, so
