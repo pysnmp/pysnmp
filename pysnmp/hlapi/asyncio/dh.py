@@ -18,6 +18,7 @@ localization step.
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any, NamedTuple
 
 from pysnmp._aliases import install as _installAliases
@@ -27,6 +28,7 @@ from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
 from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
 from pysnmp.proto.secmod.rfc2786 import (
+    DHKeyPair,
     DHParameters,
     buildKeyChangeValue,
     computeSharedSecret,
@@ -127,11 +129,19 @@ _PRIV_KEY_LENGTHS: dict[tuple[int, ...], int] = {
 
 _MISSING_VALUES = (NoSuchObject, NoSuchInstance, EndOfMibView)
 
-# A public value whose leading octet came out zero encodes short, and the agent
-# splits a DHKeyChange value down the middle rather than parsing it, so a short
-# one has to be redrawn. It happens about once in 256 draws; eight attempts put
-# the chance of giving up below one in a trillion.
-_PUBLIC_VALUE_ATTEMPTS = 8
+# The agent splits a DHKeyChange value down the middle rather than parsing it,
+# so our half has to be no wider than the half it published. A public value
+# encodes short only when its leading octet comes out zero -- about one draw in
+# 256 for a prime that sits just under a byte boundary -- so when the agent's
+# own value came out short, ours has to come out short too, and that is what
+# the redraw is waiting for.
+#
+# The bound was 8, read as escaping the one-in-256 event rather than waiting
+# for one. (1/256)**8 is vanishing, but the quantity that governs giving up is
+# (255/256)**8 = 0.97: against an agent that published a short value, a key
+# change failed about 97% of the time. 2048 leaves (255/256)**2048 = 3.3e-4,
+# and costs nothing in the ordinary case, where the first draw already fits.
+_PUBLIC_VALUE_ATTEMPTS = 2048
 
 # Enough of usmDHUserKeyTable to find one row. The table has a row per USM user,
 # and an agent with more users than this is not one being provisioned by hand.
@@ -186,6 +196,45 @@ def _keyLength(keyType: str, authData: Any, keyLength: int | None) -> int:
             f"No key length known for {keyType} protocol {protocol}; "
             f"pass keyLength to say how many octets the agent expects"
         ) from None
+
+
+def _drawKeyPairFitting(parameters: DHParameters, width: int) -> DHKeyPair:
+    """Draw a key pair whose public value fits `width` octets.
+
+    Blocking, and sometimes slow: a draw is a modular exponentiation, and when
+    the agent's own published value came out short this keeps drawing until one
+    lands under `width`, which is a one-in-256 event per draw. Hundreds of
+    draws is the normal cost of that case, so this belongs in an executor
+    rather than on the event loop -- `resolveKeyChange` puts it in one.
+
+    Parameters
+    ----------
+    parameters : DHParameters
+        The agreement parameters, normally read from the agent.
+    width : int
+        How many octets the agent's half of the DHKeyChange value occupies.
+        Ours may be shorter -- `buildKeyChangeValue` left-pads it -- but never
+        wider, because the agent splits the value down the middle.
+
+    Returns
+    -------
+    DHKeyPair
+        The first pair drawn whose public value fits.
+
+    Raises
+    ------
+    DHKeyChangeError
+        If `_PUBLIC_VALUE_ATTEMPTS` draws all came out too wide.
+    """
+    for _ in range(_PUBLIC_VALUE_ATTEMPTS):
+        keyPair = generateKeyPair(parameters)
+        if len(keyPair.public) <= width:
+            return keyPair
+
+    raise DHKeyChangeError(
+        "Could not draw a public value that fits the agent's half of the "
+        "DHKeyChange value"
+    )
 
 
 async def _readParameters(
@@ -409,15 +458,14 @@ async def dh_key_change(
             snmpEngine, authData, transportTarget, contextData, instance, **options
         )
 
-    for _ in range(_PUBLIC_VALUE_ATTEMPTS):
-        keyPair = generateKeyPair(parameters)
-        if len(keyPair.public) <= len(agentPublic):
-            break
-    else:
-        raise DHKeyChangeError(
-            "Could not draw a public value that fits the agent's half of the "
-            "DHKeyChange value"
-        )
+    # Off the event loop: a draw is a modular exponentiation, and the search
+    # needs hundreds of them whenever the agent's published value came out
+    # short. Inline, that would stall every other task on the loop for as long
+    # as it took, which for the bound above is measured in seconds.
+    loop = asyncio.get_running_loop()
+    keyPair = await loop.run_in_executor(
+        None, _drawKeyPairFitting, parameters, len(agentPublic)
+    )
 
     # Everything the result needs is computable before the SET, and the SET is
     # the one step that cannot be undone. Deriving first means a peer public
