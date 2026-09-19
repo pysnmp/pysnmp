@@ -107,15 +107,29 @@ repository = "https://github.com/pysnmp/pysnmp"
 # tests/test_base_layer_equivalence.py needs 6.x for the same reason the extra
 # does: it reads what pysmi says RFC1213-MIB::atNetAddress declares.
 [dependency-groups]
-dev = [
+# What it takes to run the suite, and nothing else. Split out of `dev` so that
+# the suite can run on an interpreter the rest of the toolchain does not
+# install on: mypy depends on ast-serialize, a Rust extension with no PyPy
+# wheel, so `uv sync --group dev` fails on PyPy while compiling it -- before a
+# single test has run. Every test job installs this group rather than `dev`,
+# which also means none of them waits for Sphinx.
+test = [
+    "pytest >=9.0.3,<10.0.0",
+    "coverage[toml] >=7.2.0,<8.0.0",
+    # Not optional for the suite the way it is optional for an install:
+    # tools/regenerate_mibs.py renders with pysmi's code generator,
+    # tests/test_generated_mibs.py re-renders to check for drift, and
+    # tests/test_corpus.py builds its fixture from pysmi.corpus.conformance.
     "pysnmp-pysmi >=6.0.0,<7",
+]
+
+dev = [
+    {include-group = "test"},
     # documentation toolchain is marker-guarded the way pyasn1 already does
     # it. Both CI jobs that build docs run 3.12 or newer.
     "sphinx >=9.1.0,<10.0.0; python_version >= '3.12'",
     "myst-parser >=5.1.0,<6.0.0; python_version >= '3.12'",
     "furo >=2025.12.19; python_version >= '3.12'",
-    "pytest >=9.0.3,<10.0.0",
-    "coverage[toml] >=7.2.0,<8.0.0",
     "mypy >=1.15.0,<3.0.0",
     "ruff >=0.4.0,<1.0.0",
 ]

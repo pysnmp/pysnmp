@@ -252,9 +252,10 @@ class SnmpEngine:
                     f"SnmpEngine: could not stored SNMP Engine Boots: {e}"
                 )
             else:
-                debug.logger & debug.flagApp and debug.logger(
-                    f"SnmpEngine: stored SNMP Engine Boots: {snmpEngineBoots.syntax.prettyPrint()}"
-                )
+                if debug.logger & debug.flagApp:
+                    debug.logger(
+                        f"SnmpEngine: stored SNMP Engine Boots: {snmpEngineBoots.syntax.prettyPrint()}"
+                    )
 
     def __repr__(self) -> str:
         """The class and this engine's ID, which is what distinguishes one from another."""
