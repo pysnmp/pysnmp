@@ -225,8 +225,16 @@ jobs:
       # them. One comment per pull request, rewritten in place -- a benchmark
       # asked for three times should leave the latest numbers, not a thread of
       # stale ones.
+      # Not from a fork, and not from Dependabot: GitHub hands both a
+      # read-only GITHUB_TOKEN, so the POST below would 403 and fail the job
+      # after it had already produced the report. The table is in the job
+      # summary and the artifact either way, which is where a maintainer
+      # labelling someone else's pull request will find it.
       - name: Post the table on the pull request
-        if: github.event_name == 'pull_request'
+        if: >-
+          github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.fork == false
+          && github.event.pull_request.user.login != 'dependabot[bot]'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

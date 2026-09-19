@@ -200,10 +200,11 @@ does.** The ten-binding decode, on one Linux runner, one run:
      - 7.7x
 
 **PyPy is where the answer to the original report is.** It decodes five times
-faster than the newest CPython and eleven times faster than the oldest one this
-package supports, and the free-threaded build is a little quicker than the
-build with the GIL on a single thread. Nothing in this repository buys anything
-close to that.
+faster than the newest CPython and nearly eight times faster than the oldest
+one this package supports; on encode the same comparison is six and eleven
+times. The free-threaded build is a little quicker than the build with the GIL
+on a single thread. Nothing in this repository buys anything close to any of
+it.
 
 The PyPy line also needs its ``netsnmp`` column read carefully. That column
 costs 8.5 to 14.5 us there against 2 to 3.4 us on CPython, for exactly the same

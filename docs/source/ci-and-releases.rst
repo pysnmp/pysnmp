@@ -140,7 +140,11 @@ branch protection names it as a required check.
 ``codec-benchmark.yml`` runs on neither path. It measures BER encode and
 decode throughput across the platform and interpreter matrix, and it is
 asked for rather than scheduled: dispatch it against a branch, or label a
-pull request ``ci:benchmark`` to have it run and post its table there.
+pull request ``ci:benchmark`` to have it run and post its table there. On a
+pull request from a fork, or one Dependabot opened, it runs and leaves the
+table in the job summary and the run's artifacts but posts no comment --
+GitHub hands those runs a read-only token, and a write it cannot make is a
+failed job rather than a missing comment.
 Nothing in it asserts a threshold, so there is nothing for a push to
 break and no reason to spend runner minutes on every one. See
 :doc:`/docs/codec-benchmark`.

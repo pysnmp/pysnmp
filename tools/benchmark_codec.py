@@ -618,6 +618,9 @@ class Measurement:
     usec_per_op_median: float
     ops_per_sec: float
     usec_per_varbind: float
+    #: Where this case fell in the measuring order, counting from 1. The order
+    #: is not the order of the table: see :func:`_interleave`.
+    sequence: int = 0
     samples: list[float] = field(default_factory=list)
 
     @property
@@ -771,6 +774,38 @@ def _netsnmp_cases(
     ]
 
 
+def _interleave(
+    cases: list[tuple[str, str, str, Callable[[], Any]]],
+) -> list[tuple[str, str, str, Callable[[], Any]]]:
+    """Order the cases so no implementation is systematically measured first.
+
+    Measuring every pysnmp case, then every pyasn1 case, puts a whole
+    workload's worth of drift between two figures that are then subtracted
+    from each other. That is the wrong way round for what this benchmark is
+    for: the pysnmp-to-pyasn1 difference is a few per cent, and a runner's
+    drift between one moment and the next is larger than that -- the same
+    decode read 429 us in one run and 622 us in the next.
+
+    So the cases for one layer and direction are measured together, and which
+    implementation leads rotates from group to group. Any drift inside a group
+    is then a few hundred milliseconds rather than a whole workload, and what
+    is left of it does not land on the same implementation every time.
+    Deterministic, because a benchmark that shuffles is a benchmark whose runs
+    cannot be compared; the rotation is recorded in each measurement's
+    ``sequence``.
+    """
+    groups: dict[tuple[str, str], list[tuple[str, str, str, Callable[[], Any]]]] = {}
+    for case in cases:
+        groups.setdefault((case[0], case[1]), []).append(case)
+
+    ordered = []
+    for index, group in enumerate(groups.values()):
+        rotation = index % len(group)
+        ordered += group[rotation:] + group[:rotation]
+
+    return ordered
+
+
 def run_benchmark(
     workloads: list[Workload],
     codec: NetSnmpCodec | None,
@@ -781,10 +816,14 @@ def run_benchmark(
     """Run every case of every workload and collect the measurements."""
     measurements = []
 
+    sequence = 0
+
     for workload in workloads:
-        cases = _pysnmp_cases(workload) + _pyasn1_cases(workload)
-        if codec is not None:
-            cases += _netsnmp_cases(workload, codec)
+        cases = _interleave(
+            _pysnmp_cases(workload)
+            + _pyasn1_cases(workload)
+            + (_netsnmp_cases(workload, codec) if codec is not None else [])
+        )
 
         for layer, direction, implementation, operation in cases:
             if verbose:
@@ -796,6 +835,7 @@ def run_benchmark(
                 )
             iterations, samples = measure(operation, min_time, repeats)
             best = min(samples)
+            sequence += 1
             octets = (
                 len(workload.message_octets)
                 if layer == "message"
@@ -816,6 +856,7 @@ def run_benchmark(
                     ops_per_sec=1e6 / best,
                     usec_per_varbind=best / workload.varbinds,
                     samples=samples,
+                    sequence=sequence,
                 )
             )
             if verbose:
@@ -1044,8 +1085,10 @@ def render_markdown(report: dict[str, Any]) -> str:
             "",
             "### Where the time goes",
             "",
-            "Self time by package under cProfile, for the ten-binding message. "
-            "Profiling inflates every call, so read the split, not the totals.",
+            f"Self time by package under cProfile, for the "
+            f"{report['profiled_workload']['varbinds']}-binding message "
+            f"(`{report['profiled_workload']['name']}`). Profiling inflates "
+            f"every call, so read the split, not the totals.",
             "",
             "| direction | " + " | ".join(_ATTRIBUTION) + " |",
             "|" + "|".join(["---"] * (len(_ATTRIBUTION) + 1)) + "|",
@@ -1148,7 +1191,9 @@ def render_comparison(reports: list[dict[str, Any]]) -> str:
         "",
         "| run | workload | bindings | pysnmp decode | pysnmp encode "
         "| pyasn1 decode | netsnmp decode | pysnmp / netsnmp |",
-        "|---|---|---|---|---|---|---|",
+        # Eight headers, so eight delimiter cells. GitHub renders a table whose
+        # delimiter row disagrees with its header row as literal text.
+        "|---|---|---|---|---|---|---|---|",
     ]
 
     order = {name: index for index, (name, _, _) in enumerate(WORKLOADS)}
@@ -1328,11 +1373,11 @@ def main(argv: list[str] | None = None) -> int:
 
     measurements = run_benchmark(workloads, codec, min_time, repeats)
 
-    profile: dict[str, dict[str, float]] = {}
+    profile: dict[str, dict[str, Any]] = {}
+    profiled = next((w for w in workloads if w.name == "poll"), workloads[0])
     if args.profile:
-        target = next((w for w in workloads if w.name == "poll"), workloads[0])
         iterations = 20 if args.quick else args.profile_iterations
-        profile = run_profile(target, iterations)
+        profile = run_profile(profiled, iterations)
 
     report = {
         "schema": 1,
@@ -1349,6 +1394,10 @@ def main(argv: list[str] | None = None) -> int:
         ],
         "measurements": [asdict(m) for m in measurements],
         "profile": profile,
+        # Which workload the profile above describes. `poll` unless the run did
+        # not build one, and the report says so rather than leaving a reader to
+        # assume: `--workload single --profile` profiles one binding, not ten.
+        "profiled_workload": {"name": profiled.name, "varbinds": profiled.varbinds},
         "notes": notes,
     }
 

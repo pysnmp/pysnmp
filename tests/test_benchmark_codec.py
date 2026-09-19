@@ -208,6 +208,55 @@ class TestTiming:
         assert expected == benchmark_codec._WARMUP_SAMPLES
 
 
+class TestMeasuringOrder:
+    """Which implementation runs first, and whether the report says so."""
+
+    def test_no_implementation_is_always_measured_first(self, workloads):
+        poll = next(w for w in workloads if w.name == "poll")
+        cases = benchmark_codec._interleave(
+            benchmark_codec._pysnmp_cases(poll) + benchmark_codec._pyasn1_cases(poll)
+        )
+
+        leaders = [group[0] for group in _grouped(cases).values()]
+        # Measuring every pysnmp case before every pyasn1 case puts a
+        # workload's worth of runner drift between two figures that are then
+        # compared with each other, and that drift is larger than the
+        # difference being measured.
+        assert len(set(leaders)) > 1, "one implementation led every group"
+
+    def test_corresponding_cases_are_measured_together(self, workloads):
+        poll = next(w for w in workloads if w.name == "poll")
+        cases = benchmark_codec._interleave(
+            benchmark_codec._pysnmp_cases(poll) + benchmark_codec._pyasn1_cases(poll)
+        )
+
+        # Every (layer, direction) group is contiguous: nothing else is
+        # measured between two figures that get divided by each other.
+        seen = []
+        for layer, direction, _, _ in cases:
+            if not seen or seen[-1] != (layer, direction):
+                seen.append((layer, direction))
+        assert len(seen) == len(set(seen))
+
+    def test_every_case_still_runs(self, workloads):
+        poll = next(w for w in workloads if w.name == "poll")
+        original = benchmark_codec._pysnmp_cases(poll) + benchmark_codec._pyasn1_cases(
+            poll
+        )
+        reordered = benchmark_codec._interleave(original)
+
+        assert len(reordered) == len(original)
+        assert {case[:3] for case in reordered} == {case[:3] for case in original}
+
+
+def _grouped(cases):
+    """The cases by (layer, direction), in the order they are measured."""
+    groups = {}
+    for layer, direction, implementation, _ in cases:
+        groups.setdefault((layer, direction), []).append(implementation)
+    return groups
+
+
 class TestReport:
     """The shape the workflow and any later comparison read."""
 
@@ -238,6 +287,13 @@ class TestReport:
         implementations = {m["implementation"] for m in report["measurements"]}
         assert {"pysnmp", "pyasn1"} <= implementations
 
+        # The measuring order is the order of this list, and each entry says
+        # where it fell -- see TestMeasuringOrder for why that is not the
+        # order of the table.
+        sequences = [m["sequence"] for m in report["measurements"]]
+        assert sequences == sorted(sequences)
+        assert len(set(sequences)) == len(sequences)
+
         for measurement in report["measurements"]:
             assert measurement["usec_per_op"] > 0
             assert measurement["ops_per_sec"] > 0
@@ -249,6 +305,28 @@ class TestReport:
         assert "## BER codec benchmark" in summary
         assert "| workload |" in summary
         assert "Where the time goes" in summary
+        # The profile describes whichever workload was profiled, which is not
+        # always the ten-binding one: this run built only `single`.
+        assert report["profiled_workload"] == {"name": "single", "varbinds": 1}
+        assert "1-binding message (`single`)" in summary
+
+    def test_comparison_table_delimiters_match_its_header(self, tmp_path):
+        # A delimiter row that disagrees with the header row renders the whole
+        # table as literal text on GitHub, which is where this one is read.
+        json_path = tmp_path / "results.json"
+        assert (
+            benchmark_codec.main(
+                ["--quick", "--workload", "single", "--json", str(json_path)]
+            )
+            == 0
+        )
+
+        comparison = benchmark_codec.render_comparison(
+            benchmark_codec.load_reports([str(json_path)])
+        )
+        rows = [line for line in comparison.splitlines() if line.startswith("|")]
+        widths = {line.count("|") for line in rows}
+        assert len(widths) == 1, f"ragged table: {widths}"
 
     def test_netsnmp_can_be_required(self, monkeypatch, tmp_path):
         # Whether the baseline is present is a property of the runner, so the
