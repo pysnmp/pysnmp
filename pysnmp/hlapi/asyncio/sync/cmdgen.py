@@ -13,9 +13,9 @@ from pyasn1.type.univ import Null
 
 from pysnmp._aliases import install as _installAliases
 from pysnmp.hlapi.asyncio import cmdgen
+from pysnmp.hlapi.asyncio._walk import endColumnsThatLeftTheSubtree
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 from pysnmp.proto import errind
-from pysnmp.proto.rfc1905 import endOfMibView
 
 __all__ = ["bulk_cmd", "get_cmd", "next_cmd", "set_cmd"]
 
@@ -133,6 +133,7 @@ def next_cmd(
     maxCalls = options.pop("maxCalls", 0)
     vbProcessor = CommandGeneratorVarBinds()
     initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
+    nullVarBinds = [False] * len(initialVars)
     totalRows = totalCalls = 0
     # `varBinds` arrives as the *args tuple, but each round replaces it with a
     # row of the response and then rewrites entries of that row in place. Carry
@@ -165,18 +166,13 @@ def next_cmd(
                 return
 
             currentVarBinds = list(varBindTable[0]) if varBindTable else []
-            stopFlag = True
-            for column, (name, value) in enumerate(currentVarBinds):
-                if isinstance(value, Null) or (
-                    not lexicographicMode and not initialVars[column].isPrefixOf(name)
-                ):
-                    currentVarBinds[column] = (
-                        previousVarBinds[column][0],
-                        endOfMibView,
-                    )
-                if currentVarBinds[column][1] is not endOfMibView:
-                    stopFlag = False
-            if stopFlag:
+            if endColumnsThatLeftTheSubtree(
+                currentVarBinds,
+                previousVarBinds,
+                initialVars,
+                nullVarBinds,
+                lexicographicMode,
+            ):
                 return
 
             totalRows += 1
@@ -192,6 +188,7 @@ def next_cmd(
                 initialVars = [
                     x[0] for x in vbProcessor.makeVarBinds(snmpEngine, currentVarBinds)
                 ]
+                nullVarBinds = [False] * len(initialVars)
             if (maxRows and totalRows >= maxRows) or (
                 maxCalls and totalCalls >= maxCalls
             ):
@@ -263,18 +260,13 @@ def bulk_cmd(
             stopFlag = False
             for row, rowVarBinds in enumerate(varBindTable):
                 previousVarBinds = varBinds if row == 0 else varBindTable[row - 1]
-                for column, (name, value) in enumerate(rowVarBinds):
-                    if (
-                        nullVarBinds[column]
-                        or isinstance(value, Null)
-                        or (
-                            not lexicographicMode
-                            and not initialVars[column].isPrefixOf(name)
-                        )
-                    ):
-                        rowVarBinds[column] = previousVarBinds[column][0], endOfMibView
-                        nullVarBinds[column] = True
-                if all(value is endOfMibView for _, value in rowVarBinds):
+                if endColumnsThatLeftTheSubtree(
+                    rowVarBinds,
+                    previousVarBinds,
+                    initialVars,
+                    nullVarBinds,
+                    lexicographicMode,
+                ):
                     varBindTable = varBindTable[:row]
                     stopFlag = True
                     break

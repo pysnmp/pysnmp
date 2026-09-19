@@ -4,6 +4,26 @@
 Walking operations
 ------------------
 
+.. include:: /../../examples/hlapi/asyncio/manager/cmdgen/walk-a-table.py
+   :start-after: """
+   :end-before: """  #
+
+.. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/walk-a-table.py
+   :start-after: """  #
+   :language: python
+
+:download:`Download</../../examples/hlapi/asyncio/manager/cmdgen/walk-a-table.py>` script.
+
+.. include:: /../../examples/hlapi/asyncio/manager/cmdgen/bulk-walk-a-table.py
+   :start-after: """
+   :end-before: """  #
+
+.. literalinclude:: /../../examples/hlapi/asyncio/manager/cmdgen/bulk-walk-a-table.py
+   :start-after: """  #
+   :language: python
+
+:download:`Download</../../examples/hlapi/asyncio/manager/cmdgen/bulk-walk-a-table.py>` script.
+
 .. include:: /../../examples/hlapi/asyncio/manager/cmdgen/getbulk-to-eom.py
    :start-after: """
    :end-before: """  #
