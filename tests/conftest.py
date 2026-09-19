@@ -1,6 +1,7 @@
 """Shared fixtures for integration tests."""
 
 import os
+import platform
 import socket
 import subprocess
 import sys
@@ -8,6 +9,46 @@ import time
 from pathlib import Path
 
 import pytest
+
+#: The test modules that build a MIB corpus, and so drive pysmi's corpus
+#: writer.
+#:
+#: That writer commits SQLite while a statement is still open
+#: (``pysmi/corpus/db.py``, ``write_db``). CPython's ``sqlite3`` tolerates it,
+#: because the implicit cursor behind ``Connection.execute`` is released as its
+#: last reference goes and the statement resets with it. PyPy's does not -- it
+#: collects that cursor later, and the commit meets "cannot commit transaction
+#: - SQL statements in progress". Every one of these modules errors there, and
+#: nothing in pysnmp can make them pass.
+#:
+#: So they are skipped where the interpreter is not CPython, and only they: the
+#: rest of the suite runs, and a PyPy failure anywhere else is a real one that
+#: the matrix is there to catch. Delete this the day pysmi closes its cursors.
+CORPUS_WRITER_MODULES = frozenset(
+    {
+        "test_behavior.py",
+        "test_corpus.py",
+        "test_generated_mibs.py",
+        "test_precedence.py",
+        "test_provenance.py",
+    }
+)
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip the corpus-writer tests on an interpreter whose sqlite3 refuses them."""
+    if platform.python_implementation() == "CPython":
+        return
+
+    skip = pytest.mark.skip(
+        reason=(
+            "pysmi's corpus writer commits SQLite with a statement still open, "
+            f"which {platform.python_implementation()}'s sqlite3 refuses"
+        )
+    )
+    for item in items:
+        if Path(str(item.fspath)).name in CORPUS_WRITER_MODULES:
+            item.add_marker(skip)
 
 
 @pytest.fixture(scope="session")

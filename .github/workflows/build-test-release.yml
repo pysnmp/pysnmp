@@ -132,12 +132,11 @@ jobs:
           import json, os
 
           pythons = ["3.10", "3.11", "3.12", "3.13", "3.14"]
-          jobs = [{"os": "ubuntu-latest", "python": p, "experimental": False}
-                  for p in pythons]
+          jobs = [{"os": "ubuntu-latest", "python": p} for p in pythons]
 
           if os.environ["BROAD"] == "true":
               for platform in ("macos-latest", "windows-latest"):
-                  jobs += [{"os": platform, "python": p, "experimental": False}
+                  jobs += [{"os": platform, "python": p}
                            for p in (pythons[0], pythons[-1])]
 
           # PyPy, which until #320 nothing here had ever run: pysnmp could not
@@ -147,13 +146,14 @@ jobs:
           # and a pure-Python package's second interpreter is exactly where a
           # CPython-only assumption hides.
           #
-          # Non-blocking for now, and for a reason outside this repository:
-          # pysmi's corpus writer commits SQLite while a statement is still
-          # open, which CPython's sqlite3 tolerates and PyPy's refuses, so the
-          # five test files that build a corpus error there. Everything else
-          # passes -- 1751 tests. Make this blocking once pysmi is fixed.
-          jobs.append({"os": "ubuntu-latest", "python": "pypy-3.11",
-                       "experimental": True})
+          # It blocks like every other leg. The five test files that drive
+          # pysmi's corpus writer skip themselves there -- that writer commits
+          # SQLite with a statement still open, which PyPy's sqlite3 refuses
+          # and nothing here can fix; tests/conftest.py says so and names what
+          # would have to change. Everything else is required to pass, which
+          # is the point: a leg that tolerates any failure would not have
+          # caught either of the two this branch fixes.
+          jobs.append({"os": "ubuntu-latest", "python": "pypy-3.11"})
 
           print("include=" + json.dumps(jobs))
           PY
@@ -168,9 +168,6 @@ jobs:
         include: ${{ fromJSON(needs.setup-matrix.outputs.include) }}
       fail-fast: false
     runs-on: ${{ matrix.os }}
-    # Only the PyPy leg sets this, and only until pysmi stops committing
-    # SQLite with a statement open. See setup-matrix above.
-    continue-on-error: ${{ matrix.experimental }}
     needs:
       - build
       - setup-matrix

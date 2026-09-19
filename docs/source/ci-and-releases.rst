@@ -177,12 +177,17 @@ pull request carrying the ``ci:full-matrix`` label.
 PyPy 3.11 runs on Linux on every trigger, in addition to the table above.
 That is six jobs on an ordinary pull request and ten on a broad run.
 
-The PyPy leg is ``continue-on-error``, and for a reason outside this
-repository rather than an unproven one: pysmi's corpus writer commits
-SQLite while a statement is still open, which CPython's ``sqlite3``
-tolerates and PyPy's refuses, so the five test files that build a corpus
-error there. The other 1751 tests pass. Make the leg blocking once pysmi
-no longer does that.
+It blocks a merge like every other leg. One thing there cannot pass and is
+not pysnmp's to fix: pysmi's corpus writer commits SQLite while a
+statement is still open, which CPython's ``sqlite3`` tolerates and PyPy's
+refuses. The five test files that build a corpus skip themselves on any
+interpreter that is not CPython -- ``tests/conftest.py`` names them, says
+why, and says what would have to change for the skip to go. The other 1751
+tests are required to pass.
+
+Skipping those five rather than tolerating the whole leg is deliberate: a
+job that may fail for any reason would not have caught either of the two
+things adding PyPy found, and would not catch the next one.
 
 It is worth having even so. PyPy is the other implementation this package
 is expected to work on, nothing here had ever run it before
