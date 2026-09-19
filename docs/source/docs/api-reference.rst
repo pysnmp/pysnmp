@@ -187,7 +187,7 @@ Callers of the blocking API use ``with`` instead:
    with SnmpEngine() as snmpEngine:
        ...
 
-Either way, :py:meth:`~pysnmp.entity.engine.SnmpEngine.closeDispatcher` can be
+Either way, :py:meth:`~pysnmp.hlapi.SnmpEngine.closeDispatcher` can be
 called directly, on an engine that has no dispatcher or on one already closed.
 
 Security Parameters
