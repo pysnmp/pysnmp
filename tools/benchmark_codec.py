@@ -646,10 +646,22 @@ def _autorange(operation: Callable[[], Any], min_time: float) -> int:
         iterations *= 10 if elapsed < min_time / 10 else 2
 
 
+#: Samples to run and throw away before measuring. On CPython one call is
+#: enough to fill the caches, and the autorange run does that much anyway. On a
+#: tracing JIT it is not: the first case measured pays for compiling the
+#: decoder, and pays it in the figure. It showed up as soon as PyPy could run
+#: this at all -- a ten-binding message decode read 467 us where the PDU decode
+#: measured moments later, on the same interpreter and nearly the same work,
+#: read 144 us. Discarding a few samples first measures the codec rather than
+#: the compiler.
+_WARMUP_SAMPLES = 0 if platform.python_implementation() == "CPython" else 3
+
+
 def measure(
     operation: Callable[[], Any],
     min_time: float,
     repeats: int,
+    warmups: int = _WARMUP_SAMPLES,
 ) -> tuple[int, list[float]]:
     """Time *operation*, returning the iteration count and one figure per repeat.
 
@@ -661,6 +673,10 @@ def measure(
     """
     operation()  # Warm up: first call imports, allocates and fills caches.
     iterations = _autorange(operation, min_time)
+
+    for _ in range(warmups):
+        for _ in range(iterations):
+            operation()
 
     samples = []
     for _ in range(repeats):

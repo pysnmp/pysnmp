@@ -174,28 +174,27 @@ inverts: 693 us on 3.10 against 900 us on 3.14. That is one run of one
 workload and wants confirming before anything is built on it, but it is exactly
 the kind of claim the matrix exists to make checkable rather than assumed.
 
-**PyPy cannot run pysnmp at all today**, which the original report's second
-table makes worth stating. ``import pysnmp.proto.rfc1902`` ends in a
-``RecursionError`` on PyPy 3.11: ``pysnmp-pyasn1``'s ``NamedType`` subclasses a
-:func:`~collections.namedtuple` and overrides ``__getitem__`` to return
+**Running PyPy at all was the first thing this found.** Before the matrix
+existed nobody had tried: ``import pysnmp.proto.rfc1902`` ended in a
+``RecursionError`` there. ``pysnmp-pyasn1``'s ``NamedType`` subclasses a
+:func:`~collections.namedtuple` and overrode ``__getitem__`` to return
 ``self.asn1Object``, and PyPy builds namedtuple field accessors out of
-``__getitem__`` -- so the accessor calls the override which calls the accessor.
-CPython's field accessors read the tuple slot directly and never enter the
-override, which is why the same code works there.
+``__getitem__`` -- so the accessor called the override which called the
+accessor. CPython's accessors read the tuple slot directly and never enter the
+override, which is why the same code had always worked there and why five years
+of CI had nothing to say about it.
 
-That is a pyasn1 bug rather than a pysnmp one, and it is fixed in
-`pysnmp/pyasn1#185 <https://github.com/pysnmp/pyasn1/pull/185>`_, where
-``NamedType`` reads its three fields off the tuple instead of leaving them to
-whatever accessors the interpreter's namedtuple generated. Against that branch
-pyasn1's own suite passes on PyPy and this benchmark runs there end to end. The
-PyPy leg of the matrix stays marked experimental until a released
-``pysnmp-pyasn1`` carries the fix and the floor in ``pyproject.toml`` names it.
+Fixed in `pysnmp/pyasn1#185 <https://github.com/pysnmp/pyasn1/pull/185>`_ and
+released as ``pysnmp-pyasn1`` 2.0.3, which is why the floor in
+``pyproject.toml`` names that version: 2.0.2 is not importable on PyPy, and on
+CPython the two are the same code. The leg is an ordinary part of the matrix
+now.
 
-One thing that leg will need when it does go green: PyPy measures a *warm*
-interpreter or it measures the JIT. The harness sizes its own iteration counts
-and reports the fastest of several samples, which gives the JIT somewhere to
-warm up, but a short run (``--quick``, or a low ``--min-time``) on PyPy reports
-compilation, not the codec.
+One thing to know when reading it: PyPy measures a *warm* interpreter or it
+measures the JIT. The harness sizes its own iteration counts and reports the
+fastest of several samples, which gives the JIT somewhere to warm up, but a
+short run -- ``--quick``, or a low ``--min-time`` -- reports compilation there
+rather than the codec.
 
 What it does not measure
 ------------------------

@@ -182,10 +182,30 @@ class TestTiming:
         assert len(calls) >= iterations
 
     def test_measure_returns_one_sample_per_repeat(self):
-        iterations, samples = benchmark_codec.measure(lambda: None, 0.001, repeats=3)
+        iterations, samples = benchmark_codec.measure(
+            lambda: None, 0.001, repeats=3, warmups=0
+        )
         assert iterations >= 1
         assert len(samples) == 3
         assert all(sample > 0 for sample in samples)
+
+    def test_warmup_samples_run_and_are_not_reported(self):
+        # A tracing JIT charges the first case measured for compiling the
+        # decoder. Discarded samples are how that stops landing in a figure,
+        # so they have to actually run -- and not turn up as extra samples.
+        calls = []
+        iterations, samples = benchmark_codec.measure(
+            lambda: calls.append(1), 0.001, repeats=2, warmups=3
+        )
+
+        assert len(samples) == 2
+        assert len(calls) >= iterations * 5
+
+    def test_cpython_needs_no_warmup_samples(self):
+        # And they are not free, so nothing pays for them where the first call
+        # is already enough.
+        expected = 0 if sys.implementation.name == "cpython" else 3
+        assert expected == benchmark_codec._WARMUP_SAMPLES
 
 
 class TestReport:
