@@ -12,6 +12,7 @@ test names the RFC clause it is checking, because that clause is the only
 specification the code has -- there is nothing in the module to compare against.
 """
 
+import contextlib
 import os
 import platform
 import shutil
@@ -22,6 +23,35 @@ import pytest
 from pysnmp.smi import synthesis
 from pysnmp.smi.builder import DirMibSource, MibBuilder
 from pysnmp.smi.mibs import behavior
+
+
+@contextlib.contextmanager
+def _absentUname():
+    """`os.uname` missing for the duration, the way it is on Windows.
+
+    Saves whatever was there and puts it back, so it works both on a platform
+    that has the attribute and on one that never did.
+    """
+    missing = object()
+    original = getattr(os, "uname", missing)
+
+    if original is not missing:
+        del os.uname
+
+    try:
+        yield
+    finally:
+        if original is not missing:
+            os.uname = original
+
+
+@contextlib.contextmanager
+def _fakeUname(hostname):
+    """`os.uname` present and reporting `hostname`, the way POSIX does."""
+    with mock.patch.object(os, "uname", create=True) as uname:
+        uname.return_value = ("", hostname, "", "", "")
+        yield
+
 
 #: What a fragment is carried for. Named here rather than read from the package
 #: so that deleting one is a test failure and not a silently smaller sweep.
@@ -567,16 +597,18 @@ class TestSnmpEngineID:
         contributed nothing. Without this, a patch of `platform.node()` proves
         nothing on Linux -- the old code would read the real host name through
         `os.uname()` and look fine.
+
+        The absence is arranged by hand rather than with `mock.patch.object`,
+        because that combination does not survive a run on Windows: with
+        `create=True` mock deletes the attribute it created when the block
+        exits, and on a platform where `os.uname` never existed the body has
+        already deleted it, so the teardown raises `AttributeError: uname`. A
+        test that simulates Windows should not be the thing that fails there.
         """
         with (
             mock.patch.object(platform, "node", return_value=hostname),
-            mock.patch.object(os, "uname", create=True) as uname,
+            _absentUname() if windows else _fakeUname(hostname),
         ):
-            if windows:
-                del os.uname
-            else:
-                uname.return_value = ("", hostname, "", "", "")
-
             built = MibBuilder()
             built.loadModules("SNMP-FRAMEWORK-MIB")
             (engineIdType,) = built.importSymbols("SNMP-FRAMEWORK-MIB", "SnmpEngineID")

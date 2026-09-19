@@ -38,18 +38,37 @@ from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 
 @pytest.fixture(scope="module")
 def anInterface():
-    """Some interface this host actually has, as ``(name, index)``.
+    """Some interface this host has, as ``(scope, index)``.
 
-    The IPv6 zone tests need a name `if_nametoindex` will resolve. They used to
-    name ``lo``, which is not an interface Windows has -- and Windows joins the
-    matrix whenever a run carries ``ci:full-matrix`` -- so ask the host what it
-    has rather than assuming.
+    The IPv6 zone tests need a scope a literal can carry and the resolver will
+    accept. Asking the host for an interface name is not enough on its own:
+    Windows reports names like ``ethernet_0`` from `if_nameindex()` that
+    `getaddrinfo` refuses to parse in ``fe80::1%name`` form, which failed the
+    zone tests on every Windows run. A numeric zone ID is accepted everywhere,
+    so the name is offered first -- keeping the name-resolution path covered
+    where it works -- and the index is the fallback. Either way it is probed
+    rather than assumed.
     """
     for index, name in socket.if_nameindex():
-        if index:
-            return name, index
+        if not index:
+            continue
 
-    pytest.skip("host reports no network interfaces")
+        for scope in (name, str(index)):
+            try:
+                socket.getaddrinfo(
+                    f"fe80::1%{scope}",
+                    None,
+                    socket.AF_INET6,
+                    socket.SOCK_DGRAM,
+                    0,
+                    socket.AI_NUMERICHOST,
+                )
+            except socket.gaierror:
+                continue
+
+            return scope, index
+
+    pytest.skip("host reports no interface a scoped address can name")
 
 
 class TestSnmpEngine:
@@ -493,8 +512,8 @@ class TestIPv6ScopeReachesTheSocket:
     def test_a_scope_survives_from_the_transport_target_to_sendto(self, anInterface):
         # The whole path the issue asks about: what the caller typed, through
         # the target's resolution, to the sockaddr the socket is given.
-        name, index = anInterface
-        target = Udp6TransportTarget((f"fe80::1%{name}", 161))
+        scope, index = anInterface
+        target = Udp6TransportTarget((f"fe80::1%{scope}", 161))
 
         assert self._sentAddress(target.transportAddr) == ("fe80::1", 161, 0, index)
 
@@ -574,11 +593,12 @@ class TestUnboundLocalAddress:
         assert address == ("fe80::1", 161, 0, 7)
 
     def test_udp6_normalize_address_resolves_an_interface_name(self, anInterface):
-        # A name the sockaddr cannot carry becomes the index the kernel wants.
-        name, expected = anInterface
+        # A scope the sockaddr cannot carry as written becomes the index the
+        # kernel wants.
+        scope, expected = anInterface
         transport = udp6.Udp6AsyncioTransport()
         transport.transport = _UnnamedSocketTransport()
-        address = transport.normalizeAddress((f"fe80::1%{name}", 161, 0, 0))
+        address = transport.normalizeAddress((f"fe80::1%{scope}", 161, 0, 0))
         assert address == ("fe80::1", 161, 0, expected)
 
     def test_udp6_normalize_address_drops_flowinfo(self):

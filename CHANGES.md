@@ -1,6 +1,16 @@
 Revision 5.0.25, released 2026-08-29
 ------------------------------------
 
+- Fixed the three test failures that had left `next` red on Windows since the
+  merge of #298. The engine-ID tests simulated Windows by deleting `os.uname`
+  under `mock.patch.object(..., create=True)`, whose teardown then deleted an
+  attribute that was already gone -- so the test that simulates Windows was the
+  one that failed there. The IPv6 zone fixture took an interface name from
+  `if_nameindex()`, which on Windows reports names like `ethernet_0` that
+  `getaddrinfo` will not parse in a scoped literal; the scope is now probed,
+  preferring the name and falling back to the numeric zone ID that every
+  platform accepts
+
 - Replaced the wall-clock assertion in the `nextKey` scaling test with a count
   of key comparisons. It allowed a 3x ratio where a correct implementation
   produces ~2, so the real headroom was ~1.5x on measurements of a few
