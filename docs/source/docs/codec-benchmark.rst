@@ -87,12 +87,17 @@ decoder path stands in for all of them.
 Findings
 --------
 
-From the first matrix run, `35446805277
-<https://github.com/pysnmp/pysnmp/actions/runs/35446805277>`_: CPython 3.14.7
-on GitHub's ubuntu runner, net-snmp 5.9.4, pysnmp 6.0.0-rc.15, pyasn1 2.0.2.
-Absolute figures move with the machine -- the same run's Windows and macOS
-legs differ by up to a factor of two -- so the ratios and the shape are what to
-read.
+From run `35447776986
+<https://github.com/pysnmp/pysnmp/actions/runs/35447776986>`_, the first with
+every leg of the matrix reporting: CPython 3.14.7 on GitHub's ubuntu runner,
+net-snmp 5.9.4, pysnmp 6.0.0-rc.15, pyasn1 2.0.3.
+
+Read the ratios, not the microseconds. A shared runner is not a measuring
+bench: the same ten-binding decode on the same leg read 429 us in the run
+before this one and 622 us in this one, a 45% spread from nothing but the
+machine, and the matrix's slowest platform is twice its fastest. What holds
+steady across runs is the shape -- which column is bigger than which, and by
+how much.
 
 .. list-table:: PDU layer, microseconds per operation
    :header-rows: 1
@@ -106,40 +111,40 @@ read.
      - pysnmp / netsnmp
    * - decode, single
      - 1
-     - 78
-     - 74
-     - 1.4
+     - 110
+     - 106
+     - 2.0
      - 56x
    * - decode, poll
      - 10
-     - 429
-     - 407
-     - 2.4
-     - 180x
+     - 622
+     - 590
+     - 3.4
+     - 186x
    * - decode, bulk
      - 50
-     - 1961
-     - 1866
-     - 6.6
-     - 296x
+     - 2839
+     - 2750
+     - 8.9
+     - 321x
    * - encode, single
      - 1
-     - 29
-     - 29
-     - 0.9
+     - 40
+     - 39
+     - 1.3
      - 31x
    * - encode, poll
      - 10
-     - 152
-     - 151
-     - 1.5
-     - 105x
+     - 209
+     - 208
+     - 1.9
+     - 112x
    * - encode, bulk
      - 50
-     - 689
-     - 680
-     - 3.7
-     - 188x
+     - 940
+     - 933
+     - 4.4
+     - 215x
 
 **pysnmp's own type layer is not where the time is.** The bare-pyasn1 mirror of
 the same message decodes within a couple of per cent of pysnmp's spec, and the
@@ -147,14 +152,15 @@ profile puts 0.4% of decode self time and none of encode in pysnmp's package.
 The constraints, the named values and the ``pysnmp.proto.rfc1902``
 subclasses -- the obvious suspects -- cost close to nothing at codec time.
 
-**The codec is pyasn1**, which takes 84.7% of decode self time and 88.1% of
-encode. Of what remains, roughly a tenth is interpreter builtins (dictionary
+**The codec is pyasn1**, which takes 84.8% of decode self time and 88.8% of
+encode -- and 86.9% and 92.5% on PyPy, so this is not an artefact of one
+interpreter. Of what remains, roughly a tenth is interpreter builtins (dictionary
 updates, mostly) and 3-5% is ``logging.Logger.isEnabledFor``: pyasn1's debug
 hooks ask whether debugging is on 577 times per ten-binding decode, and the
 answer is always no.
 
 **The cost is per binding, not per message.** Across the three workloads decode
-fits ``39 us + 38 us per binding`` and encode ``15 us + 14 us per binding`` to
+fits ``54 us + 56 us per binding`` and encode ``21 us + 18 us per binding`` to
 within a couple of per cent. Anything that would matter has to make a *binding*
 cheaper; there is no per-message overhead worth attacking.
 
@@ -165,14 +171,49 @@ implementations rather than against net-snmp's C library, which is what this
 measures. Read the netsnmp column as the floor, and the pysnmp-versus-pyasn1
 column as the only one that says anything about this repository's own code.
 
-**The interpreter moves the number more than anything in this repository
-does**, and not in one direction. On the same Linux runner the ten-binding
-decode costs 937 us on CPython 3.10 and 429 us on 3.14 -- 2.2 times faster for
-changing nothing -- and 322 us on the free-threaded 3.14t build, faster again
-on a single thread than the build with the GIL. On Windows the same pair
-inverts: 693 us on 3.10 against 900 us on 3.14. That is one run of one
-workload and wants confirming before anything is built on it, but it is exactly
-the kind of claim the matrix exists to make checkable rather than assumed.
+**The interpreter moves the number far more than anything in this repository
+does.** The ten-binding decode, on one Linux runner, one run:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 20 20 20
+
+   * - interpreter
+     - decode (us)
+     - encode (us)
+     - vs 3.10
+   * - CPython 3.10
+     - 960
+     - 383
+     - --
+   * - CPython 3.14
+     - 622
+     - 209
+     - 1.5x
+   * - CPython 3.14t (free-threaded)
+     - 549
+     - 212
+     - 1.7x
+   * - PyPy 3.11
+     - 124
+     - 34
+     - 7.7x
+
+**PyPy is where the answer to the original report is.** It decodes five times
+faster than the newest CPython and eleven times faster than the oldest one this
+package supports, and the free-threaded build is a little quicker than the
+build with the GIL on a single thread. Nothing in this repository buys anything
+close to that.
+
+The PyPy line also needs its ``netsnmp`` column read carefully. That column
+costs 8.5 to 14.5 us there against 2 to 3.4 us on CPython, for exactly the same
+C calls: PyPy's ``ctypes`` bridge is the slow part, not ``libnetsnmp``. So the
+gap narrowing to 12x on PyPy is pysnmp getting faster *and* the yardstick
+getting slower, and the two cannot be separated with this instrument.
+
+One more thing the matrix says and a single machine could not: on Windows the
+3.10-to-3.14 comparison is much flatter than elsewhere -- 988 us against 911 us
+-- where Linux and macOS both gain substantially.
 
 **Running PyPy at all was the first thing this found.** Before the matrix
 existed nobody had tried: ``import pysnmp.proto.rfc1902`` ended in a
