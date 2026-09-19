@@ -121,6 +121,8 @@ Command Generator
    /docs/hlapi/asyncio/manager/cmdgen/setcmd
    /docs/hlapi/asyncio/manager/cmdgen/nextcmd
    /docs/hlapi/asyncio/manager/cmdgen/bulkcmd
+   /docs/hlapi/asyncio/manager/cmdgen/walkcmd
+   /docs/hlapi/asyncio/manager/cmdgen/bulkwalkcmd
 
 Notification Originator
 

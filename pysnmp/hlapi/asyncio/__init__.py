@@ -12,10 +12,12 @@ from pysnmp._aliases import install as _installAliases
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi.asyncio.cmdgen import (
     bulk_cmd,
+    bulk_walk_cmd,
     get_cmd,
     is_end_of_mib,
     next_cmd,
     set_cmd,
+    walk_cmd,
 )
 from pysnmp.hlapi.asyncio.device import (
     DeviceReport,
@@ -80,6 +82,7 @@ from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
 #: :py:mod:`pysnmp._aliases`.
 _DEPRECATED_ALIASES = {
     "bulkCmd": "bulk_cmd",
+    "bulkWalkCmd": "bulk_walk_cmd",
     "dhKeyChange": "dh_key_change",
     "getCmd": "get_cmd",
     "getDeviceReport": "get_device_report",
@@ -87,6 +90,7 @@ _DEPRECATED_ALIASES = {
     "nextCmd": "next_cmd",
     "sendNotification": "send_notification",
     "setCmd": "set_cmd",
+    "walkCmd": "walk_cmd",
 }
 
 __getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)
