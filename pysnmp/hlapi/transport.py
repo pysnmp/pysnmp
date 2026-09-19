@@ -40,7 +40,6 @@ class AbstractTransportTarget(Generic[TransportAddrT]):
     ) -> None:
         self._unresolvedTransportAddr = transportAddr
         self._resolvedTransportAddr: TransportAddrT | None = None
-        self._resolveLock: asyncio.Lock | None = None
         self._resolveLookup: asyncio.Future[TransportAddrT] | None = None
         self.timeout = timeout
         self.retries = retries
@@ -120,43 +119,35 @@ class AbstractTransportTarget(Generic[TransportAddrT]):
         if self._resolvedTransportAddr is not None:
             return self
 
-        # Created here rather than in __init__ so that a target built outside a
-        # loop never makes one. Nothing awaits between the test and the
-        # assignment, so no other task can interleave and make a second.
-        if self._resolveLock is None:
-            self._resolveLock = asyncio.Lock()
+        # No lock anywhere below. Picking up the lookup and, if there is none,
+        # starting one happens without an await in between, so the loop cannot
+        # switch tasks in the middle of it and no two callers can start one.
+        # The shared future is what makes the lookup happen once; a lock would
+        # add an await point and guard nothing that is not already atomic.
+        lookup = self._resolveLookup
 
-        # The lock guards the decision of who starts the lookup, and nothing
-        # else -- the await below is outside it, so a caller waiting on an
-        # in-flight lookup never holds it.
-        async with self._resolveLock:
-            if self._resolvedTransportAddr is not None:
-                return self
+        # A lookup that finished without an answer -- it raised, or it was
+        # cancelled outright -- is not something to hand the next caller:
+        # keeping it would make every later resolve() re-raise the first
+        # failure and never try again. Decided here, where the lookup is picked
+        # up, rather than from its done callback, because the two are scheduled
+        # independently and which of them runs first is not something asyncio
+        # promises.
+        if lookup is not None and lookup.done():
+            if lookup.cancelled() or lookup.exception() is not None:
+                lookup = self._resolveLookup = None
 
-            lookup = self._resolveLookup
-
-            # A lookup that finished without an answer -- it raised, or it was
-            # cancelled outright -- is not something to hand the next caller:
-            # keeping it would make every later resolve() re-raise the first
-            # failure and never try again. Decided here, where the lookup is
-            # picked up, rather than from its done callback, because the two
-            # are scheduled independently and which of them runs first is not
-            # something asyncio promises.
-            if lookup is not None and lookup.done():
-                if lookup.cancelled() or lookup.exception() is not None:
-                    lookup = self._resolveLookup = None
-
-            if lookup is None:
-                loop = asyncio.get_running_loop()
-                lookup = self._resolveLookup = loop.run_in_executor(
-                    None, self._resolveAddr, self._unresolvedTransportAddr
-                )
-                # An executor thread that has started cannot be called off, so
-                # the result arrives whether or not anyone is still waiting for
-                # it. Recording it from here rather than only from the await
-                # below is what makes the once-only guarantee hold when every
-                # caller has been cancelled by the time it lands.
-                lookup.add_done_callback(self._lookupDone)
+        if lookup is None:
+            loop = asyncio.get_running_loop()
+            lookup = self._resolveLookup = loop.run_in_executor(
+                None, self._resolveAddr, self._unresolvedTransportAddr
+            )
+            # An executor thread that has started cannot be called off, so the
+            # result arrives whether or not anyone is still waiting for it.
+            # Recording it from here rather than only from the await below is
+            # what makes the once-only guarantee hold when every caller has
+            # been cancelled by the time it lands.
+            lookup.add_done_callback(self._lookupDone)
 
         # Shielded so that one caller's cancellation does not cancel the lookup
         # the others are waiting on.
