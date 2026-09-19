@@ -523,7 +523,7 @@ class TestObjectTypeOnANonObjectType:
 
     @pytest.mark.parametrize("ignore_errors", [True, False])
     def test_a_subtree_root_is_accepted_so_walks_start(self, mvc, ignore_errors):
-        # The binding nextCmd/bulkCmd build to walk `system`. Null is what a
+        # The binding next_cmd/bulk_cmd build to walk `system`. Null is what a
         # request carries, and it is a SimpleAsn1Type.
         ot = ObjectType(ObjectIdentity("1.3.6.1.2.1.1"))
 

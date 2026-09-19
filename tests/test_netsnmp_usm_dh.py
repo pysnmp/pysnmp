@@ -24,9 +24,9 @@ from pysnmp.hlapi import (
     SnmpEngine,
     UdpTransportTarget,
     UsmUserData,
-    dhKeyChange,
-    getCmd,
-    nextCmd,
+    dh_key_change,
+    get_cmd,
+    next_cmd,
     usmHMACSHAAuthProtocol,
     usmKeyTypeLocalized,
 )
@@ -87,7 +87,7 @@ def localizedCredentials(result, userName=ROTATED_USER):
 def getSysName(authData):
     """GET sysName.0, returning the raw HLAPI result tuple."""
     return next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             authData,
             target(),
@@ -100,7 +100,7 @@ def getSysName(authData):
 def walkColumn(column, userName=STATIC_USER):
     """Collect the instance OIDs of one column, as the agent hands them out."""
     instances = []
-    for errorIndication, errorStatus, _errorIndex, varBinds in nextCmd(
+    for errorIndication, errorStatus, _errorIndex, varBinds in next_cmd(
         SnmpEngine(),
         passphraseCredentials(userName),
         target(),
@@ -116,7 +116,7 @@ def walkColumn(column, userName=STATIC_USER):
 
 def changeAuthKey(authData):
     """Run one Diffie-Hellman authentication key change."""
-    return dhKeyChange(SnmpEngine(), authData, target(), ContextData(), "auth")
+    return dh_key_change(SnmpEngine(), authData, target(), ContextData(), "auth")
 
 
 class TestParameters:
@@ -125,7 +125,7 @@ class TestParameters:
     def test_agent_publishes_oakley_group_2(self):
         """Net-SNMP hard-codes the group RFC 2409 section 6.2 names."""
         errorIndication, errorStatus, _errorIndex, varBinds = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 passphraseCredentials(STATIC_USER),
                 target(),

@@ -11,23 +11,23 @@ from pysnmp.hlapi import (
     SnmpEngine,
     UdpTransportTarget,
     UsmUserData,
-    bulkCmd,
-    getCmd,
-    nextCmd,
-    sendNotification,
+    bulk_cmd,
+    get_cmd,
+    next_cmd,
+    send_notification,
     usmHMACMD5AuthProtocol,
 )
 from pysnmp.hlapi.asyncio import (
     UdpTransportTarget as AsyncioUdpTransportTarget,
 )
 from pysnmp.hlapi.asyncio import (
-    bulkCmd as asyncio_bulkCmd,
+    bulk_cmd as asyncio_bulk_cmd,
 )
 from pysnmp.hlapi.asyncio import (
-    getCmd as asyncio_getCmd,
+    get_cmd as asyncio_get_cmd,
 )
 from pysnmp.hlapi.asyncio import (
-    nextCmd as asyncio_nextCmd,
+    next_cmd as asyncio_next_cmd,
 )
 from pysnmp.proto.rfc1902 import OctetString
 
@@ -78,7 +78,7 @@ class TestSyncGetV1:
     def test_get_sys_descr(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public@1", mpModel=0),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -91,7 +91,7 @@ class TestSyncGetV1:
     def test_get_sys_objectid(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public@1", mpModel=0),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -104,7 +104,7 @@ class TestSyncGetV1:
     def test_get_sys_uptime(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public@1", mpModel=0),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -127,7 +127,7 @@ class TestSyncGetV1:
     def test_get_multiple(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public@1", mpModel=0),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -147,7 +147,7 @@ class TestSyncGetV2c:
     def test_get_sys_descr(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -160,7 +160,7 @@ class TestSyncGetV2c:
     def test_get_sys_contact(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -173,7 +173,7 @@ class TestSyncGetV2c:
     def test_get_if_number(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -188,7 +188,7 @@ class TestSyncGetV3:
     def test_get_sys_descr(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 UsmUserData("00000", "authkey1", authProtocol=usmHMACMD5AuthProtocol),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -201,7 +201,7 @@ class TestSyncGetV3:
     def test_get_sys_name(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 UsmUserData("00000", "authkey1", authProtocol=usmHMACMD5AuthProtocol),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -218,7 +218,7 @@ class TestSyncGetV3:
 class TestSyncNextV2c:
     def test_next_cmd(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
-        iterator = nextCmd(
+        iterator = next_cmd(
             SnmpEngine(),
             CommunityData("public"),
             UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -242,7 +242,7 @@ class TestSyncNotification:
     def test_trap_uses_asyncio_facade(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
         result = next(
-            sendNotification(
+            send_notification(
                 SnmpEngine(),
                 CommunityData("public"),
                 UdpTransportTarget((host, port)),
@@ -257,7 +257,7 @@ class TestSyncNotification:
 class TestSyncBulkV2c:
     def test_bulk_cmd(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
-        iterator = bulkCmd(
+        iterator = bulk_cmd(
             SnmpEngine(),
             CommunityData("public"),
             UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -286,7 +286,7 @@ class TestUnreachableDevice:
     def test_timeout_v2c(self):
         # Use an unused loopback port with very short timeout
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 UdpTransportTarget(("127.0.0.1", 19999), timeout=1, retries=0),
@@ -300,7 +300,7 @@ class TestUnreachableDevice:
 
     def test_timeout_v1(self):
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public", mpModel=0),
                 UdpTransportTarget(("127.0.0.1", 19999), timeout=1, retries=0),
@@ -321,7 +321,7 @@ class TestAsyncioGetV2c:
         host, port = snmpsim_endpoint
 
         async def run():
-            result = await asyncio_getCmd(
+            result = await asyncio_get_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
@@ -337,7 +337,7 @@ class TestAsyncioGetV2c:
         host, port = snmpsim_endpoint
 
         async def run():
-            result = await asyncio_getCmd(
+            result = await asyncio_get_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
@@ -355,7 +355,7 @@ class TestAsyncioGetV3:
         host, port = snmpsim_endpoint
 
         async def run():
-            result = await asyncio_getCmd(
+            result = await asyncio_get_cmd(
                 SnmpEngine(),
                 UsmUserData("00000", "authkey1", authProtocol=usmHMACMD5AuthProtocol),
                 AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
@@ -373,7 +373,7 @@ class TestAsyncioNextV2c:
         host, port = snmpsim_endpoint
 
         async def run():
-            result = await asyncio_nextCmd(
+            result = await asyncio_next_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
@@ -396,7 +396,7 @@ class TestAsyncioBulkV2c:
         host, port = snmpsim_endpoint
 
         async def run():
-            result = await asyncio_bulkCmd(
+            result = await asyncio_bulk_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
@@ -419,7 +419,7 @@ class TestAsyncioBulkV2c:
 class TestAsyncioTimeout:
     def test_asyncio_timeout_v2c(self):
         async def run():
-            result = await asyncio_getCmd(
+            result = await asyncio_get_cmd(
                 SnmpEngine(),
                 CommunityData("public"),
                 AsyncioUdpTransportTarget(("127.0.0.1", 19999), timeout=1, retries=0),
@@ -465,7 +465,7 @@ class TestTableCellApiIntegration:
 
         # Query snmpsim with that OID — should return the fixture value.
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public@1", mpModel=0),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -489,13 +489,13 @@ class TestTableCellApiIntegration:
         columns = mibView.getTableColumns("SNMPv2-MIB", "sysOREntry")
         column_ids = {col_id for col_id, _, _ in columns}
 
-        # Walk the sysORTable via SNMP nextCmd and collect unique column IDs.
+        # Walk the sysORTable via SNMP next_cmd and collect unique column IDs.
         # Use the first instance OID as the starting point.
         walked_column_ids = set()
         oid = SYS_OR_ID + ".1"
         for _ in range(20):  # safety limit
             result = next(
-                nextCmd(
+                next_cmd(
                     SnmpEngine(),
                     CommunityData("public@1", mpModel=0),
                     UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -528,9 +528,9 @@ class TestTableCellApiIntegration:
         mibBuilder.loadModules("SNMPv2-MIB")
         mibView = MibViewController(mibBuilder)
 
-        # Use nextCmd starting from sysORDescr.1 to get the first table cell
+        # Use next_cmd starting from sysORDescr.1 to get the first table cell
         result = next(
-            nextCmd(
+            next_cmd(
                 SnmpEngine(),
                 CommunityData("public@1", mpModel=0),
                 UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -557,7 +557,7 @@ class TestTableCellApiIntegration:
         assert col_name in ("sysORDescr", "sysORUpTime", "sysORID", "sysORIndex")
 
     def test_cell_oid_roundtrip(self, snmpsim_endpoint):
-        """resolveCellOid → getCmd → getTableCellInfo roundtrips correctly."""
+        """resolveCellOid → get_cmd → getTableCellInfo roundtrips correctly."""
         host, port = snmpsim_endpoint
 
         from pysnmp.smi.builder import MibBuilder
@@ -574,7 +574,7 @@ class TestTableCellApiIntegration:
 
         # Query snmpsim — should return the fixture value.
         result = next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 CommunityData("public@1", mpModel=0),
                 UdpTransportTarget((host, port), timeout=1, retries=2),

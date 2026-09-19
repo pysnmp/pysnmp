@@ -1096,7 +1096,7 @@ class NotificationType:
     containers incorporating :py:class:`~pysnmp.smi.rfc1902.ObjectIdentity`
     class instance (identifying particular notification) and a collection
     of MIB variables IDs that
-    :py:func:`~pysnmp.hlapi.asyncio.sendNotification`
+    :py:func:`~pysnmp.hlapi.asyncio.send_notification`
     should gather and put into notification message.
 
     Typical notification is defined like this (from *IF-MIB.txt*):

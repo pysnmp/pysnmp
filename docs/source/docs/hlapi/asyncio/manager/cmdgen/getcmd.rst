@@ -5,4 +5,4 @@ GET command
 .. toctree::
    :maxdepth: 2
 
-.. autofunction:: pysnmp.hlapi.asyncio.getCmd
+.. autofunction:: pysnmp.hlapi.asyncio.get_cmd

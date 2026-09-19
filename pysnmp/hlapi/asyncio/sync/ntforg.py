@@ -2,12 +2,13 @@
 
 import asyncio
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.hlapi.asyncio import ntforg
 
-__all__ = ["sendNotification"]
+__all__ = ["send_notification"]
 
 
-def sendNotification(
+def send_notification(
     snmpEngine, authData, transportTarget, contextData, notifyType, varBinds, **options
 ):
     """Blocking trap or inform delivery.
@@ -29,7 +30,7 @@ def sendNotification(
         asyncio.set_event_loop(loop)
         while varBinds:
             result = loop.run_until_complete(
-                ntforg.sendNotification(
+                ntforg.send_notification(
                     snmpEngine,
                     authData,
                     transportTarget,
@@ -46,3 +47,11 @@ def sendNotification(
             loop.run_until_complete(asyncio.sleep(0))
         loop.close()
         asyncio.set_event_loop(None)
+
+
+#: The camelCase spelling this name used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using it warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {"sendNotification": "send_notification"}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

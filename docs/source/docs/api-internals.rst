@@ -77,10 +77,10 @@ These are the blocking counterparts of the coroutines in
 :doc:`hlapi/asyncio/manager/cmdgen/getcmd` and its siblings. They take the same
 arguments and return the same tuple, having driven the event loop themselves.
 
-.. autofunction:: pysnmp.hlapi.getCmd
+.. autofunction:: pysnmp.hlapi.get_cmd
 
-.. autofunction:: pysnmp.hlapi.setCmd
+.. autofunction:: pysnmp.hlapi.set_cmd
 
-.. autofunction:: pysnmp.hlapi.nextCmd
+.. autofunction:: pysnmp.hlapi.next_cmd
 
-.. autofunction:: pysnmp.hlapi.bulkCmd
+.. autofunction:: pysnmp.hlapi.bulk_cmd

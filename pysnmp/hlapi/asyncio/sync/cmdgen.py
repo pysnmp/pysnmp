@@ -11,12 +11,13 @@ from typing import Any
 
 from pyasn1.type.univ import Null
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.hlapi.asyncio import cmdgen
 from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
 from pysnmp.proto import errind
 from pysnmp.proto.rfc1905 import endOfMibView
 
-__all__ = ["bulkCmd", "getCmd", "nextCmd", "setCmd"]
+__all__ = ["bulk_cmd", "get_cmd", "next_cmd", "set_cmd"]
 
 
 def _loop() -> asyncio.AbstractEventLoop:
@@ -71,7 +72,7 @@ def _single(
         asyncio.set_event_loop(None)
 
 
-def getCmd(
+def get_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -81,7 +82,7 @@ def getCmd(
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
     """Blocking GET. Yields one result, then whatever bindings are sent back in."""
     return _single(
-        cmdgen.getCmd,
+        cmdgen.get_cmd,
         snmpEngine,
         authData,
         transportTarget,
@@ -91,7 +92,7 @@ def getCmd(
     )
 
 
-def setCmd(
+def set_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -101,7 +102,7 @@ def setCmd(
 ) -> Iterator[tuple[Any, Any, Any, Any]]:
     """Blocking SET. Yields one result, then whatever bindings are sent back in."""
     return _single(
-        cmdgen.setCmd,
+        cmdgen.set_cmd,
         snmpEngine,
         authData,
         transportTarget,
@@ -111,7 +112,7 @@ def setCmd(
     )
 
 
-def nextCmd(
+def next_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -145,7 +146,7 @@ def nextCmd(
             previousVarBinds = currentVarBinds
             errorIndication, errorStatus, errorIndex, varBindTable = (
                 loop.run_until_complete(
-                    cmdgen.nextCmd(
+                    cmdgen.next_cmd(
                         snmpEngine,
                         authData,
                         transportTarget,
@@ -200,7 +201,7 @@ def nextCmd(
         asyncio.set_event_loop(None)
 
 
-def bulkCmd(
+def bulk_cmd(
     snmpEngine: Any,
     authData: Any,
     transportTarget: Any,
@@ -234,7 +235,7 @@ def bulkCmd(
             )
             errorIndication, errorStatus, errorIndex, varBindTable = (
                 loop.run_until_complete(
-                    cmdgen.bulkCmd(
+                    cmdgen.bulk_cmd(
                         snmpEngine,
                         authData,
                         transportTarget,
@@ -306,3 +307,16 @@ def bulkCmd(
     finally:
         _close(loop, snmpEngine)
         asyncio.set_event_loop(None)
+
+
+#: The camelCase spellings these names used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using one warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {
+    "bulkCmd": "bulk_cmd",
+    "getCmd": "get_cmd",
+    "nextCmd": "next_cmd",
+    "setCmd": "set_cmd",
+}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

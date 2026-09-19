@@ -51,7 +51,7 @@ blocking function:
    print(report.name, report.vendor_oid)
 
 The helper uses GETNEXT for ``sysORTable`` so the same API works with SNMPv1,
-SNMPv2c and SNMPv3 credentials. The legacy spelling ``getDeviceReport`` is
+SNMPv2c and SNMPv3 credentials. The legacy spelling ``get_device_report`` is
 retained as an alias.
 
 API reference

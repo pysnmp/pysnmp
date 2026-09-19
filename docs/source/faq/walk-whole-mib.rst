@@ -2,7 +2,7 @@
 Walking whole MIB
 -----------------
 
-Q. The nextCmd() and bulkCmd() methods of CommandGenerator app 
+Q. The next_cmd() and bulk_cmd() methods of CommandGenerator app 
    (oneliner version) stop working once returned OIDs went out of scope of 
    request OIDs. 
    
@@ -11,14 +11,14 @@ Q. The nextCmd() and bulkCmd() methods of CommandGenerator app
    the whole MIB?
 
 A. Yes, just pass the lexicographicMode=True parameter to CommandGenerator 
-   nextCmd() and bulkCmd() methods (introduced in PySNMP 4.2.3+) or set 
-   CommandGenerator.lexicographicMode=True option before calling nextCmd() 
-   and bulkCmd() methods.
+   next_cmd() and bulk_cmd() methods (introduced in PySNMP 4.2.3+) or set 
+   CommandGenerator.lexicographicMode=True option before calling next_cmd() 
+   and bulk_cmd() methods.
 
 .. code-block:: python
 
     cmdGen = cmdgen.CommandGenerator()
-    errorIndication, errorStatus, errorIndex, varBindTable = cmdGen.bulkCmd(
+    errorIndication, errorStatus, errorIndex, varBindTable = cmdGen.bulk_cmd(
         ....,
         ....,
         ....,

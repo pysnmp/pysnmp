@@ -21,9 +21,9 @@ from pysnmp.hlapi import (
     TcpTransportTarget,
     UdpTransportTarget,
     UsmUserData,
-    getCmd,
-    nextCmd,
-    setCmd,
+    get_cmd,
+    next_cmd,
+    set_cmd,
     usmAesCfb128Protocol,
     usmDESPrivProtocol,
     usmHMACSHAAuthProtocol,
@@ -35,10 +35,10 @@ from pysnmp.hlapi.asyncio import (
     UdpTransportTarget as AsyncUdpTransportTarget,
 )
 from pysnmp.hlapi.asyncio import (
-    bulkCmd as async_bulkCmd,
+    bulk_cmd as async_bulk_cmd,
 )
 from pysnmp.hlapi.asyncio import (
-    getCmd as async_getCmd,
+    get_cmd as async_get_cmd,
 )
 from pysnmp.proto.rfc1902 import (
     Float,
@@ -177,7 +177,7 @@ def _get_one(*oids):
     """Synchronous single-shot GET of one or more OID strings."""
     return assert_success(
         next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 credentials(),
                 target(),
@@ -190,12 +190,12 @@ def _get_one(*oids):
 
 # --- core protocol / coverage tests --------------------------------------
 def test_full_mib2_walk_covers_system_and_interfaces():
-    """nextCmd auto-selects GETNEXT (v1) or GETBULK (v2c/v3); the walk must
+    """next_cmd auto-selects GETNEXT (v1) or GETBULK (v2c/v3); the walk must
     return a healthy set of OIDs spanning the system and interfaces groups."""
     seen_system = False
     seen_interfaces = False
     rows = 0
-    iterator = nextCmd(
+    iterator = next_cmd(
         SnmpEngine(),
         credentials(),
         target(),
@@ -268,7 +268,7 @@ def test_load_average_arrives_as_an_opaque_float():
     the convention, so it is what says our reading of it is right. See #286.
     """
     error_indication, error_status, _error_index, var_binds = next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             credentials(),
             target(),
@@ -310,9 +310,9 @@ def test_getbulk_returns_multiple_rows_for_v2c_and_v3():
         )
 
     async def one_bulk():
-        # async bulkCmd is a coroutine returning a single 4-tuple (one GETBULK
+        # async bulk_cmd is a coroutine returning a single 4-tuple (one GETBULK
         # response), not an async generator.
-        return await async_bulkCmd(
+        return await async_bulk_cmd(
             SnmpEngine(),
             credentials(),
             async_target(),
@@ -338,7 +338,7 @@ def test_getnext_walk_progresses_for_v1():
         pytest.skip("GETNEXT differentiation is only asserted for SNMPv1")
 
     oids = []
-    iterator = nextCmd(
+    iterator = next_cmd(
         SnmpEngine(),
         credentials(),
         target(),
@@ -360,7 +360,7 @@ def test_getnext_walk_progresses_for_v1():
 # --- error / negative-path coverage --------------------------------------
 def test_missing_oid_surfaces_nosuch_semantics():
     error_indication, error_status, error_index, var_binds = next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             credentials(),
             target(),
@@ -388,7 +388,7 @@ def test_v3_wrong_credentials_fail_cleanly():
         pytest.skip("Negative authentication is only exercised for SNMPv3 profiles")
 
     error_indication, _error_status, _error_index, _var_binds = next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             wrong_credentials(),
             target(),
@@ -414,7 +414,7 @@ def test_set_syslocation_roundtrip():
     def get_location():
         var_binds = assert_success(
             next(
-                getCmd(
+                get_cmd(
                     SnmpEngine(),
                     credentials(),
                     target(),
@@ -428,7 +428,7 @@ def test_set_syslocation_roundtrip():
     def set_location(value):
         assert_success(
             next(
-                setCmd(
+                set_cmd(
                     SnmpEngine(),
                     credentials(),
                     target(),
@@ -459,7 +459,7 @@ def test_concurrent_requests_all_succeed():
 
     async def one_get():
         engine = SnmpEngine()
-        error_indication, _es, _ei, _vb = await async_getCmd(
+        error_indication, _es, _ei, _vb = await async_get_cmd(
             engine,
             credentials(),
             async_target(),
@@ -490,7 +490,7 @@ def test_get_over_tcp():
     """The same GET as over UDP, carried by a stream instead of a datagram."""
     var_binds = assert_success(
         next(
-            getCmd(
+            get_cmd(
                 SnmpEngine(),
                 credentials(),
                 tcp_target(),
@@ -510,7 +510,7 @@ def test_get_over_tcp_agrees_with_udp():
     def sysname(transport_target):
         return assert_success(
             next(
-                getCmd(
+                get_cmd(
                     SnmpEngine(),
                     credentials(),
                     transport_target,
@@ -527,7 +527,7 @@ def test_get_over_tcp_agrees_with_udp():
 def test_getnext_over_tcp():
     var_binds = assert_success(
         next(
-            nextCmd(
+            next_cmd(
                 SnmpEngine(),
                 credentials(),
                 tcp_target(),
@@ -550,7 +550,7 @@ def test_getbulk_over_tcp_returns_a_response_worth_framing():
         pytest.skip("GETBULK is not available for SNMPv1")
 
     async def one_bulk():
-        return await async_bulkCmd(
+        return await async_bulk_cmd(
             SnmpEngine(),
             credentials(),
             async_tcp_target(),
@@ -590,7 +590,7 @@ def test_successive_requests_over_one_tcp_connection():
 
         for _ in range(5):
             results.append(
-                await async_getCmd(
+                await async_get_cmd(
                     engine,
                     credentials(),
                     transport_target,
@@ -620,7 +620,7 @@ def test_set_over_tcp_round_trips():
     def get_location():
         return assert_success(
             next(
-                getCmd(
+                get_cmd(
                     SnmpEngine(),
                     credentials(),
                     tcp_target(),
@@ -634,7 +634,7 @@ def test_set_over_tcp_round_trips():
     def set_location(value):
         assert_success(
             next(
-                setCmd(
+                set_cmd(
                     SnmpEngine(),
                     credentials(),
                     tcp_target(),
@@ -660,7 +660,7 @@ def test_concurrent_requests_over_tcp_all_succeed():
     """Interleaved responses on one transport still frame and match up."""
 
     async def one_get():
-        error_indication, _es, _ei, _vb = await async_getCmd(
+        error_indication, _es, _ei, _vb = await async_get_cmd(
             SnmpEngine(),
             credentials(),
             async_tcp_target(),
