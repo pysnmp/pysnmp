@@ -1005,7 +1005,8 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         f"- **Interpreter**: {interpreter}",
         f"- **Platform**: {env['platform']} ({env['machine']})",
-        f"- **pysnmp**: {env['pysnmp']} · **pyasn1**: {env['pyasn1']}",
+        f"- **pysnmp**: {env['pysnmp']}",
+        f"- **pyasn1**: {env['pyasn1']}",
     ]
     if env["netsnmp"]:
         lines.append(f"- **net-snmp**: {env['netsnmp']} (`{env['netsnmp_library']}`)")
@@ -1080,12 +1081,18 @@ def render_text(report: dict[str, Any]) -> str:
 
 
 def _label(env: dict[str, Any]) -> str:
-    """How one run's environment reads in the cross-matrix table."""
+    """How one run's environment reads in the cross-matrix table.
+
+    ASCII only, here and in every other rendered line: the report is printed
+    to a console as well as written to a file, and a Windows console is not
+    UTF-8 -- a middle dot came back from the first CI run as a replacement
+    character in the log.
+    """
     system = env.get("platform", "").split("-")[0] or "unknown"
     interpreter = f"{env['python_implementation']} {env['python_version']}"
     if env.get("free_threaded"):
         interpreter += "t"
-    return f"{system} · {interpreter}"
+    return f"{system} / {interpreter}"
 
 
 def load_reports(paths: list[str]) -> list[dict[str, Any]]:
