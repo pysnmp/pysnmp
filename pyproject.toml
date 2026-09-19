@@ -23,6 +23,13 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    # Both implementations the test matrix runs, and it runs them because
+    # this is claimed here: an installer reads these to decide whether the
+    # package is for the interpreter in front of it, and until PyPy was in
+    # CI, claiming it would have been a guess. It is not one now -- see
+    # docs/source/ci-and-releases.rst.
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Communications",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
