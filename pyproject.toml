@@ -121,6 +121,13 @@ test = [
     # tests/test_generated_mibs.py re-renders to check for drift, and
     # tests/test_corpus.py builds its fixture from pysmi.corpus.conformance.
     "pysnmp-pysmi >=6.0.0,<7",
+    # A formatter in a test group looks wrong until you see what renders the
+    # modules: tools/regenerate_mibs.py pipes pysmi's output through
+    # `python -m ruff format`, so the rendering test cannot compare anything
+    # without it. It is in `dev` for linting as well, which is why this was
+    # missed -- every job used to install `dev`, and the drift test failed on
+    # CI the first time one did not.
+    "ruff >=0.4.0,<1.0.0",
 ]
 
 dev = [
@@ -131,7 +138,6 @@ dev = [
     "myst-parser >=5.1.0,<6.0.0; python_version >= '3.12'",
     "furo >=2025.12.19; python_version >= '3.12'",
     "mypy >=1.15.0,<3.0.0",
-    "ruff >=0.4.0,<1.0.0",
 ]
 
 # General availability wherever there is one, enforced rather than reviewed.
