@@ -444,6 +444,7 @@ class StreamAsyncioTransport(AbstractAsyncioTransport):
 
     def openServerMode(self, iface):
         """Listen on `iface` for connections peers open to us."""
+        self._checkLoopIsUsable()
         try:
             listening = self.loop.create_server(
                 lambda: SnmpStreamProtocol(self),

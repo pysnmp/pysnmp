@@ -11,10 +11,13 @@ message processing and security models, the MIB instrumentation, and the
 transport dispatcher. One engine can serve a manager, an agent, or both.
 """
 
+import asyncio
 import os
 import shutil
 import tempfile
+import warnings
 from pathlib import Path
+from types import TracebackType
 from typing import Any
 
 from pyasn1.type.error import ValueConstraintError
@@ -325,6 +328,113 @@ class SnmpEngine:
         self.transportDispatcher.unregisterErrorCbFun(recvId)
         self.transportDispatcher.unregisterTimerCbFun()
         self.transportDispatcher = None
+
+    def openDispatcher(self, timeout: float = 0) -> None:
+        """Run the registered dispatcher, if there is one.
+
+        With work outstanding this returns once it has drained; with none it runs
+        until the loop is stopped, which is what an agent waiting to be asked
+        something wants. An engine with no dispatcher registered has nothing to run,
+        so this does nothing rather than complaining -- the caller is trying to reach
+        a state that already holds.
+        """
+        if self.transportDispatcher is not None:
+            self.transportDispatcher.runDispatcher(timeout)
+
+    def closeDispatcher(self) -> None:
+        """Close the dispatcher's transports and detach it from this engine.
+
+        This is the whole of shutting an engine down. Doing it by hand means calling
+        `transportDispatcher.closeDispatcher()` and `unregisterTransportDispatcher()`
+        in that order, and forgetting the second leaves the dispatcher holding its
+        socket -- a descriptor leak with nothing to point at, in a process that
+        builds an engine per polling cycle.
+
+        Safe to call on an engine that has no dispatcher, and safe to call twice.
+        """
+        dispatcher = self.transportDispatcher
+        if dispatcher is None:
+            return
+
+        try:
+            dispatcher.closeDispatcher()
+        finally:
+            # Detach even if closing raised. An engine still pointing at a
+            # half-closed dispatcher would refuse to register another one, and
+            # would hand the next caller something it cannot send on.
+            if self.transportDispatcher is not None:
+                self.unregisterTransportDispatcher()
+
+    def __enter__(self) -> "SnmpEngine":
+        """Enter a block that closes the dispatcher on the way out.
+
+        For callers of the blocking API. Inside a coroutine use `async with`, which
+        can wait for the dispatcher's timer to finish being cancelled; this form
+        cannot, and says so.
+        """
+        return self
+
+    def __exit__(
+        self,
+        excType: type[BaseException] | None,
+        excValue: BaseException | None,
+        excTraceback: TracebackType | None,
+    ) -> None:
+        """Close the dispatcher, on the exception path as much as the normal one."""
+        hadDispatcher = self.transportDispatcher is not None
+
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            self.closeDispatcher()
+            return
+
+        # Closing from inside a running loop still releases the sockets, which is
+        # the leak worth preventing, but the timer task is cancelled without
+        # anything awaiting it -- so asyncio may report it as destroyed while
+        # pending. Close first, then say which form does not have that problem.
+        self.closeDispatcher()
+
+        if not hadDispatcher:
+            # Nothing was torn down, so there is nothing the other form would
+            # have done better. Warning here would be noise.
+            return
+
+        warnings.warn(
+            "SnmpEngine used as a synchronous context manager inside a running "
+            "event loop; its dispatcher was closed but its timer could not be "
+            "awaited. Use 'async with SnmpEngine() as engine' instead.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
+    async def __aenter__(self) -> "SnmpEngine":
+        """Enter a block that closes the dispatcher on the way out. The asyncio form."""
+        return self
+
+    async def __aexit__(
+        self,
+        excType: type[BaseException] | None,
+        excValue: BaseException | None,
+        excTraceback: TracebackType | None,
+    ) -> None:
+        """Close the dispatcher and wait for its timer to stop."""
+        dispatcher = self.transportDispatcher
+        if dispatcher is None:
+            return
+
+        closeAsync = getattr(dispatcher, "closeDispatcherAsync", None)
+        if closeAsync is None:
+            # A dispatcher from outside this package need not offer the awaitable
+            # form. Falling back loses only the wait for the timer.
+            self.closeDispatcher()
+            return
+
+        try:
+            await closeAsync()
+        finally:
+            if self.transportDispatcher is not None:
+                self.unregisterTransportDispatcher()
 
     def getMibBuilder(self) -> Any:
         """The builder whose modules this engine serves and resolves names against."""

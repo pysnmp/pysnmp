@@ -125,6 +125,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
 
     def openClientMode(self, iface=None):
         """Open a socket for sending, optionally bound to a local address."""
+        self._checkLoopIsUsable()
         try:
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily
@@ -141,6 +142,7 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
 
     def openServerMode(self, iface):
         """Bind a socket to receive on."""
+        self._checkLoopIsUsable()
         try:
             c = self.loop.create_datagram_endpoint(
                 lambda: self, local_addr=iface, family=self.sockFamily

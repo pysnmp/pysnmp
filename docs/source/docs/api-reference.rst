@@ -163,6 +163,32 @@ Engine object on input.
    :maxdepth: 2
 
 .. autoclass:: pysnmp.hlapi.SnmpEngine(snmpEngineID=None)
+   :members: openDispatcher, closeDispatcher
+
+An engine holds a transport dispatcher, and the dispatcher holds its sockets.
+Closing it releases them, which matters most in a process that builds an engine
+per polling cycle: skip it and the descriptors accumulate with nothing in the
+traceback to say why.
+
+The context manager forms run that teardown on the exception path as well as the
+normal one. Inside a coroutine, prefer ``async with`` -- it waits for the
+dispatcher's timer to finish being cancelled, which the synchronous form has no
+way to do:
+
+.. code-block:: python
+
+   async with SnmpEngine() as snmpEngine:
+       ...
+
+Callers of the blocking API use ``with`` instead:
+
+.. code-block:: python
+
+   with SnmpEngine() as snmpEngine:
+       ...
+
+Either way, :py:meth:`~pysnmp.hlapi.SnmpEngine.closeDispatcher` can be
+called directly, on an engine that has no dispatcher or on one already closed.
 
 Security Parameters
 -------------------
