@@ -7,7 +7,57 @@ insertion order instead, which silently changed the answer at any call site
 that dropped the `.keys()`. See pysnmp/pysnmp#178.
 """
 
+from math import ceil, log2
+
 from pysnmp.smi.indices import OidOrderedDict, OrderedDict
+
+
+def _comparisonsPerLookup(rows):
+    """How many key comparisons one `nextKey` costs on a mapping of `rows` keys.
+
+    `nextKey` is documented to order keys through `sortingKey` so that the search
+    and the sort cannot disagree, and for a tuple key that returns the key
+    itself -- so every comparison the search makes lands on one of the keys
+    stored here. Counting them says how many keys the search looked at.
+
+    `__lt__` catches a bisect, `__eq__` catches the `in`/`index` scan this
+    implementation replaced, and `__gt__` catches a hand-rolled one. Both sides
+    of every comparison are these, so the left operand's method always runs.
+    """
+    counted = [0]
+
+    class CountingOid(tuple):
+        """An OID tuple that counts comparisons made against it."""
+
+        __hash__ = tuple.__hash__
+
+        def __lt__(self, other):
+            counted[0] += 1
+            return tuple.__lt__(self, other)
+
+        def __gt__(self, other):
+            counted[0] += 1
+            return tuple.__gt__(self, other)
+
+        def __eq__(self, other):
+            counted[0] += 1
+            return tuple.__eq__(self, other)
+
+    mapping = OidOrderedDict()
+    for i in range(rows):
+        mapping[CountingOid((1, 3, 6, 1, 2, 1, i))] = i
+
+    # The far end of the mapping, where a scan is worst. A key that is present
+    # is the case the old code scanned twice over.
+    target = CountingOid((1, 3, 6, 1, 2, 1, rows - 2))
+
+    # The first lookup sorts the keys, which is n log n comparisons that say
+    # nothing about the search. Pay it, then start counting.
+    mapping.nextKey(target)
+    counted[0] = 0
+    mapping.nextKey(target)
+
+    return counted[0]
 
 
 class TestOrderedDict:
@@ -165,24 +215,31 @@ class TestNextKey:
         assert d.nextKey((1, 3, 6, 1, 3)) == (1, 3, 6, 1, 4)
 
     def test_it_is_not_linear_in_the_number_of_keys(self):
-        # A bound rather than a benchmark: two mappings an order of magnitude
-        # apart in size, both searched at their far end, where the old linear
-        # scan was worst. O(log n) puts the ratio near 1; the old code was
-        # ~10x. The threshold is loose enough not to be a flake and tight
-        # enough that a reintroduced scan fails it.
-        import time
+        """One lookup examines about log2(n) keys, not n of them.
 
-        def elapsed(rows):
-            d = OidOrderedDict()
-            for i in range(rows):
-                d[(1, 3, 6, 1, 2, 1, i)] = i
-            target = (1, 3, 6, 1, 2, 1, rows - 2)
-            start = time.perf_counter()
-            for _ in range(2000):
-                d.nextKey(target)
-            return time.perf_counter() - start
+        Counted rather than timed. This assertion used to compare wall-clock
+        time between two mapping sizes and allow a 3x ratio, but the ratio a
+        correct implementation actually produces is ~2 -- ten times the rows
+        cost more than one extra bisection step, because the working set grows
+        too -- so the real headroom was ~1.5x on measurements of a few
+        milliseconds. That is thin enough that an ordinary scheduling hiccup on
+        a shared runner failed it.
 
-        small = elapsed(2000)
-        large = elapsed(20000)
+        Comparisons are the thing the bisect changed, and they do not depend on
+        how busy the machine is: a bisect makes about log2(n) of them, the scan
+        this replaced made about 2n. Measured here, the separation is 12 versus
+        3998 at 2 000 rows and 15 versus 39 998 at 20 000 -- hundreds of times,
+        against the 1.5x the clock offered.
+        """
+        small = _comparisonsPerLookup(2000)
+        large = _comparisonsPerLookup(20000)
 
-        assert large < small * 3
+        # log2(2 000) is 11 and log2(20 000) is 15; the measured counts are 12
+        # and 15. The slack is for a re-implementation that probes slightly
+        # differently, not for anything proportional to the row count.
+        assert small <= ceil(log2(2000)) + 4
+        assert large <= ceil(log2(20000)) + 4
+
+        # And the point the name makes: ten times the keys is a handful more
+        # comparisons, not ten times as many. Measured difference is 3.
+        assert large - small <= 8

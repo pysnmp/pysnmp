@@ -1,6 +1,13 @@
 Revision 5.0.25, released 2026-08-29
 ------------------------------------
 
+- Replaced the wall-clock assertion in the `nextKey` scaling test with a count
+  of key comparisons. It allowed a 3x ratio where a correct implementation
+  produces ~2, so the real headroom was ~1.5x on measurements of a few
+  milliseconds, and a scheduling hiccup on a CI runner was enough to fail it.
+  Comparisons are deterministic and separate the bisect from the scan it
+  replaced by a factor of hundreds rather than 1.5
+
 - Added Diffie-Hellman USM key management (RFC 2786): the manager side of
   `SNMP-USM-DH-OBJECTS-MIB`, as `pysnmp.proto.secmod.rfc2786` for the agreement
   itself and `dh_key_change`/`dhKeyChange` in the HLAPI for the exchange that
