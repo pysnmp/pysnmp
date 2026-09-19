@@ -48,6 +48,22 @@ def slowResolver(monkeypatch):
     return calls
 
 
+async def _waitFor(predicate, what):
+    """Wait for something an executor thread will make true.
+
+    A fixed sleep that clears the lookup on this machine does not clear it on a
+    loaded CI worker, which can spend longer than the whole margin just getting
+    the thread going. So wait for the thing itself, with a ceiling far above
+    anything the fake resolver can cost -- the test is about what happens, not
+    about how long it takes.
+    """
+    deadline = time.monotonic() + LOOKUP_SECONDS * 20
+
+    while not predicate():
+        assert time.monotonic() < deadline, f"timed out waiting for {what}"
+        await asyncio.sleep(TICK_SECONDS)
+
+
 async def _countTicks(stop):
     """How many times the loop got to run something else."""
     ticks = 0
@@ -310,10 +326,9 @@ class TestCancellingACallerKeepsTheLookup:
             with pytest.raises(asyncio.CancelledError):
                 await first
 
-            # Nothing is awaiting the lookup when the executor thread finishes.
-            await asyncio.sleep(LOOKUP_SECONDS)
-
-            assert target.isResolved  # the result was taken off it anyway
+            # Nothing is awaiting the lookup when the executor thread
+            # finishes, and the result is taken off it anyway.
+            await _waitFor(lambda: target.isResolved, "the abandoned lookup")
 
             await target.resolve()
 
