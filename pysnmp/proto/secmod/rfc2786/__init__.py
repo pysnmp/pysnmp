@@ -43,6 +43,7 @@ __all__ = [
     "deriveKickstartKeys",
     "encodeDHParameters",
     "generateKeyPair",
+    "generateKeyPairFitting",
     "keyChangeInstance",
     "parseKeyChangeInstance",
     "splitKeyChangeValue",
@@ -230,10 +231,15 @@ class DHKeyPair:
     public: bytes
 
 
+def _octetLength(value: int) -> int:
+    """How many octets :func:`_toOctets` renders `value` into."""
+    return max(1, (value.bit_length() + 7) // 8)
+
+
 def _toOctets(value: int, length: int | None = None) -> bytes:
     """Render a non-negative integer big-endian, minimally or to a fixed width."""
     if length is None:
-        length = max(1, (value.bit_length() + 7) // 8)
+        length = _octetLength(value)
     return value.to_bytes(length, "big")
 
 
@@ -285,6 +291,124 @@ def generateKeyPair(parameters: DHParameters) -> DHKeyPair:
 
     public = pow(parameters.base, private, prime)
     return DHKeyPair(private=private, public=_toOctets(public))
+
+
+#: Multiplications the search below will make before giving up. A step costs
+#: some thousandths of the modular exponentiation a fresh draw costs, so the
+#: bound is set where failing stops being something that happens rather than
+#: where it stops being likely.
+#:
+#: A step fits with probability 1/256**g, where g is how many octets narrower
+#: the agent's half is than the prime -- and the agent's own value is that
+#: narrow with the same probability, so the wider gaps are both rarer to meet
+#: and dearer to clear:
+#:
+#:     g   agent publishes it   search fails      together
+#:     1   1 in 256             0                 0
+#:     2   1 in 65536           1.1e-07           1.7e-12
+#:     3   1 in 16777216        0.94              5.6e-08
+#:
+#: Two octets is what moves: at 32768 steps it failed 61% of the time and
+#: dominated everything else. Three is out of reach at any bound worth paying
+#: for, and rare enough not to matter. Worst case here is about a fifth of a
+#: second of multiplication, on a path reached once in 256 key changes, off the
+#: event loop.
+_FITTING_STEPS = 1 << 20
+
+#: Fresh exponents the search will draw. It needs a second one only when the
+#: walk reaches the top of the interval the exponent is drawn from, which for
+#: any sane private-value length is astronomically unlikely -- but an agent can
+#: name a length of 2, leaving the two exponents 2 and 3 to walk between, and
+#: the search has to give up rather than pay for a modular exponentiation per
+#: step forever.
+_FITTING_DRAWS = 8
+
+
+def generateKeyPairFitting(parameters: DHParameters, width: int) -> DHKeyPair:
+    """Pick a key pair whose public value renders into `width` octets or fewer.
+
+    A DHKeyChange value is two halves of equal width that the agent splits down
+    the middle rather than parsing, so the manager's public value can be no
+    wider than the one the agent published. A public value renders short only
+    when its leading octet comes out zero -- about one value in 256 for a prime
+    just under an octet boundary -- so when the agent's own value came out
+    short, the manager has to find one that did too.
+
+    Found by walking rather than redrawing. `g^(x+1)` is `g^x * g mod p`, one
+    modular multiplication, where a fresh draw is a modular exponentiation some
+    thousands of times dearer. That is what lets the bound be large enough for
+    failure to stop mattering.
+
+    The exponent this settles on is therefore not uniform over the interval
+    :func:`generateKeyPair` draws from: it is the first one at or after a
+    uniform start whose public value fits, so an exponent is likelier in
+    proportion to the run of non-fitting exponents before it. What that costs
+    is small and bounded -- those runs are geometric with a mean of 256, so the
+    longest is around 256*ln(2^1016), or 2^18, which leaves better than 1000
+    bits of min-entropy over Oakley Group 2. It leaks nothing further either:
+    anyone holding the public value can apply the same test to it, so "this is
+    an exponent whose public value fits" tells an attacker what they could
+    already see, and recovering the exponent from the value remains the
+    discrete logarithm problem.
+
+    Parameters
+    ----------
+    parameters : DHParameters
+        The agreement parameters, normally read from the agent.
+    width : int
+        The width of the agent's half, in octets. The result may be narrower --
+        :func:`buildKeyChangeValue` left-pads it -- but never wider.
+
+    Returns
+    -------
+    DHKeyPair
+        The private exponent and a public value of at most `width` octets.
+
+    Raises
+    ------
+    ValueError
+        If `width` is not a usable width, if the prime is too small to draw an
+        exponent from, or if the search ran out of budget without finding a
+        value that fits.
+    """
+    if width < 1:
+        raise ValueError(f"Cannot fit a public value into {width} octets")
+
+    prime = parameters.prime
+    base = parameters.base
+    length = parameters.privateValueLength
+
+    # The top of the interval `generateKeyPair` draws from, which the walk must
+    # not step past: [2, p-2] without a private-value length, [2^(l-1), 2^l)
+    # with one.
+    upper = prime - 2 if length is None else (1 << length) - 1
+
+    steps = _FITTING_STEPS
+
+    for _ in range(_FITTING_DRAWS):
+        keyPair = generateKeyPair(parameters)
+        private = keyPair.private
+        public = int.from_bytes(keyPair.public, "big")
+
+        while _octetLength(public) > width:
+            if steps <= 0:
+                raise ValueError(
+                    f"Could not find a public value of at most {width} octets "
+                    f"in {_FITTING_STEPS} steps"
+                )
+            if private >= upper:
+                break  # out of interval, so start again from a fresh exponent
+
+            private += 1
+            public = public * base % prime
+            steps -= 1
+        else:
+            return DHKeyPair(private=private, public=_toOctets(public))
+
+    raise ValueError(
+        f"Could not find a public value of at most {width} octets in "
+        f"{_FITTING_DRAWS} draws"
+    )
 
 
 def computeSharedSecret(

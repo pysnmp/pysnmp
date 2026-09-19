@@ -34,7 +34,7 @@ from pysnmp.proto.secmod.rfc2786 import (
     computeSharedSecret,
     decodeDHParameters,
     deriveKey,
-    generateKeyPair,
+    generateKeyPairFitting,
     keyChangeInstance,
     parseKeyChangeInstance,
     usmDHParameters,
@@ -129,20 +129,6 @@ _PRIV_KEY_LENGTHS: dict[tuple[int, ...], int] = {
 
 _MISSING_VALUES = (NoSuchObject, NoSuchInstance, EndOfMibView)
 
-# The agent splits a DHKeyChange value down the middle rather than parsing it,
-# so our half has to be no wider than the half it published. A public value
-# encodes short only when its leading octet comes out zero -- about one draw in
-# 256 for a prime that sits just under a byte boundary -- so when the agent's
-# own value came out short, ours has to come out short too, and that is what
-# the redraw is waiting for.
-#
-# The bound was 8, read as escaping the one-in-256 event rather than waiting
-# for one. (1/256)**8 is vanishing, but the quantity that governs giving up is
-# (255/256)**8 = 0.97: against an agent that published a short value, a key
-# change failed about 97% of the time. 2048 leaves (255/256)**2048 = 3.3e-4,
-# and costs nothing in the ordinary case, where the first draw already fits.
-_PUBLIC_VALUE_ATTEMPTS = 2048
-
 # Enough of usmDHUserKeyTable to find one row. The table has a row per USM user,
 # and an agent with more users than this is not one being provisioned by hand.
 _ROW_SCAN_LIMIT = 256
@@ -199,13 +185,12 @@ def _keyLength(keyType: str, authData: Any, keyLength: int | None) -> int:
 
 
 def _drawKeyPairFitting(parameters: DHParameters, width: int) -> DHKeyPair:
-    """Draw a key pair whose public value fits `width` octets.
+    """Find a key pair whose public value fits the agent's half.
 
-    Blocking, and sometimes slow: a draw is a modular exponentiation, and when
-    the agent's own published value came out short this keeps drawing until one
-    lands under `width`, which is a one-in-256 event per draw. Hundreds of
-    draws is the normal cost of that case, so this belongs in an executor
-    rather than on the event loop -- `resolveKeyChange` puts it in one.
+    Blocking: the first exponent costs a modular exponentiation, and a prime
+    whose parameters an agent chose can make that dear on hardware this library
+    is expected to run on. `resolveKeyChange` hands it to an executor rather
+    than let the loop wear it.
 
     Parameters
     ----------
@@ -219,22 +204,23 @@ def _drawKeyPairFitting(parameters: DHParameters, width: int) -> DHKeyPair:
     Returns
     -------
     DHKeyPair
-        The first pair drawn whose public value fits.
+        A pair whose public value is at most `width` octets.
 
     Raises
     ------
     DHKeyChangeError
-        If `_PUBLIC_VALUE_ATTEMPTS` draws all came out too wide.
+        If the search gave up. Translated from the `ValueError`
+        :func:`generateKeyPairFitting` raises, because reaching here means the
+        key change cannot proceed, not that a caller passed something bad.
     """
-    for _ in range(_PUBLIC_VALUE_ATTEMPTS):
-        keyPair = generateKeyPair(parameters)
-        if len(keyPair.public) <= width:
-            return keyPair
+    try:
+        return generateKeyPairFitting(parameters, width)
 
-    raise DHKeyChangeError(
-        "Could not draw a public value that fits the agent's half of the "
-        "DHKeyChange value"
-    )
+    except ValueError as exc:
+        raise DHKeyChangeError(
+            f"Could not draw a public value that fits the agent's half of the "
+            f"DHKeyChange value: {exc}"
+        ) from exc
 
 
 async def _readParameters(

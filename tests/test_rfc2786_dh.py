@@ -26,6 +26,7 @@ from pysnmp.proto.secmod.rfc2786 import (
     deriveKickstartKeys,
     encodeDHParameters,
     generateKeyPair,
+    generateKeyPairFitting,
     keyChangeInstance,
     parseKeyChangeInstance,
     splitKeyChangeValue,
@@ -380,3 +381,84 @@ class TestNoCryptoDependency:
             check=True,
         )
         assert result.stdout.strip() == "True"
+
+
+class TestFindingAPublicValueThatFits:
+    """The manager's half of a DHKeyChange value cannot be wider than the agent's.
+
+    The agent splits that value down the middle rather than parsing it, so when
+    its own public value rendered short -- leading octet zero, about one value
+    in 256 -- the manager has to find one that rendered short too.
+
+    Walking `g^(x+1) = g^x * g mod p` rather than drawing again is what makes
+    that affordable: a step is a modular multiplication where a draw is a
+    modular exponentiation, some thousands of times dearer, so the search can
+    afford a bound at which failing stops happening.
+    """
+
+    def test_the_ordinary_case_is_the_first_exponent_drawn(self):
+        pair = generateKeyPairFitting(OAKLEY_GROUP_2, 128)
+
+        assert len(pair.public) <= 128
+        assert pow(OAKLEY_GROUP_2.base, pair.private, OAKLEY_GROUP_2.prime) == (
+            int.from_bytes(pair.public, "big")
+        )
+
+    @pytest.mark.parametrize("width", [127, 126])
+    def test_it_finds_one_the_ordinary_draw_almost_never_would(self, width):
+        # A fresh draw lands here once in 256**(128 - width) tries. The walk
+        # gets there in about that many multiplications instead.
+        pair = generateKeyPairFitting(OAKLEY_GROUP_2, width)
+
+        assert len(pair.public) <= width
+
+    def test_the_pair_it_returns_still_agrees(self):
+        """The walk moves the exponent with the value, or the secret is wrong."""
+        ours = generateKeyPairFitting(OAKLEY_GROUP_2, 127)
+        theirs = generateKeyPair(OAKLEY_GROUP_2)
+
+        assert computeSharedSecret(
+            OAKLEY_GROUP_2, ours.private, theirs.public
+        ) == computeSharedSecret(OAKLEY_GROUP_2, theirs.private, ours.public)
+
+    def test_it_stays_inside_the_interval_the_length_names(self):
+        """A walk that ran past 2^l would publish an exponent never drawn from."""
+        parameters = DHParameters(
+            prime=OAKLEY_GROUP_2.prime,
+            base=OAKLEY_GROUP_2.base,
+            privateValueLength=64,
+        )
+
+        for _ in range(20):
+            pair = generateKeyPairFitting(parameters, 127)
+
+            assert 1 << 63 <= pair.private < 1 << 64
+
+    def test_a_length_too_small_to_search_gives_up_rather_than_spinning(self):
+        """An agent names the length, so it can name one with nothing to walk.
+
+        A length of 2 leaves the two exponents 2 and 3. The walk reaches the
+        top of that interval in one step, so every step after it would cost a
+        fresh exponentiation -- bounded, or an agent gets to spend this
+        machine's CPU at will by naming a length and a base.
+        """
+        # A base whose square and cube are full-width, so that neither of the
+        # two exponents on offer renders short. Base 2 would not do: 2**2 is
+        # one octet, and fits anything.
+        base = pow(2, 1234567, OAKLEY_GROUP_2.prime)
+        parameters = DHParameters(
+            prime=OAKLEY_GROUP_2.prime, base=base, privateValueLength=2
+        )
+
+        both = [
+            (pow(base, private, OAKLEY_GROUP_2.prime).bit_length() + 7) // 8
+            for private in (2, 3)
+        ]
+        assert min(both) > 127, f"the premise needs both wide, got {both}"
+
+        with pytest.raises(ValueError, match="Could not find a public value"):
+            generateKeyPairFitting(parameters, 127)
+
+    def test_an_impossible_width_is_refused(self):
+        with pytest.raises(ValueError, match="Cannot fit a public value"):
+            generateKeyPairFitting(OAKLEY_GROUP_2, 0)
