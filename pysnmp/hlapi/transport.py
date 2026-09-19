@@ -41,6 +41,7 @@ class AbstractTransportTarget(Generic[TransportAddrT]):
         self._unresolvedTransportAddr = transportAddr
         self._resolvedTransportAddr: TransportAddrT | None = None
         self._resolveLock: asyncio.Lock | None = None
+        self._resolveLookup: asyncio.Future[TransportAddrT] | None = None
         self.timeout = timeout
         self.retries = retries
         self.tagList = tagList
@@ -104,7 +105,13 @@ class AbstractTransportTarget(Generic[TransportAddrT]):
 
         Safe to await more than once and from concurrent tasks: the first one
         through does the lookup and the rest wait on it, so a target shared by a
-        fan-out of requests is resolved once rather than once per request.
+        fan-out of requests is resolved once rather than once per request. That
+        holds under cancellation too -- a caller that gives up leaves the lookup
+        running for whoever else wants it, rather than throwing away a result
+        the executor thread is going to produce anyway.
+
+        Cancelling a caller still cancels promptly: what it awaits is a shield,
+        not the lookup, so giving up on a request never means waiting on DNS.
 
         Returns
         -------
@@ -119,14 +126,43 @@ class AbstractTransportTarget(Generic[TransportAddrT]):
         if self._resolveLock is None:
             self._resolveLock = asyncio.Lock()
 
+        # The lock guards the decision of who starts the lookup, and nothing
+        # else -- the await below is outside it, so a caller waiting on an
+        # in-flight lookup never holds it.
         async with self._resolveLock:
-            if self._resolvedTransportAddr is None:
+            if self._resolvedTransportAddr is not None:
+                return self
+
+            lookup = self._resolveLookup
+            if lookup is None:
                 loop = asyncio.get_running_loop()
-                self._resolvedTransportAddr = await loop.run_in_executor(
+                lookup = self._resolveLookup = loop.run_in_executor(
                     None, self._resolveAddr, self._unresolvedTransportAddr
                 )
+                # An executor thread that has started cannot be called off, so
+                # the result arrives whether or not anyone is still waiting for
+                # it. Recording it from here rather than only from the await
+                # below is what makes the once-only guarantee hold when every
+                # caller has been cancelled by the time it lands.
+                lookup.add_done_callback(self._lookupDone)
+
+        # Shielded so that one caller's cancellation does not cancel the lookup
+        # the others are waiting on.
+        self._resolvedTransportAddr = await asyncio.shield(lookup)
 
         return self
+
+    def _lookupDone(self, lookup: asyncio.Future[TransportAddrT]) -> None:
+        """Take the result off a finished lookup, whether or not anyone waited."""
+        if lookup.cancelled() or lookup.exception() is not None:
+            # A lookup that raised -- a resolver that is down, a name that does
+            # not exist -- is not an answer, and caching the failed future would
+            # make every later resolve() re-raise it without ever trying again.
+            # Forget it instead, so the next caller starts a fresh lookup.
+            self._resolveLookup = None
+            return
+
+        self._resolvedTransportAddr = lookup.result()
 
     def __repr__(self) -> str:
         # Never the raising property: repr() is most often reached while

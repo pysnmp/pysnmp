@@ -255,3 +255,129 @@ class TestOnlyBlockingResolutionIsDeferred:
             assert not UdpTransportTarget(("slow.invalid", 161)).isResolved
 
         asyncio.run(run())
+
+
+@pytest.fixture
+def failingResolver(monkeypatch):
+    """Stand in for a resolver that is down, and count the attempts."""
+    calls = []
+
+    def failing(host, port, *args, **kwargs):
+        calls.append(host)
+        raise socket.gaierror(socket.EAI_AGAIN, "Temporary failure in name resolution")
+
+    monkeypatch.setattr(socket, "getaddrinfo", failing)
+
+    return calls
+
+
+class TestCancellingACallerKeepsTheLookup:
+    """Giving up on a request must not throw away a lookup already in flight.
+
+    ``run_in_executor`` hands the work to a thread, and a thread that has
+    started cannot be called off. So the result arrives whatever the caller
+    does: if cancelling the caller discarded it, the next ``resolve()`` on the
+    same target would start the whole lookup again -- the full resolver timeout
+    a second time, exactly where a shared target was supposed to pay it once.
+    """
+
+    def test_a_cancelled_caller_does_not_cause_a_second_lookup(self, slowResolver):
+        async def run():
+            target = UdpTransportTarget(("slow.invalid", 161))
+
+            first = asyncio.create_task(target.resolve())
+            await asyncio.sleep(TICK_SECONDS * 2)  # let the lookup get going
+            first.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await first
+
+            # The lookup the cancelled caller started is still in flight; this
+            # one waits on it rather than starting its own.
+            await target.resolve()
+
+            assert slowResolver == ["slow.invalid"]
+            assert target.transportAddr == ("127.0.0.1", 161)
+
+        asyncio.run(run())
+
+    def test_a_result_that_lands_with_nobody_waiting_is_still_kept(self, slowResolver):
+        async def run():
+            target = UdpTransportTarget(("slow.invalid", 161))
+
+            first = asyncio.create_task(target.resolve())
+            await asyncio.sleep(TICK_SECONDS * 2)
+            first.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await first
+
+            # Nothing is awaiting the lookup when the executor thread finishes.
+            await asyncio.sleep(LOOKUP_SECONDS)
+
+            assert target.isResolved  # the result was taken off it anyway
+
+            await target.resolve()
+
+            assert slowResolver == ["slow.invalid"]
+            assert target.transportAddr == ("127.0.0.1", 161)
+
+        asyncio.run(run())
+
+    def test_one_cancelled_caller_does_not_cancel_the_others(self, slowResolver):
+        async def run():
+            target = UdpTransportTarget(("slow.invalid", 161))
+
+            waiting = [asyncio.create_task(target.resolve()) for _ in range(4)]
+            await asyncio.sleep(TICK_SECONDS * 2)
+            waiting[0].cancel()
+
+            with pytest.raises(asyncio.CancelledError):
+                await waiting[0]
+
+            assert await asyncio.gather(*waiting[1:]) == [target] * 3
+            assert slowResolver == ["slow.invalid"]
+            assert target.transportAddr == ("127.0.0.1", 161)
+
+        asyncio.run(run())
+
+    def test_cancelling_does_not_wait_for_the_lookup(self, slowResolver):
+        async def run():
+            target = UdpTransportTarget(("slow.invalid", 161))
+
+            first = asyncio.create_task(target.resolve())
+            await asyncio.sleep(TICK_SECONDS * 2)
+
+            # Keeping the lookup alive must not make the caller that no longer
+            # wants it wait for it: a request giving up never blocks on DNS.
+            started = time.monotonic()
+            first.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await first
+
+            assert time.monotonic() - started < LOOKUP_SECONDS / 2
+
+        asyncio.run(run())
+
+
+class TestAFailedLookupIsTriedAgain:
+    """A resolver that was down is not an answer to cache."""
+
+    def test_the_error_reaches_the_caller(self, failingResolver):
+        async def run():
+            target = UdpTransportTarget(("slow.invalid", 161))
+
+            with pytest.raises(PySnmpError):
+                await target.resolve()
+
+        asyncio.run(run())
+
+    def test_a_later_caller_looks_up_again(self, failingResolver):
+        async def run():
+            target = UdpTransportTarget(("slow.invalid", 161))
+
+            for _ in range(2):
+                with pytest.raises(PySnmpError):
+                    await target.resolve()
+
+            assert failingResolver == ["slow.invalid"] * 2
+
+        asyncio.run(run())
