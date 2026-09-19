@@ -174,9 +174,21 @@ table makes worth stating. ``import pysnmp.proto.rfc1902`` ends in a
 ``self.asn1Object``, and PyPy builds namedtuple field accessors out of
 ``__getitem__`` -- so the accessor calls the override which calls the accessor.
 CPython's field accessors read the tuple slot directly and never enter the
-override, which is why the same code works there. That is a pyasn1 bug, not a
-pysnmp one, and it is tracked separately; the PyPy leg of the matrix is marked
-experimental until it is fixed.
+override, which is why the same code works there.
+
+That is a pyasn1 bug rather than a pysnmp one, and it is fixed in
+`pysnmp/pyasn1#185 <https://github.com/pysnmp/pyasn1/pull/185>`_, where
+``NamedType`` reads its three fields off the tuple instead of leaving them to
+whatever accessors the interpreter's namedtuple generated. Against that branch
+pyasn1's own suite passes on PyPy and this benchmark runs there end to end. The
+PyPy leg of the matrix stays marked experimental until a released
+``pysnmp-pyasn1`` carries the fix and the floor in ``pyproject.toml`` names it.
+
+One thing that leg will need when it does go green: PyPy measures a *warm*
+interpreter or it measures the JIT. The harness sizes its own iteration counts
+and reports the fastest of several samples, which gives the JIT somewhere to
+warm up, but a short run (``--quick``, or a low ``--min-time``) on PyPy reports
+compilation, not the codec.
 
 What it does not measure
 ------------------------

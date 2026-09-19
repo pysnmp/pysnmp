@@ -78,12 +78,14 @@ jobs:
           - { name: linux-cpython-3.14t, os: ubuntu-latest, python: "3.14t", experimental: false }
           # PyPy is what the original report's second table measured, so the
           # matrix would be incomplete without it. It is expected to fail
-          # today, and that is itself a finding this workflow surfaces:
-          # pysnmp cannot be imported under PyPy, because pysnmp-pyasn1's
+          # until a released pysnmp-pyasn1 carries pysnmp/pyasn1#185, and
+          # that failure is itself a finding this workflow surfaced: pysnmp
+          # cannot be imported under PyPy at all, because pysnmp-pyasn1's
           # NamedType subclasses a namedtuple and overrides __getitem__, and
-          # PyPy's namedtuple field accessors are built on __getitem__ --
-          # so reading .asn1Object recurses until the stack ends. See the
-          # findings in docs/source/docs/codec-benchmark.rst.
+          # PyPy's namedtuple field accessors are built on __getitem__ -- so
+          # reading .asn1Object recurses until the stack ends. Drop
+          # `experimental` once the floor in pyproject.toml names a release
+          # with the fix. See docs/source/docs/codec-benchmark.rst.
           - { name: linux-pypy-3.11, os: ubuntu-latest, python: "pypy-3.11", experimental: true }
     steps:
       - uses: actions/checkout@v7
