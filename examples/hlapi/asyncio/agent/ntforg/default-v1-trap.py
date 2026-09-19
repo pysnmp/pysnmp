@@ -29,7 +29,7 @@ from pysnmp.hlapi.asyncio import *
 
 async def run():
     snmpEngine = SnmpEngine()
-    errorIndication, errorStatus, errorIndex, varBinds = await sendNotification(
+    errorIndication, errorStatus, errorIndex, varBinds = await send_notification(
         snmpEngine,
         CommunityData("public", mpModel=0),
         UdpTransportTarget(("localhost", 161)),

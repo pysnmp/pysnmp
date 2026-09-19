@@ -13,7 +13,7 @@ A. The most easy to use interface to MIB lookup feature is supported by
 
     lookupNames=True, lookupValues=True
 
-parameters to getCmd(), setCmd(), nextCmd(), bulkCmd() methods of 
+parameters to get_cmd(), set_cmd(), next_cmd(), bulk_cmd() methods of 
 oneliner CommandGenerator. Then the OIDs in response variable-binding 
 list will get replaced by similarily looking MibVariable instances, 
 their prettyPrint() methods return MIB symbols instead of OIDs.
@@ -28,7 +28,7 @@ returning even more human-friendly output.
     >>> 
     >>> cmdGen = cmdgen.CommandGenerator()
     >>> 
-    >>> errorIndication, errorStatus, errorIndex, varBinds = cmdGen.getCmd(
+    >>> errorIndication, errorStatus, errorIndex, varBinds = cmdGen.get_cmd(
     ...     cmdgen.CommunityData('public'),
     ...     cmdgen.UdpTransportTarget(('localhost', 161)),
     ...     '1.3.6.1.2.1.1.1.0',

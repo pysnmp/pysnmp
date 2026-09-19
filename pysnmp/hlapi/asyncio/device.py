@@ -10,7 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, NamedTuple
 
-from pysnmp.hlapi.asyncio.cmdgen import getCmd, nextCmd
+from pysnmp._aliases import install as _installAliases
+from pysnmp.hlapi.asyncio.cmdgen import get_cmd, next_cmd
 from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
 from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
@@ -18,7 +19,6 @@ from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 __all__ = [
     "DeviceReport",
     "SysOREntry",
-    "getDeviceReport",
     "get_device_report",
 ]
 
@@ -93,7 +93,7 @@ async def get_device_report(
     ]
     results: dict[str, Any] = {}
 
-    error_indication, error_status, _error_index, var_binds = await getCmd(
+    error_indication, error_status, _error_index, var_binds = await get_cmd(
         snmpEngine,
         authData,
         transportTarget,
@@ -111,7 +111,7 @@ async def get_device_report(
         # SNMPv1 reports a missing scalar as a PDU-level error for the whole
         # request, so retry each object separately to retain a partial report.
         for field, original_var_bind in zip(scalar_fields, scalar_var_binds):
-            indication, status, _index, response = await getCmd(
+            indication, status, _index, response = await get_cmd(
                 snmpEngine,
                 authData,
                 transportTarget,
@@ -137,7 +137,7 @@ async def get_device_report(
         # GETNEXT works with SNMPv1 as well as SNMPv2c/v3 and avoids having
         # separate table-walk implementations for the supported versions.
         while current_var_binds:
-            indication, status, _index, table = await nextCmd(
+            indication, status, _index, table = await next_cmd(
                 snmpEngine,
                 authData,
                 transportTarget,
@@ -208,5 +208,9 @@ async def get_device_report(
     )
 
 
-# Preserve the camel-case spelling used by this branch's legacy HLAPI.
-getDeviceReport = get_device_report
+#: The camelCase spelling this name used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using it warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {"getDeviceReport": "get_device_report"}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

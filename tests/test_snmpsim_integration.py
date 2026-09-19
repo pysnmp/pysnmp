@@ -8,7 +8,7 @@ from pysnmp.hlapi import (
     SnmpEngine,
     UdpTransportTarget,
     UsmUserData,
-    getCmd,
+    get_cmd,
     usmHMACMD5AuthProtocol,
 )
 
@@ -29,7 +29,7 @@ def get_value(result):
 def test_snmpsim_v1(snmpsim_endpoint):
     host, port = snmpsim_endpoint
     result = next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             CommunityData("public@1", mpModel=0),
             UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -43,7 +43,7 @@ def test_snmpsim_v1(snmpsim_endpoint):
 def test_snmpsim_v2c(snmpsim_endpoint):
     host, port = snmpsim_endpoint
     result = next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             CommunityData("public"),
             UdpTransportTarget((host, port), timeout=1, retries=2),
@@ -57,7 +57,7 @@ def test_snmpsim_v2c(snmpsim_endpoint):
 def test_snmpsim_v3_uses_context_named_data_file(snmpsim_endpoint):
     host, port = snmpsim_endpoint
     result = next(
-        getCmd(
+        get_cmd(
             SnmpEngine(),
             UsmUserData("00000", "authkey1", authProtocol=usmHMACMD5AuthProtocol),
             UdpTransportTarget((host, port), timeout=1, retries=2),

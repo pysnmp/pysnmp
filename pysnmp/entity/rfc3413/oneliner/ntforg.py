@@ -12,7 +12,7 @@ from pysnmp.entity import config
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.entity.rfc3413 import context
 from pysnmp.hlapi.asyncio import sync
-from pysnmp.hlapi.asyncio.ntforg import sendNotification
+from pysnmp.hlapi.asyncio.ntforg import send_notification as _send_notification
 from pysnmp.hlapi.context import ContextData
 from pysnmp.hlapi.lcd import NotificationOriginatorLcdConfigurator
 from pysnmp.hlapi.varbinds import NotificationOriginatorVarBinds
@@ -149,7 +149,7 @@ class AsynNotificationOriginator:
         if not isinstance(notificationType, NotificationType):
             notificationType = NotificationType(notificationType)
 
-        return sendNotification(
+        return _send_notification(
             self.snmpEngine,
             authData,
             transportTarget,
@@ -213,7 +213,7 @@ class NotificationOriginator:
             errorStatus,
             errorIndex,
             rspVarBinds,
-        ) in sync.sendNotification(
+        ) in sync.send_notification(
             self.snmpEngine,
             authData,
             transportTarget,

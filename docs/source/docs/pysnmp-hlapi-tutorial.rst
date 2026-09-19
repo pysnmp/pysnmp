@@ -34,7 +34,7 @@ Making SNMP query
 
 We will send SNMP GET command to read a MIB object from SNMP agent.
 For that purpose we will call synchronous, high-level
-:py:func:`~pysnmp.hlapi.getCmd` function.
+:py:func:`~pysnmp.hlapi.get_cmd` function.
 Other SNMP commands can be used in a vary similar way by calling
 corresponding functions.
 
@@ -42,9 +42,9 @@ corresponding functions.
 
    >>> from pysnmp.hlapi import *
    >>> [ x for x in dir() if 'Cmd' in x]
-   ['bulkCmd', 'getCmd', 'nextCmd', 'setCmd']
-   >>> getCmd
-   <function getCmd at 0x222b330>
+   ['bulk_cmd', 'get_cmd', 'next_cmd', 'set_cmd']
+   >>> get_cmd
+   <function get_cmd at 0x222b330>
 
 Choosing SNMP protocol and credentials
 --------------------------------------
@@ -92,7 +92,7 @@ insecure, it's still the most popular SNMP version in use.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(), CommunityData('public'),
+   >>> g = get_cmd(SnmpEngine(), CommunityData('public'),
    ...
 
 Setting transport and target
@@ -111,7 +111,7 @@ respectively.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
    ...            UdpTransportTarget(('localhost', 161)),
    ...
@@ -134,7 +134,7 @@ For this example we will use the 'empty' context (default).
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
    ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
@@ -233,7 +233,7 @@ in `SNMPv2-MIB <https://mibsdepot.com/mib/SNMPv2-MIB/>`_ module.
 .. code-block:: python
 
    >>> from pysnmp.hlapi import *
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
    ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
@@ -268,7 +268,7 @@ out, response is awaited, received and parsed.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
    ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
@@ -364,7 +364,7 @@ Let's read TCP-MIB::tcpConnectionState object for a TCP connection:
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
    ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
@@ -380,13 +380,13 @@ SNMP command operations
 SNMP allows you to request a MIB object that is "next" to the given
 one. That way you can read MIB objects you are not aware about in
 advance. MIB objects are conceptually sorted by their OIDs.
-This feature is implemented by the :py:func:`~pysnmp.hlapi.nextCmd`
+This feature is implemented by the :py:func:`~pysnmp.hlapi.next_cmd`
 function.
 
 .. code-block:: python
 
    >>> from pysnmp.hlapi import *
-   >>> g = nextCmd(SnmpEngine(),
+   >>> g = next_cmd(SnmpEngine(),
    ...             CommunityData('public'),
    ...             UdpTransportTarget(('localhost', 161)),
    ...             ContextData(),
@@ -405,7 +405,7 @@ non-repeaters and max-repetitions parameters can be used to influence
 MIB objects batching.
 
 PySNMP hides this *GETBULK* optimization at the protocol level, the
-:py:func:`~pysnmp.hlapi.bulkCmd` function exposes the same generator
+:py:func:`~pysnmp.hlapi.bulk_cmd` function exposes the same generator
 API as *getNext()* for convenience.
 
 .. code-block:: python
@@ -413,7 +413,7 @@ API as *getNext()* for convenience.
    >>> from pysnmp.hlapi import *
    >>>
    >>> N, R = 0, 25
-   >>> g = bulkCmd(SnmpEngine(),
+   >>> g = bulk_cmd(SnmpEngine(),
    ...             CommunityData('public'),
    ...             UdpTransportTarget(('localhost', 161)),
    ...             ContextData(),
@@ -434,7 +434,7 @@ of MIB objects.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = nextCmd(SnmpEngine(),
+   >>> g = next_cmd(SnmpEngine(),
    ...             CommunityData('public'),
    ...             UdpTransportTarget(('localhost', 161)),
    ...             ContextData(),
@@ -451,7 +451,7 @@ values in exactly the same order as they were in request message.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
    ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
@@ -467,14 +467,14 @@ somewhat demanding (due to locking and transactional behavior
 requirements). So vendors tend to leave it out thus rendering
 managed entity being read-only.
 
-PySNMP supports *SET* uniformly through :py:func:`~pysnmp.hlapi.setCmd`
+PySNMP supports *SET* uniformly through :py:func:`~pysnmp.hlapi.set_cmd`
 function.
 
 .. code-block:: python
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = setCmd(SnmpEngine(),
+   >>> g = set_cmd(SnmpEngine(),
    ...            CommunityData('public'),
    ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
@@ -538,7 +538,7 @@ or acknowledgement is sent.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = sendNotification(SnmpEngine(),
+   >>> g = send_notification(SnmpEngine(),
    ...                      CommunityData('public'),
    ...                      UdpTransportTarget(('localhost', 162)),
    ...                      ContextData(),
@@ -554,7 +554,7 @@ well as for agent-to-manager.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = sendNotification(SnmpEngine(),
+   >>> g = send_notification(SnmpEngine(),
    ...                      CommunityData('public'),
    ...                      UdpTransportTarget(('localhost', 162)),
    ...                      ContextData(),
@@ -582,7 +582,7 @@ object OIDs to current values.
    ...        ObjectIdentifier('1.3.6.1.2.1.2.2.1.7.123'): 'testing',
    ...        ObjectIdentifier('1.3.6.1.2.1.2.2.1.8.123'): 'up'}
    >>>
-   >>> g = sendNotification(SnmpEngine(),
+   >>> g = send_notification(SnmpEngine(),
    ...                      CommunityData('public'),
    ...                      UdpTransportTarget(('localhost', 162)),
    ...                      ContextData(),

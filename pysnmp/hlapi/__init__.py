@@ -5,11 +5,12 @@
 #
 """The high-level API: what most callers should import.
 
-Re-exports the synchronous facade over the asyncio API, so `getCmd` and
+Re-exports the synchronous facade over the asyncio API, so `get_cmd` and
 friends here block, while the same names under `pysnmp.hlapi.asyncio` are
 coroutines.
 """
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.entity.engine import SnmpEngine
 from pysnmp.hlapi import auth
 from pysnmp.hlapi.asyncio.device import DeviceReport as DeviceReport
@@ -24,15 +25,13 @@ from pysnmp.hlapi.asyncio.sync import (
     Udp6TransportTarget,
     UdpTransportTarget,
     UnixTransportTarget,
-    bulkCmd,
+    bulk_cmd,
     dh_key_change,
-    dhKeyChange,
+    get_cmd,
     get_device_report,
-    getCmd,
-    getDeviceReport,
-    nextCmd,
-    sendNotification,
-    setCmd,
+    next_cmd,
+    send_notification,
+    set_cmd,
 )
 from pysnmp.hlapi.context import ContextData
 from pysnmp.proto.rfc1902 import (
@@ -112,3 +111,19 @@ usmKeyTypeMaster = auth.usmKeyTypeMaster
 
 usmKeyTypeLocalized = auth.usmKeyTypeLocalized
 """USM key material type - hashed pass-phrase hashed with Context SNMP Engine ID (:RFC:`3414#section-2.6`)"""
+
+
+#: The camelCase spellings these names used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using one warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {
+    "bulkCmd": "bulk_cmd",
+    "dhKeyChange": "dh_key_change",
+    "getCmd": "get_cmd",
+    "getDeviceReport": "get_device_report",
+    "nextCmd": "next_cmd",
+    "sendNotification": "send_notification",
+    "setCmd": "set_cmd",
+}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

@@ -10,9 +10,10 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.hlapi.asyncio import device as _async_device
 
-__all__ = ["getDeviceReport", "get_device_report"]
+__all__ = ["get_device_report"]
 
 
 def get_device_report(
@@ -49,4 +50,11 @@ def get_device_report(
 
 
 # Preserve the camel-case spelling used by this branch's legacy HLAPI.
-getDeviceReport = get_device_report
+
+
+#: The camelCase spelling this name used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using it warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {"getDeviceReport": "get_device_report"}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

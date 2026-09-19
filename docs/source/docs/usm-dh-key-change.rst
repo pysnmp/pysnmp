@@ -33,7 +33,7 @@ Changing a key
 </../../examples/hlapi/asyncio/manager/cmdgen/usm-dh-key-change.py>`.
 
 The synchronous facade offers the same call under
-``pysnmp.hlapi.dhKeyChange``, blocking until the exchange completes.
+``pysnmp.hlapi.dh_key_change``, blocking until the exchange completes.
 
 Using the result
 ----------------

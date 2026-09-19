@@ -18,7 +18,7 @@ from pysnmp.hlapi.asyncio import (
     UdpTransportTarget,
     UsmUserData,
     dh_key_change,
-    getCmd,
+    get_cmd,
     usmHMACSHAAuthProtocol,
     usmKeyTypeLocalized,
 )
@@ -52,7 +52,7 @@ async def run():
         securityEngineId=OctetString(result.securityEngineId),
     )
 
-    errorIndication, errorStatus, errorIndex, varBinds = await getCmd(
+    errorIndication, errorStatus, errorIndex, varBinds = await get_cmd(
         SnmpEngine(),
         rekeyed,
         await UdpTransportTarget.create(("demo.pysnmp.com", 161)),

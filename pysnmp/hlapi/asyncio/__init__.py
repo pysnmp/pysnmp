@@ -8,21 +8,26 @@
 Same calls as `pysnmp.hlapi`, awaited rather than blocking.
 """
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.entity.engine import SnmpEngine
-from pysnmp.hlapi.asyncio.cmdgen import bulkCmd, getCmd, isEndOfMib, nextCmd, setCmd
+from pysnmp.hlapi.asyncio.cmdgen import (
+    bulk_cmd,
+    get_cmd,
+    is_end_of_mib,
+    next_cmd,
+    set_cmd,
+)
 from pysnmp.hlapi.asyncio.device import (
     DeviceReport,
     SysOREntry,
     get_device_report,
-    getDeviceReport,
 )
 from pysnmp.hlapi.asyncio.dh import (
     DHKeyChangeError,
     DHKeyChangeResult,
     dh_key_change,
-    dhKeyChange,
 )
-from pysnmp.hlapi.asyncio.ntforg import sendNotification
+from pysnmp.hlapi.asyncio.ntforg import send_notification
 from pysnmp.hlapi.asyncio.transport import (
     Tcp6TransportTarget,
     TcpTransportTarget,
@@ -69,3 +74,19 @@ from pysnmp.proto.rfc1902 import (
     decodeOpaque,
 )
 from pysnmp.smi.rfc1902 import NotificationType, ObjectIdentity, ObjectType
+
+#: The camelCase spellings these names used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using one warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {
+    "bulkCmd": "bulk_cmd",
+    "dhKeyChange": "dh_key_change",
+    "getCmd": "get_cmd",
+    "getDeviceReport": "get_device_report",
+    "isEndOfMib": "is_end_of_mib",
+    "nextCmd": "next_cmd",
+    "sendNotification": "send_notification",
+    "setCmd": "set_cmd",
+}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

@@ -20,8 +20,9 @@ from __future__ import annotations
 
 from typing import Any, NamedTuple
 
+from pysnmp._aliases import install as _installAliases
 from pysnmp.error import PySnmpError
-from pysnmp.hlapi.asyncio.cmdgen import getCmd, nextCmd, setCmd
+from pysnmp.hlapi.asyncio.cmdgen import get_cmd, next_cmd, set_cmd
 from pysnmp.proto.rfc1902 import OctetString
 from pysnmp.proto.rfc1905 import EndOfMibView, NoSuchInstance, NoSuchObject
 from pysnmp.proto.secmod.eso.priv import aes192, aes256, des3
@@ -49,7 +50,6 @@ from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
 __all__ = [
     "DHKeyChangeError",
     "DHKeyChangeResult",
-    "dhKeyChange",
     "dh_key_change",
 ]
 
@@ -196,7 +196,7 @@ async def _readParameters(
     **options: Any,
 ) -> DHParameters:
     """Read and decode usmDHParameters.0."""
-    errorIndication, errorStatus, _errorIndex, varBinds = await getCmd(
+    errorIndication, errorStatus, _errorIndex, varBinds = await get_cmd(
         snmpEngine,
         authData,
         transportTarget,
@@ -235,7 +235,7 @@ async def _findRow(
     varBind = ObjectType(ObjectIdentity(column))
 
     for _ in range(_ROW_SCAN_LIMIT):
-        errorIndication, errorStatus, _errorIndex, table = await nextCmd(
+        errorIndication, errorStatus, _errorIndex, table = await next_cmd(
             snmpEngine,
             authData,
             transportTarget,
@@ -276,7 +276,7 @@ async def _readCell(
     **options: Any,
 ) -> bytes:
     """Read one DHKeyChange cell, for when the caller named the engine ID."""
-    errorIndication, errorStatus, _errorIndex, varBinds = await getCmd(
+    errorIndication, errorStatus, _errorIndex, varBinds = await get_cmd(
         snmpEngine,
         authData,
         transportTarget,
@@ -439,7 +439,7 @@ async def dh_key_change(
             f"{exc}"
         ) from exc
 
-    errorIndication, errorStatus, _errorIndex, _varBinds = await setCmd(
+    errorIndication, errorStatus, _errorIndex, _varBinds = await set_cmd(
         snmpEngine,
         authData,
         transportTarget,
@@ -469,5 +469,9 @@ async def dh_key_change(
     return candidate
 
 
-# Preserve the camel-case spelling used by this branch's legacy HLAPI.
-dhKeyChange = dh_key_change
+#: The camelCase spelling this name used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using it warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {"dhKeyChange": "dh_key_change"}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)
