@@ -1,0 +1,297 @@
+# Measures the BER codec; gates nothing.
+#
+# #290 asked for a repeatable encode/decode benchmark, because a nine-year-old
+# upstream report (etingof/pysnmp#44) said pysnmp was ~6x slower than libsnmp
+# and there was no instrument in the repository to say whether that still
+# described this fork. tools/benchmark_codec.py is that instrument; this runs
+# it across the platforms and interpreters the package supports.
+#
+# On demand, not on every push. The run takes minutes of wall clock across the
+# matrix and its output is a measurement rather than a pass or a fail --
+# nothing here asserts a threshold, so there is nothing for a push to break.
+# Two ways to ask for it:
+#
+#   * dispatch it by hand, against next, main, or any branch -- including the
+#     branch behind a pull request;
+#   * label a pull request `ci:benchmark`, which runs it against the merge
+#     result and posts the table back on the pull request.
+#
+# The matrix is deliberately wide. The codec is pure Python, so the
+# interpreter is where the performance risk lives: a free-threaded build has
+# different object allocation costs, PyPy's JIT is exactly what the original
+# reporter measured against, and the oldest and newest supported CPython are
+# five years apart. Platform matters less, but "less" is a claim this had no
+# numbers for either.
+name: Codec Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      min_time:
+        description: "Seconds one timing sample should last"
+        default: "0.5"
+        required: false
+      repeats:
+        description: "Samples per case; the fastest is reported"
+        default: "5"
+        required: false
+  pull_request:
+    types: [labeled]
+
+# One run per ref. A second dispatch supersedes the first rather than queueing
+# behind it -- these are measurements, and the newer one is the one wanted.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    # The label path has to be narrowed here: `types: [labeled]` fires for
+    # every label anyone adds, not just this one.
+    if: >-
+      github.event_name != 'pull_request'
+      || github.event.label.name == 'ci:benchmark'
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    # A leg that cannot run is not a failed benchmark -- see `experimental`
+    # below for the one case that is currently expected.
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The supported range's ends, on every platform. Nothing in between:
+          # the full CPython ladder is what the CI workflow's test matrix is
+          # for, and a benchmark that takes an hour gets run by nobody.
+          - { name: linux-cpython-3.10, os: ubuntu-latest, python: "3.10", experimental: false }
+          - { name: linux-cpython-3.14, os: ubuntu-latest, python: "3.14", experimental: false }
+          - { name: macos-cpython-3.10, os: macos-latest, python: "3.10", experimental: false }
+          - { name: macos-cpython-3.14, os: macos-latest, python: "3.14", experimental: false }
+          - { name: windows-cpython-3.10, os: windows-latest, python: "3.10", experimental: false }
+          - { name: windows-cpython-3.14, os: windows-latest, python: "3.14", experimental: false }
+          # The free-threaded build of the newest CPython. Removing the GIL
+          # changes reference counting and allocation, which is most of what a
+          # decoder that builds an object per component does.
+          - { name: linux-cpython-3.14t, os: ubuntu-latest, python: "3.14t", experimental: false }
+          # PyPy is what the original report's second table measured, so the
+          # matrix would be incomplete without it -- and running it found that
+          # pysnmp could not be imported under PyPy at all. pysnmp-pyasn1's
+          # NamedType subclassed a namedtuple and overrode __getitem__ to read
+          # its own fields back out, and PyPy builds namedtuple field
+          # accessors on __getitem__, so the accessor called the override that
+          # called the accessor. Fixed in pysnmp/pyasn1#185 and released as
+          # 2.0.3, which is the floor pyproject.toml now names, so this leg is
+          # no longer experimental. See docs/source/docs/codec-benchmark.rst.
+          - { name: linux-pypy-3.11, os: ubuntu-latest, python: "pypy-3.11", experimental: false }
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      # uv resolves and downloads the interpreter itself, which is what keeps
+      # one step working for CPython, a free-threaded build and PyPy alike.
+      - name: Install the interpreter
+        shell: bash
+        run: uv python install ${{ matrix.python }}
+
+      # The C baseline. Optional by design: the benchmark reports the
+      # implementations it could load and notes the ones it could not, so a
+      # platform without a usable libnetsnmp still produces pysnmp numbers.
+      - name: Install net-snmp (Linux)
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        run: |
+          sudo apt-get update
+          # The runtime package's name carries the soname and the t64 ABI
+          # transition, so it moves between Ubuntu releases; libsnmp-dev is
+          # the name that does not, and it pulls the shared library in.
+          sudo apt-get install --yes --no-install-recommends libsnmp-dev
+          python3 -c "import ctypes.util; print(ctypes.util.find_library('netsnmp'))"
+
+      - name: Install net-snmp (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: |
+          brew install net-snmp
+          # Homebrew keeps net-snmp keg-only, so nothing puts it where
+          # ctypes.util.find_library() looks. Name the library outright.
+          prefix="$(brew --prefix net-snmp)"
+          echo "PYSNMP_BENCH_NETSNMP_LIB=${prefix}/lib/libnetsnmp.dylib" >> "$GITHUB_ENV"
+
+      # No net-snmp on Windows: there is no shared library to load without
+      # building it, and a benchmark is not the place to start doing that. The
+      # Windows legs measure pysnmp against pyasn1, which is the comparison
+      # that says where pysnmp's own time goes.
+
+      - name: Run the benchmark
+        shell: bash
+        env:
+          MIN_TIME: ${{ inputs.min_time || '0.5' }}
+          REPEATS: ${{ inputs.repeats || '5' }}
+        # --no-dev deliberately: the benchmark imports pysnmp and pyasn1 and
+        # nothing else, and the dev group carries a toolchain that does not
+        # install on every interpreter here -- mypy pulls a Rust extension
+        # with no PyPy wheel, which would fail the PyPy leg during
+        # installation and hide what that leg is there to measure.
+        run: >-
+          uv run --locked --no-dev --python ${{ matrix.python }}
+          python tools/benchmark_codec.py
+          --min-time "$MIN_TIME"
+          --repeats "$REPEATS"
+          --profile
+          --json "results-${{ matrix.name }}.json"
+          --markdown "summary-${{ matrix.name }}.md"
+
+      - name: Add the table to the job summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "summary-${{ matrix.name }}.md" ]; then
+            {
+              echo "# ${{ matrix.name }}"
+              echo
+              cat "summary-${{ matrix.name }}.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "# ${{ matrix.name }}: produced no results" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: codec-benchmark-${{ matrix.name }}
+          path: |
+            results-${{ matrix.name }}.json
+            summary-${{ matrix.name }}.md
+          if-no-files-found: ignore
+
+  # One table with every leg in it. Read on its own, a single run says how
+  # fast this machine was; read together, they say whether the answer depends
+  # on the platform or the interpreter, which is the question the matrix is
+  # there to answer.
+  compare:
+    name: compare
+    needs: benchmark
+    # always(), so a leg that could not run still leaves the others comparable.
+    if: always() && needs.benchmark.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Only used on the pull request path, to post the table where the person
+      # who asked for it is looking.
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: reports
+          pattern: codec-benchmark-*
+          merge-multiple: false
+
+      - name: Build the combined table
+        id: combined
+        shell: bash
+        run: |
+          uv run --locked --no-dev python tools/benchmark_codec.py \
+            --summarise reports --markdown combined.md
+          {
+            echo "# Across the matrix"
+            echo
+            cat combined.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: codec-benchmark-combined
+          path: combined.md
+
+      # A dispatched run has no pull request to talk to; a labelled one does,
+      # and the table is the whole point of having asked.
+      #
+      # Plain curl and python rather than an action: the only thing needed here
+      # is two REST calls, and the runner already has the token that makes
+      # them. One comment per pull request, rewritten in place -- a benchmark
+      # asked for three times should leave the latest numbers, not a thread of
+      # stale ones.
+      # Not from a fork, and not from Dependabot: GitHub hands both a
+      # read-only GITHUB_TOKEN, so the POST below would 403 and fail the job
+      # after it had already produced the report. The table is in the job
+      # summary and the artifact either way, which is where a maintainer
+      # labelling someone else's pull request will find it.
+      - name: Post the table on the pull request
+        if: >-
+          github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.fork == false
+          && github.event.pull_request.user.login != 'dependabot[bot]'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          MARKER = "<!-- codec-benchmark -->"
+          API = "https://api.github.com"
+          REPO = os.environ["GITHUB_REPOSITORY"]
+          NUMBER = os.environ["PR_NUMBER"]
+
+          with open("combined.md", encoding="utf-8") as handle:
+              table = handle.read()
+
+          body = "\n".join(
+              [
+                  MARKER,
+                  table,
+                  "",
+                  f"[Full report, per-leg profiles included]({os.environ['RUN_URL']})",
+                  "",
+                  "---",
+                  "_Generated by [Claude Code](https://claude.ai/code)_",
+              ]
+          )
+
+
+          def call(method, url, payload=None):
+              request = urllib.request.Request(
+                  url,
+                  method=method,
+                  data=None if payload is None else json.dumps(payload).encode(),
+                  headers={
+                      "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                      "Accept": "application/vnd.github+json",
+                      "Content-Type": "application/json",
+                      "User-Agent": "pysnmp-codec-benchmark",
+                  },
+              )
+              with urllib.request.urlopen(request) as response:
+                  return json.loads(response.read() or "null")
+
+
+          comments = call("GET", f"{API}/repos/{REPO}/issues/{NUMBER}/comments?per_page=100")
+          existing = next((c for c in comments if MARKER in (c.get("body") or "")), None)
+
+          if existing:
+              call("PATCH", f"{API}/repos/{REPO}/issues/comments/{existing['id']}", {"body": body})
+              print(f"updated comment {existing['id']}")
+          else:
+              created = call(
+                  "POST", f"{API}/repos/{REPO}/issues/{NUMBER}/comments", {"body": body}
+              )
+              print(f"created comment {created['id']}")
+          PY

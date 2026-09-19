@@ -32,9 +32,18 @@ readme = "README.md"
 # start-up into pysnmp/smi/mibs (tools/regenerate_mibs.py), so nothing on the
 # engine path imports pysmi at run time. tests/test_no_pysmi.py holds that line
 # by blocking the import and starting an engine anyway.
+#
+# The pyasn1 floor is 2.0.3 because 2.0.2 cannot be imported on PyPy at all.
+# Its NamedType subclasses a namedtuple and overrides __getitem__ to read the
+# fields back out; CPython builds its field accessors from _tuplegetter, which
+# reads the tuple slot in C, and PyPy builds them from operator.itemgetter,
+# which calls __getitem__ -- so the accessor called the override that called
+# the accessor, and `from pysnmp.proto import rfc1902` ended in RecursionError.
+# 2.0.3 reads the fields off the tuple (pysnmp/pyasn1#185). Nothing about the
+# floor is about behaviour on CPython, where both versions are the same.
 dependencies = [
     "pycryptodomex >=3.11.0,<4.0.0",
-    "pysnmp-pyasn1 >=2.0.2,<3.0.0",
+    "pysnmp-pyasn1 >=2.0.3,<3.0.0",
 ]
 
 # Compiling ASN.1 at run time is what pysmi is for, and it is a thing some
@@ -113,7 +122,7 @@ dev = [
 
 # General availability wherever there is one, enforced rather than reviewed.
 #
-# Every requirement above names a final release -- pysnmp-pyasn1 2.0.2 and
+# Every requirement above names a final release -- pysnmp-pyasn1 2.0.3 and
 # pysnmp-pysmi 6.0.0 are GA -- but a specifier is a statement about
 # one requirement, and the thing worth guaranteeing is a property of the whole
 # resolution: nothing this repository installs is a prerelease of a package
