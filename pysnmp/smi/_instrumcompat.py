@@ -84,6 +84,40 @@ def _isLegacySignature(func: Callable[..., Any]) -> bool:
     )
 
 
+#: The two methods the old signature gave a fifth positional argument to: the
+#: name the walk started from.
+_ONAME_METHODS = frozenset({"readTestNext", "readGetNext"})
+
+
+def _takesOName(func: Callable[..., Any], methodName: str) -> bool:
+    """Whether this legacy method wants the walk's original name passed to it.
+
+    The old signature always put it fifth and positionally, so what decides this
+    is whether the method can take a fifth positional argument -- not whether it
+    happens to spell it ``oName``. A passthrough written ``(self, *args)`` wants
+    it, and so does one that renamed the parameter; reading the name alone would
+    leave the first silently short of an argument and raise TypeError at the
+    second.
+    """
+    if methodName not in _ONAME_METHODS:
+        return False
+
+    parameters = list(inspect.signature(func).parameters.values())
+
+    if any(p.kind is inspect.Parameter.VAR_POSITIONAL for p in parameters):
+        return True
+
+    positional = sum(
+        1
+        for p in parameters
+        if p.kind
+        in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+    )
+
+    # self, name, val, idx, acInfo, oName
+    return positional >= 6
+
+
 def _adapt(func: Callable[..., Any], takesOName: bool) -> Callable[..., Any]:
     """Wrap a legacy method so that it can be called with the new signature."""
 
@@ -128,9 +162,7 @@ def adaptLegacyInstrumentation(cls: type) -> None:
 
         # `oName` travels in the context now, but the old signature took it
         # positionally and only the *Next methods had it.
-        takesOName = "oName" in inspect.signature(func).parameters
-
-        setattr(cls, methodName, _adapt(func, takesOName))
+        setattr(cls, methodName, _adapt(func, _takesOName(func, methodName)))
         adapted.append(methodName)
 
     if not adapted:

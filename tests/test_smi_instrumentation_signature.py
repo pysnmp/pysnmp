@@ -16,6 +16,7 @@ from pysnmp.smi._instrumcompat import (
     INSTRUMENTATION_METHODS,
     _controllerIsLegacy,
     _isLegacySignature,
+    _takesOName,
     adaptLegacyInstrumentation,
     callInstrumentation,
 )
@@ -388,3 +389,94 @@ class TestLegacySubclassThroughTheController:
         controller.writeVars([(NAME, rfc1902.OctetString("written"))])
 
         assert committed[0][1] == rfc1902.OctetString("written")
+
+
+class TestPositionalOName:
+    """The old signature always put the walk's original name fifth, positionally.
+
+    Reading the parameter's *name* to decide whether to pass it is wrong: a
+    passthrough written ``(self, *args)`` would be left an argument short, and
+    one that renamed the parameter would raise TypeError. Both are shapes a
+    real subclass is written in, and both are in the compatibility path, so
+    both are pinned here.
+    """
+
+    @staticmethod
+    def _served(**overrides):
+        """Drive a legacy override through the real GETNEXT controller path."""
+        builder_ = MibBuilder()
+        builder_.loadModules("SNMPv2-MIB")
+        (scalarInstance,) = builder_.importSymbols("SNMPv2-SMI", "MibScalarInstance")
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            cls = type("LegacyNext", (scalarInstance,), overrides)
+
+        builder_.exportSymbols(
+            "__TEST-MIB", cls(TYPE_NAME, INST_ID, rfc1902.OctetString("v"))
+        )
+
+        return instrum.MibInstrumController(builder_).readNextVars([(TYPE_NAME, None)])
+
+    def test_a_star_args_passthrough_is_given_the_original_name(self):
+        seen = {}
+
+        def readGetNext(self, *args):
+            seen["count"] = len(args)
+            seen["oName"] = args[4] if len(args) > 4 else None
+            return self.name, rfc1902.OctetString("walked")
+
+        result = self._served(
+            readTestNext=lambda self, *args: None,
+            readGetNext=readGetNext,
+        )
+
+        assert seen["count"] == 5
+        assert seen["oName"] is not None
+        assert result[0][1] == rfc1902.OctetString("walked")
+
+    def test_a_renamed_fifth_parameter_is_given_the_original_name(self):
+        seen = {}
+
+        def readGetNext(self, name, val, idx, acInfo, originalName):
+            seen["originalName"] = originalName
+            return name, rfc1902.OctetString("walked")
+
+        result = self._served(
+            readTestNext=lambda self, name, val, idx, acInfo, originalName=None: None,
+            readGetNext=readGetNext,
+        )
+
+        assert seen["originalName"] is not None
+        assert result[0][1] == rfc1902.OctetString("walked")
+
+    def test_a_four_argument_legacy_next_is_not_given_a_fifth(self):
+        # Someone who never needed it must not start receiving one.
+        seen = {}
+
+        def readGetNext(self, name, val, idx, acInfo):
+            seen["called"] = True
+            return name, rfc1902.OctetString("walked")
+
+        result = self._served(
+            readTestNext=lambda self, name, val, idx, acInfo: None,
+            readGetNext=readGetNext,
+        )
+
+        assert seen["called"]
+        assert result[0][1] == rfc1902.OctetString("walked")
+
+    def test_only_the_next_methods_take_a_fifth_positional(self):
+        def anything(self, *args):
+            pass
+
+        assert _takesOName(anything, "readGetNext")
+        assert _takesOName(anything, "readTestNext")
+        assert not _takesOName(anything, "readGet")
+        assert not _takesOName(anything, "writeTest")
+
+    def test_a_four_positional_next_does_not_take_one(self):
+        def readGetNext(self, name, val, idx, acInfo):
+            pass
+
+        assert not _takesOName(readGetNext, "readGetNext")

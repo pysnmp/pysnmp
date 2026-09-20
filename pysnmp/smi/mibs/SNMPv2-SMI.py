@@ -841,12 +841,37 @@ class MibScalarInstance(MibTree):
     # or as a nonsense var-bind, a long way from the cause.
 
     def readTest(self, varBind, **context):
+        """Check whether this instance can answer a GET for `varBind`.
+
+        Raise :py:class:`~pysnmp.smi.error.NoSuchInstanceError` if it cannot, and
+        return nothing if it can. Raising here means :py:meth:`readGet` is never
+        reached, which is how a read reports a missing instance without a
+        half-built answer.
+
+        Args:
+            varBind: the `(ObjectName, value)` being read. The value is unset.
+            **context: `idx`, this binding's position in the request, and
+                `acFun`/`acCtx`, the access-control function and its context.
+        """
         name = varBind[0]
         idx = context.get("idx")
         if name != self.name or not self.syntax.isValue:
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readGet(self, varBind, **context):
+        """Answer a GET for `varBind`.
+
+        Args:
+            varBind: the `(ObjectName, value)` being read. The value is unset.
+            **context: `idx`, this binding's position in the request, and
+                `acFun`/`acCtx`, the access-control function and its context.
+
+        Returns:
+            The `(ObjectName, value)` to put in the response.
+
+        Raises:
+            NoSuchInstanceError: if this instance holds no value.
+        """
         name = varBind[0]
         idx = context.get("idx")
         # Return current variable (name, value)
@@ -859,6 +884,14 @@ class MibScalarInstance(MibTree):
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readTestNext(self, varBind, **context):
+        """Check whether this instance can answer a GETNEXT for `varBind`.
+
+        Args:
+            varBind: the `(ObjectName, value)` the walk has reached.
+            **context: as :py:meth:`readTest`, plus `oName` -- the name the walk
+                started from, which is what tells an instance it has already
+                been passed.
+        """
         name = varBind[0]
         idx = context.get("idx")
         oName = context.get("oName")
@@ -866,6 +899,20 @@ class MibScalarInstance(MibTree):
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def readGetNext(self, varBind, **context):
+        """Answer a GETNEXT for `varBind`.
+
+        Args:
+            varBind: the `(ObjectName, value)` the walk has reached.
+            **context: as :py:meth:`readTest`, plus `oName` -- the name the walk
+                started from.
+
+        Returns:
+            The `(ObjectName, value)` to put in the response.
+
+        Raises:
+            NoSuchInstanceError: if this instance is not the one being walked to,
+                or holds no value. A walk skips it and carries on.
+        """
         name = varBind[0]
         idx = context.get("idx")
         oName = context.get("oName")
@@ -883,6 +930,21 @@ class MibScalarInstance(MibTree):
 
     # noinspection PyAttributeOutsideInit
     def writeTest(self, varBind, **context):
+        """Check whether `varBind`'s value can be written, without writing it.
+
+        First phase of the two-phase commit SNMP requires of a SET: every
+        binding in the request is tested before any is committed, so that a
+        failure anywhere leaves nothing written.
+
+        Args:
+            varBind: the `(ObjectName, value)` being written.
+            **context: `idx`, this binding's position in the request, and
+                `acFun`/`acCtx`, the access-control function and its context.
+
+        Raises:
+            WrongValueError: if the value will not fit this object's syntax.
+            NoSuchInstanceError: if the name is not this instance.
+        """
         name, val = varBind
         idx = context.get("idx")
         # Make sure write's allowed
@@ -900,6 +962,15 @@ class MibScalarInstance(MibTree):
             raise error.NoSuchInstanceError(idx=idx, name=name)
 
     def writeCommit(self, varBind, **context):
+        """Make the tested value this instance's value.
+
+        Second phase. The previous value is kept so that :py:meth:`writeUndo`
+        can put it back if a later binding in the same request fails.
+
+        Args:
+            varBind: the `(ObjectName, value)` being written.
+            **context: as :py:meth:`writeTest`.
+        """
         # Backup original value
         if self.__oldSyntax is None:
             self.__oldSyntax = self.syntax
@@ -908,6 +979,12 @@ class MibScalarInstance(MibTree):
 
     # noinspection PyAttributeOutsideInit
     def writeCleanup(self, varBind, **context):
+        """Drop what the commit was holding, the write having succeeded.
+
+        Args:
+            varBind: the `(ObjectName, value)` that was written.
+            **context: as :py:meth:`writeTest`.
+        """
         name, val = varBind
         self.branchVersionId += 1
         debug.logger & debug.flagIns and debug.logger(f"writeCleanup: {name}={val!r}")
@@ -916,6 +993,12 @@ class MibScalarInstance(MibTree):
 
     # noinspection PyAttributeOutsideInit
     def writeUndo(self, varBind, **context):
+        """Put the previous value back, a later binding having failed.
+
+        Args:
+            varBind: the `(ObjectName, value)` whose write is being unwound.
+            **context: as :py:meth:`writeTest`.
+        """
         # Revive previous value
         self.syntax = self.__oldSyntax
         self.__newSyntax = self.__oldSyntax = None
