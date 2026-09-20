@@ -928,11 +928,11 @@ wheels = [
 
 [[package]]
 name = "pysnmp-pyasn1"
-version = "2.0.3"
+version = "2.0.4"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/31/55/5cda96114ce687edbb6c174920acebe6e64527fee1b5e9cd18a58bea9c67/pysnmp_pyasn1-2.0.3.tar.gz", hash = "sha256:d15c33479042136fbe929fac0c3412c5681445150d68adfc51e11c4720392fc8", size = 233180, upload-time = "2026-09-19T14:01:02.67Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/18/ca/e5074d5ea66134b5b3c5853630a7c38669fc6137215de8cf965f99e5d658/pysnmp_pyasn1-2.0.4.tar.gz", hash = "sha256:73443d4e76dd0050d52f361597f46c7cdc61c23a26fb6d48ce4103dedfe7ffa7", size = 237326, upload-time = "2026-09-20T19:05:59.655Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/10/b4/21018c77f7a6936a2ab923f15ed9b3f2612b6184d452bdf840465632edd0/pysnmp_pyasn1-2.0.3-py3-none-any.whl", hash = "sha256:fdd47b7b94c700b2e7c1dec23e4cfe5df1994290247f58ed7bb6b348377a9a5c", size = 109743, upload-time = "2026-09-19T14:01:01.016Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/b6/39fc2002e097a7f118b72f91ccd17283b3216741509047b0b54c2abd0485/pysnmp_pyasn1-2.0.4-py3-none-any.whl", hash = "sha256:b14864b25fbc81c5b050541023162e33db3e3528b3a01bef60d86dec563b57ea", size = 110941, upload-time = "2026-09-20T19:05:58.306Z" },
 ]
 
 [[package]]
@@ -983,7 +983,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "pycryptodomex", specifier = ">=3.11.0,<4.0.0" },
-    { name = "pysnmp-pyasn1", specifier = ">=2.0.3,<3.0.0" },
+    { name = "pysnmp-pyasn1", specifier = ">=2.0.4,<3.0.0" },
     { name = "pysnmp-pysmi", marker = "extra == 'compile'", specifier = ">=6.0.1,<7" },
 ]
 provides-extras = ["compile"]
