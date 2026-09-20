@@ -42,10 +42,13 @@ to be inherited. It provides three operations, matching the request types::
                 ]
 
         async def writeVars(self, varBinds, **context):
+            # A SET happens completely or not at all, which is the
+            # transaction's job here -- see below.
             async with self.pool.acquire() as connection:
-                for oid, value in varBinds:
-                    await self._write(connection, oid, value)
-                return list(varBinds)
+                async with connection.transaction():
+                    for oid, value in varBinds:
+                        await self._write(connection, oid, value)
+            return list(varBinds)
 
 Register it the way any controller is registered, against the context it
 serves::
@@ -60,12 +63,40 @@ serves::
 
 Nothing else changes. The same arguments arrive, the same bindings go back,
 and an SMI error raised out of a coroutine becomes the same error status it
-would have as a plain ``def`` -- including the two-phase behaviour a SET
-relies on, since ``writeVars`` still either returns having committed
-everything or raises having committed nothing.
+would have as a plain ``def``.
 
 The three may be mixed: a controller whose reads come from a database and
 whose writes are refused outright can leave ``writeVars`` a plain function.
+
+A controller answers by returning the bindings it agrees it read or wrote,
+and refuses by raising an SMI error. Returning a ``noSuchInstance`` value
+from ``writeVars`` is not a refusal -- it answers with a SET that succeeded
+and carried that value.
+
+SET atomicity is the controller's, and always was
+--------------------------------------------------
+
+:RFC:`3416` wants a SET to happen completely or not at all. A controller
+serving a loaded MIB gets that from
+``MibInstrumController``, which runs every binding through test, commit and
+undo phases. A controller of your own replaces that machine, so it owns the
+guarantee -- whether its operations are coroutines or not. Writing them
+``async def`` neither provides atomicity nor takes it away.
+
+Where the values live behind a transaction, that is what to use::
+
+    async def writeVars(self, varBinds, **context):
+        async with self.pool.acquire() as connection:
+            async with connection.transaction():
+                for oid, value in varBinds:
+                    await self._write(connection, oid, value)
+        return list(varBinds)
+
+Raising out of the ``async with`` rolls the transaction back and becomes the
+error status for the SET, so the requester is told the write did not happen
+and it did not. Without something playing that part, a failure part-way
+through leaves the earlier bindings written -- which is the failure mode
+:RFC:`3416` is asking you to avoid, and no keyword prevents it.
 
 What stays true across the wait
 -------------------------------

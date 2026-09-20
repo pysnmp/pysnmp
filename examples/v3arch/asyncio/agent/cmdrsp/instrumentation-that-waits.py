@@ -29,6 +29,7 @@ from pysnmp.entity import config, engine
 from pysnmp.entity.rfc3413 import cmdrsp, context
 from pysnmp.proto import rfc1902
 from pysnmp.smi import exval
+from pysnmp.smi.error import NotWritableError
 
 # The objects this agent serves, in the lexicographic order a walk needs.
 OBJECTS = {
@@ -78,8 +79,13 @@ class SlowInstrum:
         return result
 
     async def writeVars(self, varBinds, **context):
-        """Refuse every write. Reads are what this agent is for."""
-        return [(oid, exval.noSuchInstance) for oid, _ in varBinds]
+        """Refuse every write. Reads are what this agent is for.
+
+        Refusing is raising. Bindings handed back are what the agent agrees it
+        wrote, so returning `noSuchInstance` values would answer with a SET
+        that succeeded and carried them.
+        """
+        raise NotWritableError(idx=0, name=varBinds[0][0])
 
 
 async def main():

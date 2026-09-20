@@ -16,7 +16,7 @@ from inspect import isawaitable
 from pyasn1.error import PyAsn1Error
 
 from pysnmp import debug, nextid
-from pysnmp.entity.observer import execution_context
+from pysnmp.entity.observer import execution_context, resumed_execution_context
 from pysnmp.error import PySnmpError
 from pysnmp.proto import cache, errind, error
 from pysnmp.proto.api import verdec  # XXX
@@ -418,14 +418,17 @@ class MsgAndPduDispatcher:
     ):
         """Wait out a suspended request, with its own state around it again.
 
-        The execution point and the transport info are entered again here rather
-        than held open across the suspension. Both answer the question "which
-        request is being served", and the engine serves others while this one
-        waits -- so they are restored for as long as this request is running and
-        dropped again when it is done, which is what keeps access control
-        reading this requester's identity and not the last one to arrive.
+        The execution point and the transport info are put back here rather than
+        held open across the suspension. Both answer the question "which request
+        is being served", and the engine serves others while this one waits --
+        so they are restored for as long as this request is running and dropped
+        again when it is done, which is what keeps access control reading this
+        requester's identity and not the last one to arrive.
+
+        Restored rather than entered again: the message passed this point on its
+        way in and observers heard about it then.
         """
-        with execution_context(
+        with resumed_execution_context(
             snmpEngine, "rfc3412.receiveMessage:request", execpointVars
         ):
             if stateReference is not None:

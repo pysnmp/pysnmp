@@ -39,7 +39,43 @@ def execution_context(
                                 msg=msg):
             ...
 
+    Entering this is what reaching the execution point means, so whoever
+    registered for it is called. Putting a point back that this message
+    already passed is :py:func:`resumed_execution_context` instead.
     """
+    with _execution_context(snmpEngine, execpoint, variables, True, context) as v:
+        yield v
+
+
+@contextmanager
+def resumed_execution_context(
+    snmpEngine: Any,
+    execpoint: str,
+    variables: MutableMapping[str, Any] | None = None,
+    **context: Any,
+) -> Iterator[MutableMapping[str, Any]]:
+    """Put back an execution point this message has already passed.
+
+    Work that suspends is finished later, off the stack it started on, and it
+    needs the point's state around it again while it runs. Nobody is told
+    about it a second time: the message reached the point once, and an
+    observer counting requests there would otherwise count the ones that
+    suspended twice and the ones that did not once -- making its count depend
+    on whether the instrumentation happened to wait.
+    """
+    with _execution_context(snmpEngine, execpoint, variables, False, context) as v:
+        yield v
+
+
+@contextmanager
+def _execution_context(
+    snmpEngine: Any,
+    execpoint: str,
+    variables: MutableMapping[str, Any] | None,
+    notify: bool,
+    context: MutableMapping[str, Any],
+) -> Iterator[MutableMapping[str, Any]]:
+    """Hold an execution point for the duration, telling observers or not."""
     if variables is not None and context:
         raise TypeError(
             "execution context accepts either a mapping or keyword variables"
@@ -52,22 +88,26 @@ def execution_context(
     except KeyError:
         previous = _MISSING_CONTEXT
 
+    def unwind():
+        meta_observer.clearExecutionContext(snmpEngine, execpoint)
+        if previous is not _MISSING_CONTEXT:
+            meta_observer._restore_execution_context(execpoint, previous)
+
     stored = False
     try:
-        meta_observer.storeExecutionContext(snmpEngine, execpoint, variables)
+        if notify:
+            meta_observer.storeExecutionContext(snmpEngine, execpoint, variables)
+        else:
+            meta_observer._restore_execution_context(execpoint, variables)
         stored = True
     finally:
         if not stored:
-            meta_observer.clearExecutionContext(snmpEngine, execpoint)
-            if previous is not _MISSING_CONTEXT:
-                meta_observer._restore_execution_context(execpoint, previous)
+            unwind()
 
     try:
         yield variables
     finally:
-        meta_observer.clearExecutionContext(snmpEngine, execpoint)
-        if previous is not _MISSING_CONTEXT:
-            meta_observer._restore_execution_context(execpoint, previous)
+        unwind()
 
 
 class MetaObserver:

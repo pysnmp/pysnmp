@@ -407,6 +407,50 @@ async def test_a_suspended_request_does_not_take_the_next_ones_identity():
         agent.transportDispatcher.closeDispatcher()
 
 
+@runs
+@pytest.mark.parametrize("controller", ["synchronous", "awaiting"])
+async def test_a_request_reaches_its_execution_point_once(controller):
+    """However the controller serves it.
+
+    An observer at this point is how an application counts requests or logs
+    who asked for what. Work that suspends is finished off the stack it
+    started on and needs the point's state around it again -- but it reached
+    the point once, so it is put back rather than entered again. Told twice,
+    an observer would count the slow requests double and the rest single.
+    """
+    values = {oid: rfc1902.OctetString(f"value {i}") for i, oid in enumerate(ORDERED)}
+    mibInstrum = (
+        SyncInstrum(values) if controller == "synchronous" else AwaitingInstrum(values)
+    )
+
+    agent, port = startAgent(mibInstrum)
+    reached = []
+    agent.observer.registerObserver(
+        lambda snmpEngine, execpoint, variables, cbCtx: reached.append(
+            variables["securityName"]
+        ),
+        REQUEST_EXECPOINT,
+    )
+
+    manager = engine.SnmpEngine()
+    try:
+        errorIndication, errorStatus, _, varBinds = await get_cmd(
+            manager,
+            CommunityData("public", mpModel=1),
+            target(port),
+            ContextData(),
+            ObjectType(ObjectIdentity(FIRST)),
+        )
+        assert errorIndication is None
+        assert not errorStatus
+        assert varBinds[0][1].prettyPrint() == "value 0"
+
+        assert len(reached) == 1
+    finally:
+        manager.transportDispatcher.closeDispatcher()
+        agent.transportDispatcher.closeDispatcher()
+
+
 # --- the synchronous path is untouched --------------------------------------
 
 
@@ -462,7 +506,7 @@ async def test_execution_points_are_not_shared_between_tasks():
             ]
 
     holder = asyncio.ensure_future(holdOpen("first"))
-    await started.wait()
+    await asyncio.wait_for(started.wait(), timeout=10)
 
     with execution_context(snmpEngine, REQUEST_EXECPOINT, {"securityName": "second"}):
         assert (
@@ -527,11 +571,11 @@ async def test_deferred_work_counts_as_outstanding_while_it_runs():
         assert not dispatcher.jobsArePending()
 
         task = dispatcher.runDeferred(work())
-        await running.wait()
+        await asyncio.wait_for(running.wait(), timeout=10)
         assert dispatcher.jobsArePending()
 
         release.set()
-        await task
+        await asyncio.wait_for(task, timeout=10)
         assert not dispatcher.jobsArePending()
     finally:
         agent.transportDispatcher.closeDispatcher()
@@ -548,9 +592,9 @@ async def test_closing_the_dispatcher_drops_work_still_in_flight():
         await asyncio.Event().wait()  # never set
 
     task = dispatcher.runDeferred(work())
-    await running.wait()
+    await asyncio.wait_for(running.wait(), timeout=10)
 
-    await dispatcher.closeDispatcherAsync()
+    await asyncio.wait_for(dispatcher.closeDispatcherAsync(), timeout=10)
 
     assert task.cancelled()
     assert not dispatcher.jobsArePending()
