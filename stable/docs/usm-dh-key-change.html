@@ -1,0 +1,856 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="MIB instance generation tools" href="mib-tools.html"><link rel="prev" title="Device details report" href="device-report.html">
+        <link rel="prefetch" href="../_static/logo.svg" as="image">
+        <link rel="prefetch" href="../_static/logo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Diffie-Hellman USM key change - SNMP library for Python 6.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../contents.html"><div class="brand">SNMP library for Python 6.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../contents.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">SNMP library for Python 6.0.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../quick-start.html">Quick start</a><input aria-label="Toggle navigation of Quick start" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Documentation</a><input aria-label="Toggle navigation of Documentation" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="snmp-history.html">SNMP history</a></li>
+<li class="toctree-l2"><a class="reference internal" href="snmp-design.html">SNMP design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysnmp-architecture.html">PySNMP architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysnmp-hlapi-tutorial.html">Common operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api-reference.html">Library reference</a><input aria-label="Toggle navigation of Library reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/walkcmd.html">WALK command</a><input aria-label="Toggle navigation of WALK command" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkwalkcmd.html">BULKWALK command</a><input aria-label="Toggle navigation of BULKWALK command" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-internals.html">Errors and supporting types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="security-considerations.html">Security Considerations</a><input aria-label="Toggle navigation of Security Considerations" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Diffie-Hellman USM key change</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-corpus.html">Loading MIBs from a corpus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codec-benchmark.html">Codec benchmark</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/contents.html">Example scripts</a><input aria-label="Toggle navigation of Example scripts" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/hlapi/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/walking-operations.html">Walking operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/device-report.html">Device details report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/advanced-topics.html">Advanced Command Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/agent/ntforg/common-notifications.html">Common notifications</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/agent/ntforg/advanced-topics.html">Advanced Notification Originator</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html">Forwarding traps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/manager/browsing-mib-tree.html">Manager side</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/manager/generated-mib-modules.html">Generated MIB modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/agent/implementing-mib-objects.html">Agent side</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../download.html">Download PySNMP</a><input aria-label="Toggle navigation of Download PySNMP" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../faq.html">FAQ</a><input aria-label="Toggle navigation of FAQ" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../faq/getting-peer-information.html">Getting peer address information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/how-to-implement-agent-mib.html">How to implement MIB at the Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/ignored-snmp-packets.html">Ignored SNMP packets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/listening-on-multiple-interfaces.html">Listening on multiple network interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/non-printable-snmp-values-apps.html">Garbaged SNMP values (apps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/non-printable-snmp-values-tools.html">Garbaged SNMP values (tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/oids-not-increasing.html">Dealing with the “OID not increasing” error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/pass-custom-mib-to-manager.html">How to pass MIB to the Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/response-values-mib-resolution.html">Resolve response values at MIB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/snmp-data-constraints-verification-failure.html">SNMP data constraints verification error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/walk-whole-mib.html">Walking whole MIB</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/blob/main/docs/source/docs/usm-dh-key-change.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/edit/main/docs/source/docs/usm-dh-key-change.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="diffie-hellman-usm-key-change">
+<h1>Diffie-Hellman USM key change<a class="headerlink" href="#diffie-hellman-usm-key-change" title="Link to this heading">¶</a></h1>
+<p><span class="target" id="index-0"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc2786.html"><strong>RFC 2786</strong></a> defines <code class="docutils literal notranslate"><span class="pre">SNMP-USM-DH-OBJECTS-MIB</span></code>, which changes a USM key by
+agreeing a new one over the wire. Neither the old key nor the new one is ever
+transmitted, and – unlike the <span class="target" id="index-1"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc3414.html"><strong>RFC 3414</strong></a> <code class="docutils literal notranslate"><span class="pre">usmUserAuthKeyChange</span></code> this engine
+has always supported – the old key is not needed to perform the change. Only
+write access to the row is. That is what makes provisioning an agent remotely
+practical rather than a chicken-and-egg problem.</p>
+<section id="how-the-exchange-works">
+<h2>How the exchange works<a class="headerlink" href="#how-the-exchange-works" title="Link to this heading">¶</a></h2>
+<p>The agent publishes Diffie-Hellman parameters in <code class="docutils literal notranslate"><span class="pre">usmDHParameters</span></code> and, for
+each row of <code class="docutils literal notranslate"><span class="pre">usmDHUserKeyTable</span></code>, a public value. A manager reads both, offers
+a public value of its own, and both sides arrive at a shared secret neither
+sent. The new key is the right-most bits of that secret – as many as the row’s
+authentication or privacy protocol needs.</p>
+<p>The key that results is already localized to the agent: it is derived from a
+secret only that agent could have computed, so it is used directly rather than
+being run through <span class="target" id="index-2"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc3414.html"><strong>RFC 3414</strong></a> key localization.</p>
+</section>
+<section id="changing-a-key">
+<h2>Changing a key<a class="headerlink" href="#changing-a-key" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="#pysnmp.hlapi.asyncio.dh_key_change" title="pysnmp.hlapi.asyncio.dh_key_change"><code class="xref py py-func docutils literal notranslate"><span class="pre">dh_key_change()</span></code></a> runs the whole exchange:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""</span>
+<span class="sd">Change a USM authentication key by Diffie-Hellman agreement</span>
+<span class="sd">+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</span>
+
+<span class="sd">Rotate an agent's authentication key without either key crossing the wire and</span>
+<span class="sd">without needing the old one, per :RFC:`2786`.</span>
+
+<span class="sd">The agent must implement SNMP-USM-DH-OBJECTS-MIB, and the credentials used must</span>
+<span class="sd">have write access to the row. Net-SNMP implements it when built with the</span>
+<span class="sd">``snmp-usm-dh-objects-mib`` module, which distribution packages usually leave out.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ContextData</span><span class="p">,</span>
+    <span class="n">SnmpEngine</span><span class="p">,</span>
+    <span class="n">UdpTransportTarget</span><span class="p">,</span>
+    <span class="n">UsmUserData</span><span class="p">,</span>
+    <span class="n">dh_key_change</span><span class="p">,</span>
+    <span class="n">get_cmd</span><span class="p">,</span>
+    <span class="n">usmHMACSHAAuthProtocol</span><span class="p">,</span>
+    <span class="n">usmKeyTypeLocalized</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.proto.rfc1902</span><span class="w"> </span><span class="kn">import</span> <span class="n">OctetString</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi.rfc1902</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObjectIdentity</span><span class="p">,</span> <span class="n">ObjectType</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Rotate the key, then use the new one."""</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">UsmUserData</span><span class="p">(</span>
+        <span class="s2">"usr-sha-none"</span><span class="p">,</span> <span class="s2">"authkey1"</span><span class="p">,</span> <span class="n">authProtocol</span><span class="o">=</span><span class="n">usmHMACSHAAuthProtocol</span>
+    <span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="k">await</span> <span class="n">UdpTransportTarget</span><span class="o">.</span><span class="n">create</span><span class="p">((</span><span class="s2">"demo.pysnmp.com"</span><span class="p">,</span> <span class="mi">161</span><span class="p">))</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dh_key_change</span><span class="p">(</span>
+        <span class="n">SnmpEngine</span><span class="p">(),</span>
+        <span class="n">current</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">,</span>
+        <span class="n">ContextData</span><span class="p">(),</span>
+        <span class="s2">"auth"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># The agent re-keyed when the SET committed, so `current` is now stale. The</span>
+    <span class="c1"># derived key is already localized to this agent, and USM needs to be told</span>
+    <span class="c1"># which agent that is -- both come back from the exchange.</span>
+    <span class="n">rekeyed</span> <span class="o">=</span> <span class="n">UsmUserData</span><span class="p">(</span>
+        <span class="s2">"usr-sha-none"</span><span class="p">,</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+        <span class="n">authProtocol</span><span class="o">=</span><span class="n">usmHMACSHAAuthProtocol</span><span class="p">,</span>
+        <span class="n">authKeyType</span><span class="o">=</span><span class="n">usmKeyTypeLocalized</span><span class="p">,</span>
+        <span class="n">securityEngineId</span><span class="o">=</span><span class="n">OctetString</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">securityEngineId</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">errorIndication</span><span class="p">,</span> <span class="n">errorStatus</span><span class="p">,</span> <span class="n">errorIndex</span><span class="p">,</span> <span class="n">varBinds</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_cmd</span><span class="p">(</span>
+        <span class="n">SnmpEngine</span><span class="p">(),</span>
+        <span class="n">rekeyed</span><span class="p">,</span>
+        <span class="k">await</span> <span class="n">UdpTransportTarget</span><span class="o">.</span><span class="n">create</span><span class="p">((</span><span class="s2">"demo.pysnmp.com"</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+        <span class="n">ContextData</span><span class="p">(),</span>
+        <span class="n">ObjectType</span><span class="p">(</span><span class="n">ObjectIdentity</span><span class="p">(</span><span class="s2">"SNMPv2-MIB"</span><span class="p">,</span> <span class="s2">"sysDescr"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">errorIndication</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">errorIndication</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">errorStatus</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">errorStatus</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">errorIndex</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">varBinds</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">errorIndex</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'?'</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">varBind</span> <span class="ow">in</span> <span class="n">varBinds</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">" = "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">varBind</span><span class="p">]))</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" download="" href="../_downloads/6eec26ebd8e71026df6daceeb926364f/usm-dh-key-change.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">the</span> <span class="pre">asyncio</span> <span class="pre">example</span></code></a>.</p>
+<p>The synchronous facade offers the same call under
+<code class="docutils literal notranslate"><span class="pre">pysnmp.hlapi.dh_key_change</span></code>, blocking until the exchange completes.</p>
+</section>
+<section id="using-the-result">
+<h2>Using the result<a class="headerlink" href="#using-the-result" title="Link to this heading">¶</a></h2>
+<p>The agent installs the new key when the SET commits, so the credentials that
+ran the change stop working the moment it returns. Build fresh credentials from
+the result, which carries both halves of what
+<a class="reference internal" href="api-reference.html#pysnmp.hlapi.UsmUserData" title="pysnmp.hlapi.UsmUserData"><code class="xref py py-class docutils literal notranslate"><span class="pre">UsmUserData</span></code></a> needs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">key</span></code> – the new localized key, passed with
+<code class="docutils literal notranslate"><span class="pre">authKeyType=usmKeyTypeLocalized</span></code> (or <code class="docutils literal notranslate"><span class="pre">privKeyType</span></code> for a privacy key).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">securityEngineId</span></code> – the agent’s authoritative engine ID. A localized key
+is bound to one engine and USM will not accept it without being told which,
+so this is not optional. The exchange learns it from the row index, which
+saves a separate discovery.</p></li>
+</ul>
+<p>Anything that fails raises <a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeError" title="pysnmp.hlapi.asyncio.DHKeyChangeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DHKeyChangeError</span></code></a> rather than
+returning an error indication, because a key change that half happened leaves
+the caller unable to reach the agent.</p>
+</section>
+<section id="when-the-set-is-the-step-that-fails">
+<h2>When the SET is the step that fails<a class="headerlink" href="#when-the-set-is-the-step-that-fails" title="Link to this heading">¶</a></h2>
+<p>Everything the result needs is derived before the SET, so a parameter or key
+length that cannot produce a key is refused while the agent is still untouched.</p>
+<p>The SET itself is the step that cannot be taken back, and its failure is
+ambiguous. SNMP over UDP gives no way to tell a refused SET from one that
+committed and whose response was lost, and <span class="target" id="index-3"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc2786.html"><strong>RFC 2786</strong></a> defines no recovery for
+that. A transport target with retries makes it likelier to surface as
+<code class="docutils literal notranslate"><span class="pre">wrongValue</span></code> than as a timeout, because a successful SET makes the agent
+publish a fresh public value, so the retransmitted copy no longer matches the
+half it echoes.</p>
+<p>So the exception carries what is needed to find out:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">dh_key_change</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">ContextData</span><span class="p">())</span>
+<span class="k">except</span> <span class="n">DHKeyChangeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">candidate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># The agent may have re-keyed to this. Try it before concluding</span>
+        <span class="c1"># that the old credentials are still live.</span>
+        <span class="o">...</span>
+    <span class="k">raise</span>
+</pre></div>
+</div>
+<p>Pass a transport target with <code class="docutils literal notranslate"><span class="pre">retries=0</span></code> if a timeout is the clearer signal
+for your recovery path; the exchange does not override the retry policy it is
+given.</p>
+</section>
+<section id="finding-the-row">
+<h2>Finding the row<a class="headerlink" href="#finding-the-row" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">usmDHUserKeyTable</span></code> is indexed by engine ID and user name. By default the
+table is walked to find the row for the user being changed, so callers do not
+need to know the engine ID in advance. An agent that does not permit walking
+the table can be addressed directly by passing <code class="docutils literal notranslate"><span class="pre">securityEngineId</span></code>.</p>
+</section>
+<section id="what-is-supported">
+<h2>What is supported<a class="headerlink" href="#what-is-supported" title="Link to this heading">¶</a></h2>
+<p>The manager side of the key change is implemented: all four <code class="docutils literal notranslate"><span class="pre">DHKeyChange</span></code>
+columns, for authentication and privacy keys, for a named user or for the
+agent’s own key. <code class="docutils literal notranslate"><span class="pre">pysnmp.proto.secmod.rfc2786</span></code> also provides the kickstart
+key derivation (PBKDF2 with the salts the MIB fixes) for reading a
+<code class="docutils literal notranslate"><span class="pre">usmDHKickstartTable</span></code>.</p>
+<p>The agent side is not implemented – pysnmp does not serve these objects – and
+no agent-side implementation of <code class="docutils literal notranslate"><span class="pre">usmDHKickstartTable</span></code> is known to exist to
+interoperate with.</p>
+<p>None of this needs a cryptographic library: the agreement is modular
+exponentiation, and the one derivation the RFC names is PBKDF2 from
+<a class="reference external" href="https://docs.python.org/3/library/hashlib.html#module-hashlib" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">hashlib</span></code></a>.</p>
+</section>
+<section id="interoperability">
+<h2>Interoperability<a class="headerlink" href="#interoperability" title="Link to this heading">¶</a></h2>
+<p>The exchange is tested end to end against Net-SNMP in CI, under the <code class="docutils literal notranslate"><span class="pre">v3-dh</span></code>
+profile of the Net-SNMP integration workflow. That profile runs an agent built
+with the <code class="docutils literal notranslate"><span class="pre">snmp-usm-dh-objects-mib</span></code> module, which is not in Net-SNMP’s default
+module set and which distribution packages – Debian’s <code class="docutils literal notranslate"><span class="pre">snmpd</span></code> among them –
+leave out. An agent without it answers <code class="docutils literal notranslate"><span class="pre">noSuchObject</span></code> for the whole
+<code class="docutils literal notranslate"><span class="pre">1.3.6.1.3.101</span></code> subtree.</p>
+<p>The test asserts more than that the exchange completed: it authenticates with
+the derived key afterwards, which is the only way to observe that the key the
+agent installed is the key this engine computed.</p>
+</section>
+<section id="api-reference">
+<h2>API reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.dh_key_change">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.asyncio.</span></span><span class="sig-name descname"><span class="pre">dh_key_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snmpEngine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transportTarget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contextData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyType</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'auth'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">own</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">userName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">securityEngineId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyLength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult" title="pysnmp.hlapi.asyncio.dh.DHKeyChangeResult"><span class="pre">DHKeyChangeResult</span></a></span></span><a class="headerlink" href="#pysnmp.hlapi.asyncio.dh_key_change" title="Link to this definition">¶</a></dt>
+<dd><p>Change a USM key by Diffie-Hellman agreement (<span class="target" id="index-4"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc2786.html"><strong>RFC 2786</strong></a>).</p>
+<p>Neither the old key nor the new one crosses the wire, and the old one is not
+needed to run this – only write access to the row. That is what
+<code class="docutils literal notranslate"><span class="pre">usmUserAuthKeyChange</span></code> cannot offer, and what makes provisioning an agent
+remotely practical.</p>
+<p>The agent installs the new key when the SET commits, so the credentials used
+for this call stop working the moment it returns. Build fresh
+<a class="reference internal" href="api-reference.html#pysnmp.hlapi.UsmUserData" title="pysnmp.hlapi.UsmUserData"><code class="xref py py-class docutils literal notranslate"><span class="pre">UsmUserData</span></code></a> from the returned key, passing
+<code class="docutils literal notranslate"><span class="pre">authKeyType=usmKeyTypeLocalized</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>snmpEngine</strong> (<em>SnmpEngine</em>) – Class instance representing SNMP engine.</p></li>
+<li><p><strong>authData</strong> (<em>UsmUserData</em>) – The credentials to run the exchange under. Their user name names the row
+unless <cite>userName</cite> overrides it, and their protocols say how long the new
+key is unless <cite>keyLength</cite> overrides it.</p></li>
+<li><p><strong>transportTarget</strong> (<em>TransportTarget</em>) – Class instance representing transport type along with SNMP peer address.</p></li>
+<li><p><strong>contextData</strong> (<em>ContextData</em>) – Class instance representing SNMP ContextEngineId and ContextName values.</p></li>
+<li><p><strong>keyType</strong> (<em>str, optional</em>) – <code class="docutils literal notranslate"><span class="pre">&quot;auth&quot;</span></code> for the authentication key, <code class="docutils literal notranslate"><span class="pre">&quot;priv&quot;</span></code> for the privacy key.</p></li>
+<li><p><strong>own</strong> (<em>bool, optional</em>) – Use the <code class="docutils literal notranslate"><span class="pre">usmDHUserOwn*</span></code> column, which is how an agent changes its own
+key rather than the named user’s.</p></li>
+<li><p><strong>userName</strong> (<em>bytes or str, optional</em>) – The USM user whose row to change, when it is not the one authenticating.</p></li>
+<li><p><strong>securityEngineId</strong> (<em>bytes, optional</em>) – The agent’s authoritative engine ID. Given, the row is addressed
+directly; omitted, the table is walked to find it.</p></li>
+<li><p><strong>keyLength</strong> (<em>int, optional</em>) – Octets of key to derive, when the protocol in <cite>authData</cite> is not the one
+the row uses.</p></li>
+<li><p><strong>**options</strong> – Passed through to the underlying commands.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>DHKeyChangeResult</em> – The new localized key, the instance that was set and the parameters used.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeError" title="pysnmp.hlapi.asyncio.DHKeyChangeError"><strong>DHKeyChangeError</strong></a> – If any step fails. Everything is derived before the SET, so the agent’s
+    key is unchanged unless the SET itself was the step that failed – and
+    that case carries a <cite>candidate</cite> result, because a failed SET may still
+    have been applied. A transport target with retries turns a lost response
+    into a <cite>wrongValue</cite> on the retransmission rather than a timeout; pass a
+    target with <code class="docutils literal notranslate"><span class="pre">retries=0</span></code> if a timeout is the clearer signal for your
+    recovery path.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.hlapi.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.proto.rfc1902</span><span class="w"> </span><span class="kn">import</span> <span class="n">OctetString</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dh_key_change</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">SnmpEngine</span><span class="p">(),</span>
+<span class="gp">... </span>        <span class="n">UsmUserData</span><span class="p">(</span><span class="s1">'user'</span><span class="p">,</span> <span class="s1">'authkey1'</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="k">await</span> <span class="n">UdpTransportTarget</span><span class="o">.</span><span class="n">create</span><span class="p">((</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">161</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">ContextData</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">UsmUserData</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">'user'</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">result</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">authKeyType</span><span class="o">=</span><span class="n">usmKeyTypeLocalized</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">securityEngineId</span><span class="o">=</span><span class="n">OctetString</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">securityEngineId</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rekeyed</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.DHKeyChangeResult">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.asyncio.</span></span><span class="sig-name descname"><span class="pre">DHKeyChangeResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">securityEngineId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pysnmp.proto.secmod.rfc2786.DHParameters" title="pysnmp.proto.secmod.rfc2786.DHParameters"><span class="pre">DHParameters</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult" title="Link to this definition">¶</a></dt>
+<dd><p>What a completed key change produced.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.DHKeyChangeResult.key">
+<span class="sig-name descname"><span class="pre">key</span></span><a class="headerlink" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.key" title="Link to this definition">¶</a></dt>
+<dd><p>The new key, already localized to this agent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)">bytes</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.DHKeyChangeResult.securityEngineId">
+<span class="sig-name descname"><span class="pre">securityEngineId</span></span><a class="headerlink" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.securityEngineId" title="Link to this definition">¶</a></dt>
+<dd><p>The agent’s authoritative engine ID. Returned because a localized key is
+only usable with the engine ID it is bound to, and this exchange has
+already learned it – pass both to
+<a class="reference internal" href="api-reference.html#pysnmp.hlapi.UsmUserData" title="pysnmp.hlapi.UsmUserData"><code class="xref py py-class docutils literal notranslate"><span class="pre">UsmUserData</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)">bytes</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.DHKeyChangeResult.instance">
+<span class="sig-name descname"><span class="pre">instance</span></span><a class="headerlink" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.instance" title="Link to this definition">¶</a></dt>
+<dd><p>The DHKeyChange instance that was SET.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a> of <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.DHKeyChangeResult.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.parameters" title="Link to this definition">¶</a></dt>
+<dd><p>The agreement parameters the agent published.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.proto.secmod.rfc2786.DHParameters" title="pysnmp.proto.secmod.rfc2786.DHParameters">pysnmp.proto.secmod.rfc2786.DHParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Create new instance of DHKeyChangeResult(key, securityEngineId, instance, parameters)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.proto.secmod.rfc2786.DHParameters">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.proto.secmod.rfc2786.</span></span><span class="sig-name descname"><span class="pre">DHParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">privateValueLength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.proto.secmod.rfc2786.DHParameters" title="Link to this definition">¶</a></dt>
+<dd><p>The prime, base and optional private-value length of an agreement.</p>
+<p>Frozen and made only of integers, so importing this module costs nothing and
+the well-known groups below can be module constants.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.proto.secmod.rfc2786.DHParameters.prime">
+<span class="sig-name descname"><span class="pre">prime</span></span><a class="headerlink" href="#pysnmp.proto.secmod.rfc2786.DHParameters.prime" title="Link to this definition">¶</a></dt>
+<dd><p>The prime modulus <cite>p</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.proto.secmod.rfc2786.DHParameters.base">
+<span class="sig-name descname"><span class="pre">base</span></span><a class="headerlink" href="#pysnmp.proto.secmod.rfc2786.DHParameters.base" title="Link to this definition">¶</a></dt>
+<dd><p>The generator <cite>g</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.proto.secmod.rfc2786.DHParameters.privateValueLength">
+<span class="sig-name descname"><span class="pre">privateValueLength</span></span><a class="headerlink" href="#pysnmp.proto.secmod.rfc2786.DHParameters.privateValueLength" title="Link to this definition">¶</a></dt>
+<dd><p>The optional length <cite>l</cite> in bits that bounds the private exponent. When
+absent the exponent is drawn from the whole interval below <cite>p - 1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pysnmp.proto.secmod.rfc2786.DHParameters.primeLength">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">primeLength</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#pysnmp.proto.secmod.rfc2786.DHParameters.primeLength" title="Link to this definition">¶</a></dt>
+<dd><p>The prime’s length in octets, which is the width of a shared secret.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.DHKeyChangeError">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.hlapi.asyncio.</span></span><span class="sig-name descname"><span class="pre">DHKeyChangeError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult" title="pysnmp.hlapi.asyncio.dh.DHKeyChangeResult"><span class="pre">DHKeyChangeResult</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.hlapi.asyncio.DHKeyChangeError" title="Link to this definition">¶</a></dt>
+<dd><p>A Diffie-Hellman key change did not complete.</p>
+<p>Raised rather than returned, because a key change that half happened leaves
+the caller unable to talk to the agent, and a return value is too easy to
+ignore.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pysnmp.hlapi.asyncio.DHKeyChangeError.candidate">
+<span class="sig-name descname"><span class="pre">candidate</span></span><a class="headerlink" href="#pysnmp.hlapi.asyncio.DHKeyChangeError.candidate" title="Link to this definition">¶</a></dt>
+<dd><p>Set when the SET was the step that failed, and then the failure is
+ambiguous: the agent may have applied the change and lost the response.
+<span class="target" id="index-5"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc2786.html"><strong>RFC 2786</strong></a> defines no recovery for that, so the way to find out is to
+try this key. None for every other step, where nothing was changed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult" title="pysnmp.hlapi.asyncio.DHKeyChangeResult">DHKeyChangeResult</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Record the message and, for a failed SET, the key that may be live.</p>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="mib-tools.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">MIB instance generation tools</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="device-report.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Device details report</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2005-2019, Ilya Etingof deceased 
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Diffie-Hellman USM key change</a><ul>
+<li><a class="reference internal" href="#how-the-exchange-works">How the exchange works</a></li>
+<li><a class="reference internal" href="#changing-a-key">Changing a key</a></li>
+<li><a class="reference internal" href="#using-the-result">Using the result</a></li>
+<li><a class="reference internal" href="#when-the-set-is-the-step-that-fails">When the SET is the step that fails</a></li>
+<li><a class="reference internal" href="#finding-the-row">Finding the row</a></li>
+<li><a class="reference internal" href="#what-is-supported">What is supported</a></li>
+<li><a class="reference internal" href="#interoperability">Interoperability</a></li>
+<li><a class="reference internal" href="#api-reference">API reference</a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.dh_key_change"><code class="docutils literal notranslate"><span class="pre">dh_key_change()</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult"><code class="docutils literal notranslate"><span class="pre">DHKeyChangeResult</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.key"><code class="docutils literal notranslate"><span class="pre">DHKeyChangeResult.key</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.securityEngineId"><code class="docutils literal notranslate"><span class="pre">DHKeyChangeResult.securityEngineId</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.instance"><code class="docutils literal notranslate"><span class="pre">DHKeyChangeResult.instance</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeResult.parameters"><code class="docutils literal notranslate"><span class="pre">DHKeyChangeResult.parameters</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pysnmp.proto.secmod.rfc2786.DHParameters"><code class="docutils literal notranslate"><span class="pre">DHParameters</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.proto.secmod.rfc2786.DHParameters.prime"><code class="docutils literal notranslate"><span class="pre">DHParameters.prime</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.proto.secmod.rfc2786.DHParameters.base"><code class="docutils literal notranslate"><span class="pre">DHParameters.base</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.proto.secmod.rfc2786.DHParameters.privateValueLength"><code class="docutils literal notranslate"><span class="pre">DHParameters.privateValueLength</span></code></a></li>
+<li><a class="reference internal" href="#pysnmp.proto.secmod.rfc2786.DHParameters.primeLength"><code class="docutils literal notranslate"><span class="pre">DHParameters.primeLength</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeError"><code class="docutils literal notranslate"><span class="pre">DHKeyChangeError</span></code></a><ul>
+<li><a class="reference internal" href="#pysnmp.hlapi.asyncio.DHKeyChangeError.candidate"><code class="docutils literal notranslate"><span class="pre">DHKeyChangeError.candidate</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=cb01d673"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

@@ -59,7 +59,7 @@ from pysnmp.hlapi.asyncio import (
     ObjectType,
     SnmpEngine,
     UdpTransportTarget,
-    sendNotification,
+    send_notification,
 )
 from pysnmp.proto.api import v2c
 
@@ -176,7 +176,7 @@ async def forward(snmpEngine, destination):
         sourceAddress, varBinds = await destination.queue.get()
 
         try:
-            errorIndication, errorStatus, errorIndex, _ = await sendNotification(
+            errorIndication, errorStatus, errorIndex, _ = await send_notification(
                 snmpEngine,
                 destination.auth,
                 transportTarget,

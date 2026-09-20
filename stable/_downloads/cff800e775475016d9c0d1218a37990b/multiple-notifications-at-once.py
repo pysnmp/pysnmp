@@ -31,7 +31,7 @@ from pysnmp.hlapi.asyncio import *
 
 
 async def sendone(snmpEngine, hostname, notifyType):
-    (errorIndication, errorStatus, errorIndex, varBinds) = await sendNotification(
+    (errorIndication, errorStatus, errorIndex, varBinds) = await send_notification(
         snmpEngine,
         CommunityData("public", tag=hostname),
         UdpTransportTarget((hostname, 162), tagList=hostname),
