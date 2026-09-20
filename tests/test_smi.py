@@ -753,7 +753,7 @@ def _build_optional_row(optional):
         rowStatus=rowStatus,
     )
 
-    def activate_row(*args):
+    def activate_row(*args, **context):
         raise error.RowCreationWanted(syntax=Integer32(1))
 
     rowStatus.writeCommit = activate_row
@@ -778,7 +778,7 @@ class TestOptionalTableColumns:
     def test_optional_unset_column_allows_row_activation(self):
         row, optionalValue, rowStatus, suffix = _build_optional_row(True)
 
-        row.writeCommit(rowStatus.name + suffix, 1, 0, (None, None))
+        row.writeCommit((rowStatus.name + suffix, 1), idx=0)
 
         optionalInstance = optionalValue.getNode(optionalValue.name + suffix)
         assert not optionalInstance.syntax.isValue
@@ -787,7 +787,7 @@ class TestOptionalTableColumns:
         row, _, rowStatus, suffix = _build_optional_row(False)
 
         with pytest.raises(error.InconsistentValueError):
-            row.writeCommit(rowStatus.name + suffix, 1, 0, (None, None))
+            row.writeCommit((rowStatus.name + suffix, 1), idx=0)
 
 
 @pytest.fixture

@@ -8,6 +8,51 @@ This release is not backwards compatible with the 5.0 series. The changes
 below require source modifications in applications that used the removed
 interfaces. See :doc:`/changelog` for the complete list of changes.
 
+MIB instrumentation takes ``(varBind, **context)``
+---------------------------------------------------
+
+The methods a managed object implements took ``(name, val, idx, acInfo)`` and
+take ``(varBind, **context)`` now, where ``varBind`` is an
+``(ObjectName, value)`` pair and ``context`` carries ``idx``, ``acFun`` and
+``acCtx``:
+
+.. code-block:: python
+
+   # was
+   class MyScalar(MibScalarInstance):
+       def readGet(self, name, val, idx, acInfo):
+           return name, self.syntax.clone(read_my_value())
+
+   # now
+   class MyScalar(MibScalarInstance):
+       def readGet(self, varBind, **context):
+           name, val = varBind
+           return name, self.syntax.clone(read_my_value())
+
+The same applies to the instrumentation contract one level up:
+``readVars``/``readNextVars``/``writeVars`` took ``(varBinds, acInfo)`` and take
+``(varBinds, **context)``.
+
+**Nothing has been removed.** A class written the old way keeps serving requests
+unmodified: PySNMP detects the old signature and adapts the call, emitting a
+``DeprecationWarning`` that names the class and the methods it adapted. The
+detection happens once per class, not per request, so a class on the current
+signature pays nothing at all.
+
+Why the shape changed: every piece of information a managed object might need
+had to be another positional argument, and adding one broke every
+implementation. A context mapping can carry what a given call needs without
+changing the signature again -- including an awaitable, which is the
+prerequisite for asynchronous instrumentation.
+
+To find what needs changing, run with deprecation warnings visible::
+
+    python -W error::DeprecationWarning your_agent.py
+
+The names match `lextudio/pysnmp <https://github.com/lextudio/pysnmp>`_ and the
+2018 upstream work both forks descend from, so an implementation written for
+either ports across.
+
 The high-level API is snake_case, and camelCase is deprecated
 -------------------------------------------------------------
 

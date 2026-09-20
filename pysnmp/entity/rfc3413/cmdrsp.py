@@ -13,6 +13,7 @@ from pysnmp import debug
 from pysnmp.proto import errind, error, rfc1902, rfc1905, rfc3411
 from pysnmp.proto.api import v2c  # backend is always SMIv2 compliant
 from pysnmp.proto.proxy import rfc2576
+from pysnmp.smi._instrumcompat import callInstrumentation
 
 
 # 3.2
@@ -398,7 +399,9 @@ class GetCommandResponder(CommandResponderBase):
             stateReference,
             0,
             0,
-            mgmtFun(v2c.apiPDU.getVarBinds(PDU), (acFun, acCtx)),
+            callInstrumentation(
+                mgmtFun, v2c.apiPDU.getVarBinds(PDU), acFun=acFun, acCtx=acCtx
+            ),
         )
         self.releaseStateInformation(stateReference)
 
@@ -416,7 +419,9 @@ class NextCommandResponder(CommandResponderBase):
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readNextVars
         varBinds = v2c.apiPDU.getVarBinds(PDU)
         while True:
-            rspVarBinds = mgmtFun(varBinds, (acFun, acCtx))
+            rspVarBinds = callInstrumentation(
+                mgmtFun, varBinds, acFun=acFun, acCtx=acCtx
+            )
             try:
                 self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
             except error.StatusInformation as e:
@@ -467,13 +472,17 @@ class BulkCommandResponder(CommandResponderBase):
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readNextVars
 
         if N:
-            rspVarBinds = mgmtFun(reqVarBinds[:N], (acFun, acCtx))
+            rspVarBinds = callInstrumentation(
+                mgmtFun, reqVarBinds[:N], acFun=acFun, acCtx=acCtx
+            )
         else:
             rspVarBinds = []
 
         varBinds = reqVarBinds[-R:]
         while M and R:
-            rspVarBinds.extend(mgmtFun(varBinds, (acFun, acCtx)))
+            rspVarBinds.extend(
+                callInstrumentation(mgmtFun, varBinds, acFun=acFun, acCtx=acCtx)
+            )
             varBinds = rspVarBinds[-R:]
             M -= 1
 
@@ -501,7 +510,9 @@ class SetCommandResponder(CommandResponderBase):
                 stateReference,
                 0,
                 0,
-                mgmtFun(v2c.apiPDU.getVarBinds(PDU), (acFun, acCtx)),
+                callInstrumentation(
+                    mgmtFun, v2c.apiPDU.getVarBinds(PDU), acFun=acFun, acCtx=acCtx
+                ),
             )
             self.releaseStateInformation(stateReference)
         except (
