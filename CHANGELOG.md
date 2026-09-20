@@ -3,6 +3,59 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is [published with the documentation](https://pysnmp.github.io/pysnmp/latest/changelog-history.html).
 
+## [6.0.0-rc.16](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.15...v6.0.0-rc.16) (2026-09-20)
+
+### Features
+
+* **carrier:** add SNMP over TCP, RFC 3430 ([6162a63](https://github.com/pysnmp/pysnmp/commit/6162a635f3eae8bd0f78810f0d4baeae8586833e)), closes [#273](https://github.com/pysnmp/pysnmp/issues/273)
+* **carrier:** report a transport failure the sender can no longer see ([9308d0f](https://github.com/pysnmp/pysnmp/commit/9308d0fc961ec3ca7be3fb43dd4bcaad4324fce4))
+* **entity:** give SnmpEngine dispatcher lifecycle and context managers ([4c484d9](https://github.com/pysnmp/pysnmp/commit/4c484d9a8ea8b110fcb03137c303a9d0e659bd4d)), closes [#277](https://github.com/pysnmp/pysnmp/issues/277) [#275](https://github.com/pysnmp/pysnmp/issues/275)
+* **hlapi:** add subtree-bounded walk_cmd and bulk_walk_cmd ([0f9f994](https://github.com/pysnmp/pysnmp/commit/0f9f9942455219f16b02707926e1be8195c94747)), closes [#277](https://github.com/pysnmp/pysnmp/issues/277) [#256](https://github.com/pysnmp/pysnmp/issues/256)
+* **hlapi:** make the high-level API snake_case, deprecating camelCase ([42d0726](https://github.com/pysnmp/pysnmp/commit/42d07268467b427672ca9a86ec7e79e908fa1f86)), closes [#277](https://github.com/pysnmp/pysnmp/issues/277)
+* **proto:** read an Opaque-wrapped float as a number ([651f3f8](https://github.com/pysnmp/pysnmp/commit/651f3f82729741738172d6b023fed4fb23152c90)), closes [#286](https://github.com/pysnmp/pysnmp/issues/286)
+* **secmod:** add Diffie-Hellman USM key management (RFC 2786) ([72929be](https://github.com/pysnmp/pysnmp/commit/72929be63c69633d64bf164c631c64e7ad479542)), closes [PKCS#3](https://github.com/pysnmp/PKCS/issues/3) [#280](https://github.com/pysnmp/pysnmp/issues/280)
+* **smi:** export NetworkAddress from SNMPv2-SMI ([652a1ce](https://github.com/pysnmp/pysnmp/commit/652a1ced67266fb0e17c357bcf4c26666972c1dc))
+* **smi:** separate name-resolution from value-casting failures ([1aaf828](https://github.com/pysnmp/pysnmp/commit/1aaf828cfd96ec4a03f57efb760a651bfb4b0f02)), closes [#252](https://github.com/pysnmp/pysnmp/issues/252)
+
+### Bug Fixes
+
+* **app:** order notification var-binds without duplicating them ([52be1da](https://github.com/pysnmp/pysnmp/commit/52be1daae08d73b7700890400b9f7e8a68a508b1)), closes [#260](https://github.com/pysnmp/pysnmp/issues/260)
+* **carrier:** keep the IPv6 scope ID on the way to sendto() ([87cdb76](https://github.com/pysnmp/pysnmp/commit/87cdb76d967afc8c305d69e80258b5d3515bd494)), closes [#251](https://github.com/pysnmp/pysnmp/issues/251)
+* **carrier:** refuse a transport bound to a different event loop ([61c8b12](https://github.com/pysnmp/pysnmp/commit/61c8b1269fc5ae8b6a35b5d7589db004df5c0aee))
+* **ci:** install file(1) in the DH agent build stage ([0031949](https://github.com/pysnmp/pysnmp/commit/0031949dc603bc0d0d3531bb90fde4b322fcb320))
+* **ci:** the test group needs ruff, because a test renders MIB modules ([a39dfda](https://github.com/pysnmp/pysnmp/commit/a39dfda51a8002b93433534e96a411204ad302c4))
+* **entity:** keep an engine importable on PyPy, and split a test group ([ab6ba2b](https://github.com/pysnmp/pysnmp/commit/ab6ba2b3759db25099cf2951caf4ecaf84a56d97))
+* **hlapi:** drop a failed lookup where it is picked up, not from its callback ([77d285b](https://github.com/pysnmp/pysnmp/commit/77d285b7af5c4fa5db2c9655796e3035c2686f20))
+* **hlapi:** keep an in-flight address lookup when a caller is cancelled ([9be6460](https://github.com/pysnmp/pysnmp/commit/9be6460cf611104c2674a7603ba604e425e756e7)), closes [#311](https://github.com/pysnmp/pysnmp/issues/311)
+* **hlapi:** make the clock fine enough to measure the timeout asked for ([764551d](https://github.com/pysnmp/pysnmp/commit/764551d2e49b5a57f29ee80e2cbf29523f61bd04)), closes [#289](https://github.com/pysnmp/pysnmp/issues/289)
+* **hlapi:** re-register a v3 user whose credentials changed ([b342465](https://github.com/pysnmp/pysnmp/commit/b3424659411950357b3f1047126ecca7620237f5)), closes [#261](https://github.com/pysnmp/pysnmp/issues/261)
+* **hlapi:** stop transport target DNS from stalling the event loop ([ba657c8](https://github.com/pysnmp/pysnmp/commit/ba657c8278b81a596a4fc50b81de9e851d61a938)), closes [#270](https://github.com/pysnmp/pysnmp/issues/270)
+* **proto:** reject a short v2c notification instead of raising IndexError ([b18a13e](https://github.com/pysnmp/pysnmp/commit/b18a13e7d1b0118cc754699cac07b2d0c8a0af21)), closes [#266](https://github.com/pysnmp/pysnmp/issues/266)
+* **proto:** render NetworkAddress as an address, not a Choice dump ([f862d2e](https://github.com/pysnmp/pysnmp/commit/f862d2e1a94d7b72e7a2940335b641fea546308e)), closes [#271](https://github.com/pysnmp/pysnmp/issues/271)
+* **proto:** wrap Counter32, Counter64 and TimeTicks at their ceiling ([6a184cb](https://github.com/pysnmp/pysnmp/commit/6a184cb365c96c8139c1a3de69ee829400ee3a11)), closes [#257](https://github.com/pysnmp/pysnmp/issues/257)
+* **secmod:** derive the key before the SET and bound DH key generation ([d193a7c](https://github.com/pysnmp/pysnmp/commit/d193a7c1a17fe151d271a6a06d5d57503f7e13cc))
+* **secmod:** draw a fitting DH public value, and draw it off the loop ([44342d7](https://github.com/pysnmp/pysnmp/commit/44342d7770bedf59d54a876e03577a9de42131b5)), closes [#316](https://github.com/pysnmp/pysnmp/issues/316)
+* **secmod:** follow the snake_case rename in the new DH tests ([66371ef](https://github.com/pysnmp/pysnmp/commit/66371ef4a62ae5cf19623ae7a5bad008ac8fe117))
+* **secmod:** stop padding AES-CFB128 ciphertext ([595eb73](https://github.com/pysnmp/pysnmp/commit/595eb731c940daa319a7b5461aef7c0edb7a748a)), closes [#262](https://github.com/pysnmp/pysnmp/issues/262)
+* **smi:** answer noSuchInstance for an uninitialised scalar ([5194fbe](https://github.com/pysnmp/pysnmp/commit/5194fbed032042f470d4cf8d66617fa9f7b8fb43)), closes [#263](https://github.com/pysnmp/pysnmp/issues/263)
+* **smi:** cache compiled MIBs where the platform says, not in ~/.pysnmp ([dd55d68](https://github.com/pysnmp/pysnmp/commit/dd55d68189fe80707b404c740c6180ffe767b303)), closes [#253](https://github.com/pysnmp/pysnmp/issues/253)
+* **smi:** derive the engine ID from platform.node(), not os.uname() ([708353a](https://github.com/pysnmp/pysnmp/commit/708353a88fc4cb9f9a5cb6fb424416688db21881)), closes [#269](https://github.com/pysnmp/pysnmp/issues/269)
+* **smi:** do not end a walk over one row whose index will not decode ([1cf042f](https://github.com/pysnmp/pysnmp/commit/1cf042fc8e969ded1d1948ba202aab998348d15f)), closes [#252](https://github.com/pysnmp/pysnmp/issues/252) [#255](https://github.com/pysnmp/pysnmp/issues/255) [#255](https://github.com/pysnmp/pysnmp/issues/255)
+* **smi:** encode InetAddress table indices with their length prefix ([e4787a8](https://github.com/pysnmp/pysnmp/commit/e4787a86e5e9029f1d583a883a7e2f4f17dbd416)), closes [#259](https://github.com/pysnmp/pysnmp/issues/259)
+* **smi:** key the index cache on the instance OID it was asked about ([9720093](https://github.com/pysnmp/pysnmp/commit/9720093f7e94b32c1d8193eb0b0313e582f69b75)), closes [#255](https://github.com/pysnmp/pysnmp/issues/255) [#252](https://github.com/pysnmp/pysnmp/issues/252) [#255](https://github.com/pysnmp/pysnmp/issues/255)
+* **smi:** report a missing MIB from loadModules() with no compiler ([adc8ef6](https://github.com/pysnmp/pysnmp/commit/adc8ef65653864fa8b26d44656255586009d0c91)), closes [#264](https://github.com/pysnmp/pysnmp/issues/264)
+* **smi:** report an InetAddressType that contradicts its address ([57f49ce](https://github.com/pysnmp/pysnmp/commit/57f49ce1a5a6d4cab873cc5347c77886d65d1df1)), closes [#259](https://github.com/pysnmp/pysnmp/issues/259) [#268](https://github.com/pysnmp/pysnmp/issues/268)
+* **smi:** resolve a bare InetAddress index without an InetAddressType ([89f66b6](https://github.com/pysnmp/pysnmp/commit/89f66b6f704b059423f7f036f927cb8b72ef49bd))
+* **smi:** return the column default from setValue(None) ([b5b3c8e](https://github.com/pysnmp/pysnmp/commit/b5b3c8e2ad949572e93e1a21c76c799a737badd4)), closes [#258](https://github.com/pysnmp/pysnmp/issues/258)
+* **smi:** serve a namespace package as a MIB source ([ae8ec7e](https://github.com/pysnmp/pysnmp/commit/ae8ec7e1e1c5ac11e30f667c83067355212a7e9f)), closes [#265](https://github.com/pysnmp/pysnmp/issues/265)
+* **smi:** skip the index cache on values pyasn1 refuses to hash ([377df5a](https://github.com/pysnmp/pysnmp/commit/377df5ac3164f8a43f561dff2b0c55a423612b8c)), closes [#282](https://github.com/pysnmp/pysnmp/issues/282)
+* **smi:** stop ignoreErrors gating whether a value can be represented ([bde8138](https://github.com/pysnmp/pysnmp/commit/bde8138cb53faef6753ca2a1147e85346a938690)), closes [#252](https://github.com/pysnmp/pysnmp/issues/252)
+
+### Performance Improvements
+
+* **secmod:** find a fitting DH public value by walking, not redrawing ([718ffba](https://github.com/pysnmp/pysnmp/commit/718ffba705cad427e4a4142ce76285cf3be727a1)), closes [#324](https://github.com/pysnmp/pysnmp/issues/324) [#324](https://github.com/pysnmp/pysnmp/issues/324)
+* **smi:** bisect once in nextKey instead of scanning the keys twice ([4d63ba7](https://github.com/pysnmp/pysnmp/commit/4d63ba7a11dfca63128c6c85708222bc666050d4)), closes [#267](https://github.com/pysnmp/pysnmp/issues/267)
+
 ## [6.0.0-rc.15](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.14...v6.0.0-rc.15) (2026-09-18)
 
 ### Bug Fixes
