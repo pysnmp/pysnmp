@@ -86,25 +86,25 @@ class TestReadingAnUninitialisedInstance:
 
     def test_get_reports_no_such_instance(self, uninitialised):
         with pytest.raises(error.NoSuchInstanceError):
-            uninitialised.readGet(uninitialised.name, None, 0, None)
+            uninitialised.readGet((uninitialised.name, None), idx=0)
 
     def test_test_reports_no_such_instance(self, uninitialised):
         with pytest.raises(error.NoSuchInstanceError):
-            uninitialised.readTest(uninitialised.name, None, 0, None)
+            uninitialised.readTest((uninitialised.name, None), idx=0)
 
     def test_get_next_reports_no_such_instance(self, uninitialised):
         with pytest.raises(error.NoSuchInstanceError):
-            uninitialised.readGetNext(uninitialised.name, None, 0, None, ())
+            uninitialised.readGetNext((uninitialised.name, None), idx=0, oName=())
 
     def test_test_next_reports_no_such_instance(self, uninitialised):
         with pytest.raises(error.NoSuchInstanceError):
-            uninitialised.readTestNext(uninitialised.name, None, 0, None, ())
+            uninitialised.readTestNext((uninitialised.name, None), idx=0, oName=())
 
     def test_setting_a_value_makes_it_readable_again(self, smi, uninitialised):
-        uninitialised.writeTest(uninitialised.name, OctetString("now set"), 0, None)
-        uninitialised.writeCommit(uninitialised.name, OctetString("now set"), 0, None)
+        uninitialised.writeTest((uninitialised.name, OctetString("now set")), idx=0)
+        uninitialised.writeCommit((uninitialised.name, OctetString("now set")), idx=0)
 
-        name, value = uninitialised.readGet(uninitialised.name, None, 0, None)
+        name, value = uninitialised.readGet((uninitialised.name, None), idx=0)
 
         assert name == uninitialised.name
         assert value == OctetString("now set")
@@ -114,11 +114,11 @@ class TestReadingAnUninitialisedInstance:
             (1, 3, 6, 1, 2, 1, 99, 6), (0,), OctetString("value")
         )
 
-        assert instance.readGet(instance.name, None, 0, None) == (
+        assert instance.readGet((instance.name, None), idx=0) == (
             instance.name,
             OctetString("value"),
         )
-        assert instance.readTest(instance.name, None, 0, None) is None
+        assert instance.readTest((instance.name, None), idx=0) is None
 
 
 class TestWalkingPastAnUninitialisedInstance:
@@ -146,7 +146,7 @@ class TestWalkingPastAnUninitialisedInstance:
 
         # (acFun, acCtx): no access-control callback, so every node is readable
         # and only the isValue gate can skip one.
-        name, value = tree.readGetNext(base + (1, 0), None, 0, (None, None))
+        name, value = tree.readGetNext((base + (1, 0), None), idx=0)
 
         assert name == base + (3, 0)
         assert value == OctetString("third")

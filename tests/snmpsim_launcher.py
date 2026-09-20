@@ -61,19 +61,21 @@ class SnmprecMibInstrum:
         }
 
     @staticmethod
-    def _security_name(ac_info):
+    def _security_name(snmp_engine):
         """Return the configured security name for the active request."""
-        _, snmp_engine = ac_info
         execution_context = snmp_engine.observer.getExecutionContext(
             "rfc3412.receiveMessage:request"
         )
         return str(execution_context["securityName"])
 
-    def _records(self, ac_info):
-        return self._data.get(self._security_name(ac_info), self._data["public"])
+    def _records(self, context):
+        # The engine travels as the access-control context.
+        return self._data.get(
+            self._security_name(context.get("acCtx")), self._data["public"]
+        )
 
-    def readVars(self, varBinds, acInfo=(None, None)):
-        records = self._records(acInfo)
+    def readVars(self, varBinds, **context):
+        records = self._records(context)
         result = []
         for oid, _ in varBinds:
             oid_tuple = tuple(oid)
@@ -84,8 +86,8 @@ class SnmprecMibInstrum:
                 result.append((oid, exval.endOfMib))
         return result
 
-    def readNextVars(self, varBinds, acInfo=(None, None)):
-        records = self._records(acInfo)
+    def readNextVars(self, varBinds, **context):
+        records = self._records(context)
         record_oids = sorted(records)
         result = []
 
@@ -102,7 +104,7 @@ class SnmprecMibInstrum:
 
         return result
 
-    def writeVars(self, varBinds, acInfo=(None, None)):
+    def writeVars(self, varBinds, **context):
         return [(oid, exval.noSuchInstance) for oid, _ in varBinds]
 
     def _convert(self, type_code, value_str):

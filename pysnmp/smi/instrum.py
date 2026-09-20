@@ -23,21 +23,15 @@ class AbstractMibInstrumController:
     something other than a loaded MIB.
     """
 
-    def readVars(
-        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
-    ) -> list[Any]:
+    def readVars(self, varBinds: Any, **context: Any) -> list[Any]:
         """Read bindings. This base serves nothing, so every OID is a missing instance."""
         raise error.NoSuchInstanceError(idx=0)
 
-    def readNextVars(
-        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
-    ) -> list[Any]:
+    def readNextVars(self, varBinds: Any, **context: Any) -> list[Any]:
         """Walk to the next bindings. This base has none, so the walk ends at once."""
         raise error.EndOfMibViewError(idx=0)
 
-    def writeVars(
-        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
-    ) -> list[Any]:
+    def writeVars(self, varBinds: Any, **context: Any) -> list[Any]:
         """Write bindings. This base holds nothing writable."""
         raise error.NoSuchObjectError(idx=0)
 
@@ -225,7 +219,7 @@ class MibInstrumController(AbstractMibInstrumController):
     # MIB instrumentation
 
     def flipFlopFsm(
-        self, fsmTable: dict[tuple[str, str], str], inputVarBinds: Any, acInfo: Any
+        self, fsmTable: dict[tuple[str, str], str], inputVarBinds: Any, **context: Any
     ) -> list[Any]:
         """Run one operation over every binding as a state machine.
 
@@ -270,7 +264,7 @@ class MibInstrumController(AbstractMibInstrumController):
                 try:
                     # Convert to tuple to avoid ObjectName instantiation
                     # on subscription
-                    rval = f(tuple(name), val, idx, acInfo)
+                    rval = f((tuple(name), val), **dict(context, idx=idx))
                 except error.SmiError as exc_v:
                     exc_t = type(exc_v)
                     exc_tb = exc_v.__traceback__
@@ -295,20 +289,14 @@ class MibInstrumController(AbstractMibInstrumController):
                 del origTraceback
         return outputVarBinds
 
-    def readVars(
-        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
-    ) -> list[Any]:
+    def readVars(self, varBinds: Any, **context: Any) -> list[Any]:
         """Read the bindings named, as GET does."""
-        return self.flipFlopFsm(self.fsmReadVar, varBinds, acInfo)
+        return self.flipFlopFsm(self.fsmReadVar, varBinds, **context)
 
-    def readNextVars(
-        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
-    ) -> list[Any]:
+    def readNextVars(self, varBinds: Any, **context: Any) -> list[Any]:
         """Read the bindings after those named, as GETNEXT and GETBULK do."""
-        return self.flipFlopFsm(self.fsmReadNextVar, varBinds, acInfo)
+        return self.flipFlopFsm(self.fsmReadNextVar, varBinds, **context)
 
-    def writeVars(
-        self, varBinds: Any, acInfo: tuple[Any, Any] = (None, None)
-    ) -> list[Any]:
+    def writeVars(self, varBinds: Any, **context: Any) -> list[Any]:
         """Write the bindings, testing all of them before committing any."""
-        return self.flipFlopFsm(self.fsmWriteVar, varBinds, acInfo)
+        return self.flipFlopFsm(self.fsmWriteVar, varBinds, **context)
