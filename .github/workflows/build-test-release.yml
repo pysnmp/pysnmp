@@ -13,10 +13,24 @@ on:
   # next and the GA from main are cut by dispatching this workflow by hand.
   workflow_dispatch:
 
-# One run per ref: a new push supersedes the one still in flight. A dispatch is
-# never cancelled, it is the only thing that can cut a release.
+# One run per ref: a new push supersedes the one still in flight. A dispatch,
+# which is the only thing that can cut a release, gets a group of its own so
+# that nothing can supersede it.
+#
+# The `cancel-in-progress` below alone does not achieve that, because GitHub
+# evaluates it on the *incoming* run: it stops a dispatch from cancelling other
+# runs, and does nothing to stop other runs cancelling the dispatch. That is
+# not a hypothetical race with an unlucky push. semantic-release pushes the
+# `chore(release):` commit itself, part-way through the run, and the push event
+# that commit raises then cancels the very run that made it -- after the git
+# plugin has tagged, and before the github plugin can create the release page.
+# Releases cut this way land on PyPI (publish-to-pypi.yml triggers off the tag,
+# deliberately) with no GitHub release to go with them.
+#
+# Keying the group on run_id for a dispatch puts it alone in its own group,
+# where the release commit's push run cannot reach it.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'shared' }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 # Read-only by default; the publish job raises what it needs and nothing else.
