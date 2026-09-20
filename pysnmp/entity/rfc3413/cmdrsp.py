@@ -6,6 +6,8 @@
 
 """The command responder: the agent side that answers requests from the MIB."""
 
+from inspect import isawaitable
+
 from pyasn1.type import tag
 
 import pysnmp.smi.error
@@ -13,7 +15,7 @@ from pysnmp import debug
 from pysnmp.proto import errind, error, rfc1902, rfc1905, rfc3411
 from pysnmp.proto.api import v2c  # backend is always SMIv2 compliant
 from pysnmp.proto.proxy import rfc2576
-from pysnmp.smi._instrumcompat import callInstrumentation
+from pysnmp.smi._instrumcompat import awaitInstrumentation, callInstrumentation
 
 
 # 3.2
@@ -39,7 +41,12 @@ class CommandResponderBase:
         self.__pendingReqs = {}
 
     def handleMgmtOperation(self, snmpEngine, stateReference, contextName, PDU, acInfo):
-        """Serve one request. Concrete responders implement this."""
+        """Serve one request. Concrete responders implement this.
+
+        An implementation answers before returning, and returns nothing. One
+        whose instrumentation has to be waited on cannot answer yet: it returns
+        an awaitable instead, and whoever called it sees the request through.
+        """
         # Concrete responders implement their management operation here.
         pass
 
@@ -160,11 +167,15 @@ class CommandResponderBase:
     ):
         """Take one request, run the operation, and turn any failure into an error status.
 
-        The long run of handlers here is the point: the instrumentation raises SMI
-        errors and the wire carries error statuses, so each one is mapped to its status
-        and the index of the binding that caused it. Nothing is allowed to escape as an
-        exception, since a request that produced no response at all would leave the
-        manager waiting out its timeout for no reason.
+        A failure the wire can express is answered rather than raised, since a
+        request that produced no response at all would leave the manager waiting
+        out its timeout for no reason; :py:meth:`_failedMgmtOperation` does that
+        mapping.
+
+        Returns nothing once the request has been answered. An operation whose
+        instrumentation has to be waited on cannot answer while this is on the
+        stack, and what comes back instead is the rest of the work for the
+        dispatcher to run.
         """
         # Agent-side API complies with SMIv2
         if messageProcessingModel == 0:
@@ -203,20 +214,71 @@ class CommandResponderBase:
 
         # 3.2.5
         varBinds = v2c.apiPDU.getVarBinds(PDU)
-        errorStatus, errorIndex = "noError", 0
 
         debug.logger & debug.flagApp and debug.logger(
             f"processPdu: stateReference {stateReference}, varBinds {varBinds}"
         )
 
         try:
-            self.handleMgmtOperation(
+            deferred = self.handleMgmtOperation(
                 snmpEngine,
                 stateReference,
                 contextName,
                 PDU,
                 (self.__verifyAccess, snmpEngine),
             )
+
+        except Exception as exc:  # noqa: BLE001 - a request that answered with nothing leaves the manager to time out, so every failure is mapped to an error status
+            self._failedMgmtOperation(
+                exc, snmpEngine, stateReference, varBinds, statusInformation
+            )
+            return None
+
+        # The operation could not answer yet because its instrumentation has to
+        # be waited on. What comes back is the rest of the work, which the
+        # dispatcher runs; a failure in it lands in the same mapping below.
+        if deferred is not None and isawaitable(deferred):
+            return self._completeMgmtOperation(
+                deferred, snmpEngine, stateReference, varBinds, statusInformation
+            )
+
+        return None
+
+    async def _completeMgmtOperation(
+        self, awaitable, snmpEngine, stateReference, varBinds, statusInformation
+    ):
+        """Wait out an operation that suspended, failing it the same way.
+
+        A failure here reaches the requester exactly as one raised while
+        :py:meth:`processPdu` was still on the stack does, which is the point:
+        waiting is not supposed to change what an error looks like.
+        """
+        try:
+            await awaitable
+
+        except Exception as exc:  # noqa: BLE001 - this is a task of its own, so an escaping exception would be reported to the loop and never to the requester
+            self._failedMgmtOperation(
+                exc, snmpEngine, stateReference, varBinds, statusInformation
+            )
+
+    def _failedMgmtOperation(
+        self, exc, snmpEngine, stateReference, varBinds, statusInformation
+    ):
+        """Turn a failed operation into the error status and index the wire carries.
+
+        The failure is raised again to be caught by name below rather than
+        matched against a table of types: the order of the clauses is the
+        mapping, since these errors are related to one another, and the one the
+        wire wants is the most specific that fits. Raising it is also what lets
+        the synchronous path and a suspended one share a single chain.
+
+        Anything the chain does not name propagates, as it did when this ran
+        inline in :py:meth:`processPdu`.
+        """
+        errorStatus, errorIndex = "noError", 0
+
+        try:
+            raise exc
 
         # SNMPv2 SMI exceptions
         except pysnmp.smi.error.GenError as errorIndication:
@@ -294,9 +356,6 @@ class CommandResponderBase:
 
         except pysnmp.error.PySnmpError:
             self.releaseStateInformation(stateReference)
-            return
-
-        else:  # successful request processor must release state info
             return
 
         self.sendVarBinds(snmpEngine, stateReference, errorStatus, errorIndex, varBinds)
@@ -394,15 +453,19 @@ class GetCommandResponder(CommandResponderBase):
         (acFun, acCtx) = acInfo
         # rfc1905: 4.2.1.1
         mgmtFun = self.snmpContext.getMibInstrum(contextName).readVars
-        self.sendVarBinds(
-            snmpEngine,
-            stateReference,
-            0,
-            0,
-            callInstrumentation(
-                mgmtFun, v2c.apiPDU.getVarBinds(PDU), acFun=acFun, acCtx=acCtx
-            ),
+        rspVarBinds = callInstrumentation(
+            mgmtFun, v2c.apiPDU.getVarBinds(PDU), acFun=acFun, acCtx=acCtx
         )
+
+        if isawaitable(rspVarBinds):
+            return self.__answerOnceRead(rspVarBinds, snmpEngine, stateReference)
+
+        self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
+        self.releaseStateInformation(stateReference)
+
+    async def __answerOnceRead(self, awaitable, snmpEngine, stateReference):
+        """Answer once instrumentation that had to be waited on has read."""
+        self.sendVarBinds(snmpEngine, stateReference, 0, 0, await awaitable)
         self.releaseStateInformation(stateReference)
 
 
@@ -422,6 +485,18 @@ class NextCommandResponder(CommandResponderBase):
             rspVarBinds = callInstrumentation(
                 mgmtFun, varBinds, acFun=acFun, acCtx=acCtx
             )
+
+            if isawaitable(rspVarBinds):
+                return self.__answerOnceWalked(
+                    rspVarBinds,
+                    mgmtFun,
+                    varBinds,
+                    snmpEngine,
+                    stateReference,
+                    acFun,
+                    acCtx,
+                )
+
             try:
                 self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
             except error.StatusInformation as e:
@@ -429,6 +504,32 @@ class NextCommandResponder(CommandResponderBase):
                 varBinds[idx] = (rspVarBinds[idx][0], varBinds[idx][1])
             else:
                 break
+        self.releaseStateInformation(stateReference)
+
+    async def __answerOnceWalked(
+        self, rspVarBinds, mgmtFun, varBinds, snmpEngine, stateReference, acFun, acCtx
+    ):
+        """Finish a walk whose instrumentation had to be waited on.
+
+        This is the loop above, resumed: the read that suspended is already in
+        flight when this is entered, and every pass after a binding was dropped
+        for being too large to send runs here.
+        """
+        while True:
+            rspVarBinds = await awaitInstrumentation(rspVarBinds)
+
+            try:
+                self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
+            except error.StatusInformation as e:
+                idx = e["idx"]
+                varBinds[idx] = (rspVarBinds[idx][0], varBinds[idx][1])
+            else:
+                break
+
+            rspVarBinds = callInstrumentation(
+                mgmtFun, varBinds, acFun=acFun, acCtx=acCtx
+            )
+
         self.releaseStateInformation(stateReference)
 
 
@@ -475,13 +576,86 @@ class BulkCommandResponder(CommandResponderBase):
             rspVarBinds = callInstrumentation(
                 mgmtFun, reqVarBinds[:N], acFun=acFun, acCtx=acCtx
             )
+
+            if isawaitable(rspVarBinds):
+                return self.__answerOnceBulkRead(
+                    rspVarBinds,
+                    [],
+                    reqVarBinds[-R:],
+                    M,
+                    R,
+                    mgmtFun,
+                    snmpEngine,
+                    stateReference,
+                    acFun,
+                    acCtx,
+                )
         else:
             rspVarBinds = []
 
         varBinds = reqVarBinds[-R:]
         while M and R:
+            repetition = callInstrumentation(
+                mgmtFun, varBinds, acFun=acFun, acCtx=acCtx
+            )
+
+            if isawaitable(repetition):
+                # The bindings this repetition reads decide what the next one
+                # asks for, so where to carry on from is not known yet: `None`
+                # says to take it from the answer once it arrives.
+                return self.__answerOnceBulkRead(
+                    repetition,
+                    rspVarBinds,
+                    None,
+                    M - 1,
+                    R,
+                    mgmtFun,
+                    snmpEngine,
+                    stateReference,
+                    acFun,
+                    acCtx,
+                )
+
+            rspVarBinds.extend(repetition)
+            varBinds = rspVarBinds[-R:]
+            M -= 1
+
+        if rspVarBinds:
+            self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
+            self.releaseStateInformation(stateReference)
+        else:
+            raise pysnmp.smi.error.SmiError
+
+    async def __answerOnceBulkRead(
+        self,
+        pending,
+        rspVarBinds,
+        varBinds,
+        M,
+        R,
+        mgmtFun,
+        snmpEngine,
+        stateReference,
+        acFun,
+        acCtx,
+    ):
+        """Finish a GETBULK whose instrumentation had to be waited on.
+
+        `pending` is the read already in flight and `rspVarBinds` what was
+        gathered before it. `varBinds` is what the next repetition asks for, or
+        `None` when that follows from what `pending` returns.
+        """
+        rspVarBinds = list(rspVarBinds)
+        rspVarBinds.extend(await awaitInstrumentation(pending))
+
+        if varBinds is None:
+            varBinds = rspVarBinds[-R:]
+
+        while M and R:
             rspVarBinds.extend(
-                callInstrumentation(mgmtFun, varBinds, acFun=acFun, acCtx=acCtx)
+                await awaitInstrumentation(
+                    callInstrumentation(mgmtFun, varBinds, acFun=acFun, acCtx=acCtx)
+                )
             )
             varBinds = rspVarBinds[-R:]
             M -= 1
@@ -505,15 +679,32 @@ class SetCommandResponder(CommandResponderBase):
         mgmtFun = self.snmpContext.getMibInstrum(contextName).writeVars
         # rfc1905: 4.2.5.1-13
         try:
-            self.sendVarBinds(
-                snmpEngine,
-                stateReference,
-                0,
-                0,
-                callInstrumentation(
-                    mgmtFun, v2c.apiPDU.getVarBinds(PDU), acFun=acFun, acCtx=acCtx
-                ),
+            rspVarBinds = callInstrumentation(
+                mgmtFun, v2c.apiPDU.getVarBinds(PDU), acFun=acFun, acCtx=acCtx
             )
+
+            if isawaitable(rspVarBinds):
+                return self.__answerOnceWritten(rspVarBinds, snmpEngine, stateReference)
+
+            self.sendVarBinds(snmpEngine, stateReference, 0, 0, rspVarBinds)
+            self.releaseStateInformation(stateReference)
+        except (
+            pysnmp.smi.error.NoSuchObjectError,
+            pysnmp.smi.error.NoSuchInstanceError,
+        ) as e:
+            err = pysnmp.smi.error.NotWritableError()
+            err.update(e)
+            raise err from e
+
+    async def __answerOnceWritten(self, awaitable, snmpEngine, stateReference):
+        """Answer once instrumentation that had to be waited on has written.
+
+        An object that turned out not to be there is reported as not writable
+        here too: the requester asked to write it, and which of the two it is
+        was decided by the same commit either way.
+        """
+        try:
+            self.sendVarBinds(snmpEngine, stateReference, 0, 0, await awaitable)
             self.releaseStateInformation(stateReference)
         except (
             pysnmp.smi.error.NoSuchObjectError,

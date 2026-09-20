@@ -66,6 +66,7 @@ Documentation
    /docs/breaking-changes
    /docs/security-considerations
    /docs/smi-table-api
+   /docs/async-instrumentation
    /docs/device-report
    /docs/usm-dh-key-change
    /docs/mib-tools

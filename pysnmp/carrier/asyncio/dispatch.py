@@ -34,6 +34,7 @@
 import asyncio
 import traceback
 
+from pysnmp import debug
 from pysnmp.carrier.base import AbstractTransportDispatcher
 from pysnmp.carrier.error import CarrierError
 from pysnmp.error import PySnmpError
@@ -51,6 +52,7 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         """
         AbstractTransportDispatcher.__init__(self)
         self.__transportCount = 0
+        self.__deferred = set()
         if "timeout" in kwargs:
             self.setTimerResolution(kwargs["timeout"])
         self.loopingcall = None
@@ -101,6 +103,42 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
             raise PySnmpError(
                 ";".join(traceback.format_exception(type(e), e, e.__traceback__))
             ) from e
+
+    #: Job id that deferred request work is counted under.
+    DEFERRED_JOB_ID = "pysnmp.carrier.asyncio.deferred"
+
+    def runDeferred(self, coro, jobId=None):
+        """Run the rest of a suspended piece of work as a task on this loop.
+
+        The task is held onto until it finishes, since asyncio only keeps a weak
+        reference to a running task and one nothing holds can be collected
+        mid-flight. Its exception is retrieved in the callback whatever happened,
+        so a failure is reported here rather than surfacing later as an exception
+        that was never retrieved.
+        """
+        if jobId is None:
+            jobId = self.DEFERRED_JOB_ID
+
+        task = self.loop.create_task(coro)
+
+        self.__deferred.add(task)
+        self.jobStarted(jobId)
+
+        def _done(task, jobId=jobId):
+            self.__deferred.discard(task)
+            self.jobFinished(jobId)
+            if task.cancelled():
+                return
+            exc = task.exception()
+            if exc is not None:
+                debug.logger & debug.flagDsp and debug.logger(
+                    f"runDeferred: deferred work failed: "
+                    f"{';'.join(traceback.format_exception(type(exc), exc, exc.__traceback__))}"
+                )
+
+        task.add_done_callback(_done)
+
+        return task
 
     def transportsAreWorking(self):
         """Whether any transport still has datagrams queued to send."""
@@ -178,8 +216,15 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
             self._cancel_timer()
 
     def closeDispatcher(self):
-        """Close every transport and stop the timer."""
+        """Close every transport, stop the timer and drop work still in flight.
+
+        Deferred work is cancelled rather than waited for: it is answering a
+        request through transports that are being closed underneath it, so there
+        is nowhere left for its answer to go.
+        """
         AbstractTransportDispatcher.closeDispatcher(self)
+        for task in list(self.__deferred):
+            task.cancel()
         self._cancel_timer()
         self.__transportCount = 0
 
@@ -193,6 +238,8 @@ class AsyncioDispatcher(AbstractTransportDispatcher):
         then lets the cancellation land.
         """
         loopingcall = self.loopingcall
+        deferred = list(self.__deferred)
         self.closeDispatcher()
-        if loopingcall is not None:
-            await asyncio.gather(loopingcall, return_exceptions=True)
+        pending = [task for task in (*deferred, loopingcall) if task is not None]
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)

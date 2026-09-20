@@ -11,13 +11,16 @@ state as it passes through, which is how an application reaches values that
 are not part of any public return.
 """
 
-from collections.abc import Iterator, MutableMapping
+from collections.abc import Iterator, Mapping, MutableMapping
 from contextlib import contextmanager
+from contextvars import ContextVar
+from types import MappingProxyType
 from typing import Any
 
 from pysnmp import error
 
 _MISSING_CONTEXT = object()
+_NO_EXECPOINTS: Mapping[str, Any] = MappingProxyType({})
 
 
 @contextmanager
@@ -88,12 +91,23 @@ class MetaObserver:
         """Observers, their contexts and the live execution points are kept apart.
 
         A context exists only while execution is inside the point it belongs to; the
-        three dictionaries are separate so that registering an observer does not depend
+        three stores are separate so that registering an observer does not depend
         on any point having been reached yet.
+
+        The live points are task-local rather than one dictionary per engine.
+        Instrumentation may suspend in the middle of serving a request, and while
+        it is suspended the engine serves another -- which reaches the same
+        execution point and would overwrite what the first request left there.
+        Access control reads that point for the requester's identity, so sharing
+        it would mean answering one request with another's credentials. A
+        context variable gives each task its own view and leaves the nesting
+        within a task working as it did.
         """
         self.__observers = {}
         self.__contexts = {}
-        self.__execpoints = {}
+        self.__execpoints: ContextVar[Mapping[str, Any]] = ContextVar(
+            f"pysnmp-execpoints-{id(self):x}", default=_NO_EXECPOINTS
+        )
 
     def registerObserver(self, cbFun, *execpoints, **kwargs):
         """Call `cbFun` whenever the engine passes any of these execution points."""
@@ -120,7 +134,7 @@ class MetaObserver:
 
     def storeExecutionContext(self, snmpEngine, execpoint, variables):
         """Record the state at an execution point and call whoever is watching it."""
-        self.__execpoints[execpoint] = variables
+        self.__execpoints.set({**self.__execpoints.get(), execpoint: variables})
         if execpoint in self.__observers:
             for cbFun in self.__observers[execpoint]:
                 cbFun(snmpEngine, execpoint, variables, self.__contexts[cbFun])
@@ -128,15 +142,17 @@ class MetaObserver:
     def clearExecutionContext(self, snmpEngine, *execpoints):
         """Forget the state at these execution points, or at all of them."""
         if execpoints:
+            live = dict(self.__execpoints.get())
             for execpoint in execpoints:
-                del self.__execpoints[execpoint]
+                del live[execpoint]
+            self.__execpoints.set(live)
         else:
-            self.__execpoints.clear()
+            self.__execpoints.set(_NO_EXECPOINTS)
 
     def getExecutionContext(self, execpoint):
         """The state recorded at an execution point."""
-        return self.__execpoints[execpoint]
+        return self.__execpoints.get()[execpoint]
 
     def _restore_execution_context(self, execpoint, variables):
         """Restore a nested context without invoking observers again."""
-        self.__execpoints[execpoint] = variables
+        self.__execpoints.set({**self.__execpoints.get(), execpoint: variables})

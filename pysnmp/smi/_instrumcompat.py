@@ -36,9 +36,14 @@ import functools
 import inspect
 import warnings
 from collections.abc import Callable
+from inspect import isawaitable
 from typing import Any
 
-__all__ = ["adaptLegacyInstrumentation", "callInstrumentation"]
+__all__ = [
+    "adaptLegacyInstrumentation",
+    "awaitInstrumentation",
+    "callInstrumentation",
+]
 
 #: The instrumentation methods whose signature changed. A subclass overriding
 #: any of them is what this module exists to find.
@@ -233,3 +238,17 @@ def callInstrumentation(
         return mgmtFun(varBinds, (context.get("acFun"), context.get("acCtx")))
 
     return mgmtFun(varBinds, **context)
+
+
+async def awaitInstrumentation(result: Any) -> Any:
+    """What an instrumentation operation produced, waited on if it has to be.
+
+    A controller may serve values from somewhere that has to be waited on, in
+    which case its operations are coroutines and what
+    :py:func:`callInstrumentation` hands back is not the answer but the means of
+    getting it. This tells the two apart so a caller that is already in a
+    coroutine does not have to.
+    """
+    if isawaitable(result):
+        return await result
+    return result
