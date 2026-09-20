@@ -72,10 +72,13 @@ seven runs of 300,000 calls each.
 
 Three of those are worth reading twice.
 
-**A span costs 5 µs even when the sampler says no.** ``ALWAYS_OFF`` is more
-expensive than the no-op tracer, because an SDK span is constructed before a
-sampler is consulted. "We will sample it away in production" does not rescue a
-span that should not have been started.
+**A span costs 5 µs even when the sampler says no.** Not because a span gets
+built and thrown away -- ``should_sample()`` runs before any ``_Span`` is
+constructed, and an unsampled decision yields a ``NonRecordingSpan``. The cost
+is everything the SDK does before the decision can be acted on: generating a
+trace id, calling the sampler, building a ``SpanContext`` and its
+``TraceFlags``, and entering the tracer's own metrics. "We will sample it away
+in production" does not rescue a span that should not have been started.
 
 **The no-op tracer is not free.** With no SDK installed at all,
 ``start_as_current_span()`` still costs 3 µs. An optional telemetry extra that
