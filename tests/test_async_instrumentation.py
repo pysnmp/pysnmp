@@ -109,12 +109,15 @@ class AwaitingInstrum:
 
     async def waitForHeld(self, count, timeout=10):
         """Wait until this many operations are suspended, all at once."""
-        async with asyncio.timeout(timeout):
+
+        async def held():
             while len(self.held) < count:
                 self.arrived.clear()
                 if len(self.held) >= count:
                     break
                 await self.arrived.wait()
+
+        await asyncio.wait_for(held(), timeout)
 
     def _value(self, snmpEngine, oid):
         if self.byIdentity:
