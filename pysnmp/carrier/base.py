@@ -300,6 +300,22 @@ class AbstractTransportDispatcher:
         """Run the I/O loop. Concrete dispatchers implement this."""
         raise error.CarrierError("Method not implemented")
 
+    def runDeferred(self, coro, jobId=None):
+        """Finish work that suspended part-way through, counting it as outstanding.
+
+        An agent whose instrumentation is a coroutine cannot answer a request
+        before returning to the loop, so the rest of the work is handed back here
+        to be run as a task. It is registered as a job for as long as it runs, so
+        a dispatcher asked to run until its work is done waits for the answer
+        instead of returning while it is still being composed.
+
+        Concrete dispatchers implement this; one that cannot run tasks says so.
+        """
+        raise error.CarrierError(
+            "This transport dispatcher cannot run deferred work, so the "
+            "instrumentation serving a request may not be a coroutine"
+        )
+
     def closeDispatcher(self):
         """Close every transport and drop every callback."""
         for tDomain in list(self.__transports):

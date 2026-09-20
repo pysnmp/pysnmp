@@ -257,9 +257,15 @@ class TestKeyChangeValue:
             buildKeyChangeValue(b"", b"\x01")
 
     def test_split_reverses_build(self):
-        """What the agent does to the value we build."""
-        manager = generateKeyPair(OAKLEY_GROUP_2)
+        """What the agent does to the value we build.
+
+        The manager's value is drawn to fit the agent's half, as a manager
+        actually draws it. A raw draw is one octet too wide whenever the agent's
+        own value came out short -- about one agent in 256 -- and this waited
+        for that to come up in CI instead of asking for a value that fits.
+        """
         agent = generateKeyPair(OAKLEY_GROUP_2)
+        manager = generateKeyPairFitting(OAKLEY_GROUP_2, len(agent.public))
         value = buildKeyChangeValue(agent.public, manager.public)
 
         peerHalf, ownHalf = splitKeyChangeValue(value)

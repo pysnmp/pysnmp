@@ -21,6 +21,22 @@ class AbstractMibInstrumController:
     Three operations, matching the request types: read the objects named, read the
     ones following them, and write. Implement this to serve objects from
     something other than a loaded MIB.
+
+    Any of the three may be written ``async def``. An agent whose values come
+    from a database, a REST call or another device cannot produce them without
+    waiting, and declaring the operation a coroutine is how it says so: the
+    command responder waits for the answer and the engine goes on serving other
+    requests meanwhile, rather than the whole agent stopping until this one
+    value arrives. Nothing else changes -- the same arguments arrive, the same
+    bindings go back, and an SMI error raised out of a coroutine becomes the
+    same error status it would have as a plain ``def``.
+
+    What an operation reads from the engine while it runs, notably the
+    requester's identity at ``rfc3412.receiveMessage:request``, is the identity
+    of the request being served and stays so across a suspension.
+
+    A controller is duck-typed: nothing has to inherit from this to be one, and
+    a class may mix plain and coroutine operations as it likes.
     """
 
     def readVars(self, varBinds: Any, **context: Any) -> list[Any]:
@@ -43,6 +59,11 @@ class MibInstrumController(AbstractMibInstrumController):
     which is what SNMP requires of a write: every binding is tested before any is
     committed, and a failure anywhere rolls all of them back, so a SET either
     happens completely or not at all.
+
+    These three are plain functions and stay so: the values are in memory
+    already, in MIB objects this process loaded, and there is nothing to wait
+    for. A controller that has to wait implements the three itself; see
+    :py:class:`AbstractMibInstrumController`.
     """
 
     fsmReadVar: dict[tuple[str, str], str] = {

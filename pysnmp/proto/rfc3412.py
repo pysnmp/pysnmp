@@ -11,10 +11,12 @@ processing model for the version, routes a PDU to whichever application
 registered for it, and matches responses to the requests waiting on them.
 """
 
+from inspect import isawaitable
+
 from pyasn1.error import PyAsn1Error
 
 from pysnmp import debug, nextid
-from pysnmp.entity.observer import execution_context
+from pysnmp.entity.observer import execution_context, resumed_execution_context
 from pysnmp.error import PySnmpError
 from pysnmp.proto import cache, errind, error
 from pysnmp.proto.api import verdec  # XXX
@@ -367,6 +369,79 @@ class MsgAndPduDispatcher:
                 outgoingMessage, transportDomain, transportAddress
             )
 
+    def __deferRequest(self, snmpEngine, awaitable, execpointVars, stateReference):
+        """Hand the rest of a suspended request to the dispatcher to finish.
+
+        Nothing here can wait for it: this call is on the loop, and waiting would
+        be waiting on the loop that has to run the work. A dispatcher that cannot
+        run a task says so, and the request fails rather than being dropped
+        silently with the requester left to time out.
+        """
+        coro = self.__completeRequest(
+            snmpEngine, awaitable, execpointVars, stateReference
+        )
+
+        transportDispatcher = snmpEngine.transportDispatcher
+
+        if transportDispatcher is None:
+            self.__abandonRequest(coro, awaitable, stateReference)
+            raise PySnmpError(
+                "Instrumentation suspended while serving a request, but this "
+                "engine has no transport dispatcher to finish it on"
+            )
+
+        try:
+            transportDispatcher.runDeferred(coro)
+
+        except BaseException:
+            self.__abandonRequest(coro, awaitable, stateReference)
+            raise
+
+    def __abandonRequest(self, coro, awaitable, stateReference):
+        """Drop work that could not be handed off, leaving nothing half-open.
+
+        Both the continuation and whatever the application was waiting on are
+        closed here: neither has been started, and a coroutine left unstarted is
+        reported by asyncio as one that was never awaited.
+        """
+        coro.close()
+
+        close = getattr(awaitable, "close", None)
+        if close is not None:
+            close()
+
+        if stateReference is not None:
+            self.__transportInfo.pop(stateReference, None)
+
+    async def __completeRequest(
+        self, snmpEngine, awaitable, execpointVars, stateReference
+    ):
+        """Wait out a suspended request, with its own state around it again.
+
+        The execution point and the transport info are put back here rather than
+        held open across the suspension. Both answer the question "which request
+        is being served", and the engine serves others while this one waits --
+        so they are restored for as long as this request is running and dropped
+        again when it is done, which is what keeps access control reading this
+        requester's identity and not the last one to arrive.
+
+        Restored rather than entered again: the message passed this point on its
+        way in and observers heard about it then.
+        """
+        with resumed_execution_context(
+            snmpEngine, "rfc3412.receiveMessage:request", execpointVars
+        ):
+            if stateReference is not None:
+                self.__transportInfo[stateReference] = (
+                    execpointVars["transportDomain"],
+                    execpointVars["transportAddress"],
+                )
+            try:
+                await awaitable
+            finally:
+                if stateReference is not None:
+                    self.__transportInfo.pop(stateReference, None)
+
     # 4.2.1
     def receiveMessage(self, snmpEngine, transportDomain, transportAddress, wholeMsg):
         """Message dispatcher -- de-serialize message into PDU."""
@@ -528,19 +603,23 @@ class MsgAndPduDispatcher:
                 return restOfWholeMsg
 
             else:
+                execpointVars = {
+                    "transportDomain": transportDomain,
+                    "transportAddress": transportAddress,
+                    "wholeMsg": wholeMsg,
+                    "messageProcessingModel": messageProcessingModel,
+                    "securityModel": securityModel,
+                    "securityName": securityName,
+                    "securityLevel": securityLevel,
+                    "contextEngineId": contextEngineId,
+                    "contextName": contextName,
+                    "pdu": PDU,
+                }
+
+                deferred = None
+
                 with execution_context(
-                    snmpEngine,
-                    "rfc3412.receiveMessage:request",
-                    transportDomain=transportDomain,
-                    transportAddress=transportAddress,
-                    wholeMsg=wholeMsg,
-                    messageProcessingModel=messageProcessingModel,
-                    securityModel=securityModel,
-                    securityName=securityName,
-                    securityLevel=securityLevel,
-                    contextEngineId=contextEngineId,
-                    contextName=contextName,
-                    pdu=PDU,
+                    snmpEngine, "rfc3412.receiveMessage:request", execpointVars
                 ):
                     # pass transport info to app (legacy)
                     if stateReference is not None:
@@ -551,7 +630,7 @@ class MsgAndPduDispatcher:
 
                     try:
                         # 4.2.2.1.3
-                        processPdu(
+                        deferred = processPdu(
                             snmpEngine,
                             messageProcessingModel,
                             securityModel,
@@ -564,10 +643,30 @@ class MsgAndPduDispatcher:
                             maxSizeResponseScopedPDU,
                             stateReference,
                         )
+
+                        # An application whose instrumentation is a coroutine
+                        # cannot have answered yet; what it hands back is the
+                        # rest of the work.
+                        if deferred is not None and not isawaitable(deferred):
+                            deferred = None
+                    except BaseException:
+                        deferred = None
+                        raise
                     finally:
-                        # clear transport info passed to app (legacy)
-                        if stateReference is not None:
+                        # clear transport info passed to app (legacy), unless the
+                        # application still has to answer and will need it
+                        if stateReference is not None and deferred is None:
                             del self.__transportInfo[stateReference]
+
+                if deferred is not None:
+                    self.__deferRequest(
+                        snmpEngine, deferred, execpointVars, stateReference
+                    )
+
+                    debug.logger & debug.flagDsp and debug.logger(
+                        "receiveMessage: processPdu suspended, deferred"
+                    )
+                    return restOfWholeMsg
 
                 debug.logger & debug.flagDsp and debug.logger(
                     "receiveMessage: processPdu succeeded"
