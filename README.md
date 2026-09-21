@@ -6,6 +6,7 @@ SNMP library for Python
 [![Python Versions](https://img.shields.io/pypi/pyversions/pysnmplib.svg)](https://pypi.python.org/pypi/pysnmplib/)
 [![CI](https://github.com/pysnmp/pysnmp/actions/workflows/build-test-release.yml/badge.svg)](https://github.com/pysnmp/pysnmp/actions/workflows/build-test-release.yml)
 [![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/pysnmp/pysnmp/master/LICENSE.rst)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://app.codspeed.io/pysnmp/pysnmp?utm_source=badge)
 
 This is a pure-Python, open source and free implementation of v1/v2c/v3
 SNMP engine distributed under 2-clause [BSD license](http://snmplabs.com/pysnmp/license.html).
@@ -147,6 +148,23 @@ or local directories. You could configure any MIB source available to you (inclu
 
 For more example scripts please refer to ~~[examples section](http://snmplabs.com/pysnmp/examples/contents.html#high-level-snmp)~~
 at pysnmp web site.
+
+Benchmarks
+----------
+
+Performance of the protocol, security and MIB layers is tracked continuously
+with [CodSpeed](https://app.codspeed.io/pysnmp/pysnmp). Every pull request is
+measured against its base commit, so regressions show up before they are
+released.
+
+The suite lives in `benchmarks/` and runs on Python 3.11, the latest
+interpreter this branch supports:
+
+```bash
+$ pip install . -r benchmarks/requirements.txt
+$ pytest benchmarks/                  # plain run, checks the benchmarks work
+$ pytest benchmarks/ --codspeed       # measured run
+```
 
 Documentation
 -------------
