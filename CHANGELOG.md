@@ -3,6 +3,22 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is [published with the documentation](https://pysnmp.github.io/pysnmp/latest/changelog-history.html).
 
+## [6.0.0-rc.17](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.16...v6.0.0-rc.17) (2026-09-21)
+
+### Features
+
+* **smi:** let MIB instrumentation controllers be coroutines ([927e63d](https://github.com/pysnmp/pysnmp/commit/927e63d3c1b5f242e0a97d3676187bc082e77357)), closes [#287](https://github.com/pysnmp/pysnmp/issues/287)
+* **smi:** take MIB instrumentation to (varBind, **context) ([666d7a7](https://github.com/pysnmp/pysnmp/commit/666d7a7592bd3eda8714b2cca88148cd7e8a124d)), closes [#287](https://github.com/pysnmp/pysnmp/issues/287) [#279](https://github.com/pysnmp/pysnmp/issues/279)
+
+### Bug Fixes
+
+* **deps:** require pysnmp-pyasn1 >=2.0.5 ([80837eb](https://github.com/pysnmp/pysnmp/commit/80837eb2fadf8f30535ed6a516090d1d0dbf539c)), closes [#334](https://github.com/pysnmp/pysnmp/issues/334) [pysnmp/pyasn1#185](https://github.com/pysnmp/pyasn1/issues/185) [#334](https://github.com/pysnmp/pysnmp/issues/334) [#290](https://github.com/pysnmp/pysnmp/issues/290)
+* **deps:** require pysnmp-pyasn1 >=2.0.6 ([8f07227](https://github.com/pysnmp/pysnmp/commit/8f07227ee2ef12f8365e3cb3e6acfc6f05b222e3))
+* **proto:** reach a request's execution point once, however it is served ([460bd81](https://github.com/pysnmp/pysnmp/commit/460bd81fbf471957c19460d3e0522015cf8062a7))
+* **smi:** pass a legacy walk its original name by position, not by name ([751ba67](https://github.com/pysnmp/pysnmp/commit/751ba670c7154b9efdf4ce0c51001011f055f274)), closes [#328](https://github.com/pysnmp/pysnmp/issues/328)
+* **tests:** wait out held operations without asyncio.timeout ([0c0d3c0](https://github.com/pysnmp/pysnmp/commit/0c0d3c0728fc6fb69a4b76c2b2b5825300f4500e))
+* **tools:** name the libraries in the comparison table when runs disagree ([512d4ca](https://github.com/pysnmp/pysnmp/commit/512d4ca6e1b9b1eb73351c8b6434b40c95760965))
+
 ## [6.0.0-rc.16](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.15...v6.0.0-rc.16) (2026-09-20)
 
 ### Features
