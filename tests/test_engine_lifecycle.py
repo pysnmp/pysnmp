@@ -150,54 +150,42 @@ class TestContextManager:
 
         assert engine.transportDispatcher is None
 
-    def test_async_form_closes_on_the_normal_path(self):
-        async def run():
-            async with SnmpEngine() as engine:
-                config.addTransport(
-                    engine, udp.domainName, udp.UdpAsyncioTransport().openClientMode()
-                )
-                assert engine.transportDispatcher is not None
-            return engine
+    async def test_async_form_closes_on_the_normal_path(self):
+        async with SnmpEngine() as engine:
+            config.addTransport(
+                engine, udp.domainName, udp.UdpAsyncioTransport().openClientMode()
+            )
+            assert engine.transportDispatcher is not None
 
-        assert asyncio.run(run()).transportDispatcher is None
+        assert engine.transportDispatcher is None
 
-    def test_async_form_closes_on_the_exception_path(self):
+    async def test_async_form_closes_on_the_exception_path(self):
         engine = SnmpEngine()
 
-        async def run():
+        with pytest.raises(ValueError, match="deliberate"):
             async with engine:
                 config.addTransport(
                     engine, udp.domainName, udp.UdpAsyncioTransport().openClientMode()
                 )
                 raise ValueError("deliberate")
 
-        with pytest.raises(ValueError, match="deliberate"):
-            asyncio.run(run())
-
         assert engine.transportDispatcher is None
 
-    def test_async_form_is_a_no_op_without_a_dispatcher(self):
-        async def run():
-            async with SnmpEngine() as engine:
-                assert engine.transportDispatcher is None
+    async def test_async_form_is_a_no_op_without_a_dispatcher(self):
+        async with SnmpEngine() as engine:
+            assert engine.transportDispatcher is None
 
-        asyncio.run(run())
-
-    def test_sync_form_inside_a_running_loop_closes_but_warns(self):
+    async def test_sync_form_inside_a_running_loop_closes_but_warns(self):
         engine = SnmpEngine()
 
-        async def run():
-            with warnings.catch_warnings(record=True) as caught:
-                warnings.simplefilter("always")
-                with engine:
-                    config.addTransport(
-                        engine,
-                        udp.domainName,
-                        udp.UdpAsyncioTransport().openClientMode(),
-                    )
-                return caught
-
-        caught = asyncio.run(run())
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            with engine:
+                config.addTransport(
+                    engine,
+                    udp.domainName,
+                    udp.UdpAsyncioTransport().openClientMode(),
+                )
 
         # The sockets are released either way -- that is the leak worth
         # preventing -- but the timer could not be awaited, so say which form

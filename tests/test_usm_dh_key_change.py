@@ -124,17 +124,17 @@ def credentials():
     return UsmUserData(USER, "whatever", authProtocol=usmHMACSHAAuthProtocol)
 
 
-def change(**kwargs):
+async def change(**kwargs):
     """Run one key change against whatever is currently patched in."""
-    return asyncio.run(dh_key_change(None, credentials(), None, None, "auth", **kwargs))
+    return await dh_key_change(None, credentials(), None, None, "auth", **kwargs)
 
 
 class TestAgreementThroughTheFlow:
     """The driver's plumbing, checked against a peer that does the other half."""
 
-    def test_returned_key_is_what_the_agent_would_install(self, agent):
+    async def test_returned_key_is_what_the_agent_would_install(self, agent):
         """The two sides agree, so the halves of the SET value are the right way round."""
-        result = change()
+        result = await change()
 
         _peerHalf, managerPublic = splitKeyChangeValue(agent.setValues[0])
         expected = deriveKey(agent.sharedSecret(managerPublic), SHA1_KEY_LENGTH)
@@ -142,40 +142,40 @@ class TestAgreementThroughTheFlow:
         assert result.key == expected
         assert len(result.key) == SHA1_KEY_LENGTH
 
-    def test_set_echoes_the_agents_public_value_first(self, agent):
+    async def test_set_echoes_the_agents_public_value_first(self, agent):
         """The agent rejects the SET with wrongValue if this half does not match."""
-        change()
+        await change()
         peerHalf, _managerPublic = splitKeyChangeValue(agent.setValues[0])
         assert peerHalf == agent.keyPair.public
 
-    def test_engine_id_comes_back_from_the_row_index(self, agent):
+    async def test_engine_id_comes_back_from_the_row_index(self, agent):
         """Without it the caller cannot use the localized key it just derived."""
-        assert change().securityEngineId == ENGINE_ID
+        assert (await change()).securityEngineId == ENGINE_ID
 
 
 class TestNothingIsSetUntilTheResultIsKnown:
     """The SET is irreversible, so it goes last."""
 
-    def test_unmeetable_key_length_does_not_reach_the_agent(self, agent):
+    async def test_unmeetable_key_length_does_not_reach_the_agent(self, agent):
         """A key longer than the shared secret is caught before anything changes."""
         with pytest.raises(DHKeyChangeError) as raised:
-            change(keyLength=4096)
+            await change(keyLength=4096)
 
         assert agent.setCalls == 0, "the agent was re-keyed for a key we cannot derive"
         assert agent.setValues == [], "a value was built for a SET that must not happen"
         assert raised.value.candidate is None
 
-    def test_zero_key_length_does_not_reach_the_agent(self, agent):
+    async def test_zero_key_length_does_not_reach_the_agent(self, agent):
         """Nor does a length that is not a length."""
         with pytest.raises(DHKeyChangeError):
-            change(keyLength=0)
+            await change(keyLength=0)
         assert agent.setCalls == 0
 
-    def test_unknown_protocol_does_not_reach_the_agent(self, agent):
+    async def test_unknown_protocol_does_not_reach_the_agent(self, agent):
         """A protocol with no known key length is refused before the SET too."""
         authData = UsmUserData(USER, "whatever", authProtocol=(1, 3, 6, 1, 4, 1, 99))
         with pytest.raises(DHKeyChangeError):
-            asyncio.run(dh_key_change(None, authData, None, None, "auth"))
+            await dh_key_change(None, authData, None, None, "auth")
         assert agent.setCalls == 0
 
 
@@ -190,7 +190,7 @@ class TestFailedSetIsAmbiguous:
         ],
         ids=["lost-response", "wrongValue-on-retransmission"],
     )
-    def test_candidate_key_is_attached(self, monkeypatch, failure):
+    async def test_candidate_key_is_attached(self, monkeypatch, failure):
         """Both shapes of failure can mean the agent re-keyed and we missed it."""
         fake = _FakeAgent(setFailure=failure)
         monkeypatch.setattr(dh_module, "get_cmd", fake.get_cmd)
@@ -199,7 +199,7 @@ class TestFailedSetIsAmbiguous:
         monkeypatch.setattr(dh_module, "buildKeyChangeValue", fake.keyChangeValue)
 
         with pytest.raises(DHKeyChangeError) as raised:
-            change()
+            await change()
 
         candidate = raised.value.candidate
         assert candidate is not None, "a failed SET left the caller nothing to try"
@@ -222,7 +222,7 @@ class TestTheSearchStaysOffTheEventLoop:
     goes to an executor instead, so the loop keeps serving everything else.
     """
 
-    def test_a_concurrent_task_makes_progress_during_the_search(
+    async def test_a_concurrent_task_makes_progress_during_the_search(
         self, agent, monkeypatch
     ):
         async def run():
@@ -257,7 +257,7 @@ class TestTheSearchStaysOffTheEventLoop:
             # cannot fail this on timing alone.
             assert ticks > 6
 
-        asyncio.run(run())
+        await run()
 
 
 def _shortKeyPair(parameters, width):
@@ -283,7 +283,7 @@ def _shortKeyPair(parameters, width):
 class TestAnAgentWhosePublicValueCameOutShort:
     """The case that failed in CI: the agent's half is 127 octets, not 128."""
 
-    def test_the_key_change_still_agrees(self, monkeypatch):
+    async def test_the_key_change_still_agrees(self, monkeypatch):
         fake = _FakeAgent()
         fake.keyPair = _shortKeyPair(fake.parameters, 127)
         monkeypatch.setattr(dh_module, "get_cmd", fake.get_cmd)
@@ -291,7 +291,7 @@ class TestAnAgentWhosePublicValueCameOutShort:
         monkeypatch.setattr(dh_module, "set_cmd", fake.set_cmd)
         monkeypatch.setattr(dh_module, "buildKeyChangeValue", fake.keyChangeValue)
 
-        result = change()
+        result = await change()
 
         peerPublic, ownPublic = splitKeyChangeValue(fake.setValues[0])
 

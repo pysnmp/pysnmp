@@ -1,7 +1,5 @@
 """Integration tests for the device-report helper."""
 
-import asyncio
-
 from pysnmp.hlapi import (
     CommunityData,
     ContextData,
@@ -50,18 +48,17 @@ def test_sync_device_report(snmpsim_endpoint):
     _assert_report(report)
 
 
-def test_asyncio_device_report(snmpsim_endpoint):
+async def test_asyncio_device_report(snmpsim_endpoint):
     host, port = snmpsim_endpoint
 
-    async def run():
-        return await asyncio_get_device_report(
+    _assert_report(
+        await asyncio_get_device_report(
             SnmpEngine(),
             CommunityData("public", mpModel=1),
             UdpTransportTarget((host, port), timeout=1, retries=2),
             ContextData(),
         )
-
-    _assert_report(asyncio.run(run()))
+    )
 
 
 def test_snmpv1_device_report(snmpsim_endpoint):

@@ -11,7 +11,6 @@ at all.
 """
 
 import asyncio
-import functools
 import socket
 
 import pytest
@@ -30,17 +29,6 @@ from pysnmp.hlapi.context import ContextData
 from pysnmp.proto import rfc1902
 from pysnmp.smi import exval
 from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
-
-
-def runs(coroFun):
-    """Run this test's body on a loop of its own, as the rest of the suite does."""
-
-    @functools.wraps(coroFun)
-    def wrapper(*args, **kwargs):
-        return asyncio.run(coroFun(*args, **kwargs))
-
-    return wrapper
-
 
 REQUEST_EXECPOINT = "rfc3412.receiveMessage:request"
 
@@ -223,7 +211,6 @@ def target(port):
 # --- the deferred path ------------------------------------------------------
 
 
-@runs
 async def test_get_waits_for_instrumentation_that_suspends():
     values = {FIRST: rfc1902.OctetString("served after waiting")}
     agent, port = startAgent(AwaitingInstrum(values))
@@ -244,7 +231,6 @@ async def test_get_waits_for_instrumentation_that_suspends():
         agent.transportDispatcher.closeDispatcher()
 
 
-@runs
 async def test_getnext_waits_for_instrumentation_that_suspends():
     values = {oid: rfc1902.OctetString(f"value {i}") for i, oid in enumerate(ORDERED)}
     agent, port = startAgent(AwaitingInstrum(values))
@@ -269,7 +255,6 @@ async def test_getnext_waits_for_instrumentation_that_suspends():
         agent.transportDispatcher.closeDispatcher()
 
 
-@runs
 @pytest.mark.parametrize("nonRepeaters", [0, 1])
 async def test_getbulk_waits_for_instrumentation_that_suspends(nonRepeaters):
     """Both hand-off points: the non-repeaters, and a repetition after them.
@@ -312,7 +297,6 @@ async def test_getbulk_waits_for_instrumentation_that_suspends(nonRepeaters):
         agent.transportDispatcher.closeDispatcher()
 
 
-@runs
 async def test_set_waits_for_instrumentation_that_suspends():
     mibInstrum = AwaitingInstrum({FIRST: rfc1902.OctetString("before")})
     agent, port = startAgent(mibInstrum)
@@ -334,7 +318,6 @@ async def test_set_waits_for_instrumentation_that_suspends():
         agent.transportDispatcher.closeDispatcher()
 
 
-@runs
 async def test_failure_after_suspending_is_still_an_error_status():
     """A controller that fails once suspended is answered, not left to time out."""
     agent, port = startAgent(FailingInstrum())
@@ -355,7 +338,6 @@ async def test_failure_after_suspending_is_still_an_error_status():
         agent.transportDispatcher.closeDispatcher()
 
 
-@runs
 async def test_a_suspended_request_does_not_take_the_next_ones_identity():
     """The hazard the whole deferred path turns on.
 
@@ -407,7 +389,6 @@ async def test_a_suspended_request_does_not_take_the_next_ones_identity():
         agent.transportDispatcher.closeDispatcher()
 
 
-@runs
 @pytest.mark.parametrize("controller", ["synchronous", "awaiting"])
 async def test_a_request_reaches_its_execution_point_once(controller):
     """However the controller serves it.
@@ -454,7 +435,6 @@ async def test_a_request_reaches_its_execution_point_once(controller):
 # --- the synchronous path is untouched --------------------------------------
 
 
-@runs
 async def test_a_synchronous_controller_never_defers():
     """The ordinary agent answers on the stack it was asked on, as it always did."""
     values = {oid: rfc1902.OctetString(f"value {i}") for i, oid in enumerate(ORDERED)}
@@ -491,7 +471,6 @@ async def test_a_synchronous_controller_never_defers():
 # --- the pieces underneath --------------------------------------------------
 
 
-@runs
 async def test_execution_points_are_not_shared_between_tasks():
     snmpEngine = engine.SnmpEngine()
     started = asyncio.Event()
@@ -555,7 +534,6 @@ def test_a_dispatcher_that_cannot_run_tasks_says_so():
         coro.close()
 
 
-@runs
 async def test_deferred_work_counts_as_outstanding_while_it_runs():
     """So a dispatcher told to run until its work is done waits for the answer."""
     agent, port = startAgent(SyncInstrum({}))
@@ -581,7 +559,6 @@ async def test_deferred_work_counts_as_outstanding_while_it_runs():
         agent.transportDispatcher.closeDispatcher()
 
 
-@runs
 async def test_closing_the_dispatcher_drops_work_still_in_flight():
     agent, port = startAgent(SyncInstrum({}))
     dispatcher = agent.transportDispatcher
