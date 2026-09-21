@@ -150,9 +150,16 @@ For more example scripts please refer to the `examples/` directory in this repos
 ## Benchmarks
 
 Performance of the protocol, security and MIB layers is tracked continuously
-with [CodSpeed](https://app.codspeed.io/pysnmp/pysnmp). Every pull request is
-measured against its base commit, so a regression shows up on the pull request
-that causes it rather than after a release.
+with [CodSpeed](https://app.codspeed.io/pysnmp/pysnmp). Every pull request from
+a branch in this repository is measured against its base commit, so a
+regression shows up on the pull request that causes it rather than after a
+release.
+
+Pull requests from forks are not measured. GitHub hands a fork's workflow a
+restricted token that cannot mint the OpenID Connect identity the upload needs,
+so the run would take the measurement and then fail to publish it. The job is
+skipped instead, and a maintainer who wants the numbers for a fork's change can
+get them by pushing the branch to this repository.
 
 Measurements are taken under CPU simulation rather than by timing a wall
 clock, so what is reported is work done and not how loaded the shared runner

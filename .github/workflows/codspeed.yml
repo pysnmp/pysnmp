@@ -57,7 +57,16 @@ jobs:
       # any job added later mint one for any service.
       id-token: write
     steps:
+      # persist-credentials: false, as the publish job in build-test-release.yml
+      # already does. Checkout otherwise leaves the job's token in .git/config,
+      # and the next step resolves and installs a dependency tree -- a build
+      # backend runs arbitrary code at install time, and there is no reason for
+      # any of it to be a `git config` away from a token. Nothing here needs git
+      # authentication: the checkout is done, and CodSpeed reads the commit from
+      # the environment rather than fetching.
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Install UV
         uses: astral-sh/setup-uv@v7
