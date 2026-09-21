@@ -328,6 +328,51 @@ class TestReport:
         widths = {line.count("|") for line in rows}
         assert len(widths) == 1, f"ragged table: {widths}"
 
+    def test_comparison_names_the_versions_only_when_they_differ(self):
+        # Comparing releases runs one interpreter against several pysnmp
+        # versions, so the platform and interpreter -- all the label used to
+        # carry -- are identical on every row. Without the version the table
+        # is rows of numbers nobody can attribute.
+        def report(pysnmp_version):
+            return {
+                "environment": {
+                    "platform": "Linux-6.1-x86_64",
+                    "python_implementation": "CPython",
+                    "python_version": "3.14.0",
+                    "pysnmp": pysnmp_version,
+                    "pyasn1": "2.0.6",
+                },
+                "measurements": [
+                    {
+                        "workload": "poll",
+                        "layer": "pdu",
+                        "direction": "decode",
+                        "implementation": "pysnmp",
+                        "usec_per_op": 1.0,
+                        "varbinds": 10,
+                    }
+                ],
+            }
+
+        one_version = benchmark_codec.render_comparison([report("6.0.0")])
+        assert "Linux / CPython 3.14.0 |" in one_version
+        assert "pysnmp 6.0.0 +" not in one_version
+
+        two_versions = benchmark_codec.render_comparison(
+            [report("6.0.0"), report("7.1.29")]
+        )
+        assert "pysnmp 6.0.0 + pyasn1 2.0.6" in two_versions
+        assert "pysnmp 7.1.29 + pyasn1 2.0.6" in two_versions
+
+        # Still one row per report: the label tells them apart, it does not
+        # merge or duplicate them.
+        rows = [
+            line
+            for line in two_versions.splitlines()
+            if line.startswith("|") and "poll" in line
+        ]
+        assert len(rows) == 2
+
     def test_netsnmp_can_be_required(self, monkeypatch, tmp_path):
         # Whether the baseline is present is a property of the runner, so the
         # benchmark carries on without it by default. --require-netsnmp is

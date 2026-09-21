@@ -40,8 +40,22 @@ readme = "README.md"
 # engine path imports pysmi at run time. tests/test_no_pysmi.py holds that line
 # by blocking the import and starting an engine anyway.
 #
-# The pyasn1 floor is 2.0.5, and each version below it is excluded for a
+# The pyasn1 floor is 2.0.6, and each version below it is excluded for a
 # reason worth keeping written down.
+#
+# 2.0.5 is the last entry here that is not a defect. It decodes correctly and
+# its debug output can be trusted; what it does not have is 2.0.6's allocation
+# work, and the floor moves for that alone. Three changes, all in the types
+# rather than the codec: a tag set now caches its own base tag set instead of
+# rebuilding one per component (69 TagSet objects per ten-binding encode became
+# none, pysnmp/pyasn1#195), clone() reuses the initializer dict it was handed
+# instead of copying it (pysnmp/pyasn1#196), and a constructor given both
+# tagSet and subtypeSpec stops building the defaults dict it is about to
+# overwrite (pysnmp/pyasn1#197). Measured end to end through this library's
+# codec path against 2.0.3, that is encode 240.6 -> 180.4 us and total
+# 880.3 -> 776.3 us on the ten-binding response. A performance floor is a
+# weaker claim than the three below it -- staying on 2.0.5 is slower, not
+# wrong -- and it is recorded as one.
 #
 # 2.0.4 and below share one debug.scope trail across the whole process, so two
 # threads decoding at once interleave their scope names and every record's
@@ -78,7 +92,7 @@ readme = "README.md"
 # (pysnmp/pyasn1#185). That one is PyPy-only; on CPython the two are the same.
 dependencies = [
     "pycryptodomex >=3.11.0,<4.0.0",
-    "pysnmp-pyasn1 >=2.0.5,<3.0.0",
+    "pysnmp-pyasn1 >=2.0.6,<3.0.0",
 ]
 
 # Compiling ASN.1 at run time is what pysmi is for, and it is a thing some
@@ -187,7 +201,7 @@ dev = [
 
 # General availability wherever there is one, enforced rather than reviewed.
 #
-# Every requirement above names a final release -- pysnmp-pyasn1 2.0.5 and
+# Every requirement above names a final release -- pysnmp-pyasn1 2.0.6 and
 # pysnmp-pysmi 6.0.0 are GA -- but a specifier is a statement about
 # one requirement, and the thing worth guaranteeing is a property of the whole
 # resolution: nothing this repository installs is a prerelease of a package
