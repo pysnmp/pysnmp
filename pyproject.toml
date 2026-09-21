@@ -29,7 +29,14 @@ include = ["docs", "tests", "examples"]
 python = "^3.8"
 pysnmp-pysmi = "^1.0.4"
 pycryptodomex = "^3.11.0"
-pysnmp-pyasn1 = "^1.1.3"
+# Capped below 1.2.0 deliberately. pysnmp-pyasn1 1.2.0 removed
+# pyasn1.compat, which pysnmp/debug.py imports at module scope
+# (`from pyasn1.compat.octets import octs2ints`), so 1.2.0 and 1.3.0 break
+# `import pysnmp` outright. The caret range this replaces admitted both, and
+# poetry.lock pinning 1.1.3 hid it from anyone working in the repo: only a
+# fresh `pip install pysnmplib` resolved to the newer release and failed.
+# The 5.x line is closed, so the fix is the ceiling rather than the import.
+pysnmp-pyasn1 = ">=1.1.3,<1.2.0"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "^4.3.0"
