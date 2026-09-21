@@ -4,6 +4,7 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/pysnmplib.svg)](https://pypi.python.org/pypi/pysnmplib/)
 [![CI](https://github.com/pysnmp/pysnmp/actions/workflows/build-test-release.yml/badge.svg)](https://github.com/pysnmp/pysnmp/actions/workflows/build-test-release.yml)
 [![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/pysnmp/pysnmp/main/LICENSE.rst)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://app.codspeed.io/pysnmp/pysnmp?utm_source=badge)
 
 This is a pure-Python, open source and free implementation of v1/v2c/v3
 SNMP engine distributed under 2-clause [BSD license](LICENSE.rst).
@@ -145,6 +146,34 @@ or local directories. You could configure any MIB source available to you (inclu
 [the MIB distribution](https://pysnmp.github.io/mibs/)) for that purpose.
 
 For more example scripts please refer to the `examples/` directory in this repository.
+
+## Benchmarks
+
+Performance of the protocol, security and MIB layers is tracked continuously
+with [CodSpeed](https://app.codspeed.io/pysnmp/pysnmp). Every pull request from
+a branch in this repository is measured against its base commit, so a
+regression shows up on the pull request that causes it rather than after a
+release.
+
+Pull requests from forks are not measured. GitHub hands a fork's workflow a
+restricted token that cannot mint the OpenID Connect identity the upload needs,
+so the run would take the measurement and then fail to publish it. The job is
+skipped instead, and a maintainer who wants the numbers for a fork's change can
+get them by pushing the branch to this repository.
+
+Measurements are taken under CPU simulation rather than by timing a wall
+clock, so what is reported is work done and not how loaded the shared runner
+happened to be. That is a different instrument from the wall-clock
+[codec benchmark](docs/source/docs/codec-benchmark.rst), which compares this
+library against net-snmp across platforms and interpreters and stays on-demand
+for exactly that reason.
+
+The suite lives in `benchmarks/` and is run with the project's own toolchain:
+
+```bash
+$ uv run --group bench pytest benchmarks/              # check they still work
+$ uv run --group bench pytest benchmarks/ --codspeed   # measure them
+```
 
 ## Documentation
 

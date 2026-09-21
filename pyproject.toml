@@ -206,6 +206,26 @@ test = [
     "ruff >=0.4.0,<1.0.0",
 ]
 
+# The CodSpeed benchmark suite, and nothing the suite does not need. Split out
+# of `dev` the way `test` is, and for a sharper version of the same reason:
+# pytest-codspeed's measurement instrument is a compiled extension published
+# only for the interpreters and platforms CodSpeed supports, so carrying it in
+# `dev` would make a routine `uv sync` fail wherever the benchmarks do not run.
+# Only .github/workflows/codspeed.yml installs this group.
+#
+# It replaces benchmarks/requirements.txt, which the suite arrived with. That
+# file was written against the 5.0.x branch, where the packaged project still
+# supported Python 3.8 and pinned an old test stack for the release pipeline,
+# so the benchmark tooling genuinely could not share it. On this branch the
+# floors are 3.10 and a current pytest, there is nothing left to hold apart,
+# and a second dependency file that no lockfile covers is a liability rather
+# than an escape hatch: `uv run --locked` now resolves the benchmarks from the
+# same lockfile as everything else.
+bench = [
+    "pytest >=9.0.3,<10.0.0",
+    "pytest-codspeed >=5.0.0,<6.0.0",
+]
+
 dev = [
     {include-group = "test"},
     # documentation toolchain is marker-guarded the way pyasn1 already does
@@ -260,6 +280,14 @@ asyncio_mode = "auto"
 asyncio_default_test_loop_scope = "function"
 asyncio_default_fixture_loop_scope = "function"
 
+# `tests` only, so that a bare `pytest` collects the suite and not the
+# benchmarks. benchmarks/ needs pytest-codspeed for its `benchmark` fixture,
+# which only the `bench` group installs -- without this every benchmark errors
+# during setup for anyone who ran `pytest` with the `test` group, which is
+# everyone. CI already names `tests` explicitly, so nothing there changes.
+# Measure the benchmarks by naming their directory:
+#   uv run --group bench pytest benchmarks/ --codspeed
+testpaths = ["tests"]
 filterwarnings = [
     # str() on an OCTET STRING decodes it as text; pyasn1 deprecates that and
     # will return the hexadecimal representation instead. Keep pysnmp off it.
@@ -441,6 +469,28 @@ convention = "numpy"
     "S101", "S102", "S104", "S105", "S108", "S603",
     "B017", "B904", "BLE", "PL", "RUF", "TRY", "D",
 ]
+# Benchmarks are test-shaped -- pytest functions named for what they measure --
+# so they earn the same two exemptions for the same reasons. D: a benchmark's
+# name says what it measures and the module docstring says why that path is
+# worth measuring; an imperative-mood summary per function would restate the
+# name 57 times. S105: the fixed passphrases in test_usm_crypto.py are the
+# input to a key derivation being measured, not a credential.
+#
+# Deliberately shorter than the list above. A benchmark does not assert, exec,
+# or catch broadly, so nothing here needs S101, B017, BLE or TRY -- and PL and
+# RUF stay on, because a benchmark that has drifted into doing too much per
+# call is exactly what those catch.
+#
+# UP031 is the interesting one. The two `%` formats it flags in
+# test_asn1_types.py are inside the measured loop, building the input each
+# iteration. Rewriting them as f-strings would make those benchmarks report a
+# speedup on the pull request that did it -- f-strings are faster than `%` --
+# which pysnmp did not earn and which would then sit in CodSpeed's history as
+# the new baseline. A lint fix must not move a measurement. (That the formatting
+# is inside the timed region at all is arguably a flaw in those two benchmarks,
+# but correcting it changes what they measure and belongs with them on main,
+# not in a port.)
+"benchmarks/**" = ["S105", "D", "UP031"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pysnmp"]
