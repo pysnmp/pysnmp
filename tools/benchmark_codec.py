@@ -1139,19 +1139,34 @@ def render_text(report: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _label(env: dict[str, Any]) -> str:
+def _label(env: dict[str, Any], versions: bool = False) -> str:
     """How one run's environment reads in the cross-matrix table.
 
     ASCII only, here and in every other rendered line: the report is printed
     to a console as well as written to a file, and a Windows console is not
     UTF-8 -- a middle dot came back from the first CI run as a replacement
     character in the log.
+
+    `versions` adds the library versions the run measured. The matrix job
+    varies the platform and the interpreter and holds the libraries fixed, so
+    the platform and interpreter alone name a run there and the suffix would
+    be the same noise on every row. Comparing releases is the other axis --
+    same runner, different pysnmp -- and there the platform and interpreter
+    are what repeat, so the caller passes True and the version is what tells
+    the rows apart. Neither caller decides this by hand; `render_comparison`
+    looks at whether the reports in front of it disagree.
     """
     system = env.get("platform", "").split("-")[0] or "unknown"
     interpreter = f"{env['python_implementation']} {env['python_version']}"
     if env.get("free_threaded"):
         interpreter += "t"
-    return f"{system} / {interpreter}"
+    label = f"{system} / {interpreter}"
+    if versions:
+        label += (
+            f" / pysnmp {env.get('pysnmp', 'unknown')}"
+            f" + pyasn1 {env.get('pyasn1', 'unknown')}"
+        )
+    return label
 
 
 def load_reports(paths: list[str]) -> list[dict[str, Any]]:
@@ -1196,10 +1211,26 @@ def render_comparison(reports: list[dict[str, Any]]) -> str:
         "|---|---|---|---|---|---|---|---|",
     ]
 
+    # Two runs of the same interpreter on the same platform are told apart by
+    # what they measured, and nothing else in the row does that: every figure
+    # is a number, so two releases benchmarked on one runner would render as
+    # two identically labelled rows with no way to tell which was which. Ask
+    # only when there is something to ask about -- when every report measured
+    # the same libraries, naming them on each row says nothing.
+    versions = (
+        len(
+            {
+                (r["environment"].get("pysnmp"), r["environment"].get("pyasn1"))
+                for r in reports
+            }
+        )
+        > 1
+    )
+
     order = {name: index for index, (name, _, _) in enumerate(WORKLOADS)}
     rows = []
     for report in reports:
-        label = _label(report["environment"])
+        label = _label(report["environment"], versions)
         figures: dict[str, dict[tuple[str, str], float]] = {}
         bindings: dict[str, int] = {}
         for measurement in report["measurements"]:
