@@ -40,17 +40,35 @@ readme = "README.md"
 # engine path imports pysmi at run time. tests/test_no_pysmi.py holds that line
 # by blocking the import and starting an engine anyway.
 #
-# The pyasn1 floor is 2.0.3 because 2.0.2 cannot be imported on PyPy at all.
-# Its NamedType subclasses a namedtuple and overrides __getitem__ to read the
-# fields back out; CPython builds its field accessors from _tuplegetter, which
-# reads the tuple slot in C, and PyPy builds them from operator.itemgetter,
-# which calls __getitem__ -- so the accessor called the override that called
-# the accessor, and `from pysnmp.proto import rfc1902` ended in RecursionError.
-# 2.0.3 reads the fields off the tuple (pysnmp/pyasn1#185). Nothing about the
-# floor is about behaviour on CPython, where both versions are the same.
+# The pyasn1 floor is 2.0.4 for a defect reachable from here, and two earlier
+# versions are excluded for reasons worth keeping written down.
+#
+# 2.0.3 and below can raise IndexError("pop from empty list") out of an
+# ordinary decode. pyasn1's debug guards evaluated Logger.isEnabledFor at each
+# site, so a logging level that changed mid-decode -- another thread calling
+# setLevel, say -- could split a debug.scope push from the pop that matches it
+# and leave the module-level stack short. A decode loop with one thread
+# toggling the level dies after ~900 iterations. 2.0.4 snapshots the flag once
+# per frame, so push and pop always agree (pysnmp/pyasn1#189). Nothing about
+# this needs debugging to be *enabled*, only for the level to move, which is
+# why it is a floor rather than a recommendation.
+#
+# 2.0.4 is also where the codec stopped asking that question per ASN.1
+# component: 551 Logger.isEnabledFor calls per decode and 337 per encode became
+# one each, worth ~4% of a decode and ~9.6% of an encode on the ten-binding
+# response this library spends its life on (pysnmp/pyasn1#187). That is not why
+# the floor moved, but it is why there is no reason to stay below it.
+#
+# 2.0.2 cannot be imported on PyPy at all. Its NamedType subclasses a namedtuple
+# and overrides __getitem__ to read the fields back out; CPython builds its
+# field accessors from _tuplegetter, which reads the tuple slot in C, and PyPy
+# builds them from operator.itemgetter, which calls __getitem__ -- so the
+# accessor called the override that called the accessor, and `from pysnmp.proto
+# import rfc1902` ended in RecursionError. 2.0.3 reads the fields off the tuple
+# (pysnmp/pyasn1#185). That one is PyPy-only; on CPython the two are the same.
 dependencies = [
     "pycryptodomex >=3.11.0,<4.0.0",
-    "pysnmp-pyasn1 >=2.0.3,<3.0.0",
+    "pysnmp-pyasn1 >=2.0.4,<3.0.0",
 ]
 
 # Compiling ASN.1 at run time is what pysmi is for, and it is a thing some
@@ -159,7 +177,7 @@ dev = [
 
 # General availability wherever there is one, enforced rather than reviewed.
 #
-# Every requirement above names a final release -- pysnmp-pyasn1 2.0.3 and
+# Every requirement above names a final release -- pysnmp-pyasn1 2.0.4 and
 # pysnmp-pysmi 6.0.0 are GA -- but a specifier is a statement about
 # one requirement, and the thing worth guaranteeing is a property of the whole
 # resolution: nothing this repository installs is a prerelease of a package
