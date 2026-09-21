@@ -121,10 +121,15 @@ class TestOutsideALoopNothingChanges:
             "UdpTransportTarget(('127.0.0.1', 161), timeout=1, retries=5, tagList=b'')"
         )
 
-    async def test_resolve_is_a_no_op(self, slowResolver):
+    def test_resolve_is_a_no_op(self, slowResolver):
+        # Synchronous, and driving its own loop, because where the target is
+        # built is the whole point of this class: an `async def` test would
+        # construct it inside a running loop, which is the deferring path the
+        # class below covers. The lookup would then happen in resolve() and
+        # the count below would be the same for the wrong reason.
         target = UdpTransportTarget(("slow.invalid", 161))
 
-        await target.resolve()
+        asyncio.run(target.resolve())
 
         assert slowResolver == ["slow.invalid"]  # not looked up a second time
 
