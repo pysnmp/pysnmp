@@ -174,6 +174,23 @@ repository = "https://github.com/pysnmp/pysnmp"
 # which also means none of them waits for Sphinx.
 test = [
     "pytest >=9.0.3,<10.0.0",
+    # What lets a test be `async def` and a fixture be an async generator. The
+    # engine this library is built on is asyncio, so most of what is worth
+    # testing end to end needs a loop, and before this every such test carried
+    # its own `asyncio.run` -- two near-identical decorators and 44 inline
+    # calls. The reason to take the dependency rather than keep hand-rolling it
+    # is the half that cannot be hand-rolled: a fixture that yields something
+    # loop-bound. AsyncioDispatcher takes get_running_loop() when there is one
+    # and quietly makes a loop when there is not (pysnmp/carrier/asyncio/
+    # dispatch.py), so a *sync* fixture that builds an engine hands the test an
+    # engine attached to a loop the test never runs.
+    #
+    # The floor is where loop_scope settled and the `event_loop` fixture was
+    # gone for good; 1.x is also where the `asyncio_default_*_loop_scope`
+    # options below are read. The ceiling is the plugin's own: it requires
+    # pytest <10, so it is already the gate on a pytest 10 this repository
+    # cannot take until the plugin does.
+    "pytest-asyncio >=1.0,<2.0.0",
     "coverage[toml] >=7.2.0,<8.0.0",
     # Not optional for the suite the way it is optional for an install:
     # tools/regenerate_mibs.py renders with pysmi's code generator,
@@ -248,6 +265,21 @@ dev = [
 prerelease = "if-necessary"
 
 [tool.pytest.ini_options]
+# An `async def` test runs, rather than needing a marker to say so. The
+# alternative -- strict mode -- would mean @pytest.mark.asyncio on every one of
+# them, which is the decorator this repository just stopped hand-rolling.
+asyncio_mode = "auto"
+
+# A loop per test and a loop per fixture, which is what `asyncio.run` gave each
+# test before pytest-asyncio was here: nothing is carried from one test to the
+# next, so a leaked dispatcher or a pending timer fails the test that leaked it
+# rather than the one after. Both are spelled out because the fixture default is
+# the one pytest-asyncio warns about leaving unset, and because a wider scope is
+# a deliberate trade -- it buys back the ~57ms an SnmpEngine costs to build at
+# the price of that isolation, and is not something to end up with by default.
+asyncio_default_test_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "function"
+
 # `tests` only, so that a bare `pytest` collects the suite and not the
 # benchmarks. benchmarks/ needs pytest-codspeed for its `benchmark` fixture,
 # which only the `bench` group installs -- without this every benchmark errors

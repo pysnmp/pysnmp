@@ -7,7 +7,6 @@ message split across reads and several messages arriving in one.
 """
 
 import asyncio
-import functools
 import socket
 
 import pytest
@@ -52,21 +51,6 @@ def berMessage(body):
         lengthOctets = length.to_bytes((length.bit_length() + 7) // 8, "big")
         header = bytes((0x30, 0x80 | len(lengthOctets))) + lengthOctets
     return header + body
-
-
-def runOnItsOwnLoop(coroutineFunction):
-    """Run an `async def` test body to completion, as a plain test.
-
-    This project has no pytest-asyncio; the tests that need a loop make one, the
-    way `asyncio.run` does, so each gets a loop of its own with nothing left
-    over from the test before it.
-    """
-
-    @functools.wraps(coroutineFunction)
-    def test(*args, **kwargs):
-        return asyncio.run(coroutineFunction(*args, **kwargs))
-
-    return test
 
 
 def freePort(kind=socket.SOCK_STREAM):
@@ -291,7 +275,6 @@ def test_the_carrier_closes_a_connection_it_gave_up_on_and_says_why():
 # --- the carrier on a real socket -----------------------------------------
 
 
-@runOnItsOwnLoop
 async def test_client_and_server_carry_messages_both_ways():
     """A full round trip over a real connection, without an SNMP engine."""
     received = asyncio.Queue()
@@ -332,7 +315,6 @@ async def test_client_and_server_carry_messages_both_ways():
         serverTransport.closeTransport()
 
 
-@runOnItsOwnLoop
 async def test_a_refused_connection_is_reported_rather_than_queued_forever():
     reported = asyncio.Queue()
 
@@ -357,7 +339,6 @@ async def test_a_refused_connection_is_reported_rather_than_queued_forever():
         transport.closeTransport()
 
 
-@runOnItsOwnLoop
 async def test_a_peer_that_accepts_and_then_closes_fails_the_request():
     """Accepted and dropped without an answer is an answer, and a prompt one.
 
@@ -392,7 +373,6 @@ async def test_a_peer_that_accepts_and_then_closes_fails_the_request():
         await server.wait_closed()
 
 
-@runOnItsOwnLoop
 async def test_a_server_does_not_dial_out_to_answer_a_vanished_peer():
     """RFC 3430 section 3 puts opening the connection on the sending side."""
     transport = tcp.TcpTransport().openServerMode(("127.0.0.1", 0))
@@ -405,7 +385,6 @@ async def test_a_server_does_not_dial_out_to_answer_a_vanished_peer():
         transport.closeTransport()
 
 
-@runOnItsOwnLoop
 async def test_the_dispatcher_routes_a_transport_failure_to_its_error_callback():
     reported = []
     dispatcher = AsyncioDispatcher()
@@ -436,7 +415,6 @@ async def test_the_dispatcher_routes_a_transport_failure_to_its_error_callback()
 # --- end to end, against the simulator ------------------------------------
 
 
-@runOnItsOwnLoop
 async def test_get_over_tcp(snmpsim_tcp_endpoint):
     engine = SnmpEngine()
     errorIndication, errorStatus, _errorIndex, varBinds = await get_cmd(
@@ -453,7 +431,6 @@ async def test_get_over_tcp(snmpsim_tcp_endpoint):
     assert varBinds[0][1].prettyPrint()
 
 
-@runOnItsOwnLoop
 async def test_getnext_over_tcp(snmpsim_tcp_endpoint):
     engine = SnmpEngine()
     errorIndication, _errorStatus, _errorIndex, varBindTable = await next_cmd(
@@ -468,7 +445,6 @@ async def test_getnext_over_tcp(snmpsim_tcp_endpoint):
     assert oidOf(varBindTable[0][0]) == SYS_OBJECT_ID
 
 
-@runOnItsOwnLoop
 async def test_getbulk_over_tcp(snmpsim_tcp_endpoint):
     """The case TCP exists for: a reply too wide to be sure of over a datagram."""
     engine = SnmpEngine()
@@ -486,7 +462,6 @@ async def test_getbulk_over_tcp(snmpsim_tcp_endpoint):
     assert len(varBindTable) > 1
 
 
-@runOnItsOwnLoop
 async def test_successive_requests_share_one_connection(snmpsim_tcp_endpoint):
     """Several messages on one connection, which is the framing's real exercise."""
     engine = SnmpEngine()
@@ -507,7 +482,6 @@ async def test_successive_requests_share_one_connection(snmpsim_tcp_endpoint):
     assert len(transport._connections) == 1
 
 
-@runOnItsOwnLoop
 async def test_concurrent_requests_over_tcp_all_succeed(snmpsim_tcp_endpoint):
     """Responses that arrive interleaved still frame and match up."""
 
@@ -525,7 +499,6 @@ async def test_concurrent_requests_over_tcp_all_succeed(snmpsim_tcp_endpoint):
     assert not [i for i in indications if i is not None]
 
 
-@runOnItsOwnLoop
 async def test_a_refused_port_fails_the_request_instead_of_timing_out():
     """The distinction UDP cannot draw: declined to answer, or unreachable.
 
@@ -564,7 +537,6 @@ def ipv6IsUsable():
 
 
 @pytest.mark.skipif(not ipv6IsUsable(), reason="No usable IPv6 loopback on this host")
-@runOnItsOwnLoop
 async def test_tcp6_carries_messages_over_the_ipv6_loopback():
     received = asyncio.Queue()
 

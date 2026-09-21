@@ -11,7 +11,6 @@ at all.
 """
 
 import asyncio
-import functools
 import socket
 
 import pytest
@@ -30,17 +29,6 @@ from pysnmp.hlapi.context import ContextData
 from pysnmp.proto import rfc1902
 from pysnmp.smi import exval
 from pysnmp.smi.rfc1902 import ObjectIdentity, ObjectType
-
-
-def runs(coroFun):
-    """Run this test's body on a loop of its own, as the rest of the suite does."""
-
-    @functools.wraps(coroFun)
-    def wrapper(*args, **kwargs):
-        return asyncio.run(coroFun(*args, **kwargs))
-
-    return wrapper
-
 
 REQUEST_EXECPOINT = "rfc3412.receiveMessage:request"
 
@@ -220,58 +208,88 @@ def target(port):
     return UdpTransportTarget(("127.0.0.1", port), timeout=5, retries=1)
 
 
+@pytest.fixture
+async def agents():
+    """Start agents for one test and close them, however the test ends.
+
+    Asynchronous rather than plain, because what it hands back belongs to the
+    loop it was built on: AsyncioDispatcher takes `get_running_loop()` when
+    there is one and quietly makes a loop when there is not
+    (pysnmp/carrier/asyncio/dispatch.py), so an agent built by a synchronous
+    fixture would be attached to a loop no test ever runs. Closing here rather
+    than in each test's `finally` also releases the sockets when an assertion
+    fails before the close would have been reached.
+    """
+    started = []
+
+    def start(mibInstrum, communities=(("public", "area"),)):
+        agent, port = startAgent(mibInstrum, communities)
+        started.append(agent)
+        return agent, port
+
+    yield start
+
+    for agent in started:
+        agent.closeDispatcher()
+
+
+@pytest.fixture
+async def manager():
+    """A manager engine, closed however the test ends.
+
+    `SnmpEngine.closeDispatcher()` rather than reaching through to the
+    dispatcher: it tolerates a test that failed before the first request built
+    one, and it detaches what it closed instead of leaving the engine holding a
+    dispatcher that is already shut.
+    """
+    snmpEngine = engine.SnmpEngine()
+
+    yield snmpEngine
+
+    snmpEngine.closeDispatcher()
+
+
 # --- the deferred path ------------------------------------------------------
 
 
-@runs
-async def test_get_waits_for_instrumentation_that_suspends():
+async def test_get_waits_for_instrumentation_that_suspends(agents, manager):
     values = {FIRST: rfc1902.OctetString("served after waiting")}
-    agent, port = startAgent(AwaitingInstrum(values))
-    manager = engine.SnmpEngine()
-    try:
-        errorIndication, errorStatus, _, varBinds = await get_cmd(
-            manager,
-            CommunityData("public", mpModel=1),
-            target(port),
-            ContextData(),
-            ObjectType(ObjectIdentity(FIRST)),
-        )
-        assert errorIndication is None
-        assert not errorStatus
-        assert varBinds[0][1].prettyPrint() == "served after waiting"
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    _, port = agents(AwaitingInstrum(values))
+    errorIndication, errorStatus, _, varBinds = await get_cmd(
+        manager,
+        CommunityData("public", mpModel=1),
+        target(port),
+        ContextData(),
+        ObjectType(ObjectIdentity(FIRST)),
+    )
+    assert errorIndication is None
+    assert not errorStatus
+    assert varBinds[0][1].prettyPrint() == "served after waiting"
 
 
-@runs
-async def test_getnext_waits_for_instrumentation_that_suspends():
+async def test_getnext_waits_for_instrumentation_that_suspends(agents, manager):
     values = {oid: rfc1902.OctetString(f"value {i}") for i, oid in enumerate(ORDERED)}
-    agent, port = startAgent(AwaitingInstrum(values))
-    manager = engine.SnmpEngine()
-    try:
-        errorIndication, errorStatus, _, varBinds = await next_cmd(
-            manager,
-            CommunityData("public", mpModel=1),
-            target(port),
-            ContextData(),
-            ObjectType(ObjectIdentity(FIRST)),
-        )
-        assert errorIndication is None
-        assert not errorStatus
+    _, port = agents(AwaitingInstrum(values))
+    errorIndication, errorStatus, _, varBinds = await next_cmd(
+        manager,
+        CommunityData("public", mpModel=1),
+        target(port),
+        ContextData(),
+        ObjectType(ObjectIdentity(FIRST)),
+    )
+    assert errorIndication is None
+    assert not errorStatus
 
-        # One GETNEXT, so one row of one binding.
-        oid, value = varBinds[0][0]
-        assert str(oid) == dotted(SECOND)
-        assert value.prettyPrint() == "value 1"
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    # One GETNEXT, so one row of one binding.
+    oid, value = varBinds[0][0]
+    assert str(oid) == dotted(SECOND)
+    assert value.prettyPrint() == "value 1"
 
 
-@runs
 @pytest.mark.parametrize("nonRepeaters", [0, 1])
-async def test_getbulk_waits_for_instrumentation_that_suspends(nonRepeaters):
+async def test_getbulk_waits_for_instrumentation_that_suspends(
+    nonRepeaters, agents, manager
+):
     """Both hand-off points: the non-repeaters, and a repetition after them.
 
     With no non-repeaters the first read to suspend is a repetition, and where
@@ -281,82 +299,66 @@ async def test_getbulk_waits_for_instrumentation_that_suspends(nonRepeaters):
     on the same bindings.
     """
     values = {oid: rfc1902.OctetString(f"value {i}") for i, oid in enumerate(ORDERED)}
-    agent, port = startAgent(AwaitingInstrum(values))
-    manager = engine.SnmpEngine()
-    try:
-        varBindsAsked = [ObjectType(ObjectIdentity(FIRST))]
-        if nonRepeaters:
-            varBindsAsked.insert(0, ObjectType(ObjectIdentity(FIRST)))
+    _, port = agents(AwaitingInstrum(values))
+    varBindsAsked = [ObjectType(ObjectIdentity(FIRST))]
+    if nonRepeaters:
+        varBindsAsked.insert(0, ObjectType(ObjectIdentity(FIRST)))
 
-        errorIndication, errorStatus, _, varBinds = await bulk_cmd(
-            manager,
-            CommunityData("public", mpModel=1),
-            target(port),
-            ContextData(),
-            nonRepeaters,
-            3,
-            *varBindsAsked,
-        )
-        assert errorIndication is None
-        assert not errorStatus
+    errorIndication, errorStatus, _, varBinds = await bulk_cmd(
+        manager,
+        CommunityData("public", mpModel=1),
+        target(port),
+        ContextData(),
+        nonRepeaters,
+        3,
+        *varBindsAsked,
+    )
+    assert errorIndication is None
+    assert not errorStatus
 
-        # One row per repetition; the repeating column is the one that walks.
-        walked = [str(row[nonRepeaters][0]) for row in varBinds]
-        assert walked == [dotted(SECOND), dotted(THIRD), dotted(THIRD)]
+    # One row per repetition; the repeating column is the one that walks.
+    walked = [str(row[nonRepeaters][0]) for row in varBinds]
+    assert walked == [dotted(SECOND), dotted(THIRD), dotted(THIRD)]
 
-        if nonRepeaters:
-            # The read that suspended, carried unchanged across every row.
-            assert {str(row[0][0]) for row in varBinds} == {dotted(SECOND)}
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    if nonRepeaters:
+        # The read that suspended, carried unchanged across every row.
+        assert {str(row[0][0]) for row in varBinds} == {dotted(SECOND)}
 
 
-@runs
-async def test_set_waits_for_instrumentation_that_suspends():
+async def test_set_waits_for_instrumentation_that_suspends(agents, manager):
     mibInstrum = AwaitingInstrum({FIRST: rfc1902.OctetString("before")})
-    agent, port = startAgent(mibInstrum)
-    manager = engine.SnmpEngine()
-    try:
-        errorIndication, errorStatus, _, varBinds = await set_cmd(
-            manager,
-            CommunityData("public", mpModel=1),
-            target(port),
-            ContextData(),
-            ObjectType(ObjectIdentity(FIRST), rfc1902.OctetString("after")),
-        )
-        assert errorIndication is None
-        assert not errorStatus
-        assert varBinds[0][1].prettyPrint() == "after"
-        assert mibInstrum.values[FIRST].prettyPrint() == "after"
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    _, port = agents(mibInstrum)
+    errorIndication, errorStatus, _, varBinds = await set_cmd(
+        manager,
+        CommunityData("public", mpModel=1),
+        target(port),
+        ContextData(),
+        ObjectType(ObjectIdentity(FIRST), rfc1902.OctetString("after")),
+    )
+    assert errorIndication is None
+    assert not errorStatus
+    assert varBinds[0][1].prettyPrint() == "after"
+    assert mibInstrum.values[FIRST].prettyPrint() == "after"
 
 
-@runs
-async def test_failure_after_suspending_is_still_an_error_status():
+async def test_failure_after_suspending_is_still_an_error_status(agents, manager):
     """A controller that fails once suspended is answered, not left to time out."""
-    agent, port = startAgent(FailingInstrum())
-    manager = engine.SnmpEngine()
-    try:
-        errorIndication, errorStatus, errorIndex, _ = await get_cmd(
-            manager,
-            CommunityData("public", mpModel=1),
-            target(port),
-            ContextData(),
-            ObjectType(ObjectIdentity(FIRST)),
-        )
-        assert errorIndication is None
-        assert errorStatus.prettyPrint() == "genErr"
-        assert errorIndex == 1
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    _, port = agents(FailingInstrum())
+    errorIndication, errorStatus, errorIndex, _ = await get_cmd(
+        manager,
+        CommunityData("public", mpModel=1),
+        target(port),
+        ContextData(),
+        ObjectType(ObjectIdentity(FIRST)),
+    )
+    assert errorIndication is None
+    assert errorStatus.prettyPrint() == "genErr"
+    assert errorIndex == 1
 
 
-@runs
-async def test_a_suspended_request_does_not_take_the_next_ones_identity():
+async def test_a_suspended_request_does_not_take_the_next_ones_identity(
+    agents, manager
+):
     """The hazard the whole deferred path turns on.
 
     While one request waits, the engine serves another, which reaches the same
@@ -368,48 +370,40 @@ async def test_a_suspended_request_does_not_take_the_next_ones_identity():
     mibInstrum = AwaitingInstrum(byIdentity={"area": "for area", "other": "for other"})
     mibInstrum.held = []
 
-    agent, port = startAgent(
-        mibInstrum, communities=(("public", "area"), ("secret", "other"))
-    )
-    manager = engine.SnmpEngine()
-    try:
+    _, port = agents(mibInstrum, communities=(("public", "area"), ("secret", "other")))
 
-        def ask(community):
-            return asyncio.ensure_future(
-                get_cmd(
-                    manager,
-                    CommunityData(community, mpModel=1),
-                    target(port),
-                    ContextData(),
-                    ObjectType(ObjectIdentity(FIRST)),
-                )
+    def ask(community):
+        return asyncio.ensure_future(
+            get_cmd(
+                manager,
+                CommunityData(community, mpModel=1),
+                target(port),
+                ContextData(),
+                ObjectType(ObjectIdentity(FIRST)),
             )
+        )
 
-        # Both are held at once and on purpose: the second has to have reached
-        # the execution point, and still be there, when the first looks at it
-        # again.
-        first = ask("public")
-        await mibInstrum.waitForHeld(1)
+    # Both are held at once and on purpose: the second has to have reached
+    # the execution point, and still be there, when the first looks at it
+    # again.
+    first = ask("public")
+    await mibInstrum.waitForHeld(1)
 
-        second = ask("secret")
-        await mibInstrum.waitForHeld(2)
+    second = ask("secret")
+    await mibInstrum.waitForHeld(2)
 
-        mibInstrum.held[0].set()
-        firstResult = await asyncio.wait_for(first, timeout=10)
+    mibInstrum.held[0].set()
+    firstResult = await asyncio.wait_for(first, timeout=10)
 
-        mibInstrum.held[1].set()
-        secondResult = await asyncio.wait_for(second, timeout=10)
+    mibInstrum.held[1].set()
+    secondResult = await asyncio.wait_for(second, timeout=10)
 
-        assert firstResult[3][0][1].prettyPrint() == "for area"
-        assert secondResult[3][0][1].prettyPrint() == "for other"
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    assert firstResult[3][0][1].prettyPrint() == "for area"
+    assert secondResult[3][0][1].prettyPrint() == "for other"
 
 
-@runs
 @pytest.mark.parametrize("controller", ["synchronous", "awaiting"])
-async def test_a_request_reaches_its_execution_point_once(controller):
+async def test_a_request_reaches_its_execution_point_once(controller, agents, manager):
     """However the controller serves it.
 
     An observer at this point is how an application counts requests or logs
@@ -423,7 +417,7 @@ async def test_a_request_reaches_its_execution_point_once(controller):
         SyncInstrum(values) if controller == "synchronous" else AwaitingInstrum(values)
     )
 
-    agent, port = startAgent(mibInstrum)
+    agent, port = agents(mibInstrum)
     reached = []
     agent.observer.registerObserver(
         lambda snmpEngine, execpoint, variables, cbCtx: reached.append(
@@ -432,33 +426,27 @@ async def test_a_request_reaches_its_execution_point_once(controller):
         REQUEST_EXECPOINT,
     )
 
-    manager = engine.SnmpEngine()
-    try:
-        errorIndication, errorStatus, _, varBinds = await get_cmd(
-            manager,
-            CommunityData("public", mpModel=1),
-            target(port),
-            ContextData(),
-            ObjectType(ObjectIdentity(FIRST)),
-        )
-        assert errorIndication is None
-        assert not errorStatus
-        assert varBinds[0][1].prettyPrint() == "value 0"
+    errorIndication, errorStatus, _, varBinds = await get_cmd(
+        manager,
+        CommunityData("public", mpModel=1),
+        target(port),
+        ContextData(),
+        ObjectType(ObjectIdentity(FIRST)),
+    )
+    assert errorIndication is None
+    assert not errorStatus
+    assert varBinds[0][1].prettyPrint() == "value 0"
 
-        assert len(reached) == 1
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    assert len(reached) == 1
 
 
 # --- the synchronous path is untouched --------------------------------------
 
 
-@runs
-async def test_a_synchronous_controller_never_defers():
+async def test_a_synchronous_controller_never_defers(agents, manager):
     """The ordinary agent answers on the stack it was asked on, as it always did."""
     values = {oid: rfc1902.OctetString(f"value {i}") for i, oid in enumerate(ORDERED)}
-    agent, port = startAgent(SyncInstrum(values))
+    agent, port = agents(SyncInstrum(values))
 
     deferrals = []
     dispatcher = agent.transportDispatcher
@@ -470,28 +458,22 @@ async def test_a_synchronous_controller_never_defers():
 
     dispatcher.runDeferred = recordingRunDeferred
 
-    manager = engine.SnmpEngine()
-    try:
-        errorIndication, errorStatus, _, varBinds = await get_cmd(
-            manager,
-            CommunityData("public", mpModel=1),
-            target(port),
-            ContextData(),
-            ObjectType(ObjectIdentity(FIRST)),
-        )
-        assert errorIndication is None
-        assert not errorStatus
-        assert varBinds[0][1].prettyPrint() == "value 0"
-        assert deferrals == []
-    finally:
-        manager.transportDispatcher.closeDispatcher()
-        agent.transportDispatcher.closeDispatcher()
+    errorIndication, errorStatus, _, varBinds = await get_cmd(
+        manager,
+        CommunityData("public", mpModel=1),
+        target(port),
+        ContextData(),
+        ObjectType(ObjectIdentity(FIRST)),
+    )
+    assert errorIndication is None
+    assert not errorStatus
+    assert varBinds[0][1].prettyPrint() == "value 0"
+    assert deferrals == []
 
 
 # --- the pieces underneath --------------------------------------------------
 
 
-@runs
 async def test_execution_points_are_not_shared_between_tasks():
     snmpEngine = engine.SnmpEngine()
     started = asyncio.Event()
@@ -555,10 +537,9 @@ def test_a_dispatcher_that_cannot_run_tasks_says_so():
         coro.close()
 
 
-@runs
-async def test_deferred_work_counts_as_outstanding_while_it_runs():
+async def test_deferred_work_counts_as_outstanding_while_it_runs(agents):
     """So a dispatcher told to run until its work is done waits for the answer."""
-    agent, port = startAgent(SyncInstrum({}))
+    agent, port = agents(SyncInstrum({}))
     dispatcher = agent.transportDispatcher
     running = asyncio.Event()
     release = asyncio.Event()
@@ -567,23 +548,19 @@ async def test_deferred_work_counts_as_outstanding_while_it_runs():
         running.set()
         await release.wait()
 
-    try:
-        assert not dispatcher.jobsArePending()
+    assert not dispatcher.jobsArePending()
 
-        task = dispatcher.runDeferred(work())
-        await asyncio.wait_for(running.wait(), timeout=10)
-        assert dispatcher.jobsArePending()
+    task = dispatcher.runDeferred(work())
+    await asyncio.wait_for(running.wait(), timeout=10)
+    assert dispatcher.jobsArePending()
 
-        release.set()
-        await asyncio.wait_for(task, timeout=10)
-        assert not dispatcher.jobsArePending()
-    finally:
-        agent.transportDispatcher.closeDispatcher()
+    release.set()
+    await asyncio.wait_for(task, timeout=10)
+    assert not dispatcher.jobsArePending()
 
 
-@runs
-async def test_closing_the_dispatcher_drops_work_still_in_flight():
-    agent, port = startAgent(SyncInstrum({}))
+async def test_closing_the_dispatcher_drops_work_still_in_flight(agents):
+    agent, port = agents(SyncInstrum({}))
     dispatcher = agent.transportDispatcher
     running = asyncio.Event()
 
