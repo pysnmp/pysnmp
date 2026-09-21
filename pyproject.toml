@@ -40,8 +40,18 @@ readme = "README.md"
 # engine path imports pysmi at run time. tests/test_no_pysmi.py holds that line
 # by blocking the import and starting an engine anyway.
 #
-# The pyasn1 floor is 2.0.4 for a defect reachable from here, and two earlier
-# versions are excluded for reasons worth keeping written down.
+# The pyasn1 floor is 2.0.5, and each version below it is excluded for a
+# reason worth keeping written down.
+#
+# 2.0.4 and below share one debug.scope trail across the whole process, so two
+# threads decoding at once interleave their scope names and every record's
+# `scope` field describes a path through no single message. That is a debug
+# defect, not a decode one -- it needs debugging switched on to reach, which
+# makes it weaker than the entry below. The floor moves anyway, because the
+# rule worth having is that the floor names the version whose debug output can
+# be trusted, not the version that merely decodes correctly. 2.0.5 keeps the
+# trail in a ContextVar, so a thread and an asyncio task each get their own
+# (pysnmp/pyasn1#194).
 #
 # 2.0.3 and below can raise IndexError("pop from empty list") out of an
 # ordinary decode. pyasn1's debug guards evaluated Logger.isEnabledFor at each
@@ -68,7 +78,7 @@ readme = "README.md"
 # (pysnmp/pyasn1#185). That one is PyPy-only; on CPython the two are the same.
 dependencies = [
     "pycryptodomex >=3.11.0,<4.0.0",
-    "pysnmp-pyasn1 >=2.0.4,<3.0.0",
+    "pysnmp-pyasn1 >=2.0.5,<3.0.0",
 ]
 
 # Compiling ASN.1 at run time is what pysmi is for, and it is a thing some
@@ -177,7 +187,7 @@ dev = [
 
 # General availability wherever there is one, enforced rather than reviewed.
 #
-# Every requirement above names a final release -- pysnmp-pyasn1 2.0.4 and
+# Every requirement above names a final release -- pysnmp-pyasn1 2.0.5 and
 # pysnmp-pysmi 6.0.0 are GA -- but a specifier is a statement about
 # one requirement, and the thing worth guaranteeing is a property of the whole
 # resolution: nothing this repository installs is a prerelease of a package

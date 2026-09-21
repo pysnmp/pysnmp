@@ -83,8 +83,10 @@ jobs:
           # its own fields back out, and PyPy builds namedtuple field
           # accessors on __getitem__, so the accessor called the override that
           # called the accessor. Fixed in pysnmp/pyasn1#185 and released as
-          # 2.0.3, which is the floor pyproject.toml now names, so this leg is
-          # no longer experimental. See docs/source/docs/codec-benchmark.rst.
+          # 2.0.3, so this leg is no longer experimental. pyproject.toml floors
+          # pyasn1 above that now -- at 2.0.5, for reasons of its own that it
+          # sets out -- so every version this matrix can resolve carries the
+          # fix. See docs/source/docs/codec-benchmark.rst.
           - { name: linux-pypy-3.11, os: ubuntu-latest, python: "pypy-3.11", experimental: false }
     steps:
       - uses: actions/checkout@v7
