@@ -10,12 +10,12 @@ Encoding an outgoing message and decoding an incoming one is the single
 hottest path of any SNMP manager or agent: it runs once (twice for
 confirmed classes of PDU) per managed object polled.
 """
+
+from payloads import IF_TABLE_OIDS, SYSTEM_OIDS, make_request, make_response
 from pyasn1.codec.ber import decoder, encoder
 
 from pysnmp.proto import api
 from pysnmp.proto.api import decodeMessageVersion
-
-from payloads import IF_TABLE_OIDS, SYSTEM_OIDS, make_request, make_response
 
 
 def test_encode_get_request_v1(benchmark):
@@ -56,6 +56,7 @@ def test_decode_response_v2c_60_varbinds(benchmark, v2c_response_substrate):
 
 def test_decode_message_version(benchmark, v2c_response_substrate):
     """Version sniffing runs on every datagram before full decoding."""
+
     @benchmark
     def _():
         for _unused in range(32):
@@ -79,14 +80,14 @@ def test_encode_v1_trap(benchmark):
 
     trapPDU = pMod.TrapPDU()
     pMod.apiTrapPDU.setDefaults(trapPDU)
-    pMod.apiTrapPDU.setGenericTrap(trapPDU, 'linkDown')
+    pMod.apiTrapPDU.setGenericTrap(trapPDU, "linkDown")
     pMod.apiTrapPDU.setVarBinds(
         trapPDU, [((1, 3, 6, 1, 2, 1, 2, 2, 1, 1, 3), pMod.Integer(3))]
     )
 
     msg = pMod.Message()
     pMod.apiMessage.setDefaults(msg)
-    pMod.apiMessage.setCommunity(msg, 'public')
+    pMod.apiMessage.setCommunity(msg, "public")
     pMod.apiMessage.setPDU(msg, trapPDU)
 
     benchmark(encoder.encode, msg)

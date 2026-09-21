@@ -469,6 +469,28 @@ convention = "numpy"
     "S101", "S102", "S104", "S105", "S108", "S603",
     "B017", "B904", "BLE", "PL", "RUF", "TRY", "D",
 ]
+# Benchmarks are test-shaped -- pytest functions named for what they measure --
+# so they earn the same two exemptions for the same reasons. D: a benchmark's
+# name says what it measures and the module docstring says why that path is
+# worth measuring; an imperative-mood summary per function would restate the
+# name 57 times. S105: the fixed passphrases in test_usm_crypto.py are the
+# input to a key derivation being measured, not a credential.
+#
+# Deliberately shorter than the list above. A benchmark does not assert, exec,
+# or catch broadly, so nothing here needs S101, B017, BLE or TRY -- and PL and
+# RUF stay on, because a benchmark that has drifted into doing too much per
+# call is exactly what those catch.
+#
+# UP031 is the interesting one. The two `%` formats it flags in
+# test_asn1_types.py are inside the measured loop, building the input each
+# iteration. Rewriting them as f-strings would make those benchmarks report a
+# speedup on the pull request that did it -- f-strings are faster than `%` --
+# which pysnmp did not earn and which would then sit in CodSpeed's history as
+# the new baseline. A lint fix must not move a measurement. (That the formatting
+# is inside the timed region at all is arguably a flaw in those two benchmarks,
+# but correcting it changes what they measure and belongs with them on main,
+# not in a port.)
+"benchmarks/**" = ["S105", "D", "UP031"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pysnmp"]

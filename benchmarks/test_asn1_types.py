@@ -10,13 +10,14 @@ Every value carried by an SNMP message goes through these classes, so their
 construction, comparison and rendering cost shows up in every single
 request the library handles.
 """
+
 from pyasn1.type import namedval
 
 from pysnmp.proto import rfc1902
 
 SYS_DESCR = (
-    'Linux edge-router-01 5.15.0-91-generic #101-Ubuntu SMP '
-    'Tue Nov 14 13:30:08 UTC 2023 x86_64'
+    "Linux edge-router-01 5.15.0-91-generic #101-Ubuntu SMP "
+    "Tue Nov 14 13:30:08 UTC 2023 x86_64"
 )
 
 IF_TABLE_OIDS = [
@@ -53,7 +54,7 @@ def test_object_identifier_from_text(benchmark):
     @benchmark
     def _():
         for index in range(128):
-            rfc1902.ObjectIdentifier('1.3.6.1.2.1.2.2.1.10.%d' % index)
+            rfc1902.ObjectIdentifier("1.3.6.1.2.1.2.2.1.10.%d" % index)
 
 
 def test_object_identifier_from_tuple(benchmark):
@@ -91,7 +92,7 @@ def test_ip_address_from_text(benchmark):
     @benchmark
     def _():
         for index in range(128):
-            rfc1902.IpAddress('10.0.%d.254' % (index % 256))
+            rfc1902.IpAddress("10.0.%d.254" % (index % 256))
 
 
 def test_time_ticks_pretty_print(benchmark):
@@ -113,15 +114,18 @@ def test_counter64_from_int(benchmark):
 def test_bits_from_names(benchmark):
     Notifications = rfc1902.Bits().clone(
         namedValues=namedval.NamedValues(
-            ('coldStart', 0), ('warmStart', 1), ('linkDown', 2),
-            ('linkUp', 3), ('authenticationFailure', 4),
+            ("coldStart", 0),
+            ("warmStart", 1),
+            ("linkDown", 2),
+            ("linkUp", 3),
+            ("authenticationFailure", 4),
         )
     )
 
     @benchmark
     def _():
         for _unused in range(64):
-            Notifications.clone(('linkUp', 'authenticationFailure'))
+            Notifications.clone(("linkUp", "authenticationFailure"))
 
 
 def test_integer_clone(benchmark):
