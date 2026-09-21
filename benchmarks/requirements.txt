@@ -1,0 +1,7 @@
+# Dependencies of the CodSpeed benchmark suite (benchmarks/).
+#
+# They are kept out of pyproject.toml/poetry.lock on purpose: the benchmark
+# tooling needs a recent pytest, while the packaged project still supports
+# Python 3.8 and pins an old test stack for the release pipeline.
+pytest>=8.0,<10
+pytest-codspeed>=5.0,<6
