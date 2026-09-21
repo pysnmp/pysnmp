@@ -227,10 +227,11 @@ override, which is why the same code had always worked there and why five years
 of CI had nothing to say about it.
 
 Fixed in `pysnmp/pyasn1#185 <https://github.com/pysnmp/pyasn1/pull/185>`_ and
-released as ``pysnmp-pyasn1`` 2.0.3, which is why the floor in
-``pyproject.toml`` names that version: 2.0.2 is not importable on PyPy, and on
-CPython the two are the same code. The leg is an ordinary part of the matrix
-now.
+released as ``pysnmp-pyasn1`` 2.0.3, which is why ``pyproject.toml`` excludes
+2.0.2: it is not importable on PyPy, and on CPython the two are the same code.
+The floor itself has since moved above 2.0.3 for unrelated reasons that
+``pyproject.toml`` sets out, so every version resolvable here carries the fix.
+The leg is an ordinary part of the matrix now.
 
 One thing to know when reading it: PyPy measures a *warm* interpreter or it
 measures the JIT. The harness sizes its own iteration counts and reports the
