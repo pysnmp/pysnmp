@@ -77,37 +77,33 @@ async def _countTicks(stop):
 class TestTheLoopKeepsRunning:
     """The acceptance criterion the issue asks for."""
 
-    def test_a_concurrent_task_makes_progress_during_the_lookup(self, slowResolver):
-        async def run():
-            stop = asyncio.Event()
-            ticks = asyncio.create_task(_countTicks(stop))
-            await asyncio.sleep(TICK_SECONDS * 2)  # let it get going
+    async def test_a_concurrent_task_makes_progress_during_the_lookup(
+        self, slowResolver
+    ):
+        stop = asyncio.Event()
+        ticks = asyncio.create_task(_countTicks(stop))
+        await asyncio.sleep(TICK_SECONDS * 2)  # let it get going
 
-            target = UdpTransportTarget(("slow.invalid", 161))
-            await target.resolve()
+        target = UdpTransportTarget(("slow.invalid", 161))
+        await target.resolve()
 
-            stop.set()
-            counted = await ticks
+        stop.set()
+        counted = await ticks
 
-            # A stalled loop manages only the couple of ticks from before the
-            # lookup started. A healthy one gets roughly LOOKUP_SECONDS /
-            # TICK_SECONDS more; the floor is deliberately far below that so a
-            # loaded CI runner cannot fail this on timing alone.
-            assert counted > 10
-            assert target.transportAddr == ("127.0.0.1", 161)
+        # A stalled loop manages only the couple of ticks from before the
+        # lookup started. A healthy one gets roughly LOOKUP_SECONDS /
+        # TICK_SECONDS more; the floor is deliberately far below that so a
+        # loaded CI runner cannot fail this on timing alone.
+        assert counted > 10
+        assert target.transportAddr == ("127.0.0.1", 161)
 
-        asyncio.run(run())
+    async def test_the_constructor_itself_returns_immediately(self, slowResolver):
+        started = time.monotonic()
 
-    def test_the_constructor_itself_returns_immediately(self, slowResolver):
-        async def run():
-            started = time.monotonic()
+        UdpTransportTarget(("slow.invalid", 161))
 
-            UdpTransportTarget(("slow.invalid", 161))
-
-            assert time.monotonic() - started < LOOKUP_SECONDS / 2
-            assert slowResolver == []  # nothing was looked up yet
-
-        asyncio.run(run())
+        assert time.monotonic() - started < LOOKUP_SECONDS / 2
+        assert slowResolver == []  # nothing was looked up yet
 
 
 class TestOutsideALoopNothingChanges:
@@ -125,10 +121,10 @@ class TestOutsideALoopNothingChanges:
             "UdpTransportTarget(('127.0.0.1', 161), timeout=1, retries=5, tagList=b'')"
         )
 
-    def test_resolve_is_a_no_op(self, slowResolver):
+    async def test_resolve_is_a_no_op(self, slowResolver):
         target = UdpTransportTarget(("slow.invalid", 161))
 
-        asyncio.run(target.resolve())
+        await target.resolve()
 
         assert slowResolver == ["slow.invalid"]  # not looked up a second time
 
@@ -136,104 +132,83 @@ class TestOutsideALoopNothingChanges:
 class TestTheDeferredState:
     """What a target looks like between construction and resolution."""
 
-    def test_it_reports_itself_unresolved(self, slowResolver):
-        async def run():
-            assert not UdpTransportTarget(("slow.invalid", 161)).isResolved
+    async def test_it_reports_itself_unresolved(self, slowResolver):
+        assert not UdpTransportTarget(("slow.invalid", 161)).isResolved
 
-        asyncio.run(run())
+    async def test_reading_the_address_says_what_to_do(self, slowResolver):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-    def test_reading_the_address_says_what_to_do(self, slowResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
+        # Loud rather than silent: a bare None reaching the LCD would surface
+        # much further away as an unroutable target.
+        with pytest.raises(PySnmpError, match="not resolved yet"):
+            _ = target.transportAddr
 
-            # Loud rather than silent: a bare None reaching the LCD would surface
-            # much further away as an unroutable target.
-            with pytest.raises(PySnmpError, match="not resolved yet"):
-                _ = target.transportAddr
+        with pytest.raises(PySnmpError, match=r"resolve\(\)"):
+            target.getTransportInfo()
 
-            with pytest.raises(PySnmpError, match=r"resolve\(\)"):
-                target.getTransportInfo()
+    async def test_repr_does_not_raise(self, slowResolver):
+        # repr() is most often reached while rendering something for a human,
+        # a traceback included, so it shows the address as given rather than
+        # raising over the one it does not have yet.
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-        asyncio.run(run())
-
-    def test_repr_does_not_raise(self, slowResolver):
-        async def run():
-            # repr() is most often reached while rendering something for a human,
-            # a traceback included, so it shows the address as given rather than
-            # raising over the one it does not have yet.
-            target = UdpTransportTarget(("slow.invalid", 161))
-
-            assert "slow.invalid" in repr(target)
-
-        asyncio.run(run())
+        assert "slow.invalid" in repr(target)
 
 
 class TestResolvingOnce:
     """A target shared by a fan-out is looked up once, not once per request."""
 
-    def test_concurrent_resolves_share_one_lookup(self, slowResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
+    async def test_concurrent_resolves_share_one_lookup(self, slowResolver):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-            await asyncio.gather(*(target.resolve() for _ in range(8)))
+        await asyncio.gather(*(target.resolve() for _ in range(8)))
 
-            assert slowResolver == ["slow.invalid"]
-            assert target.transportAddr == ("127.0.0.1", 161)
+        assert slowResolver == ["slow.invalid"]
+        assert target.transportAddr == ("127.0.0.1", 161)
 
-        asyncio.run(run())
+    async def test_awaiting_again_does_not_look_up_again(self, slowResolver):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-    def test_awaiting_again_does_not_look_up_again(self, slowResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
+        await target.resolve()
+        await target.resolve()
 
-            await target.resolve()
-            await target.resolve()
+        assert slowResolver == ["slow.invalid"]
 
-            assert slowResolver == ["slow.invalid"]
+    async def test_it_returns_self_so_it_can_be_awaited_inline(self, slowResolver):
+        target = await UdpTransportTarget(("slow.invalid", 161)).resolve()
 
-        asyncio.run(run())
-
-    def test_it_returns_self_so_it_can_be_awaited_inline(self, slowResolver):
-        async def run():
-            target = await UdpTransportTarget(("slow.invalid", 161)).resolve()
-
-            assert target.transportAddr == ("127.0.0.1", 161)
-
-        asyncio.run(run())
+        assert target.transportAddr == ("127.0.0.1", 161)
 
 
 class TestTheHlapiResolvesBeforeUse:
     """The deferred state must never reach the LCD, which reads transportAddr."""
 
-    def test_get_cmd_resolves_first(self, slowResolver, monkeypatch):
-        async def run():
-            from pysnmp.hlapi.asyncio import cmdgen
+    async def test_get_cmd_resolves_first(self, slowResolver, monkeypatch):
+        from pysnmp.hlapi.asyncio import cmdgen
 
-            seen = {}
+        seen = {}
 
-            class Stop(Exception):
-                pass
+        class Stop(Exception):
+            pass
 
-            def spy(snmpEngine, authData, transportTarget, *args, **kwargs):
-                seen["resolved"] = transportTarget.isResolved
-                raise Stop
+        def spy(snmpEngine, authData, transportTarget, *args, **kwargs):
+            seen["resolved"] = transportTarget.isResolved
+            raise Stop
 
-            monkeypatch.setattr(cmdgen.lcd, "configure", spy)
+        monkeypatch.setattr(cmdgen.lcd, "configure", spy)
 
-            from pysnmp.entity.engine import SnmpEngine
-            from pysnmp.hlapi.auth import CommunityData
-            from pysnmp.hlapi.context import ContextData
+        from pysnmp.entity.engine import SnmpEngine
+        from pysnmp.hlapi.auth import CommunityData
+        from pysnmp.hlapi.context import ContextData
 
-            target = UdpTransportTarget(("slow.invalid", 161))
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-            with pytest.raises(Stop):
-                await cmdgen.get_cmd(
-                    SnmpEngine(), CommunityData("public"), target, ContextData()
-                )
+        with pytest.raises(Stop):
+            await cmdgen.get_cmd(
+                SnmpEngine(), CommunityData("public"), target, ContextData()
+            )
 
-            assert seen["resolved"] is True
-
-        asyncio.run(run())
+        assert seen["resolved"] is True
 
 
 class TestOnlyBlockingResolutionIsDeferred:
@@ -246,31 +221,22 @@ class TestOnlyBlockingResolutionIsDeferred:
     somewhere further from the mistake.
     """
 
-    def test_a_unix_target_resolves_in_the_constructor_inside_a_loop(self):
+    async def test_a_unix_target_resolves_in_the_constructor_inside_a_loop(self):
         from pysnmp.hlapi.asyncio.transport import UnixTransportTarget
 
-        async def run():
-            target = UnixTransportTarget("/tmp/agent.sock")
+        target = UnixTransportTarget("/tmp/agent.sock")
 
-            assert target.isResolved
-            assert target.transportAddr == "/tmp/agent.sock"
+        assert target.isResolved
+        assert target.transportAddr == "/tmp/agent.sock"
 
-        asyncio.run(run())
-
-    def test_a_bad_path_is_still_rejected_by_the_constructor(self):
+    async def test_a_bad_path_is_still_rejected_by_the_constructor(self):
         from pysnmp.hlapi.asyncio.transport import UnixTransportTarget
 
-        async def run():
-            with pytest.raises(PySnmpError, match="expected a path string"):
-                UnixTransportTarget(123)
+        with pytest.raises(PySnmpError, match="expected a path string"):
+            UnixTransportTarget(123)
 
-        asyncio.run(run())
-
-    def test_an_ip_target_does_defer(self, slowResolver):
-        async def run():
-            assert not UdpTransportTarget(("slow.invalid", 161)).isResolved
-
-        asyncio.run(run())
+    async def test_an_ip_target_does_defer(self, slowResolver):
+        assert not UdpTransportTarget(("slow.invalid", 161)).isResolved
 
 
 @pytest.fixture
@@ -297,102 +263,88 @@ class TestCancellingACallerKeepsTheLookup:
     a second time, exactly where a shared target was supposed to pay it once.
     """
 
-    def test_a_cancelled_caller_does_not_cause_a_second_lookup(self, slowResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
+    async def test_a_cancelled_caller_does_not_cause_a_second_lookup(
+        self, slowResolver
+    ):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-            first = asyncio.create_task(target.resolve())
-            await asyncio.sleep(TICK_SECONDS * 2)  # let the lookup get going
-            first.cancel()
-            with pytest.raises(asyncio.CancelledError):
-                await first
+        first = asyncio.create_task(target.resolve())
+        await asyncio.sleep(TICK_SECONDS * 2)  # let the lookup get going
+        first.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await first
 
-            # The lookup the cancelled caller started is still in flight; this
-            # one waits on it rather than starting its own.
-            await target.resolve()
+        # The lookup the cancelled caller started is still in flight; this
+        # one waits on it rather than starting its own.
+        await target.resolve()
 
-            assert slowResolver == ["slow.invalid"]
-            assert target.transportAddr == ("127.0.0.1", 161)
+        assert slowResolver == ["slow.invalid"]
+        assert target.transportAddr == ("127.0.0.1", 161)
 
-        asyncio.run(run())
+    async def test_a_result_that_lands_with_nobody_waiting_is_still_kept(
+        self, slowResolver
+    ):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-    def test_a_result_that_lands_with_nobody_waiting_is_still_kept(self, slowResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
+        first = asyncio.create_task(target.resolve())
+        await asyncio.sleep(TICK_SECONDS * 2)
+        first.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await first
 
-            first = asyncio.create_task(target.resolve())
-            await asyncio.sleep(TICK_SECONDS * 2)
-            first.cancel()
-            with pytest.raises(asyncio.CancelledError):
-                await first
+        # Nothing is awaiting the lookup when the executor thread
+        # finishes, and the result is taken off it anyway.
+        await _waitFor(lambda: target.isResolved, "the abandoned lookup")
 
-            # Nothing is awaiting the lookup when the executor thread
-            # finishes, and the result is taken off it anyway.
-            await _waitFor(lambda: target.isResolved, "the abandoned lookup")
+        await target.resolve()
 
-            await target.resolve()
+        assert slowResolver == ["slow.invalid"]
+        assert target.transportAddr == ("127.0.0.1", 161)
 
-            assert slowResolver == ["slow.invalid"]
-            assert target.transportAddr == ("127.0.0.1", 161)
+    async def test_one_cancelled_caller_does_not_cancel_the_others(self, slowResolver):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-        asyncio.run(run())
+        waiting = [asyncio.create_task(target.resolve()) for _ in range(4)]
+        await asyncio.sleep(TICK_SECONDS * 2)
+        waiting[0].cancel()
 
-    def test_one_cancelled_caller_does_not_cancel_the_others(self, slowResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
+        with pytest.raises(asyncio.CancelledError):
+            await waiting[0]
 
-            waiting = [asyncio.create_task(target.resolve()) for _ in range(4)]
-            await asyncio.sleep(TICK_SECONDS * 2)
-            waiting[0].cancel()
+        assert await asyncio.gather(*waiting[1:]) == [target] * 3
+        assert slowResolver == ["slow.invalid"]
+        assert target.transportAddr == ("127.0.0.1", 161)
 
-            with pytest.raises(asyncio.CancelledError):
-                await waiting[0]
+    async def test_cancelling_does_not_wait_for_the_lookup(self, slowResolver):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
-            assert await asyncio.gather(*waiting[1:]) == [target] * 3
-            assert slowResolver == ["slow.invalid"]
-            assert target.transportAddr == ("127.0.0.1", 161)
+        first = asyncio.create_task(target.resolve())
+        await asyncio.sleep(TICK_SECONDS * 2)
 
-        asyncio.run(run())
+        # Keeping the lookup alive must not make the caller that no longer
+        # wants it wait for it: a request giving up never blocks on DNS.
+        started = time.monotonic()
+        first.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await first
 
-    def test_cancelling_does_not_wait_for_the_lookup(self, slowResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
-
-            first = asyncio.create_task(target.resolve())
-            await asyncio.sleep(TICK_SECONDS * 2)
-
-            # Keeping the lookup alive must not make the caller that no longer
-            # wants it wait for it: a request giving up never blocks on DNS.
-            started = time.monotonic()
-            first.cancel()
-            with pytest.raises(asyncio.CancelledError):
-                await first
-
-            assert time.monotonic() - started < LOOKUP_SECONDS / 2
-
-        asyncio.run(run())
+        assert time.monotonic() - started < LOOKUP_SECONDS / 2
 
 
 class TestAFailedLookupIsTriedAgain:
     """A resolver that was down is not an answer to cache."""
 
-    def test_the_error_reaches_the_caller(self, failingResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
+    async def test_the_error_reaches_the_caller(self, failingResolver):
+        target = UdpTransportTarget(("slow.invalid", 161))
 
+        with pytest.raises(PySnmpError):
+            await target.resolve()
+
+    async def test_a_later_caller_looks_up_again(self, failingResolver):
+        target = UdpTransportTarget(("slow.invalid", 161))
+
+        for _ in range(2):
             with pytest.raises(PySnmpError):
                 await target.resolve()
 
-        asyncio.run(run())
-
-    def test_a_later_caller_looks_up_again(self, failingResolver):
-        async def run():
-            target = UdpTransportTarget(("slow.invalid", 161))
-
-            for _ in range(2):
-                with pytest.raises(PySnmpError):
-                    await target.resolve()
-
-            assert failingResolver == ["slow.invalid"] * 2
-
-        asyncio.run(run())
+        assert failingResolver == ["slow.invalid"] * 2

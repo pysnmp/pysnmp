@@ -303,7 +303,7 @@ def test_load_average_arrives_as_an_opaque_float():
 
 
 # --- GETBULK / GETNEXT differentiation -----------------------------------
-def test_getbulk_returns_multiple_rows_for_v2c_and_v3():
+async def test_getbulk_returns_multiple_rows_for_v2c_and_v3():
     if is_v1():
         pytest.skip(
             "GETBULK is not available for SNMPv1; GETNEXT is covered separately"
@@ -323,9 +323,7 @@ def test_getbulk_returns_multiple_rows_for_v2c_and_v3():
             lookupMib=False,
         )
 
-    error_indication, error_status, _error_index, var_bind_table = asyncio.run(
-        one_bulk()
-    )
+    error_indication, error_status, _error_index, var_bind_table = await one_bulk()
     assert error_indication is None, f"GETBULK failed: {error_indication}"
     assert not error_status, f"GETBULK error status: {error_status}"
     assert len(var_bind_table) >= 2, (
@@ -453,7 +451,7 @@ def test_set_syslocation_roundtrip():
 
 
 # --- transport dispatching ------------------------------------------------
-def test_concurrent_requests_all_succeed():
+async def test_concurrent_requests_all_succeed():
     """Issue a modest batch of simultaneous GETs to exercise transport
     dispatching without slowing the matrix down."""
 
@@ -468,10 +466,7 @@ def test_concurrent_requests_all_succeed():
         )
         return error_indication
 
-    async def main():
-        return await asyncio.gather(*(one_get() for _ in range(15)))
-
-    indications = asyncio.run(main())
+    indications = await asyncio.gather(*(one_get() for _ in range(15)))
     failures = [ind for ind in indications if ind is not None]
     assert not failures, (
         f"{len(failures)}/{len(indications)} concurrent GETs failed: {failures}"
@@ -540,7 +535,7 @@ def test_getnext_over_tcp():
     assert str(var_binds[0][0]) == SYS_OBJECT_ID
 
 
-def test_getbulk_over_tcp_returns_a_response_worth_framing():
+async def test_getbulk_over_tcp_returns_a_response_worth_framing():
     """A reply spanning several reads is what the framing has to survive.
 
     Over UDP the same request risks fragmentation or a `tooBig`; over TCP it is
@@ -561,9 +556,7 @@ def test_getbulk_over_tcp_returns_a_response_worth_framing():
             lookupMib=False,
         )
 
-    error_indication, error_status, _error_index, var_bind_table = asyncio.run(
-        one_bulk()
-    )
+    error_indication, error_status, _error_index, var_bind_table = await one_bulk()
     assert error_indication is None, f"GETBULK over TCP failed: {error_indication}"
     assert not error_status, f"GETBULK over TCP error status: {error_status}"
     assert len(var_bind_table) >= 2, (
@@ -571,7 +564,7 @@ def test_getbulk_over_tcp_returns_a_response_worth_framing():
     )
 
 
-def test_successive_requests_over_one_tcp_connection():
+async def test_successive_requests_over_one_tcp_connection():
     """Several messages back to back on one connection, with no framing between.
 
     RFC 3430 section 3 puts them on the stream with nothing separating them, so
@@ -602,9 +595,7 @@ def test_successive_requests_over_one_tcp_connection():
 
         return results
 
-    for error_indication, error_status, _error_index, var_binds in asyncio.run(
-        several_gets()
-    ):
+    for error_indication, error_status, _error_index, var_binds in await several_gets():
         assert error_indication is None, (
             f"unexpected error indication: {error_indication}"
         )
@@ -656,7 +647,7 @@ def test_set_over_tcp_round_trips():
         set_location(original)
 
 
-def test_concurrent_requests_over_tcp_all_succeed():
+async def test_concurrent_requests_over_tcp_all_succeed():
     """Interleaved responses on one transport still frame and match up."""
 
     async def one_get():
@@ -670,10 +661,7 @@ def test_concurrent_requests_over_tcp_all_succeed():
         )
         return error_indication
 
-    async def main():
-        return await asyncio.gather(*(one_get() for _ in range(10)))
-
-    indications = asyncio.run(main())
+    indications = await asyncio.gather(*(one_get() for _ in range(10)))
     failures = [ind for ind in indications if ind is not None]
     assert not failures, (
         f"{len(failures)}/{len(indications)} concurrent TCP GETs failed: {failures}"

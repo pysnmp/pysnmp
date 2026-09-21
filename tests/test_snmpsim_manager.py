@@ -1,7 +1,5 @@
 """Integration tests against local snmpsim devices for v1, v2c, and v3."""
 
-import asyncio
-
 from pysnmp.hlapi import (
     CommunityData,
     ContextData,
@@ -317,72 +315,56 @@ class TestUnreachableDevice:
 
 
 class TestAsyncioGetV2c:
-    def test_asyncio_get_sys_descr(self, snmpsim_endpoint):
+    async def test_asyncio_get_sys_descr(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
 
-        async def run():
-            result = await asyncio_get_cmd(
-                SnmpEngine(),
-                CommunityData("public"),
-                AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
-                ContextData(),
-                ObjectType(ObjectIdentity(SYS_DESCR)),
-            )
-            return result
-
-        result = asyncio.run(run())
+        result = await asyncio_get_cmd(
+            SnmpEngine(),
+            CommunityData("public"),
+            AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
+            ContextData(),
+            ObjectType(ObjectIdentity(SYS_DESCR)),
+        )
         assert get_value(result) == "pysnmp integration SNMPv2c agent"
 
-    def test_asyncio_get_sys_contact(self, snmpsim_endpoint):
+    async def test_asyncio_get_sys_contact(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
 
-        async def run():
-            result = await asyncio_get_cmd(
-                SnmpEngine(),
-                CommunityData("public"),
-                AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
-                ContextData(),
-                ObjectType(ObjectIdentity(SYS_CONTACT)),
-            )
-            return result
-
-        result = asyncio.run(run())
+        result = await asyncio_get_cmd(
+            SnmpEngine(),
+            CommunityData("public"),
+            AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
+            ContextData(),
+            ObjectType(ObjectIdentity(SYS_CONTACT)),
+        )
         assert get_value(result) == "Test Contact"
 
 
 class TestAsyncioGetV3:
-    def test_asyncio_get_sys_descr(self, snmpsim_endpoint):
+    async def test_asyncio_get_sys_descr(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
 
-        async def run():
-            result = await asyncio_get_cmd(
-                SnmpEngine(),
-                UsmUserData("00000", "authkey1", authProtocol=usmHMACMD5AuthProtocol),
-                AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
-                ContextData(contextName="00000"),
-                ObjectType(ObjectIdentity(SYS_DESCR)),
-            )
-            return result
-
-        result = asyncio.run(run())
+        result = await asyncio_get_cmd(
+            SnmpEngine(),
+            UsmUserData("00000", "authkey1", authProtocol=usmHMACMD5AuthProtocol),
+            AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
+            ContextData(contextName="00000"),
+            ObjectType(ObjectIdentity(SYS_DESCR)),
+        )
         assert get_value(result) == "pysnmp integration SNMPv3 agent"
 
 
 class TestAsyncioNextV2c:
-    def test_asyncio_next_cmd(self, snmpsim_endpoint):
+    async def test_asyncio_next_cmd(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
 
-        async def run():
-            result = await asyncio_next_cmd(
-                SnmpEngine(),
-                CommunityData("public"),
-                AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
-                ContextData(),
-                ObjectType(ObjectIdentity("1.3.6.1.2.1.1")),
-            )
-            return result
-
-        result = asyncio.run(run())
+        result = await asyncio_next_cmd(
+            SnmpEngine(),
+            CommunityData("public"),
+            AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
+            ContextData(),
+            ObjectType(ObjectIdentity("1.3.6.1.2.1.1")),
+        )
         error_indication, error_status, error_index, var_binds = result
         assert error_indication is None
         assert len(var_binds) > 0
@@ -392,22 +374,18 @@ class TestAsyncioNextV2c:
 
 
 class TestAsyncioBulkV2c:
-    def test_asyncio_bulk_cmd(self, snmpsim_endpoint):
+    async def test_asyncio_bulk_cmd(self, snmpsim_endpoint):
         host, port = snmpsim_endpoint
 
-        async def run():
-            result = await asyncio_bulk_cmd(
-                SnmpEngine(),
-                CommunityData("public"),
-                AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
-                ContextData(),
-                0,
-                10,
-                ObjectType(ObjectIdentity("1.3.6.1.2.1.1")),
-            )
-            return result
-
-        result = asyncio.run(run())
+        result = await asyncio_bulk_cmd(
+            SnmpEngine(),
+            CommunityData("public"),
+            AsyncioUdpTransportTarget((host, port), timeout=1, retries=2),
+            ContextData(),
+            0,
+            10,
+            ObjectType(ObjectIdentity("1.3.6.1.2.1.1")),
+        )
         error_indication, error_status, error_index, var_binds = result
         assert error_indication is None
         for vb in var_binds:
@@ -417,18 +395,14 @@ class TestAsyncioBulkV2c:
 
 
 class TestAsyncioTimeout:
-    def test_asyncio_timeout_v2c(self):
-        async def run():
-            result = await asyncio_get_cmd(
-                SnmpEngine(),
-                CommunityData("public"),
-                AsyncioUdpTransportTarget(("127.0.0.1", 19999), timeout=1, retries=0),
-                ContextData(),
-                ObjectType(ObjectIdentity(SYS_DESCR)),
-            )
-            return result
-
-        result = asyncio.run(run())
+    async def test_asyncio_timeout_v2c(self):
+        result = await asyncio_get_cmd(
+            SnmpEngine(),
+            CommunityData("public"),
+            AsyncioUdpTransportTarget(("127.0.0.1", 19999), timeout=1, retries=0),
+            ContextData(),
+            ObjectType(ObjectIdentity(SYS_DESCR)),
+        )
         error_indication, error_status, error_index, var_binds = result
         print(f"  SNMP timeout: {error_indication}")
         assert error_indication is not None
