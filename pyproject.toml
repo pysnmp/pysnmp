@@ -189,6 +189,26 @@ test = [
     "ruff >=0.4.0,<1.0.0",
 ]
 
+# The CodSpeed benchmark suite, and nothing the suite does not need. Split out
+# of `dev` the way `test` is, and for a sharper version of the same reason:
+# pytest-codspeed's measurement instrument is a compiled extension published
+# only for the interpreters and platforms CodSpeed supports, so carrying it in
+# `dev` would make a routine `uv sync` fail wherever the benchmarks do not run.
+# Only .github/workflows/codspeed.yml installs this group.
+#
+# It replaces benchmarks/requirements.txt, which the suite arrived with. That
+# file was written against the 5.0.x branch, where the packaged project still
+# supported Python 3.8 and pinned an old test stack for the release pipeline,
+# so the benchmark tooling genuinely could not share it. On this branch the
+# floors are 3.10 and a current pytest, there is nothing left to hold apart,
+# and a second dependency file that no lockfile covers is a liability rather
+# than an escape hatch: `uv run --locked` now resolves the benchmarks from the
+# same lockfile as everything else.
+bench = [
+    "pytest >=9.0.3,<10.0.0",
+    "pytest-codspeed >=5.0.0,<6.0.0",
+]
+
 dev = [
     {include-group = "test"},
     # documentation toolchain is marker-guarded the way pyasn1 already does
@@ -228,6 +248,14 @@ dev = [
 prerelease = "if-necessary"
 
 [tool.pytest.ini_options]
+# `tests` only, so that a bare `pytest` collects the suite and not the
+# benchmarks. benchmarks/ needs pytest-codspeed for its `benchmark` fixture,
+# which only the `bench` group installs -- without this every benchmark errors
+# during setup for anyone who ran `pytest` with the `test` group, which is
+# everyone. CI already names `tests` explicitly, so nothing there changes.
+# Measure the benchmarks by naming their directory:
+#   uv run --group bench pytest benchmarks/ --codspeed
+testpaths = ["tests"]
 filterwarnings = [
     # str() on an OCTET STRING decodes it as text; pyasn1 deprecates that and
     # will return the hexadecimal representation instead. Keep pysnmp off it.
