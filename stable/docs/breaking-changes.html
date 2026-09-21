@@ -269,11 +269,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async-instrumentation.html">Serving values an agent has to wait for</a></li>
 <li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usm-dh-key-change.html">Diffie-Hellman USM key change</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observability-contract.html">Logging and tracing contract</a></li>
 <li class="toctree-l1"><a class="reference internal" href="codec-benchmark.html">Codec benchmark</a></li>
 </ul>
 <ul>
@@ -289,6 +291,7 @@
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/instrumentation.html">Serving values the agent has to wait for</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html">Forwarding traps</a></li>
 </ul>
@@ -379,6 +382,45 @@
 <p>This release is not backwards compatible with the 5.0 series. The changes
 below require source modifications in applications that used the removed
 interfaces. See <a class="reference internal" href="../changelog.html"><span class="doc">Changelog</span></a> for the complete list of changes.</p>
+<section id="mib-instrumentation-takes-varbind-context">
+<h2>MIB instrumentation takes <code class="docutils literal notranslate"><span class="pre">(varBind,</span> <span class="pre">**context)</span></code><a class="headerlink" href="#mib-instrumentation-takes-varbind-context" title="Link to this heading">¶</a></h2>
+<p>The methods a managed object implements took <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">val,</span> <span class="pre">idx,</span> <span class="pre">acInfo)</span></code> and
+take <code class="docutils literal notranslate"><span class="pre">(varBind,</span> <span class="pre">**context)</span></code> now, where <code class="docutils literal notranslate"><span class="pre">varBind</span></code> is an
+<code class="docutils literal notranslate"><span class="pre">(ObjectName,</span> <span class="pre">value)</span></code> pair and <code class="docutils literal notranslate"><span class="pre">context</span></code> carries <code class="docutils literal notranslate"><span class="pre">idx</span></code>, <code class="docutils literal notranslate"><span class="pre">acFun</span></code> and
+<code class="docutils literal notranslate"><span class="pre">acCtx</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># was</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyScalar</span><span class="p">(</span><span class="n">MibScalarInstance</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">readGet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">acInfo</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">read_my_value</span><span class="p">())</span>
+
+<span class="c1"># now</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyScalar</span><span class="p">(</span><span class="n">MibScalarInstance</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">readGet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varBind</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">):</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">varBind</span>
+        <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">read_my_value</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The same applies to the instrumentation contract one level up:
+<code class="docutils literal notranslate"><span class="pre">readVars</span></code>/<code class="docutils literal notranslate"><span class="pre">readNextVars</span></code>/<code class="docutils literal notranslate"><span class="pre">writeVars</span></code> took <code class="docutils literal notranslate"><span class="pre">(varBinds,</span> <span class="pre">acInfo)</span></code> and take
+<code class="docutils literal notranslate"><span class="pre">(varBinds,</span> <span class="pre">**context)</span></code>.</p>
+<p><strong>Nothing has been removed.</strong> A class written the old way keeps serving requests
+unmodified: PySNMP detects the old signature and adapts the call, emitting a
+<code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> that names the class and the methods it adapted. The
+detection happens once per class, not per request, so a class on the current
+signature pays nothing at all.</p>
+<p>Why the shape changed: every piece of information a managed object might need
+had to be another positional argument, and adding one broke every
+implementation. A context mapping can carry what a given call needs without
+changing the signature again – including an awaitable, which is the
+prerequisite for asynchronous instrumentation.</p>
+<p>To find what needs changing, run with deprecation warnings visible:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">W</span> <span class="n">error</span><span class="p">::</span><span class="ne">DeprecationWarning</span> <span class="n">your_agent</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The names match <a class="reference external" href="https://github.com/lextudio/pysnmp">lextudio/pysnmp</a> and the
+2018 upstream work both forks descend from, so an implementation written for
+either ports across.</p>
+</section>
 <section id="the-high-level-api-is-snake-case-and-camelcase-is-deprecated">
 <h2>The high-level API is snake_case, and camelCase is deprecated<a class="headerlink" href="#the-high-level-api-is-snake-case-and-camelcase-is-deprecated" title="Link to this heading">¶</a></h2>
 <p>The high-level API followed camelCase, which PEP 8 does not call for. The
@@ -562,6 +604,7 @@ destination ASN.1 type.</p></li>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Breaking Changes</a><ul>
+<li><a class="reference internal" href="#mib-instrumentation-takes-varbind-context">MIB instrumentation takes <code class="docutils literal notranslate"><span class="pre">(varBind,</span> <span class="pre">**context)</span></code></a></li>
 <li><a class="reference internal" href="#the-high-level-api-is-snake-case-and-camelcase-is-deprecated">The high-level API is snake_case, and camelCase is deprecated</a></li>
 <li><a class="reference internal" href="#python-3-10-is-the-minimum-supported-version">Python 3.10 is the minimum supported version</a></li>
 <li><a class="reference internal" href="#asyncore-and-asynsock-have-been-removed"><code class="docutils literal notranslate"><span class="pre">asyncore</span></code> and <code class="docutils literal notranslate"><span class="pre">asynsock</span></code> have been removed</a></li>

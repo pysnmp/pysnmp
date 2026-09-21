@@ -269,11 +269,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/async-instrumentation.html">Serving values an agent has to wait for</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/usm-dh-key-change.html">Diffie-Hellman USM key change</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/loader-contract.html">MIB module loader contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/observability-contract.html">Logging and tracing contract</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/codec-benchmark.html">Codec benchmark</a></li>
 </ul>
 <ul>
@@ -289,6 +291,7 @@
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/agent/cmdrsp/instrumentation.html">Serving values the agent has to wait for</a></li>
 <li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html">Forwarding traps</a></li>
 </ul>
@@ -456,6 +459,7 @@ this implementation? Try out quick start page!</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="docs/breaking-changes.html">Breaking Changes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs/breaking-changes.html#mib-instrumentation-takes-varbind-context">MIB instrumentation takes <code class="docutils literal notranslate"><span class="pre">(varBind,</span> <span class="pre">**context)</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/breaking-changes.html#the-high-level-api-is-snake-case-and-camelcase-is-deprecated">The high-level API is snake_case, and camelCase is deprecated</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/breaking-changes.html#python-3-10-is-the-minimum-supported-version">Python 3.10 is the minimum supported version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/breaking-changes.html#asyncore-and-asynsock-have-been-removed"><code class="docutils literal notranslate"><span class="pre">asyncore</span></code> and <code class="docutils literal notranslate"><span class="pre">asynsock</span></code> have been removed</a></li>
@@ -478,6 +482,14 @@ this implementation? Try out quick start page!</p>
 <li class="toctree-l2"><a class="reference internal" href="docs/smi-table-api.html#addressing-table-cells">Addressing table cells</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/smi-table-api.html#optional-columns-during-row-activation">Optional columns during row activation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/smi-table-api.html#choosing-clone-or-subtype">Choosing <code class="docutils literal notranslate"><span class="pre">clone</span></code> or <code class="docutils literal notranslate"><span class="pre">subtype</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs/async-instrumentation.html">Serving values an agent has to wait for</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs/async-instrumentation.html#a-controller-that-waits">A controller that waits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/async-instrumentation.html#set-atomicity-is-the-controller-s-and-always-was">SET atomicity is the controller’s, and always was</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/async-instrumentation.html#what-stays-true-across-the-wait">What stays true across the wait</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/async-instrumentation.html#what-this-does-not-cover">What this does not cover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/async-instrumentation.html#what-it-costs">What it costs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a><ul>
@@ -521,6 +533,16 @@ this implementation? Try out quick start page!</p>
 <li class="toctree-l2"><a class="reference internal" href="docs/loader-contract.html#contract-v1">Contract v1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/loader-contract.html#what-is-deliberately-not-in-the-contract">What is deliberately not in the contract</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/loader-contract.html#for-generator-authors">For generator authors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs/observability-contract.html">Logging and tracing contract</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs/observability-contract.html#the-rule">The rule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/observability-contract.html#what-things-cost">What things cost</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/observability-contract.html#the-budget-by-granularity">The budget, by granularity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/observability-contract.html#two-audiences-two-mechanisms">Two audiences, two mechanisms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/observability-contract.html#rules-for-library-code">Rules for library code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/observability-contract.html#a-cautionary-tale">A cautionary tale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/observability-contract.html#how-to-measure-a-change-here">How to measure a change here</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="docs/codec-benchmark.html">Codec benchmark</a><ul>

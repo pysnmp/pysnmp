@@ -267,11 +267,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="docs/smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/async-instrumentation.html">Serving values an agent has to wait for</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/usm-dh-key-change.html">Diffie-Hellman USM key change</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-tools.html">MIB instance generation tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/loader-contract.html">MIB module loader contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/observability-contract.html">Logging and tracing contract</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docs/codec-benchmark.html">Codec benchmark</a></li>
 </ul>
 <ul>
@@ -287,6 +289,7 @@
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/agent/cmdrsp/instrumentation.html">Serving values the agent has to wait for</a></li>
 <li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html">Forwarding traps</a></li>
 </ul>
@@ -800,8 +803,6 @@
 </li>
         <li><a href="docs/usm-dh-key-change.html#pysnmp.proto.secmod.rfc2786.DHParameters.privateValueLength">privateValueLength (pysnmp.proto.secmod.rfc2786.DHParameters attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     pysnmp.hlapi
 
@@ -809,6 +810,8 @@
           <li><a href="docs/api-internals.html#module-pysnmp.hlapi">module</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="docs/api-internals.html#pysnmp.hlapi.pysnmp.hlapi.transport.TransportAddrT">pysnmp.hlapi.transport.TransportAddrT (class in pysnmp.hlapi)</a>
 </li>
         <li>
@@ -826,6 +829,13 @@
 </li>
         <li><a href="docs/api-internals.html#pysnmp.error.PySnmpWeakCryptoWarning">PySnmpWeakCryptoWarning</a>
 </li>
+        <li>
+    Python Enhancement Proposals
+
+        <ul>
+          <li><a href="docs/observability-contract.html#index-0">PEP 669</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -948,7 +958,7 @@
 </li>
           <li><a href="docs/api-reference.html#index-66">RFC 3414 Section 8</a>
 </li>
-          <li><a href="examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html#index-1">RFC 3416</a>
+          <li><a href="docs/async-instrumentation.html#index-0">RFC 3416</a>, <a href="docs/async-instrumentation.html#index-1">[1]</a>, <a href="examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html#index-1">[2]</a>
 </li>
           <li><a href="docs/hlapi/asyncio/manager/cmdgen/bulkcmd.html#index-1">RFC 3416 Section 4.2.3</a>
 </li>

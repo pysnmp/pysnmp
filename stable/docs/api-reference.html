@@ -269,11 +269,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async-instrumentation.html">Serving values an agent has to wait for</a></li>
 <li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usm-dh-key-change.html">Diffie-Hellman USM key change</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observability-contract.html">Logging and tracing contract</a></li>
 <li class="toctree-l1"><a class="reference internal" href="codec-benchmark.html">Codec benchmark</a></li>
 </ul>
 <ul>
@@ -289,6 +291,7 @@
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/instrumentation.html">Serving values the agent has to wait for</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html">Forwarding traps</a></li>
 </ul>
@@ -2638,6 +2641,18 @@ of value.</p>
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <div class="admonition note">
@@ -2688,6 +2703,18 @@ or <a class="reference internal" href="#pysnmp.proto.rfc1902.Integer32" title="p
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pysnmp.proto.rfc1902.Integer32.subtypeSpec">
 <span class="sig-name descname"><span class="pre">subtypeSpec</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ConstraintsIntersection</span> <span class="pre">object,</span> <span class="pre">consts</span> <span class="pre">&lt;ValueRangeConstraint</span> <span class="pre">object,</span> <span class="pre">consts</span> <span class="pre">-2147483648,</span> <span class="pre">2147483647&gt;&gt;</span></span><a class="headerlink" href="#pysnmp.proto.rfc1902.Integer32.subtypeSpec" title="Link to this definition">¶</a></dt>
@@ -2753,6 +2780,18 @@ possible by enumerated literal.</p>
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pysnmp.proto.rfc1902.Integer.withNamedValues">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">withNamedValues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.proto.rfc1902.Integer.withNamedValues" title="Link to this definition">¶</a></dt>
@@ -2803,6 +2842,18 @@ class instance.</p>
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pysnmp.proto.rfc1902.OctetString.subtypeSpec">
 <span class="sig-name descname"><span class="pre">subtypeSpec</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ConstraintsIntersection</span> <span class="pre">object,</span> <span class="pre">consts</span> <span class="pre">&lt;ValueSizeConstraint</span> <span class="pre">object,</span> <span class="pre">consts</span> <span class="pre">0,</span> <span class="pre">65535&gt;&gt;</span></span><a class="headerlink" href="#pysnmp.proto.rfc1902.OctetString.subtypeSpec" title="Link to this definition">¶</a></dt>
@@ -2886,6 +2937,18 @@ additionally IPv4 address in dotted notation (‘127.0.0.1’).</p>
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -2921,6 +2984,18 @@ inclusive or Python string containing OID in “dotted” form or
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -2954,6 +3029,18 @@ or any <a class="reference internal" href="#pysnmp.proto.rfc1902.Integer" title=
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -2987,6 +3074,18 @@ or any <a class="reference internal" href="#pysnmp.proto.rfc1902.Integer" title=
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -3019,6 +3118,18 @@ or any <a class="reference internal" href="#pysnmp.proto.rfc1902.Integer" title=
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -3051,6 +3162,18 @@ or any <a class="reference internal" href="#pysnmp.proto.rfc1902.Integer" title=
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -3102,6 +3225,18 @@ class instance.</p>
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -3146,6 +3281,18 @@ or another <a class="reference internal" href="#pysnmp.proto.rfc1902.Float" titl
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pysnmp.proto.rfc1902.Float.asFloat">
 <span class="sig-name descname"><span class="pre">asFloat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.proto.rfc1902.Float.asFloat" title="Link to this definition">¶</a></dt>
@@ -3194,6 +3341,18 @@ or another <a class="reference internal" href="#pysnmp.proto.rfc1902.Double" tit
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pysnmp.proto.rfc1902.Double.asFloat">
 <span class="sig-name descname"><span class="pre">asFloat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.proto.rfc1902.Double.asFloat" title="Link to this definition">¶</a></dt>
@@ -3261,6 +3420,18 @@ or any <a class="reference internal" href="#pysnmp.proto.rfc1902.Integer" title=
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -3309,7 +3480,18 @@ of the string, and so on
 <span class="gp">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
-<p>Build a subclass on the fly when named bits are given to the constructor.</p>
+<p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pysnmp.proto.rfc1902.Bits.__new__">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.proto.rfc1902.Bits.__new__" title="Link to this definition">¶</a></dt>

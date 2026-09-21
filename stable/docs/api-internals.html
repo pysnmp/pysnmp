@@ -269,11 +269,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async-instrumentation.html">Serving values an agent has to wait for</a></li>
 <li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usm-dh-key-change.html">Diffie-Hellman USM key change</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mib-corpus.html">Loading MIBs from a corpus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observability-contract.html">Logging and tracing contract</a></li>
 <li class="toctree-l1"><a class="reference internal" href="codec-benchmark.html">Codec benchmark</a></li>
 </ul>
 <ul>
@@ -289,6 +291,7 @@
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/instrumentation.html">Serving values the agent has to wait for</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html">Forwarding traps</a></li>
 </ul>
@@ -513,7 +516,19 @@ run past the end of the MIB view.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pysnmp.proto.rfc1902.ObjectName">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pysnmp.proto.rfc1902.</span></span><span class="sig-name descname"><span class="pre">ObjectName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;NoValue</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pysnmp.proto.rfc1902.ObjectName" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set this object’s initializer attributes, and seal them.</p>
+<p>Every keyword argument becomes an attribute of the object and joins
+the set <code class="docutils literal notranslate"><span class="pre">__setattr__</span></code> then refuses to overwrite – <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and
+<code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> always, defaulting to the class’s own, plus whatever a
+subclass adds. That is what makes an ASN.1 object immutable in the
+sense its documentation claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Initializer attributes. <code class="docutils literal notranslate"><span class="pre">tagSet</span></code> and <code class="docutils literal notranslate"><span class="pre">subtypeSpec</span></code> fall back
+to the class attributes of the same name when not given.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="transport">
