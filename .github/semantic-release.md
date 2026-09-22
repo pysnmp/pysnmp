@@ -58,6 +58,15 @@ release rules control the version, but the notes are grouped by type, and a
 Breaking changes and `feat(deps)` keep their normal meaning -- the rules restate
 them, because a custom rule that matches short-circuits the built-in ones.
 
+The three types that release on their own -- `fix`, `feat` and `perf` -- are
+deliberately *not* restated. They come from semantic-release's built-in rules,
+which apply to every commit no custom rule matched, and that is the whole reason
+a `perf` commit cuts a patch. Restating one as a bare `{ type: "perf" }` would
+not be the no-op it looks like: every rule matching a commit is considered and
+the highest release among them wins, so a bare type rule would outrank
+`{ scope: "deps-dev", release: false }` and start releasing the dev bumps the
+table above says release nothing.
+
 ## Examples
 
 ```
