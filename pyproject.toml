@@ -40,8 +40,47 @@ readme = "README.md"
 # engine path imports pysmi at run time. tests/test_no_pysmi.py holds that line
 # by blocking the import and starting an engine anyway.
 #
-# The pyasn1 floor is 2.0.6, and each version below it is excluded for a
-# reason worth keeping written down.
+# The pyasn1 floor is set in `dependencies` below, and each version under it
+# is excluded for a reason worth keeping written down. The entries name the
+# version they describe, which is a fact about that release; the floor itself
+# is not restated here, because a comment that repeats a specifier is a
+# comment that goes stale the next time the specifier moves.
+#
+# 2.0.6 is not a defect, and is the weaker kind of floor for the same reason
+# 2.0.5 is: it encodes and decodes correctly, and staying on it is slower
+# rather than wrong. What it does not have is 2.0.7's comparison and codec
+# work. Measured through this library's own benchmark payloads -- the module
+# benchmarks/payloads.py builds, on CPython 3.14, best of five runs of 200:
+#
+#   encode GetRequest, 7 varbinds     154.6 -> 107.6 us    -30.4%
+#   encode response, 60 varbinds     1324.2 ->  909.6 us   -31.3%
+#   decode GetRequest                 403.5 ->  399.4 us    -1.0%
+#   decode response, 60 varbinds     4194.7 -> 4168.8 us    -0.6%
+#
+# The encode half is where it lands, and it lands there because 2.0.7 stopped
+# re-validating every subtree once per level during an encode
+# (pysnmp/pyasn1#199) and stopped reaching the schema guard through a helper
+# call per component (pysnmp/pyasn1#205, pysnmp/pyasn1#206). Two further
+# changes show on pyasn1's own suite without moving these payloads much: a tag
+# set compared without constructing one to throw away is 49.8% off
+# `tag_set_is_super_tag_set_of` (pysnmp/pyasn1#209), and the CER string
+# fragment rules of X.690 9.2 checked during the decode that assembles the
+# value rather than in a second pass over the same octets is 40% off
+# `cer_decode_long_octet_string` (pysnmp/pyasn1#210).
+#
+# 2.0.7 is not uniformly faster than 2.0.6, which is worth writing down rather
+# than leaving for someone to find. On pyasn1's suite four cases regress, three
+# of them tag set construction: `tag_set_tag_implicitly` +15.8%,
+# `tag_set_tag_explicitly` +14.7% and `subtype_implicit_tag` +6.5%. That is the
+# deliberate half of a trade -- construction was made heavier so that
+# comparison could be cheaper, which is what bought the encode figures above --
+# and pysnmp/pyasn1#203 records it as one. It does not reach the message path:
+# the four timings above are what this library actually does, and none of them
+# is slower.
+#
+# 2.0.7 also carries a fix for a DEFAULT component holding a schema object.
+# That is not a reason the floor moved: the defect was introduced inside the
+# 2.0.7 cycle and fixed before release, so 2.0.6 never had it.
 #
 # 2.0.5 is the last entry here that is not a defect. It decodes correctly and
 # its debug output can be trusted; what it does not have is 2.0.6's allocation
@@ -92,7 +131,7 @@ readme = "README.md"
 # (pysnmp/pyasn1#185). That one is PyPy-only; on CPython the two are the same.
 dependencies = [
     "pycryptodomex >=3.11.0,<4.0.0",
-    "pysnmp-pyasn1 >=2.0.6,<3.0.0",
+    "pysnmp-pyasn1 >=2.0.7,<3.0.0",
 ]
 
 # Compiling ASN.1 at run time is what pysmi is for, and it is a thing some
@@ -126,8 +165,8 @@ dependencies = [
 # longer carries the runtime behavior pysnmp now applies from
 # pysnmp/smi/mibs/behavior (#215) -- are subsumed by it.
 #
-# The patch digit is 6.0.1 rather than 6.0.0 because 6.0.0 cannot build a
-# corpus on PyPy: its `_connect` leaves the cursor behind `PRAGMA journal_mode`
+# The floor carries a patch digit rather than stopping at the major because
+# pysmi 6.0.0 cannot build a corpus on PyPy: its `_connect` leaves the cursor behind `PRAGMA journal_mode`
 # unclosed, and that PRAGMA answers with a row, so the statement is still open
 # when write_db() commits. CPython frees the cursor as the call returns and
 # never notices; PyPy frees it later and the commit meets "cannot commit
@@ -238,10 +277,9 @@ dev = [
 
 # General availability wherever there is one, enforced rather than reviewed.
 #
-# Every requirement above names a final release -- pysnmp-pyasn1 2.0.6 and
-# pysnmp-pysmi 6.0.0 are GA -- but a specifier is a statement about
-# one requirement, and the thing worth guaranteeing is a property of the whole
-# resolution: nothing this repository installs is a prerelease of a package
+# Every requirement above names a final release -- but a specifier is a
+# statement about one requirement, and the thing worth guaranteeing is a
+# property of the whole resolution: nothing this repository installs is a prerelease of a package
 # that has a release, including something a transitive dependency asks for.
 # "if-necessary" is that guarantee: uv takes a prerelease only for a package
 # whose every version is one, so an rc of pysmi, pyasn1 or pysnmp cannot enter
