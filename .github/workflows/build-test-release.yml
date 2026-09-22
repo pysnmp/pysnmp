@@ -447,7 +447,7 @@ jobs:
         with:
           enable-cache: true
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           # semantic-release 25 needs ^22.14, and @semantic-release/changelog
           # and /git need ^22.22.2 || >=24.15. Pin the major here rather than

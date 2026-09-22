@@ -32,7 +32,7 @@ jobs:
           # The default checkout is a single commit and the range below spans
           # the whole pull request, so its history has to be present.
           fetch-depth: 0
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
       # commitlint.config.mjs sits at the repository root, and the preset it
