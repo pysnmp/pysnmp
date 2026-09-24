@@ -27,7 +27,13 @@ include = ["docs", "tests", "examples"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pysnmp-pysmi = "^1.0.4"
+# Capped below 1.2.0 for the same reason as pysnmp-pyasn1 below: 1.1.12 is
+# the last release of the line 5.x was built against. The 1.2.0 betas were
+# cut from pysmi's modernised main (the code that became 2.x), need Python
+# >=3.10 where 5.x declares ^3.8, and are not a 5.x maintenance line. The
+# caret range this replaces admitted them for any resolver allowing
+# prereleases.
+pysnmp-pysmi = ">=1.0.4,<1.2.0"
 pycryptodomex = "^3.11.0"
 # Capped below 1.2.0 deliberately. pysnmp-pyasn1 1.2.0 removed
 # pyasn1.compat, which pysnmp/debug.py imports at module scope
