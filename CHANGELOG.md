@@ -3,6 +3,12 @@
 Generated from the commit history at release time. The narrative history
 through 5.x is [published with the documentation](https://pysnmp.github.io/pysnmp/latest/changelog-history.html).
 
+## [6.0.0-rc.18](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.17...v6.0.0-rc.18) (2026-09-24)
+
+### Bug Fixes
+
+* **deps:** cap pysnmp-pyasn1 below 1.2.0 so 5.x installs again ([05ec299](https://github.com/pysnmp/pysnmp/commit/05ec299e680ada3a5722b8b7c8fd8a45b195cb77))
+
 ## [6.0.0-rc.17](https://github.com/pysnmp/pysnmp/compare/v6.0.0-rc.16...v6.0.0-rc.17) (2026-09-21)
 
 ### Features
