@@ -25,6 +25,13 @@ permissions:
 jobs:
   commitlint:
     name: commitlint
+    # Not the release pull request, next into main. Every commit it carries
+    # already reached next through a pull request checked here, so linting
+    # them again adds nothing -- and the range also spans next's history from
+    # before this check existed (3171568d), messages that can no longer be
+    # reworded without rewriting a published branch. A skipped job satisfies
+    # a required check.
+    if: ${{ !(github.head_ref == 'next' && github.base_ref == 'main') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
