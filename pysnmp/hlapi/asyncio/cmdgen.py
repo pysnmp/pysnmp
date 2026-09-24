@@ -1,13 +1,12 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
 #          Zachary Lorusso <zlorusso@gmail.com>
-# Modified by Ilya Etingof <ilya@snmplabs.com>
+# Modified by Ilya Etingof deceased
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,30 +30,51 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
-import sys
 
-from pysnmp.smi.rfc1902 import *
-from pysnmp.hlapi.auth import *
-from pysnmp.hlapi.context import *
-from pysnmp.hlapi.lcd import *
-from pysnmp.hlapi.varbinds import *
-from pysnmp.hlapi.asyncio.transport import *
-from pysnmp.entity.rfc3413 import cmdgen
+"""GET, GETNEXT, GETBULK and SET as coroutines, and the walks built on them."""
 
 import asyncio
+from collections.abc import AsyncGenerator
+from typing import Any
 
+from pyasn1.type.univ import Null
 
-__all__ = ['getCmd', 'nextCmd', 'setCmd', 'bulkCmd', 'isEndOfMib']
+from pysnmp._aliases import install as _installAliases
+from pysnmp.entity.rfc3413 import cmdgen
+from pysnmp.hlapi.asyncio._callback import make_callback
+from pysnmp.hlapi.asyncio._walk import endColumnsThatLeftTheSubtree, walkOptions
+from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
+from pysnmp.hlapi.types import SnmpResponse
+from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
+from pysnmp.proto import errind
+
+__all__ = [
+    "bulk_cmd",
+    "bulk_walk_cmd",
+    "get_cmd",
+    "is_end_of_mib",
+    "next_cmd",
+    "set_cmd",
+    "walk_cmd",
+]
 
 vbProcessor = CommandGeneratorVarBinds()
 lcd = CommandGeneratorLcdConfigurator()
 
-isEndOfMib = lambda x: not cmdgen.getNextVarBinds(x)[1]
+
+def is_end_of_mib(x):
+    """Whether a walk has run off the end of every subtree it was following."""
+    return not cmdgen.getNextVarBinds(x)[1]
 
 
-
-async def getCmd(snmpEngine, authData, transportTarget, contextData,
-           *varBinds, **options):
+async def get_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GET.
 
     (:RFC:`1905#section-4.2.1`)
@@ -85,8 +105,19 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
+            * `ignoreValueErrors` - what to do about a response value that
+              will not cast to the syntax its MIB object declares. Default is
+              `None`, which tolerates it and hands back the uncast value.
+              `False` reports it as
+              :py:class:`~pysnmp.smi.error.SmiError` instead.
+
+              A name the peer answered under a MIB this side has not loaded is
+              a different matter and stays tolerated either way: it comes back
+              as a bare OID, because raising would end a walk at the first such
+              binding. Only `lookupMib` turns resolution off altogether.
+
     Returns
-    ------
+    -------
     errorIndication : str
         True value indicates SNMP engine error.
     errorStatus : str
@@ -99,7 +130,7 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
@@ -109,55 +140,57 @@ async def getCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     result_get = await getCmd(
+    ...     result_get = await get_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0))
     ...     )
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_get
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.get_event_loop().run_until_complete(run())
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBinds, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds,
-                                                        lookupMib)
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.GetCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
         contextData.contextName,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (
+            options.get("lookupMib", True),
+            options.get("ignoreValueErrors"),
+            future,
+        ),
     )
     return await future
 
 
-async def setCmd(snmpEngine, authData, transportTarget, contextData,
-           *varBinds, **options):
+async def set_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP SET.
 
     (:RFC:`1905#section-4.2.5`)
@@ -188,8 +221,19 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
+            * `ignoreValueErrors` - what to do about a response value that
+              will not cast to the syntax its MIB object declares. Default is
+              `None`, which tolerates it and hands back the uncast value.
+              `False` reports it as
+              :py:class:`~pysnmp.smi.error.SmiError` instead.
+
+              A name the peer answered under a MIB this side has not loaded is
+              a different matter and stays tolerated either way: it comes back
+              as a bare OID, because raising would end a walk at the first such
+              binding. Only `lookupMib` turns resolution off altogether.
+
     Returns
-    ------
+    -------
     errorIndication : str
         True value indicates SNMP engine error.
     errorStatus : str
@@ -202,7 +246,7 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
@@ -212,57 +256,65 @@ async def setCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     errorIndication, errorStatus, errorIndex, varBinds = await setCmd(
+    ...     errorIndication, errorStatus, errorIndex, varBinds = await set_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386')
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.get_event_loop().run_until_complete(run())
-    (None, 0, 0, [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('Linux i386'))])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds)
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBinds, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = vbProcessor.unmakeVarBinds(snmpEngine, varBinds,
-                                                        lookupMib)
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.SetCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
         contextData.contextName,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (
+            options.get("lookupMib", True),
+            options.get("ignoreValueErrors"),
+            future,
+        ),
     )
     return await future
 
 
-async def nextCmd(snmpEngine, authData, transportTarget, contextData,
-            *varBinds, **options):
+async def next_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GETNEXT.
 
     (:RFC:`1905#section-4.2.2`)
+
+    This issues **one** GETNEXT and hands back what the agent answered. GETNEXT
+    is lexicographic over the whole MIB, so the bindings that come back are
+    simply the ones following those asked for -- they are not bounded by the
+    subtree named, and a caller walking a table with this will run off the end
+    of it. To walk a subtree and stop where it ends, use :py:func:`walk_cmd`.
 
     Parameters
     ----------
@@ -290,8 +342,19 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
+            * `ignoreValueErrors` - what to do about a response value that
+              will not cast to the syntax its MIB object declares. Default is
+              `None`, which tolerates it and hands back the uncast value.
+              `False` reports it as
+              :py:class:`~pysnmp.smi.error.SmiError` instead.
+
+              A name the peer answered under a MIB this side has not loaded is
+              a different matter and stays tolerated either way: it comes back
+              as a bare OID, because raising would end a walk at the first such
+              binding. Only `lookupMib` turns resolution off altogether.
+
     Returns
-    ------
+    -------
     errorIndication : str
         True value indicates SNMP engine error.
     errorStatus : str
@@ -308,7 +371,7 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
@@ -318,59 +381,67 @@ async def nextCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     errorIndication, errorStatus, errorIndex, varBinds = await nextCmd(
+    ...     errorIndication, errorStatus, errorIndex, varBinds = await next_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system'))
     ...     )
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.get_event_loop().run_until_complete(run())
-    (None, 0, 0, [[ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux i386'))]])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBindTable, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = [vbProcessor.unmakeVarBinds(snmpEngine,
-                                                         varBindTableRow,
-                                                         lookupMib)
-                              for varBindTableRow in varBindTable]
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.NextCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
         contextData.contextName,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (
+            options.get("lookupMib", True),
+            options.get("ignoreValueErrors"),
+            future,
+        ),
     )
     return await future
 
 
-async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
-            nonRepeaters, maxRepetitions, *varBinds, **options):
+async def bulk_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    nonRepeaters: Any,
+    maxRepetitions: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> SnmpResponse:
     r"""Perform SNMP GETBULK.
 
     (:RFC:`1905#section-4.2.3`)
+
+    This issues **one** GETBULK and hands back what the agent answered. The
+    agent fills `maxRepetitions` rows lexicographically, whether or not they
+    belong to the subtree asked for, so a response routinely overshoots the end
+    of a table by design. To walk a subtree and stop where it ends, with the
+    overshoot trimmed, use :py:func:`bulk_walk_cmd`.
 
     Parameters
     ----------
@@ -408,6 +479,17 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
             * `lookupMib` - load MIB and resolve response MIB variables at
               the cost of slightly reduced performance. Default is `True`.
 
+            * `ignoreValueErrors` - what to do about a response value that
+              will not cast to the syntax its MIB object declares. Default is
+              `None`, which tolerates it and hands back the uncast value.
+              `False` reports it as
+              :py:class:`~pysnmp.smi.error.SmiError` instead.
+
+              A name the peer answered under a MIB this side has not loaded is
+              a different matter and stays tolerated either way: it comes back
+              as a bare OID, because raising would end a walk at the first such
+              binding. Only `lookupMib` turns resolution off altogether.
+
     Returns
     -------
     errorIndication : str
@@ -444,7 +526,7 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
 
     Raises
     ------
-    PySnmpError
+    pysnmp.error.PySnmpError
         Or its derivative indicating that an error occurred while
         performing SNMP operation.
 
@@ -454,10 +536,10 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     >>> from pysnmp.hlapi.asyncio import *
     >>>
     >>> async def run():
-    ...     result_bulk = await bulkCmd(
+    ...     result_bulk = await bulk_cmd(
     ...         SnmpEngine(),
     ...         CommunityData('public'),
-    ...         UdpTransportTarget(('demo.snmplabs.com', 161)),
+    ...         UdpTransportTarget(('localhost', 161)),
     ...         ContextData(),
     ...         0, 2,
     ...         ObjectType(ObjectIdentity('SNMPv2-MIB', 'system'))
@@ -465,40 +547,342 @@ async def bulkCmd(snmpEngine, authData, transportTarget, contextData,
     ...     errorIndication, errorStatus, errorIndex, varBinds = result_bulk
     ...     print(errorIndication, errorStatus, errorIndex, varBinds)
     >>>
-    >>> asyncio.run(run())
-    (None, 0, 0, [[ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.1.0')), DisplayString('SunOS zeus.snmplabs.com 4.1.3_U1 1 sun4m'))], [ObjectType(ObjectIdentity(ObjectName('1.3.6.1.2.1.1.2.0')), ObjectIdentifier('1.3.6.1.4.1.424242.1.1'))]])
-    >>>
+    >>> # Run the coroutine against a live agent, for example:
+    >>> # asyncio.run(run())
 
     """
+    __cbFun = make_callback(vbProcessor.unmakeVarBinds, multi_row=True)
 
-    def __cbFun(snmpEngine, sendRequestHandle,
-                errorIndication, errorStatus, errorIndex,
-                varBindTable, cbCtx):
-        lookupMib, future = cbCtx
-        if future.cancelled():
-            return
-        try:
-            varBindsUnmade = [vbProcessor.unmakeVarBinds(snmpEngine,
-                                                         varBindTableRow,
-                                                         lookupMib)
-                              for varBindTableRow in varBindTable]
-        except Exception:
-            ex = sys.exc_info()[1]
-            future.set_exception(ex)
-        else:
-            future.set_result(
-                (errorIndication, errorStatus, errorIndex, varBindsUnmade)
-            )
+    # Resolve before the LCD reads transportAddr. Deferred when the
+    # target was built inside this loop, so that getaddrinfo() did not
+    # stall it; a no-op for one built outside.
+    await transportTarget.resolve()
 
     addrName, paramsName = lcd.configure(
-        snmpEngine, authData, transportTarget, contextData.contextName)
+        snmpEngine, authData, transportTarget, contextData.contextName
+    )
 
     future = asyncio.get_running_loop().create_future()
 
     cmdgen.BulkCommandGenerator().sendVarBinds(
-        snmpEngine, addrName, contextData.contextEngineId,
-        contextData.contextName, nonRepeaters, maxRepetitions,
-        vbProcessor.makeVarBinds(snmpEngine, varBinds), __cbFun,
-        (options.get('lookupMib', True), future)
+        snmpEngine,
+        addrName,
+        contextData.contextEngineId,
+        contextData.contextName,
+        nonRepeaters,
+        maxRepetitions,
+        vbProcessor.makeVarBinds(snmpEngine, varBinds),
+        __cbFun,
+        (
+            options.get("lookupMib", True),
+            options.get("ignoreValueErrors"),
+            future,
+        ),
     )
     return await future
+
+
+async def walk_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> AsyncGenerator[SnmpResponse, None]:
+    r"""Walk a subtree with GETNEXT, yielding one row at a time.
+
+    :py:func:`next_cmd` issues a single GETNEXT and hands back whatever the agent
+    answered, which for a subtree is rarely what the caller wanted: the protocol
+    is lexicographic over the whole MIB and will walk straight past the end of
+    the subtree named. This reissues until the subtree runs out, and stops there.
+
+    Being an async generator, it can be stopped early -- leave the loop and no
+    further request is made -- and it does not hold the whole table in memory.
+
+    Parameters
+    ----------
+    snmpEngine : :py:class:`~pysnmp.hlapi.SnmpEngine`
+        Class instance representing SNMP engine.
+
+    authData : :py:class:`~pysnmp.hlapi.CommunityData` or :py:class:`~pysnmp.hlapi.UsmUserData`
+        Class instance representing SNMP credentials.
+
+    transportTarget : :py:class:`~pysnmp.hlapi.asyncio.UdpTransportTarget` or :py:class:`~pysnmp.hlapi.asyncio.Udp6TransportTarget`
+        Class instance representing transport type along with SNMP peer address.
+
+    contextData : :py:class:`~pysnmp.hlapi.ContextData`
+        Class instance representing SNMP ContextEngineId and ContextName values.
+
+    \*varBinds : :py:class:`~pysnmp.smi.rfc1902.ObjectType`
+        One or more class instances naming the subtrees to walk.
+
+    Other Parameters
+    ----------------
+    \*\*options :
+        Walk options, on top of those :py:func:`next_cmd` takes:
+
+            * `lexicographicMode` - carry on past the end of the subtree, to the
+              end of the MIB. Default is `False`, which is the point of this
+              call; `next_cmd` is the one that does not bound itself.
+
+            * `ignoreNonIncreasingOid` - carry on when the agent answers with an
+              OID no greater than the one asked for. Default is `False`, which
+              ends the walk with the error. A non-increasing OID is a real and
+              common agent defect, and would otherwise loop forever, which is
+              why the engine reports it at all.
+
+            * `maxRows` - stop after this many rows. Default is `0`, no limit.
+
+            * `maxCalls` - stop after this many requests. Default is `0`, no
+              limit.
+
+    Yields
+    ------
+    errorIndication : str
+        True value indicates SNMP engine error.
+    errorStatus : str
+        True value indicates SNMP PDU error.
+    errorIndex : int
+        Non-zero value refers to `varBinds[errorIndex-1]`
+    varBinds : tuple
+        A sequence of :py:class:`~pysnmp.smi.rfc1902.ObjectType` class
+        instances representing MIB variables returned in this row.
+
+    Examples
+    --------
+    >>> from pysnmp.hlapi.asyncio import *
+    >>>
+    >>> async def run():
+    ...     async for (errorIndication, errorStatus, errorIndex,
+    ...                varBinds) in walk_cmd(
+    ...         SnmpEngine(),
+    ...         CommunityData('public'),
+    ...         UdpTransportTarget(('demo.pysnmp.com', 161)),
+    ...         ContextData(),
+    ...         ObjectType(ObjectIdentity('IF-MIB', 'ifTable')),
+    ...     ):
+    ...         print(errorIndication, errorStatus, errorIndex, varBinds)
+    >>>
+    """
+    lexicographicMode, ignoreNonIncreasingOid, maxRows, maxCalls = walkOptions(options)
+
+    initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
+    nullVarBinds = [False] * len(initialVars)
+    currentVarBinds = list(varBinds)
+    totalRows = totalCalls = 0
+
+    while currentVarBinds:
+        previousVarBinds = currentVarBinds
+
+        errorIndication, errorStatus, errorIndex, varBindTable = await next_cmd(
+            snmpEngine,
+            authData,
+            transportTarget,
+            contextData,
+            *[(x[0], Null("")) for x in currentVarBinds],
+            **options,
+        )
+
+        if ignoreNonIncreasingOid and isinstance(
+            errorIndication, errind.OidNotIncreasing
+        ):
+            errorIndication = None
+
+        if errorIndication or errorStatus:
+            # Yield the failure rather than just returning on it. A generator
+            # that returns looks exactly like one that ran out of subtree, so a
+            # caller could not tell "the table ended" from "the agent refused".
+            yield SnmpResponse(
+                errorIndication, errorStatus, errorIndex, currentVarBinds
+            )
+            return
+
+        currentVarBinds = list(varBindTable[0]) if varBindTable else []
+        if not currentVarBinds:
+            return
+
+        if endColumnsThatLeftTheSubtree(
+            currentVarBinds,
+            previousVarBinds,
+            initialVars,
+            nullVarBinds,
+            lexicographicMode,
+        ):
+            return
+
+        totalRows += 1
+        totalCalls += 1
+
+        yield SnmpResponse(errorIndication, errorStatus, errorIndex, currentVarBinds)
+
+        if (maxRows and totalRows >= maxRows) or (maxCalls and totalCalls >= maxCalls):
+            return
+
+
+async def bulk_walk_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    nonRepeaters: int,
+    maxRepetitions: int,
+    *varBinds: Any,
+    **options: Any,
+) -> AsyncGenerator[SnmpResponse, None]:
+    r"""Walk a subtree with GETBULK, yielding one row at a time.
+
+    What :py:func:`walk_cmd` is to :py:func:`next_cmd`, this is to
+    :py:func:`bulk_cmd`: it reissues until the subtree runs out and stops there,
+    rather than handing back one response. GETBULK overshoots the end of a
+    subtree by design -- the agent fills `maxRepetitions` rows whether or not
+    they belong to what was asked for -- so the tail of the last response is
+    trimmed rather than yielded.
+
+    Parameters
+    ----------
+    snmpEngine : :py:class:`~pysnmp.hlapi.SnmpEngine`
+        Class instance representing SNMP engine.
+
+    authData : :py:class:`~pysnmp.hlapi.CommunityData` or :py:class:`~pysnmp.hlapi.UsmUserData`
+        Class instance representing SNMP credentials.
+
+    transportTarget : :py:class:`~pysnmp.hlapi.asyncio.UdpTransportTarget` or :py:class:`~pysnmp.hlapi.asyncio.Udp6TransportTarget`
+        Class instance representing transport type along with SNMP peer address.
+
+    contextData : :py:class:`~pysnmp.hlapi.ContextData`
+        Class instance representing SNMP ContextEngineId and ContextName values.
+
+    nonRepeaters : int
+        How many of the bindings are fetched once rather than walked.
+
+    maxRepetitions : int
+        How many rows to ask the agent for per request. A value larger than the
+        response can hold is answered with fewer, not an error.
+
+    \*varBinds : :py:class:`~pysnmp.smi.rfc1902.ObjectType`
+        One or more class instances naming the subtrees to walk.
+
+    Other Parameters
+    ----------------
+    \*\*options :
+        The same walk options :py:func:`walk_cmd` takes, on top of those
+        :py:func:`bulk_cmd` takes.
+
+    Yields
+    ------
+    errorIndication : str
+        True value indicates SNMP engine error.
+    errorStatus : str
+        True value indicates SNMP PDU error.
+    errorIndex : int
+        Non-zero value refers to `varBinds[errorIndex-1]`
+    varBinds : tuple
+        A sequence of :py:class:`~pysnmp.smi.rfc1902.ObjectType` class
+        instances representing MIB variables returned in this row.
+
+    Examples
+    --------
+    >>> from pysnmp.hlapi.asyncio import *
+    >>>
+    >>> async def run():
+    ...     async for (errorIndication, errorStatus, errorIndex,
+    ...                varBinds) in bulk_walk_cmd(
+    ...         SnmpEngine(),
+    ...         CommunityData('public'),
+    ...         UdpTransportTarget(('demo.pysnmp.com', 161)),
+    ...         ContextData(),
+    ...         0, 25,
+    ...         ObjectType(ObjectIdentity('IF-MIB', 'ifTable')),
+    ...     ):
+    ...         print(errorIndication, errorStatus, errorIndex, varBinds)
+    >>>
+    """
+    lexicographicMode, ignoreNonIncreasingOid, maxRows, maxCalls = walkOptions(options)
+
+    initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
+    nullVarBinds = [False] * len(initialVars)
+    currentVarBinds = list(varBinds)
+    totalRows = totalCalls = 0
+
+    while currentVarBinds:
+        # Never ask for more rows than are still wanted: the last request of a
+        # bounded walk would otherwise make the agent build rows to be thrown
+        # away.
+        repetitions = (
+            min(maxRepetitions, maxRows - totalRows) if maxRows else maxRepetitions
+        )
+
+        errorIndication, errorStatus, errorIndex, varBindTable = await bulk_cmd(
+            snmpEngine,
+            authData,
+            transportTarget,
+            contextData,
+            nonRepeaters,
+            repetitions,
+            *[(x[0], Null("")) for x in currentVarBinds],
+            **options,
+        )
+
+        if ignoreNonIncreasingOid and isinstance(
+            errorIndication, errind.OidNotIncreasing
+        ):
+            errorIndication = None
+
+        if errorIndication or errorStatus:
+            yield SnmpResponse(
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable[0] if varBindTable else currentVarBinds,
+            )
+            return
+
+        stopFlag = False
+        for row, rowVarBinds in enumerate(varBindTable):
+            previousVarBinds = currentVarBinds if row == 0 else varBindTable[row - 1]
+            if endColumnsThatLeftTheSubtree(
+                rowVarBinds,
+                previousVarBinds,
+                initialVars,
+                nullVarBinds,
+                lexicographicMode,
+            ):
+                # This row is entirely past the end, and so is everything after
+                # it. Drop the tail rather than yielding rows the caller did not
+                # ask for -- which is what makes GETBULK overshoot visible.
+                varBindTable = varBindTable[:row]
+                stopFlag = True
+                break
+
+        totalRows += len(varBindTable)
+        totalCalls += 1
+
+        for rowVarBinds in varBindTable:
+            yield SnmpResponse(errorIndication, errorStatus, errorIndex, rowVarBinds)
+
+        if (
+            stopFlag
+            or not varBindTable
+            or (maxRows and totalRows >= maxRows)
+            or (maxCalls and totalCalls >= maxCalls)
+        ):
+            return
+
+        currentVarBinds = varBindTable[-1]
+
+
+#: The camelCase spellings these names used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using one warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {
+    "bulkCmd": "bulk_cmd",
+    "bulkWalkCmd": "bulk_walk_cmd",
+    "getCmd": "get_cmd",
+    "isEndOfMib": "is_end_of_mib",
+    "nextCmd": "next_cmd",
+    "setCmd": "set_cmd",
+    "walkCmd": "walk_cmd",
+}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

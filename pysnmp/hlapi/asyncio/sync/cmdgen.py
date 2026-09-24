@@ -1,0 +1,314 @@
+"""Blocking GET, GETNEXT, GETBULK and SET.
+
+Each runs the asyncio call on a loop of its own, so these are usable from code
+that has no event loop. Calling one from inside a running loop raises rather
+than deadlocking.
+"""
+
+import asyncio
+from collections.abc import Iterator
+from typing import Any
+
+from pyasn1.type.univ import Null
+
+from pysnmp._aliases import install as _installAliases
+from pysnmp.hlapi.asyncio import cmdgen
+from pysnmp.hlapi.asyncio._walk import endColumnsThatLeftTheSubtree
+from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
+from pysnmp.proto import errind
+
+__all__ = ["bulk_cmd", "get_cmd", "next_cmd", "set_cmd"]
+
+
+def _loop() -> asyncio.AbstractEventLoop:
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.new_event_loop()
+    raise RuntimeError(
+        "The synchronous HLAPI cannot run while an asyncio event loop is running; "
+        "use pysnmp.hlapi.asyncio instead"
+    )
+
+
+def _close(loop: asyncio.AbstractEventLoop, snmpEngine: Any) -> None:
+    if snmpEngine.transportDispatcher is not None:
+        snmpEngine.transportDispatcher.closeDispatcher()
+        loop.run_until_complete(asyncio.sleep(0))
+    loop.close()
+
+
+def _single(
+    command: Any,
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    varBinds: Any,
+    options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
+    loop = _loop()
+    try:
+        asyncio.set_event_loop(loop)
+        while True:
+            if varBinds:
+                result = loop.run_until_complete(
+                    command(
+                        snmpEngine,
+                        authData,
+                        transportTarget,
+                        contextData,
+                        *varBinds,
+                        **options,
+                    )
+                )
+            else:
+                result = None, None, None, []
+            varBinds = yield result
+            if not varBinds:
+                return
+    finally:
+        _close(loop, snmpEngine)
+        asyncio.set_event_loop(None)
+
+
+def get_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking GET. Yields one result, then whatever bindings are sent back in."""
+    return _single(
+        cmdgen.get_cmd,
+        snmpEngine,
+        authData,
+        transportTarget,
+        contextData,
+        varBinds,
+        options,
+    )
+
+
+def set_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking SET. Yields one result, then whatever bindings are sent back in."""
+    return _single(
+        cmdgen.set_cmd,
+        snmpEngine,
+        authData,
+        transportTarget,
+        contextData,
+        varBinds,
+        options,
+    )
+
+
+def next_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking GETNEXT, walking until the end of the subtree.
+
+    `lexicographicMode` decides whether the walk stops at the end of the subtree it
+    started in or carries on to the end of the MIB; `maxRows` and `maxCalls` bound
+    it either way.
+    """
+    loop = _loop()
+    lexicographicMode = options.pop("lexicographicMode", True)
+    ignoreNonIncreasingOid = options.pop("ignoreNonIncreasingOid", False)
+    maxRows = options.pop("maxRows", 0)
+    maxCalls = options.pop("maxCalls", 0)
+    vbProcessor = CommandGeneratorVarBinds()
+    initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
+    nullVarBinds = [False] * len(initialVars)
+    totalRows = totalCalls = 0
+    # `varBinds` arrives as the *args tuple, but each round replaces it with a
+    # row of the response and then rewrites entries of that row in place. Carry
+    # it in a list of its own rather than rebinding the parameter to something
+    # it cannot hold.
+    currentVarBinds: list[Any] = list(varBinds)
+
+    try:
+        asyncio.set_event_loop(loop)
+        while currentVarBinds:
+            previousVarBinds = currentVarBinds
+            errorIndication, errorStatus, errorIndex, varBindTable = (
+                loop.run_until_complete(
+                    cmdgen.next_cmd(
+                        snmpEngine,
+                        authData,
+                        transportTarget,
+                        contextData,
+                        *[(x[0], Null("")) for x in currentVarBinds],
+                        **options,
+                    )
+                )
+            )
+            if ignoreNonIncreasingOid and isinstance(
+                errorIndication, errind.OidNotIncreasing
+            ):
+                errorIndication = None
+            if errorIndication or errorStatus:
+                yield errorIndication, errorStatus, errorIndex, currentVarBinds
+                return
+
+            currentVarBinds = list(varBindTable[0]) if varBindTable else []
+            if endColumnsThatLeftTheSubtree(
+                currentVarBinds,
+                previousVarBinds,
+                initialVars,
+                nullVarBinds,
+                lexicographicMode,
+            ):
+                return
+
+            totalRows += 1
+            totalCalls += 1
+            nextVarBinds = yield (
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                currentVarBinds,
+            )
+            if nextVarBinds:
+                currentVarBinds = list(nextVarBinds)
+                initialVars = [
+                    x[0] for x in vbProcessor.makeVarBinds(snmpEngine, currentVarBinds)
+                ]
+                nullVarBinds = [False] * len(initialVars)
+            if (maxRows and totalRows >= maxRows) or (
+                maxCalls and totalCalls >= maxCalls
+            ):
+                return
+    finally:
+        _close(loop, snmpEngine)
+        asyncio.set_event_loop(None)
+
+
+def bulk_cmd(
+    snmpEngine: Any,
+    authData: Any,
+    transportTarget: Any,
+    contextData: Any,
+    nonRepeaters: Any,
+    maxRepetitions: Any,
+    *varBinds: Any,
+    **options: Any,
+) -> Iterator[tuple[Any, Any, Any, Any]]:
+    """Blocking GETBULK, walking until the end of the subtree.
+
+    `nonRepeaters` is how many of the bindings are fetched once rather than walked,
+    and `maxRepetitions` how many rows the agent should return per pass -- a value
+    larger than the response can hold is answered with fewer, not an error.
+    """
+    loop = _loop()
+    lexicographicMode = options.pop("lexicographicMode", True)
+    ignoreNonIncreasingOid = options.pop("ignoreNonIncreasingOid", False)
+    maxRows = options.pop("maxRows", 0)
+    maxCalls = options.pop("maxCalls", 0)
+    vbProcessor = CommandGeneratorVarBinds()
+    initialVars = [x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)]
+    nullVarBinds = [False] * len(initialVars)
+    totalRows = totalCalls = 0
+
+    try:
+        asyncio.set_event_loop(loop)
+        while varBinds:
+            repetitions = (
+                min(maxRepetitions, maxRows - totalRows) if maxRows else maxRepetitions
+            )
+            errorIndication, errorStatus, errorIndex, varBindTable = (
+                loop.run_until_complete(
+                    cmdgen.bulk_cmd(
+                        snmpEngine,
+                        authData,
+                        transportTarget,
+                        contextData,
+                        nonRepeaters,
+                        repetitions,
+                        *[(x[0], Null("")) for x in varBinds],
+                        **options,
+                    )
+                )
+            )
+            if ignoreNonIncreasingOid and isinstance(
+                errorIndication, errind.OidNotIncreasing
+            ):
+                errorIndication = None
+            if errorIndication or errorStatus:
+                yield (
+                    errorIndication,
+                    errorStatus,
+                    errorIndex,
+                    (varBindTable[0] if varBindTable else []),
+                )
+                return
+
+            stopFlag = False
+            for row, rowVarBinds in enumerate(varBindTable):
+                previousVarBinds = varBinds if row == 0 else varBindTable[row - 1]
+                if endColumnsThatLeftTheSubtree(
+                    rowVarBinds,
+                    previousVarBinds,
+                    initialVars,
+                    nullVarBinds,
+                    lexicographicMode,
+                ):
+                    varBindTable = varBindTable[:row]
+                    stopFlag = True
+                    break
+
+            totalRows += len(varBindTable)
+            totalCalls += 1
+            for rowVarBinds in varBindTable:
+                nextVarBinds = yield (
+                    errorIndication,
+                    errorStatus,
+                    errorIndex,
+                    rowVarBinds,
+                )
+                if nextVarBinds:
+                    varBinds = nextVarBinds
+                    initialVars = [
+                        x[0] for x in vbProcessor.makeVarBinds(snmpEngine, varBinds)
+                    ]
+                    nullVarBinds = [False] * len(initialVars)
+                    break
+            else:
+                varBinds = varBindTable[-1] if varBindTable else []
+
+            if (
+                stopFlag
+                or (maxRows and totalRows >= maxRows)
+                or (maxCalls and totalCalls >= maxCalls)
+            ):
+                return
+    finally:
+        _close(loop, snmpEngine)
+        asyncio.set_event_loop(None)
+
+
+#: The camelCase spellings these names used to have. Served by ``__getattr__``
+#: below rather than bound here, so that using one warns -- see
+#: :py:mod:`pysnmp._aliases`.
+_DEPRECATED_ALIASES = {
+    "bulkCmd": "bulk_cmd",
+    "getCmd": "get_cmd",
+    "nextCmd": "next_cmd",
+    "setCmd": "set_cmd",
+}
+
+__getattr__, __dir__ = _installAliases(__name__, globals(), _DEPRECATED_ALIASES)

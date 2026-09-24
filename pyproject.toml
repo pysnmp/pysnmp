@@ -1,10 +1,13 @@
-[tool.poetry]
+[project]
 name = "pysnmplib"
-version = "5.0.25"
-description = ""
-authors = ["omrozowicz <omrozowicz@splunk.com>", "rfaircloth-splunk <rfaircloth@splunk.com>"]
+version = "6.0.0-rc.18"
+description = "Pure-Python SNMP v1/v2c/v3 engine"
+authors = [
+    { name = "omrozowicz", email = "omrozowicz@splunk.com" },
+    { name = "Ryan Faircloth", email = "actual@rfaircloth.com" },
+]
 license = "BSD-2-Clause"
-repository = "https://github.com/pysnmp/pysnmp"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -14,39 +17,541 @@ classifiers = [
     "Intended Audience :: Telecommunications Industry",
     "Natural Language :: English",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    # Both implementations the test matrix runs, and it runs them because
+    # this is claimed here: an installer reads these to decide whether the
+    # package is for the interpreter in front of it, and until PyPy was in
+    # CI, claiming it would have been a guess. It is not one now -- see
+    # docs/source/ci-and-releases.rst.
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Communications",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 readme = "README.md"
-
-packages = [
-    { include = "pysnmp" },
+# What an SNMP engine needs to run, and nothing else. pysmi is deliberately not
+# here: pysnmp renders the seven standard modules an engine resolves during
+# start-up into pysnmp/smi/mibs (tools/regenerate_mibs.py), so nothing on the
+# engine path imports pysmi at run time. tests/test_no_pysmi.py holds that line
+# by blocking the import and starting an engine anyway.
+#
+# The pyasn1 floor is set in `dependencies` below, and each version under it
+# is excluded for a reason worth keeping written down. The entries name the
+# version they describe, which is a fact about that release; the floor itself
+# is not restated here, because a comment that repeats a specifier is a
+# comment that goes stale the next time the specifier moves.
+#
+# 2.0.6 is not a defect, and is the weaker kind of floor for the same reason
+# 2.0.5 is: it encodes and decodes correctly, and staying on it is slower
+# rather than wrong. What it does not have is 2.0.7's comparison and codec
+# work. Measured through this library's own benchmark payloads -- the module
+# benchmarks/payloads.py builds, on CPython 3.14, best of five runs of 200:
+#
+#   encode GetRequest, 7 varbinds     154.6 -> 107.6 us    -30.4%
+#   encode response, 60 varbinds     1324.2 ->  909.6 us   -31.3%
+#   decode GetRequest                 403.5 ->  399.4 us    -1.0%
+#   decode response, 60 varbinds     4194.7 -> 4168.8 us    -0.6%
+#
+# The encode half is where it lands, and it lands there because 2.0.7 stopped
+# re-validating every subtree once per level during an encode
+# (pysnmp/pyasn1#199) and stopped reaching the schema guard through a helper
+# call per component (pysnmp/pyasn1#205, pysnmp/pyasn1#206). Two further
+# changes show on pyasn1's own suite without moving these payloads much: a tag
+# set compared without constructing one to throw away is 49.8% off
+# `tag_set_is_super_tag_set_of` (pysnmp/pyasn1#209), and the CER string
+# fragment rules of X.690 9.2 checked during the decode that assembles the
+# value rather than in a second pass over the same octets is 40% off
+# `cer_decode_long_octet_string` (pysnmp/pyasn1#210).
+#
+# 2.0.7 is not uniformly faster than 2.0.6, which is worth writing down rather
+# than leaving for someone to find. On pyasn1's suite four cases regress, three
+# of them tag set construction: `tag_set_tag_implicitly` +15.8%,
+# `tag_set_tag_explicitly` +14.7% and `subtype_implicit_tag` +6.5%. That is the
+# deliberate half of a trade -- construction was made heavier so that
+# comparison could be cheaper, which is what bought the encode figures above --
+# and pysnmp/pyasn1#203 records it as one. It does not reach the message path:
+# the four timings above are what this library actually does, and none of them
+# is slower.
+#
+# 2.0.7 also carries a fix for a DEFAULT component holding a schema object.
+# That is not a reason the floor moved: the defect was introduced inside the
+# 2.0.7 cycle and fixed before release, so 2.0.6 never had it.
+#
+# 2.0.5 is the last entry here that is not a defect. It decodes correctly and
+# its debug output can be trusted; what it does not have is 2.0.6's allocation
+# work, and the floor moves for that alone. Three changes, all in the types
+# rather than the codec: a tag set now caches its own base tag set instead of
+# rebuilding one per component (69 TagSet objects per ten-binding encode became
+# none, pysnmp/pyasn1#195), clone() reuses the initializer dict it was handed
+# instead of copying it (pysnmp/pyasn1#196), and a constructor given both
+# tagSet and subtypeSpec stops building the defaults dict it is about to
+# overwrite (pysnmp/pyasn1#197). Measured end to end through this library's
+# codec path against 2.0.3, that is encode 240.6 -> 180.4 us and total
+# 880.3 -> 776.3 us on the ten-binding response. A performance floor is a
+# weaker claim than the three below it -- staying on 2.0.5 is slower, not
+# wrong -- and it is recorded as one.
+#
+# 2.0.4 and below share one debug.scope trail across the whole process, so two
+# threads decoding at once interleave their scope names and every record's
+# `scope` field describes a path through no single message. That is a debug
+# defect, not a decode one -- it needs debugging switched on to reach, which
+# makes it weaker than the entry below. The floor moves anyway, because the
+# rule worth having is that the floor names the version whose debug output can
+# be trusted, not the version that merely decodes correctly. 2.0.5 keeps the
+# trail in a ContextVar, so a thread and an asyncio task each get their own
+# (pysnmp/pyasn1#194).
+#
+# 2.0.3 and below can raise IndexError("pop from empty list") out of an
+# ordinary decode. pyasn1's debug guards evaluated Logger.isEnabledFor at each
+# site, so a logging level that changed mid-decode -- another thread calling
+# setLevel, say -- could split a debug.scope push from the pop that matches it
+# and leave the module-level stack short. A decode loop with one thread
+# toggling the level dies after ~900 iterations. 2.0.4 snapshots the flag once
+# per frame, so push and pop always agree (pysnmp/pyasn1#189). Nothing about
+# this needs debugging to be *enabled*, only for the level to move, which is
+# why it is a floor rather than a recommendation.
+#
+# 2.0.4 is also where the codec stopped asking that question per ASN.1
+# component: 551 Logger.isEnabledFor calls per decode and 337 per encode became
+# one each, worth ~4% of a decode and ~9.6% of an encode on the ten-binding
+# response this library spends its life on (pysnmp/pyasn1#187). That is not why
+# the floor moved, but it is why there is no reason to stay below it.
+#
+# 2.0.2 cannot be imported on PyPy at all. Its NamedType subclasses a namedtuple
+# and overrides __getitem__ to read the fields back out; CPython builds its
+# field accessors from _tuplegetter, which reads the tuple slot in C, and PyPy
+# builds them from operator.itemgetter, which calls __getitem__ -- so the
+# accessor called the override that called the accessor, and `from pysnmp.proto
+# import rfc1902` ended in RecursionError. 2.0.3 reads the fields off the tuple
+# (pysnmp/pyasn1#185). That one is PyPy-only; on CPython the two are the same.
+dependencies = [
+    "pycryptodomex >=3.11.0,<4.0.0",
+    "pysnmp-pyasn1 >=2.0.7,<3.0.0",
 ]
-include = ["docs", "tests", "examples"]
 
+# Compiling ASN.1 at run time is what pysmi is for, and it is a thing some
+# deployments do and most do not. `pip install pysnmplib[compile]` is the way
+# to ask for it; without it pysnmp.smi.compiler raises SmiError naming the
+# missing import, which is what it already did for anyone who had not installed
+# pysmi.
+#
+# The floor is a final release and stays one. It named a release candidate
+# through the 4.0.0 cycle, because naming one is the only way to put a
+# requirement on the rc stream -- dependabot offers a prerelease when the
+# current version is already one OR when a requirement string names one, and
+# there is no configuration key for it (dependabot/dependabot-core#1926, closed
+# as not planned) -- and that bought integration against the sibling rc this
+# repository was cut alongside. pysmi 4.0.0 final is on PyPI, so there is no
+# longer a sibling rc to integrate against, and nothing here resolves to a
+# prerelease. See [tool.uv] below, which is what holds that.
+#
+# 6.0.0 rather than 4.0.0 is where the floor sits now, and this time the major
+# is in the generated code itself. pysmi 6 stops resolving SMIv1's
+# NetworkAddress to IpAddress and emits the declared type, imported from
+# SNMPv2-SMI, because the two are not interchangeable as a table index: RFC 1212
+# section 4.1.6 gives a NetworkAddress-valued index `n+1' sub-identifiers to
+# IpAddress's `n'. SNMPv2-SMI.py exports NetworkAddress for it to import, and no
+# released pysnmp before this one does -- so a module pysmi 6 compiled fails to
+# load on an older pysnmp with "No symbol SNMPv2-SMI::NetworkAddress", and a
+# module pysmi 5 compiled still indexes RFC1213-MIB::atTable one sub-identifier
+# short on this one. Neither half is usable without the other, which is what a
+# floor rather than a ceiling says. The reasons the floor was 4.0.0 -- pysmi
+# dropping its mibs/behavior splice (pysnmp/pysmi#245), so a generated module no
+# longer carries the runtime behavior pysnmp now applies from
+# pysnmp/smi/mibs/behavior (#215) -- are subsumed by it.
+#
+# The floor carries a patch digit rather than stopping at the major because
+# pysmi 6.0.0 cannot build a corpus on PyPy: its `_connect` leaves the cursor behind `PRAGMA journal_mode`
+# unclosed, and that PRAGMA answers with a row, so the statement is still open
+# when write_db() commits. CPython frees the cursor as the call returns and
+# never notices; PyPy frees it later and the commit meets "cannot commit
+# transaction - SQL statements in progress". Fixed in pysnmp/pysmi#332 and
+# released as 6.0.1. On CPython the two are the same behavior, so this floor
+# costs a CPython install nothing and is what lets the PyPy leg run the whole
+# suite.
+#
+# The ceiling is the next major, on the same reading as before: what this extra
+# buys is pysmi's pysnmp code generator, and a pysmi major is where that is
+# allowed to change. tests/test_generated_mibs.py re-renders the committed
+# modules and is what would say so.
+[project.optional-dependencies]
+compile = ["pysnmp-pysmi >=6.0.1,<7"]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-pysnmp-pysmi = "^1.0.4"
-pycryptodomex = "^3.11.0"
-# Capped below 1.2.0 deliberately. pysnmp-pyasn1 1.2.0 removed
-# pyasn1.compat, which pysnmp/debug.py imports at module scope
-# (`from pyasn1.compat.octets import octs2ints`), so 1.2.0 and 1.3.0 break
-# `import pysnmp` outright. The caret range this replaces admitted both, and
-# poetry.lock pinning 1.1.3 hid it from anyone working in the repo: only a
-# fresh `pip install pysnmplib` resolved to the newer release and failed.
-# The 5.x line is closed, so the fix is the ceiling rather than the import.
-pysnmp-pyasn1 = ">=1.1.3,<1.2.0"
+[project.urls]
+repository = "https://github.com/pysnmp/pysnmp"
 
-[tool.poetry.dev-dependencies]
-Sphinx = "^4.3.0"
-pytest = "^6.2.5"
-codecov = "^2.1.12"
-pytest-codecov = "^0.4.0"
+# PEP 735 rather than an extra: these are needed to develop and test the
+# package, never to install it, so they belong in a group that no published
+# metadata advertises. pyasn1 and pysmi already declare theirs this way, which
+# is what lets all three run `uv run --locked --group dev` unchanged.
+#
+# pysmi is here as well as in the `compile` extra, and for reasons the extra
+# does not cover: tools/regenerate_mibs.py renders the committed modules with
+# pysmi's code generator, tests/test_generated_mibs.py re-renders them to check
+# for drift, and tests/test_corpus.py builds its fixture from
+# pysmi.corpus.conformance. Development needs pysmi whether or not an install
+# does.
+#
+# The floor tracks the extra's rather than sitting below it, as it did while
+# the extra admitted 4.x: pysmi.corpus.conformance is the reader contract
+# tests/test_corpus.py builds its fixture from, and its vectors move with the
+# schema, so development testing against an older pysmi than an install may
+# resolve tests pysnmp/smi/corpus.py against a schema it no longer only reads.
+# tests/test_base_layer_equivalence.py needs 6.x for the same reason the extra
+# does: it reads what pysmi says RFC1213-MIB::atNetAddress declares.
+[dependency-groups]
+# What it takes to run the suite, and nothing else. Split out of `dev` so that
+# the suite can run on an interpreter the rest of the toolchain does not
+# install on: mypy depends on ast-serialize, a Rust extension with no PyPy
+# wheel, so `uv sync --group dev` fails on PyPy while compiling it -- before a
+# single test has run. Every test job installs this group rather than `dev`,
+# which also means none of them waits for Sphinx.
+test = [
+    "pytest >=9.0.3,<10.0.0",
+    # What lets a test be `async def` and a fixture be an async generator. The
+    # engine this library is built on is asyncio, so most of what is worth
+    # testing end to end needs a loop, and before this every such test carried
+    # its own `asyncio.run` -- two near-identical decorators and 44 inline
+    # calls. The reason to take the dependency rather than keep hand-rolling it
+    # is the half that cannot be hand-rolled: a fixture that yields something
+    # loop-bound. AsyncioDispatcher takes get_running_loop() when there is one
+    # and quietly makes a loop when there is not (pysnmp/carrier/asyncio/
+    # dispatch.py), so a *sync* fixture that builds an engine hands the test an
+    # engine attached to a loop the test never runs.
+    #
+    # The floor is where loop_scope settled and the `event_loop` fixture was
+    # gone for good; 1.x is also where the `asyncio_default_*_loop_scope`
+    # options below are read. The ceiling is the plugin's own: it requires
+    # pytest <10, so it is already the gate on a pytest 10 this repository
+    # cannot take until the plugin does.
+    "pytest-asyncio >=1.0,<2.0.0",
+    "coverage[toml] >=7.2.0,<8.0.0",
+    # Not optional for the suite the way it is optional for an install:
+    # tools/regenerate_mibs.py renders with pysmi's code generator,
+    # tests/test_generated_mibs.py re-renders to check for drift, and
+    # tests/test_corpus.py builds its fixture from pysmi.corpus.conformance.
+    "pysnmp-pysmi >=6.0.1,<7",
+    # A formatter in a test group looks wrong until you see what renders the
+    # modules: tools/regenerate_mibs.py pipes pysmi's output through
+    # `python -m ruff format`, so the rendering test cannot compare anything
+    # without it. It is in `dev` for linting as well, which is why this was
+    # missed -- every job used to install `dev`, and the drift test failed on
+    # CI the first time one did not.
+    "ruff >=0.4.0,<1.0.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-codecov = "^2.1.13"
+# The CodSpeed benchmark suite, and nothing the suite does not need. Split out
+# of `dev` the way `test` is, and for a sharper version of the same reason:
+# pytest-codspeed's measurement instrument is a compiled extension published
+# only for the interpreters and platforms CodSpeed supports, so carrying it in
+# `dev` would make a routine `uv sync` fail wherever the benchmarks do not run.
+# Only .github/workflows/codspeed.yml installs this group.
+#
+# It replaces benchmarks/requirements.txt, which the suite arrived with. That
+# file was written against the 5.0.x branch, where the packaged project still
+# supported Python 3.8 and pinned an old test stack for the release pipeline,
+# so the benchmark tooling genuinely could not share it. On this branch the
+# floors are 3.10 and a current pytest, there is nothing left to hold apart,
+# and a second dependency file that no lockfile covers is a liability rather
+# than an escape hatch: `uv run --locked` now resolves the benchmarks from the
+# same lockfile as everything else.
+bench = [
+    "pytest >=9.0.3,<10.0.0",
+    "pytest-codspeed >=5.0.0,<6.0.0",
+]
+
+dev = [
+    {include-group = "test"},
+    # documentation toolchain is marker-guarded the way pyasn1 already does
+    # it. Both CI jobs that build docs run 3.12 or newer.
+    "sphinx >=9.1.0,<10.0.0; python_version >= '3.12'",
+    "myst-parser >=5.1.0,<6.0.0; python_version >= '3.12'",
+    "furo >=2025.12.19; python_version >= '3.12'",
+    "mypy >=1.15.0,<3.0.0",
+]
+
+# General availability wherever there is one, enforced rather than reviewed.
+#
+# Every requirement above names a final release -- but a specifier is a
+# statement about one requirement, and the thing worth guaranteeing is a
+# property of the whole resolution: nothing this repository installs is a prerelease of a package
+# that has a release, including something a transitive dependency asks for.
+# "if-necessary" is that guarantee: uv takes a prerelease only for a package
+# whose every version is one, so an rc of pysmi, pyasn1 or pysnmp cannot enter
+# the lockfile by way of a dependabot bump or a `uv lock --upgrade`, whatever a
+# requirement string says. CI resolves with --locked, so it cannot enter
+# unnoticed either.
+#
+# It was "disallow", which is the same guarantee with no exception at all, and
+# that turned out to be a guarantee this repository cannot keep. furo depends
+# on sphinx-basic-ng, which has published nothing but betas since 2022 -- its
+# 1.0.0b2 is already in the lockfile, because no resolution of the docs
+# toolchain exists without it. Under "disallow" the lockfile still verified,
+# since --locked checks rather than resolves, but every re-resolve failed: a
+# dependency bump could not be locked at all. A setting a repository has to
+# route around is not enforcement.
+#
+# This is still the setting to relax further -- "allow" admits a prerelease
+# wherever a specifier names one -- to deliberately reopen an rc integration
+# stream with a sibling, which is what the 4.0.0 cycle above needed.
+[tool.uv]
+prerelease = "if-necessary"
+
+[tool.pytest.ini_options]
+# An `async def` test runs, rather than needing a marker to say so. The
+# alternative -- strict mode -- would mean @pytest.mark.asyncio on every one of
+# them, which is the decorator this repository just stopped hand-rolling.
+asyncio_mode = "auto"
+
+# A loop per test and a loop per fixture, which is what `asyncio.run` gave each
+# test before pytest-asyncio was here: nothing is carried from one test to the
+# next, so a leaked dispatcher or a pending timer fails the test that leaked it
+# rather than the one after. Both are spelled out because the fixture default is
+# the one pytest-asyncio warns about leaving unset, and because a wider scope is
+# a deliberate trade -- it buys back the ~57ms an SnmpEngine costs to build at
+# the price of that isolation, and is not something to end up with by default.
+asyncio_default_test_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "function"
+
+# `tests` only, so that a bare `pytest` collects the suite and not the
+# benchmarks. benchmarks/ needs pytest-codspeed for its `benchmark` fixture,
+# which only the `bench` group installs -- without this every benchmark errors
+# during setup for anyone who ran `pytest` with the `test` group, which is
+# everyone. CI already names `tests` explicitly, so nothing there changes.
+# Measure the benchmarks by naming their directory:
+#   uv run --group bench pytest benchmarks/ --codspeed
+testpaths = ["tests"]
+filterwarnings = [
+    # str() on an OCTET STRING decodes it as text; pyasn1 deprecates that and
+    # will return the hexadecimal representation instead. Keep pysnmp off it.
+    "error:str\\(\\) on .* decodes the payload as text:DeprecationWarning",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["pysnmp"]
+
+[tool.coverage.report]
+fail_under = 63
+show_missing = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling>=1.0.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pysnmp"]
+
+[tool.hatch.build.targets.sdist]
+# An explicit include is an allowlist: anything not named here is left out,
+# whatever else is in the tree. semantic-release generates CHANGELOG.md during
+# prepare, before this builds, so the release being cut is described by the
+# changelog shipped beside it -- which is where a downstream packager looks.
+# CHANGES.md is the narrative history through 5.x that CHANGELOG.md refers to.
+include = [
+    "pysnmp",
+    "docs",
+    "tests",
+    "examples",
+    "tools",
+    "CHANGELOG.md",
+    "CHANGES.md",
+]
+
+# ---------------------------------------------------------------------------
+# Linting / formatting / typing configuration (Phase 0 of code quality sweep)
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+extend-exclude = [".eggs", ".git", ".hg", ".mypy_cache", ".tox", ".venv", "_build", "buck-out", "build", "dist"]
+
+[tool.ruff.lint]
+# The rule set pyasn1 and pysmi share, so a contributor moving between the
+# three repositories meets the same lint -- the docstring family (D) included,
+# as of #186. Which parts of D are on is settled in the ignore list below.
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "S",      # flake8-bandit (security)
+    "SIM",    # flake8-simplify
+    "BLE",    # flake8-blind-except
+    "G",      # flake8-logging-format (keep logging interpolation lazy)
+    "LOG",    # flake8-logging (logger misuse)
+    "FLY",    # flynt (static str.join -> f-string)
+    "C4",     # flake8-comprehensions
+    "RSE",    # flake8-raise
+    "RUF",    # ruff-specific rules
+    "PL",     # pylint
+    "TRY",    # tryceratops
+    "D",      # pydocstyle
+]
+ignore = [
+    # Shared with pyasn1 and pysmi.
+    "E501",     # line-too-long — ruff format decides where lines break
+    "E721",     # type-comparison — existing pattern
+    "E731",     # lambda-assignment — existing codebase style
+    "E741",     # ambiguous-variable-name — SNMP/ASN.1 naming conventions
+    "E712",     # true-false-comparison — existing pattern
+    "E402",     # module-import-not-at-top — some imports after variable defs
+    "B011",     # assert-false — used in tests
+    "B007",     # unused-loop-control-variable — existing pattern
+    "B905",     # zip-without-explicit-strict — existing pattern
+    "B028",     # no-explicit-stacklevel — existing pattern
+    "SIM108",   # if-else-block-instead-of-if-exp — readability preference
+    "SIM102",   # collapsible-if — readability preference
+    "SIM105",   # suppressible-exception — existing pattern
+    "SIM101",   # duplicate-isinstance-call — existing pattern
+    "SIM110",   # reimplemented-builtin — existing pattern
+    "PLR0911",  # too-many-return-statements
+    "PLR0912",  # too-many-branches
+    "PLR0913",  # too-many-arguments
+    "PLR0915",  # too-many-statements
+    "PLR0917",  # too-many-positional-arguments
+    "PLR2004",  # magic-value-comparison — protocol constants
+    "PLC0415",  # import-outside-top-level — deliberate, breaks import cycles
+    "PLW2901",  # redefined-loop-name — existing pattern
+    "PLW0603",  # global-statement — setLogger() rebinds the module logger
+    "PLW1641",  # eq-without-hash — pyasn1 types are deliberately unhashable
+    "RUF005",   # collection-literal-concatenation — style preference
+    "RUF012",   # mutable-class-default — protocol tables are class-level
+    "RUF021",   # parenthesize-chained-operators — existing pattern
+    "RUF059",   # unused-unpacked-variable — matches B007 above
+    "TRY003",   # raise-vanilla-args — message text is part of the error contract
+
+    # Specific to what this package is. SNMPv1 and v2c have no security by
+    # design and MD5, SHA-1 and DES are what :RFC:`3414` and :RFC:`3826`
+    # specify; pysnmp exists to speak those protocols, and already warns at
+    # runtime where a weak one is configured (see pysnmp/error.py).
+    "S508",     # snmp-insecure-version
+    "S509",     # snmp-weak-cryptography
+
+    # The docstring family is fully on -- see #186. Every module, package,
+    # class, function, constructor, method and magic method says what it is
+    # for. It came off one rule at a time, each its own reviewable change:
+    #   D100/D104  104 modules and packages
+    #   D101       182 classes
+    #   D103/D107  102 functions and constructors
+    #   D102       346 methods, in two parts: proto, then the rest
+    #   D105         7 magic methods the passes above had not already covered
+
+    # The one rule pyasn1 keeps that this does not, and the only place the two
+    # rule sets differ. Every third-person summary it caught -- "Returns the",
+    # "Adds a", "Creates a" -- has been fixed. What is left is 25 accessors
+    # and properties whose summary is a noun phrase naming what you get back:
+    # "The corpus this builder falls back to, or ``None``." Rewriting those as
+    # "Return the corpus..." is longer and says less, and for a property it
+    # describes a call that the reader does not make. D401 also misfires on an
+    # imperative that opens with an adverb ("Synchronously call ...").
+    "D401",     # non-imperative-mood
+]
+
+[tool.ruff.lint.pydocstyle]
+# What pyasn1 uses, and what the Sphinx build already assumes -- conf.py sets
+# napoleon_numpy_docstring. Picking it here rather than leaving ruff on its
+# default also settles D203/D211 and D212/D213, which are mutually exclusive
+# pairs that ruff warns about when both are selected.
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+# Generated MIB modules bind their names via mibBuilder.importSymbols() at
+# import time, so static analysis cannot see them.
+# D: most modules here are generated, and their prose is the MIB's own
+# DESCRIPTION clauses rendered by pysmi's code generator -- nobody writes it
+# here and tools/regenerate_mibs.py would overwrite an edit made to satisfy a
+# lint. The hand-written ones in this directory (SNMPv2-SMI, SNMPv2-TC,
+# SNMPv2-CONF, the ASN1 modules) satisfy the enabled D rules anyway, so this
+# is not load-bearing for them.
+"pysnmp/smi/mibs/**" = ["F821", "D"]
+# Package __init__ modules re-export the public API.
+"**/__init__.py" = ["F401"]
+# Examples are documentation: star imports and binding every interface are
+# what an agent example is showing you how to do.
+# PLR2044: the `"""  #` that closes an example's prose block is not an empty
+# comment, it is the marker docs/source/examples/**.rst splits on -- the text
+# above it is included as prose, the code below it as a literal block.
+# D: an example's module docstring is reStructuredText that
+# docs/source/examples/**.rst includes verbatim, so its first two lines are a
+# title and its `+++++` underline -- not a summary line. Applying D400 to one
+# appends a period to the underline and breaks the title. pyasn1 exempts its
+# examples for the same reason.
+"examples/**" = ["F401", "F403", "F405", "F821", "S104", "PLR2044", "D"]
+# MD5 and SHA-1 are not a choice here: usmHMACMD5AuthProtocol and
+# usmHMACSHAAuthProtocol are what :RFC:`3414#section-6` and #section-7 define,
+# and pysnmp warns at runtime where either is configured.
+"pysnmp/proto/secmod/rfc3414/auth/hmacmd5.py" = ["S324"]
+"pysnmp/proto/secmod/rfc3414/auth/hmacsha.py" = ["S324"]
+# Tests assert, exec the code they generate, and check for broad exceptions
+# on purpose. B904: test_error_cause.py raises without `from` deliberately --
+# implicit __context__ chaining is the thing under test.
+# S105/S108/S603: fixed passphrases, a fixed socket path and subprocess calls
+# with a literal argv are what a test harness is made of.
+# D: a test's docstring says what the test establishes and why it is worth
+# establishing, and a fixture's names what it hands back. Neither is an
+# imperative-mood summary of a public API, which is what D is shaped for.
+# pyasn1 exempts its tests the same way.
+"tests/**" = [
+    "S101", "S102", "S104", "S105", "S108", "S603",
+    "B017", "B904", "BLE", "PL", "RUF", "TRY", "D",
+]
+# Benchmarks are test-shaped -- pytest functions named for what they measure --
+# so they earn the same two exemptions for the same reasons. D: a benchmark's
+# name says what it measures and the module docstring says why that path is
+# worth measuring; an imperative-mood summary per function would restate the
+# name 57 times. S105: the fixed passphrases in test_usm_crypto.py are the
+# input to a key derivation being measured, not a credential.
+#
+# Deliberately shorter than the list above. A benchmark does not assert, exec,
+# or catch broadly, so nothing here needs S101, B017, BLE or TRY -- and PL and
+# RUF stay on, because a benchmark that has drifted into doing too much per
+# call is exactly what those catch.
+#
+# UP031 is the interesting one. The two `%` formats it flags in
+# test_asn1_types.py are inside the measured loop, building the input each
+# iteration. Rewriting them as f-strings would make those benchmarks report a
+# speedup on the pull request that did it -- f-strings are faster than `%` --
+# which pysnmp did not earn and which would then sit in CodSpeed's history as
+# the new baseline. A lint fix must not move a measurement. (That the formatting
+# is inside the timed region at all is arguably a flaw in those two benchmarks,
+# but correcting it changes what they measure and belongs with them on main,
+# not in a port.)
+"benchmarks/**" = ["S105", "D", "UP031"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pysnmp"]
+force-single-line = false
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+files = ["pysnmp"]
+
+# Generated MIB modules bind mibBuilder and every symbol they use via
+# mibBuilder.importSymbols() at import time, so static analysis cannot see any
+# of it: 1279 of the 1339 errors mypy reported came from here, all of them
+# "Name is not defined". Ruff exempts the same files from F821 for the same
+# reason. These are generated artifacts, not hand-written code.
+[[tool.mypy.overrides]]
+module = ["pysnmp.smi.mibs.*", "pysnmp.smi.mibs.instances.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "pysnmp.hlapi.*"
+check_untyped_defs = true

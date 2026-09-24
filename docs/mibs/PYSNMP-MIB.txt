@@ -10,7 +10,7 @@ IMPORTS
 pysnmp MODULE-IDENTITY
     LAST-UPDATED "201704140000Z"
     ORGANIZATION "The PySNMP Project"
-    CONTACT-INFO "E-mail: Ilya Etingof <etingof@gmail.com>
+    CONTACT-INFO "E-mail: Ilya Etingof deceased 
                   GitHub: https://github.com/etingof/pysnmp"
     DESCRIPTION
 	"PySNMP top-level MIB tree infrastructure"

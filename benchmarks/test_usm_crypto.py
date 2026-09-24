@@ -9,8 +9,9 @@
 Key derivation runs once per configured user, while the digest and cipher
 services run on every single SNMPv3 message that goes over the wire.
 """
-import pytest
 
+import pytest
+from payloads import SNMP_ENGINE_ID
 from pyasn1.type import univ
 
 from pysnmp.proto.secmod.rfc3414 import localkey
@@ -19,25 +20,23 @@ from pysnmp.proto.secmod.rfc3414.priv import des
 from pysnmp.proto.secmod.rfc3826.priv import aes
 from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
-from payloads import SNMP_ENGINE_ID
-
-PASSPHRASE = 'thats-not-a-very-good-passphrase'
+PASSPHRASE = "thats-not-a-very-good-passphrase"
 
 # A ~1 kB scoped PDU, the typical size of a bulk response payload.
-SCOPED_PDU = univ.OctetString(b'\x30\x82\x03\xf0' + b'\xa5' * 1020).asOctets()
+SCOPED_PDU = univ.OctetString(b"\x30\x82\x03\xf0" + b"\xa5" * 1020).asOctets()
 
 
 def _whole_msg(digestLength):
     """An outgoing message with a zeroed-out digest placeholder in it."""
-    return b'\x30\x82\x04\x20' + b'\x00' * digestLength + b'\xa5' * 1024
+    return b"\x30\x82\x04\x20" + b"\x00" * digestLength + b"\xa5" * 1024
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def md5_key():
     return localkey.passwordToKeyMD5(PASSPHRASE, SNMP_ENGINE_ID)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def sha_key():
     return localkey.passwordToKeySHA(PASSPHRASE, SNMP_ENGINE_ID)
 
@@ -95,14 +94,12 @@ def test_hmac_md5_authenticate_incoming(benchmark, md5_key):
     authenticatedMsg = service.authenticateOutgoingMsg(
         md5_key, _whole_msg(service.digestLength)
     )
-    authParameters = univ.OctetString(authenticatedMsg[4:4 + service.digestLength])
+    authParameters = univ.OctetString(authenticatedMsg[4 : 4 + service.digestLength])
 
     @benchmark
     def _():
         for _unused in range(16):
-            service.authenticateIncomingMsg(
-                md5_key, authParameters, authenticatedMsg
-            )
+            service.authenticateIncomingMsg(md5_key, authParameters, authenticatedMsg)
 
 
 def test_des_encrypt(benchmark, md5_key):

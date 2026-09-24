@@ -6,20 +6,21 @@ This script explains how SNMP Agent application manipulates
 its MIB possibly triggered by SNMP Manager's commands.
 
 """  #
-# SNMP agent backend e.g. Agent access to Managed Objects
-from pysnmp.smi import builder, instrum, exval
 
-print("Loading MIB modules..."),
+# SNMP agent backend e.g. Agent access to Managed Objects
+from pysnmp.smi import builder, exval, instrum
+
+(print("Loading MIB modules..."),)
 mibBuilder = builder.MibBuilder().loadModules(
     "SNMPv2-MIB", "SNMP-FRAMEWORK-MIB", "SNMP-COMMUNITY-MIB"
 )
 print("done")
 
-print("Building MIB tree..."),
+(print("Building MIB tree..."),)
 mibInstrum = instrum.MibInstrumController(mibBuilder)
 print("done")
 
-print("Building table entry index from human-friendly representation..."),
+(print("Building table entry index from human-friendly representation..."),)
 (snmpCommunityEntry,) = mibBuilder.importSymbols(
     "SNMP-COMMUNITY-MIB", "snmpCommunityEntry"
 )
@@ -57,6 +58,6 @@ while True:
     )
 print("done")
 
-print("Unloading MIB modules..."),
+(print("Unloading MIB modules..."),)
 mibBuilder.unloadModules()
 print("done")

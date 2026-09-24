@@ -34,7 +34,7 @@ Making SNMP query
 
 We will send SNMP GET command to read a MIB object from SNMP agent.
 For that purpose we will call synchronous, high-level
-:py:func:`~pysnmp.hlapi.getCmd` function.
+:py:func:`~pysnmp.hlapi.get_cmd` function.
 Other SNMP commands can be used in a vary similar way by calling
 corresponding functions.
 
@@ -42,9 +42,9 @@ corresponding functions.
 
    >>> from pysnmp.hlapi import *
    >>> [ x for x in dir() if 'Cmd' in x]
-   ['bulkCmd', 'getCmd', 'nextCmd', 'setCmd']
-   >>> getCmd
-   <function getCmd at 0x222b330>
+   ['bulk_cmd', 'get_cmd', 'next_cmd', 'set_cmd']
+   >>> get_cmd
+   <function get_cmd at 0x222b330>
 
 Choosing SNMP protocol and credentials
 --------------------------------------
@@ -92,7 +92,7 @@ insecure, it's still the most popular SNMP version in use.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(), CommunityData('public'),
+   >>> g = get_cmd(SnmpEngine(), CommunityData('public'),
    ...
 
 Setting transport and target
@@ -100,20 +100,20 @@ Setting transport and target
 
 PySNMP supports UDP-over-IPv4 and UDP-over-IPv6 network transports.
 In this example we will query 
-`public SNMP Simulator <http://snmplabs.com/snmpsim/public-snmp-simulator.html>`_
-available over IPv4 on the Internet at *demo.snmplabs.com*. Transport
+`public SNMP Simulator <https://pypi.org/project/snmpsim/>`__
+available over IPv4 on the Internet at *localhost*. Transport
 configuration is passed to SNMP LCD in form of properly initialized
-:py:class:`~pysnmp.hlapi.UdpTransportTarget` or
-:py:class:`~pysnmp.hlapi.Udp6TransportTarget` objects
+:py:class:`~pysnmp.hlapi.asyncio.UdpTransportTarget` or
+:py:class:`~pysnmp.hlapi.asyncio.Udp6TransportTarget` objects
 respectively.
 
 .. code-block:: python
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
-   ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...            UdpTransportTarget(('localhost', 161)),
    ...
 
 Addressing SNMP context
@@ -134,9 +134,9 @@ For this example we will use the 'empty' context (default).
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
-   ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
    ...
 
@@ -150,11 +150,11 @@ humans tend to address them by name:
 
 .. code-block:: bash
 
-   $ snmpget -v2c -c public demo.snmplabs.com SNMPv2-MIB::sysDescr.0
-   SNMPv2-MIB::sysDescr.0 = STRING: SunOS zeus.snmplabs.com
+   $ snmpget -v2c -c public localhost SNMPv2-MIB::sysDescr.0
+   SNMPv2-MIB::sysDescr.0 = STRING: Linux localhost
    $
-   $ snmpget -v2c -c public demo.snmplabs.com 1.3.6.1.2.1.1.1.0
-   SNMPv2-MIB::sysDescr.0 = STRING: SunOS zeus.snmplabs.com
+   $ snmpget -v2c -c public localhost 1.3.6.1.2.1.1.1.0
+   SNMPv2-MIB::sysDescr.0 = STRING: Linux localhost
 
 Both object name and OID come from MIB. Name and OID linking is done
 by high-level SMI construct called *OBJECT-TYPE*. Here is an example MIB
@@ -228,23 +228,21 @@ For scalar MIB objects index is '0' by convention. The
    (1, 3, 6, 1, 2, 1, 1, 1, 0)
 
 We will be reading *sysDescr* scalar MIB object instance as defined
-in `SNMPv2-MIB <https://pysnmp.github.io/mibs/asn1/SNMPv2-MIB>`_ module.
+in `SNMPv2-MIB <https://mibsdepot.com/mib/SNMPv2-MIB/>`_ module.
 
 .. code-block:: python
 
    >>> from pysnmp.hlapi import *
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
-   ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
    ...            ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)))
 
 By default PySNMP will search your local filesystem for ASN.1 MIB files
 you refer to. It can also be configured to automatically download
-them from remote hosts, as
-:doc:`shown </examples/hlapi/asyncore/sync/manager/cmdgen/mib-tweaks>`
-in the examples. We maintain a
-`collection <https://pysnmp.github.io/mibs/asn1/>`_ of ASN.1 MIB modules
+them from remote hosts, as shown in the examples. We maintain a
+`collection <https://mibsdepot.com/browse/>`_ of ASN.1 MIB modules
 that you can use in your SNMP projects.
 
 .. note::
@@ -270,9 +268,9 @@ out, response is awaited, received and parsed.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
-   ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
    ...            ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysUpTime', 0)))
    >>> next(g)
@@ -366,9 +364,9 @@ Let's read TCP-MIB::tcpConnectionState object for a TCP connection:
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
-   ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
    ...            ObjectType(ObjectIdentity('TCP-MIB', 'tcpConnectionState',
    ...                                      'ipv4', '195.218.254.105', 41511,
@@ -382,19 +380,19 @@ SNMP command operations
 SNMP allows you to request a MIB object that is "next" to the given
 one. That way you can read MIB objects you are not aware about in
 advance. MIB objects are conceptually sorted by their OIDs.
-This feature is implemented by the :py:func:`~pysnmp.hlapi.nextCmd`
+This feature is implemented by the :py:func:`~pysnmp.hlapi.next_cmd`
 function.
 
 .. code-block:: python
 
    >>> from pysnmp.hlapi import *
-   >>> g = nextCmd(SnmpEngine(),
+   >>> g = next_cmd(SnmpEngine(),
    ...             CommunityData('public'),
-   ...             UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...             UdpTransportTarget(('localhost', 161)),
    ...             ContextData(),
    ...             ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr')))
    >>> next(g)
-   (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('SunOS zeus.snmplabs.com'))])
+   (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux localhost'))])
    >>> next(g)
    (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.2.0'), ObjectIdentity(ObjectIdentifier('1.3.6.1.4.1.8072.3.2.10')))])
 
@@ -407,7 +405,7 @@ non-repeaters and max-repetitions parameters can be used to influence
 MIB objects batching.
 
 PySNMP hides this *GETBULK* optimization at the protocol level, the
-:py:func:`~pysnmp.hlapi.bulkCmd` function exposes the same generator
+:py:func:`~pysnmp.hlapi.bulk_cmd` function exposes the same generator
 API as *getNext()* for convenience.
 
 .. code-block:: python
@@ -415,15 +413,15 @@ API as *getNext()* for convenience.
    >>> from pysnmp.hlapi import *
    >>>
    >>> N, R = 0, 25
-   >>> g = bulkCmd(SnmpEngine(),
+   >>> g = bulk_cmd(SnmpEngine(),
    ...             CommunityData('public'),
-   ...             UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...             UdpTransportTarget(('localhost', 161)),
    ...             ContextData(),
    ...             N, R,
    ...             ObjectType(ObjectIdentity('1.3.6')))
    >>>
    >>> next(g)
-   (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('SunOS zeus.snmplabs.com'))])
+   (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux localhost'))])
    >>> next(g)
    (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.2.0'), ObjectIdentifier('1.3.6.1.4.1.20408'))])
 
@@ -436,9 +434,9 @@ of MIB objects.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = nextCmd(SnmpEngine(),
+   >>> g = next_cmd(SnmpEngine(),
    ...             CommunityData('public'),
-   ...             UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...             UdpTransportTarget(('localhost', 161)),
    ...             ContextData(),
    ...             ObjectType(ObjectIdentity('IF-MIB', 'ifTable')))
    >>>
@@ -453,15 +451,15 @@ values in exactly the same order as they were in request message.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = getCmd(SnmpEngine(),
+   >>> g = get_cmd(SnmpEngine(),
    ...            CommunityData('public'),
-   ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
    ...            ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0)),
    ...            ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysUpTime', 0))
    ... )
    >>> next(g)
-   (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('SunOS zeus.snmplabs.com')), ObjectType(ObjectIdentity('1.3.6.1.2.1.1.3.0'), TimeTicks(44430646))])
+   (None, 0, 0, [ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'), DisplayString('Linux localhost')), ObjectType(ObjectIdentity('1.3.6.1.2.1.1.3.0'), TimeTicks(44430646))])
 
 Configuration management part of SNMP relies on SNMP *SET* command.
 Although its implementation on managed entity's side proved to be
@@ -469,16 +467,16 @@ somewhat demanding (due to locking and transactional behavior
 requirements). So vendors tend to leave it out thus rendering
 managed entity being read-only.
 
-PySNMP supports *SET* uniformly through :py:func:`~pysnmp.hlapi.setCmd`
+PySNMP supports *SET* uniformly through :py:func:`~pysnmp.hlapi.set_cmd`
 function.
 
 .. code-block:: python
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = setCmd(SnmpEngine(),
+   >>> g = set_cmd(SnmpEngine(),
    ...            CommunityData('public'),
-   ...            UdpTransportTarget(('demo.snmplabs.com', 161)),
+   ...            UdpTransportTarget(('localhost', 161)),
    ...            ContextData(),
    ...            ObjectType(ObjectIdentity('SNMPv2-MIB', 'sysDescr', 0), 'Linux i386')
    ... )
@@ -540,9 +538,9 @@ or acknowledgement is sent.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = sendNotification(SnmpEngine(),
+   >>> g = send_notification(SnmpEngine(),
    ...                      CommunityData('public'),
-   ...                      UdpTransportTarget(('demo.snmplabs.com', 162)),
+   ...                      UdpTransportTarget(('localhost', 162)),
    ...                      ContextData(),
    ...                      'trap',
    ...                      NotificationType(ObjectIdentity('IF-MIB', 'linkUp'), instanceIndex=(123,))
@@ -556,9 +554,9 @@ well as for agent-to-manager.
 
    >>> from pysnmp.hlapi import *
    >>>
-   >>> g = sendNotification(SnmpEngine(),
+   >>> g = send_notification(SnmpEngine(),
    ...                      CommunityData('public'),
-   ...                      UdpTransportTarget(('demo.snmplabs.com', 162)),
+   ...                      UdpTransportTarget(('localhost', 162)),
    ...                      ContextData(),
    ...                      'inform',
    ...                      NotificationType(ObjectIdentity('IF-MIB', 'linkUp'), instanceIndex=(123,))
@@ -584,9 +582,9 @@ object OIDs to current values.
    ...        ObjectIdentifier('1.3.6.1.2.1.2.2.1.7.123'): 'testing',
    ...        ObjectIdentifier('1.3.6.1.2.1.2.2.1.8.123'): 'up'}
    >>>
-   >>> g = sendNotification(SnmpEngine(),
+   >>> g = send_notification(SnmpEngine(),
    ...                      CommunityData('public'),
-   ...                      UdpTransportTarget(('demo.snmplabs.com', 162)),
+   ...                      UdpTransportTarget(('localhost', 162)),
    ...                      ContextData(),
    ...                      'inform',
    ...                      NotificationType(ObjectIdentity('IF-MIB', 'linkUp'), instanceIndex=(123,), objects=mib)

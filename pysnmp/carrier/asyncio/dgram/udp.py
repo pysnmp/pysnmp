@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -30,20 +29,30 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""SNMP over UDP/IPv4, transport domain 1.3.6.1.6.1.1."""
+
 import socket
-from pysnmp.carrier.base import AbstractTransportAddress
+
 from pysnmp.carrier.asyncio.dgram.base import DgramAsyncioProtocol
+from pysnmp.carrier.base import AbstractTransportAddress
 
 domainName = snmpUDPDomain = (1, 3, 6, 1, 6, 1, 1)
 
 
 class UdpTransportAddress(tuple, AbstractTransportAddress):
+    """An IPv4 endpoint, as the `(host, port)` pair `socket` uses."""
+
     pass
 
 
 class UdpAsyncioTransport(DgramAsyncioProtocol):
+    """SNMP over UDP/IPv4."""
+
     sockFamily = socket.AF_INET
     addressType = UdpTransportAddress
+    # Not a bind: this is the address getsockname() reports for a socket that
+    # was never bound, so S104 does not apply.
+    unboundLocalAddress = ("0.0.0.0", 0)  # noqa: S104
 
 
 UdpTransport = UdpAsyncioTransport

@@ -23,13 +23,16 @@ Either of the following Net-SNMP commands will walk this Agent:
 Requires Python 3.4 and later!
 
 """  #
-from pysnmp.entity import engine, config
-from pysnmp.entity.rfc3413 import cmdrsp, context
-from pysnmp.carrier.asyncio.dgram import udp
+
 import asyncio
 
-# Get the event loop for this thread
-loop = asyncio.get_event_loop()
+from pysnmp.carrier.asyncio.dgram import udp
+from pysnmp.entity import config, engine
+from pysnmp.entity.rfc3413 import cmdrsp, context
+
+# Create a new event loop
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 
 # Create SNMP engine with autogenernated engineID and pre-bound
 # to socket transport dispatcher

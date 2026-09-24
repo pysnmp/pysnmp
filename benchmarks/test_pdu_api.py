@@ -9,9 +9,10 @@
 These helpers assemble and take apart PDUs. They are called for every
 request built by a manager and for every response built by an agent.
 """
-from pysnmp.proto import api
 
 from payloads import IF_TABLE_OIDS, SYSTEM_OIDS, make_request, make_response
+
+from pysnmp.proto import api
 
 
 def test_build_get_request_v2c(benchmark):
@@ -33,9 +34,7 @@ def test_build_get_bulk_request_v2c(benchmark):
         pMod.apiBulkPDU.setDefaults(pdu)
         pMod.apiBulkPDU.setNonRepeaters(pdu, 0)
         pMod.apiBulkPDU.setMaxRepetitions(pdu, 25)
-        pMod.apiBulkPDU.setVarBinds(
-            pdu, [(oid, pMod.null) for oid in SYSTEM_OIDS]
-        )
+        pMod.apiBulkPDU.setVarBinds(pdu, [(oid, pMod.null) for oid in SYSTEM_OIDS])
 
 
 def test_set_var_binds_60_values(benchmark):
@@ -69,8 +68,10 @@ def test_build_response_from_request_v2c(benchmark):
         rspPDU = pMod.apiPDU.getResponse(reqPDU)
         pMod.apiPDU.setVarBinds(
             rspPDU,
-            [(oid, pMod.Integer(idx))
-             for idx, (oid, _val) in enumerate(pMod.apiPDU.getVarBinds(reqPDU))]
+            [
+                (oid, pMod.Integer(idx))
+                for idx, (oid, _val) in enumerate(pMod.apiPDU.getVarBinds(reqPDU))
+            ],
         )
 
 

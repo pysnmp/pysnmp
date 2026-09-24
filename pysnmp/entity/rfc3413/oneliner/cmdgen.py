@@ -1,31 +1,49 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # All code in this file belongs to obsolete, compatibility wrappers.
 # Never use interfaces below for new applications!
 #
-from pysnmp.hlapi.asyncore import *
-from pysnmp.hlapi.asyncore import sync
-from pysnmp.hlapi.varbinds import *
-from pysnmp.hlapi.lcd import *
-from pyasn1.compat.octets import null
+"""Obsolete command generator wrappers. Use `pysnmp.hlapi` instead."""
+
 from pyasn1.type import univ
 
-__all__ = ['AsynCommandGenerator', 'CommandGenerator', 'MibVariable']
+from pysnmp.entity.engine import SnmpEngine
+from pysnmp.hlapi.asyncio import sync
+from pysnmp.hlapi.asyncio.cmdgen import (
+    bulk_cmd as _bulk_cmd,
+)
+from pysnmp.hlapi.asyncio.cmdgen import (
+    get_cmd as _get_cmd,
+)
+from pysnmp.hlapi.asyncio.cmdgen import (
+    next_cmd as _next_cmd,
+)
+from pysnmp.hlapi.asyncio.cmdgen import (
+    set_cmd as _set_cmd,
+)
+from pysnmp.hlapi.context import ContextData
+from pysnmp.hlapi.lcd import CommandGeneratorLcdConfigurator
+from pysnmp.hlapi.varbinds import CommandGeneratorVarBinds
+from pysnmp.smi.rfc1902 import ObjectIdentity
+
+__all__ = ["AsynCommandGenerator", "CommandGenerator", "MibVariable"]
 
 MibVariable = ObjectIdentity
 
 
 class AsynCommandGenerator:
-    _null = univ.Null('')
+    """Obsolete. Use `pysnmp.hlapi.asyncio`."""
+
+    _null = univ.Null("")
 
     vbProcessor = CommandGeneratorVarBinds()
     lcd = CommandGeneratorLcdConfigurator()
 
     def __init__(self, snmpEngine=None):
+        """Creates an engine if none is given, and owns it for its lifetime."""
         if snmpEngine is None:
             self.snmpEngine = SnmpEngine()
         else:
@@ -34,191 +52,297 @@ class AsynCommandGenerator:
         self.mibViewController = self.vbProcessor.getMibViewController(self.snmpEngine)
 
     def __del__(self):
+        """Unconfigure this generator's targets from the engine."""
         self.lcd.unconfigure(self.snmpEngine)
 
     def cfgCmdGen(self, authData, transportTarget):
+        """Obsolete. Configure credentials and a target on the engine."""
         return self.lcd.configure(self.snmpEngine, authData, transportTarget)
 
     def uncfgCmdGen(self, authData=None):
+        """Obsolete. Remove what `cfgCmdGen` configured."""
         return self.lcd.unconfigure(self.snmpEngine, authData)
 
     # compatibility stub
     def makeReadVarBinds(self, varNames):
+        """Obsolete. Pair each name with a null, as a read request wants."""
         return self.makeVarBinds([(x, self._null) for x in varNames])
 
     def makeVarBinds(self, varBinds):
+        """Obsolete. Resolve bindings against the MIB."""
         return self.vbProcessor.makeVarBinds(self.snmpEngine, varBinds)
 
     def unmakeVarBinds(self, varBinds, lookupNames, lookupValues):
+        """Obsolete. Turn resolved bindings back into names and values."""
         return self.vbProcessor.unmakeVarBinds(
             self.snmpEngine, varBinds, lookupNames or lookupValues
         )
 
-    def getCmd(self, authData, transportTarget, varNames, cbInfo,
-               lookupNames=False, lookupValues=False,
-               contextEngineId=None, contextName=null):
+    def getCmd(
+        self,
+        authData,
+        transportTarget,
+        varNames,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=b"",
+    ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.get_cmd`."""
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            cbFun(sendRequestHandle,
-                  errorIndication, errorStatus, errorIndex,
-                  varBindTable, cbCtx)
+            cbFun(
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
+            )
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return getCmd(
-            self.snmpEngine, authData, transportTarget,
+        return _get_cmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
             ContextData(contextEngineId, contextName),
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncGetCmd = getCmd
 
-    def setCmd(self, authData, transportTarget, varBinds, cbInfo,
-               lookupNames=False, lookupValues=False,
-               contextEngineId=None, contextName=null):
+    def setCmd(
+        self,
+        authData,
+        transportTarget,
+        varBinds,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=b"",
+    ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.set_cmd`."""
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            cbFun(sendRequestHandle,
-                  errorIndication, errorStatus, errorIndex,
-                  varBindTable, cbCtx)
+            cbFun(
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
+            )
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return setCmd(
-            self.snmpEngine, authData, transportTarget,
-            ContextData(contextEngineId, contextName), *varBinds,
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+        return _set_cmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(contextEngineId, contextName),
+            *varBinds,
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncSetCmd = setCmd
 
-    def nextCmd(self, authData, transportTarget, varNames, cbInfo,
-                lookupNames=False, lookupValues=False,
-                contextEngineId=None, contextName=null):
+    def nextCmd(
+        self,
+        authData,
+        transportTarget,
+        varNames,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=b"",
+    ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.next_cmd`."""
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            return cbFun(sendRequestHandle,
-                         errorIndication, errorStatus, errorIndex,
-                         varBindTable, cbCtx)
+            return cbFun(
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
+            )
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return nextCmd(
-            self.snmpEngine, authData, transportTarget,
+        return _next_cmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
             ContextData(contextEngineId, contextName),
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncNextCmd = nextCmd
 
-    def bulkCmd(self, authData, transportTarget,
-                nonRepeaters, maxRepetitions, varNames, cbInfo,
-                lookupNames=False, lookupValues=False,
-                contextEngineId=None, contextName=null):
+    def bulkCmd(
+        self,
+        authData,
+        transportTarget,
+        nonRepeaters,
+        maxRepetitions,
+        varNames,
+        cbInfo,
+        lookupNames=False,
+        lookupValues=False,
+        contextEngineId=None,
+        contextName=b"",
+    ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.bulk_cmd`."""
 
-        def __cbFun(snmpEngine, sendRequestHandle,
-                    errorIndication, errorStatus, errorIndex,
-                    varBindTable, cbInfo):
+        def __cbFun(
+            snmpEngine,
+            sendRequestHandle,
+            errorIndication,
+            errorStatus,
+            errorIndex,
+            varBindTable,
+            cbInfo,
+        ):
             cbFun, cbCtx = cbInfo
-            return cbFun(sendRequestHandle,
-                         errorIndication, errorStatus, errorIndex,
-                         varBindTable, cbCtx)
+            return cbFun(
+                sendRequestHandle,
+                errorIndication,
+                errorStatus,
+                errorIndex,
+                varBindTable,
+                cbCtx,
+            )
 
         # for backward compatibility
-        if contextName is null and authData.contextName:
+        if contextName == b"" and authData.contextName:
             contextName = authData.contextName
 
-        return bulkCmd(
-            self.snmpEngine, authData, transportTarget,
+        return _bulk_cmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
             ContextData(contextEngineId, contextName),
-            nonRepeaters, maxRepetitions,
+            nonRepeaters,
+            maxRepetitions,
             *[(x, self._null) for x in varNames],
-            **dict(cbFun=__cbFun, cbCtx=cbInfo,
-                   lookupMib=lookupNames or lookupValues)
+            cbFun=__cbFun,
+            cbCtx=cbInfo,
+            lookupMib=lookupNames or lookupValues,
         )
 
     asyncBulkCmd = bulkCmd
 
 
 class CommandGenerator:
-    _null = univ.Null('')
+    """Obsolete. Use `pysnmp.hlapi`."""
+
+    _null = univ.Null("")
 
     def __init__(self, snmpEngine=None, asynCmdGen=None):
-        # compatibility attributes
+        """`asynCmdGen` is accepted for compatibility and ignored."""
         self.snmpEngine = snmpEngine or SnmpEngine()
 
     def getCmd(self, authData, transportTarget, *varNames, **kwargs):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.get_cmd`."""
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
         errorIndication, errorStatus, errorIndex, varBinds = None, 0, 0, []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             varBinds) in sync.getCmd(self.snmpEngine, authData, transportTarget,
-                                      ContextData(kwargs.get('contextEngineId'),
-                                                  kwargs.get('contextName', null)),
-                                      *[(x, self._null) for x in varNames],
-                                      **kwargs):
+        for errorIndication, errorStatus, errorIndex, varBinds in sync.getCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
+            *[(x, self._null) for x in varNames],
+            **kwargs,
+        ):
             break
         return errorIndication, errorStatus, errorIndex, varBinds
 
     def setCmd(self, authData, transportTarget, *varBinds, **kwargs):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.set_cmd`."""
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
         errorIndication, errorStatus, errorIndex, rspVarBinds = None, 0, 0, []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             rspVarBinds) in sync.setCmd(self.snmpEngine, authData, transportTarget,
-                                         ContextData(kwargs.get('contextEngineId'),
-                                                     kwargs.get('contextName', null)),
-                                         *varBinds,
-                                         **kwargs):
+        for errorIndication, errorStatus, errorIndex, rspVarBinds in sync.setCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
+            *varBinds,
+            **kwargs,
+        ):
             break
 
         return errorIndication, errorStatus, errorIndex, rspVarBinds
 
     def nextCmd(self, authData, transportTarget, *varNames, **kwargs):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
-        if 'lexicographicMode' not in kwargs:
-            kwargs['lexicographicMode'] = False
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.next_cmd`."""
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
+        if "lexicographicMode" not in kwargs:
+            kwargs["lexicographicMode"] = False
         errorIndication, errorStatus, errorIndex = None, 0, 0
         varBindTable = []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             varBinds) in sync.nextCmd(self.snmpEngine, authData, transportTarget,
-                                       ContextData(kwargs.get('contextEngineId'),
-                                                   kwargs.get('contextName', null)),
-                                       *[(x, self._null) for x in varNames],
-                                       **kwargs):
+        for errorIndication, errorStatus, errorIndex, varBinds in sync.nextCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
+            *[(x, self._null) for x in varNames],
+            **kwargs,
+        ):
             if errorIndication or errorStatus:
                 return errorIndication, errorStatus, errorIndex, varBinds
 
@@ -226,26 +350,34 @@ class CommandGenerator:
 
         return errorIndication, errorStatus, errorIndex, varBindTable
 
-    def bulkCmd(self, authData, transportTarget,
-                nonRepeaters, maxRepetitions, *varNames, **kwargs):
-        if 'lookupNames' not in kwargs:
-            kwargs['lookupNames'] = False
-        if 'lookupValues' not in kwargs:
-            kwargs['lookupValues'] = False
-        if 'lexicographicMode' not in kwargs:
-            kwargs['lexicographicMode'] = False
+    def bulkCmd(
+        self,
+        authData,
+        transportTarget,
+        nonRepeaters,
+        maxRepetitions,
+        *varNames,
+        **kwargs,
+    ):
+        """Obsolete. Use `pysnmp.hlapi.asyncio.sync.bulk_cmd`."""
+        if "lookupNames" not in kwargs:
+            kwargs["lookupNames"] = False
+        if "lookupValues" not in kwargs:
+            kwargs["lookupValues"] = False
+        if "lexicographicMode" not in kwargs:
+            kwargs["lexicographicMode"] = False
         errorIndication, errorStatus, errorIndex = None, 0, 0
         varBindTable = []
-        for (errorIndication,
-             errorStatus,
-             errorIndex,
-             varBinds) in sync.bulkCmd(self.snmpEngine, authData,
-                                       transportTarget,
-                                       ContextData(kwargs.get('contextEngineId'),
-                                                   kwargs.get('contextName', null)),
-                                       nonRepeaters, maxRepetitions,
-                                       *[(x, self._null) for x in varNames],
-                                       **kwargs):
+        for errorIndication, errorStatus, errorIndex, varBinds in sync.bulkCmd(
+            self.snmpEngine,
+            authData,
+            transportTarget,
+            ContextData(kwargs.get("contextEngineId"), kwargs.get("contextName", b"")),
+            nonRepeaters,
+            maxRepetitions,
+            *[(x, self._null) for x in varNames],
+            **kwargs,
+        ):
             if errorIndication or errorStatus:
                 return errorIndication, errorStatus, errorIndex, varBinds
 

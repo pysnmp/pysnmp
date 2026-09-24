@@ -17,22 +17,28 @@ multilingual capabilities, remote configuration and other features.
 PySNMP implementation closely follows intricate system details and features 
 bringing most possible power and flexibility to its users.
 
-Current PySNMP stable version is 4.4. It runs with Python 2.4 through 3.7
-and is recommended for new applications as well as for migration from
-older, now obsolete, PySNMP releases. All site documentation and 
-examples are written for the 4.4 and later versions in mind.
-Older materials are still available under the obsolete section.
+.. note::
 
-Besides the libraries, a set of pure-Python 
-`command-line tools <https://pypi.python.org/pypi/snmpclitools/>`_
-are shipped along with the system. Those tools mimic the interface
-and behaviour of popular Net-SNMP snmpget/snmpset/snmpwalk utilities.
-They may be useful in a cross-platform situations as well as a testing
-and prototyping instrument for pysnmp users.
+   ``snmpclitools``, which older documentation described as shipping with
+   PySNMP, is a separate project and is **not** part of this one. The release
+   on PyPI depends on the ``pysnmp`` distribution, which is a different fork
+   from a different repository -- installing it beside ``pysnmplib`` puts two
+   SNMP engines in one environment.
 
-PySNMP software is free and open-source. Source code is hosted in 
-a `Github repo <https://github.com/etingof/pysnmp>`_.
-The library is being distributed under 2-clause BSD-style license.
+PySNMP is free and open-source software, distributed under a 2-clause
+BSD-style license. The source is at `pysnmp/pysnmp
+<https://github.com/pysnmp/pysnmp>`_.
+
+Three other projects are maintained alongside it, and the
+`organization site <https://pysnmp.github.io/>`_ describes how they fit
+together:
+
+* the `MIB distribution <https://pysnmp.github.io/mibs/>`_, which supplies the
+  module definitions an engine resolves names against;
+* `pysmi <https://pysnmp.github.io/pysmi/>`_, the MIB compiler, installed with
+  the ``compile`` extra;
+* `pyasn1 <https://pysnmp.github.io/pyasn1/>`_, the ASN.1 codec underneath
+  both, installed with PySNMP itself.
 
 PySNMP library development has been initially sponsored 
 by a `PSF <http://www.python.org/psf/>`_ grant.
@@ -56,6 +62,18 @@ Documentation
 
    /docs/tutorial
    /docs/api-reference
+   /docs/api-internals
+   /docs/breaking-changes
+   /docs/security-considerations
+   /docs/smi-table-api
+   /docs/async-instrumentation
+   /docs/device-report
+   /docs/usm-dh-key-change
+   /docs/mib-tools
+   /docs/mib-corpus
+   /docs/loader-contract
+   /docs/observability-contract
+   /docs/codec-benchmark
 
 Examples
 --------
@@ -72,8 +90,8 @@ Best way is usually to
 
 .. code-block:: bash
 
-   # pip install pysnmp
-   
+   $ pip install pysnmplib
+
 If that does not work for you for some reason, you might need to read the 
 following page.
 
@@ -101,14 +119,22 @@ FAQ
 Further development
 -------------------
 
-We fanatically document all fixes, changes and new features in changelog.
-There you could also download the latest unreleased pysnmp tarball
-containing the latest fixes and improvements.
+The changelog is generated from the commit history at release time. The
+narrative history of the project through 5.x is kept separately.
 
 .. toctree::
    :maxdepth: 1
 
    /changelog
+   /changelog-history
+
+How changes reach a released version — the branches, the commit-message
+conventions, what CI runs and how a release is cut — is documented here.
+
+.. toctree::
+   :maxdepth: 2
+
+   /ci-and-releases
 
 Our development plans and new features we consider for eventual implementation
 are collected in the following section.
@@ -122,13 +148,5 @@ Contact
 -------
 
 In case of questions or troubles using PySNMP, please open up an
-`issue <https://github.com/etingof/pysnmp/issues>`_ at GitHub or ask at
+`issue <https://github.com/pysnmp/pysnmp/issues>`_ at GitHub or ask at
 `Stack Overflow <http://stackoverflow.com/questions/tagged/pysnmp>`_ .
-
-Old site archive
-----------------
-
-.. toctree::
-   :maxdepth: 2
-
-   /oldsite

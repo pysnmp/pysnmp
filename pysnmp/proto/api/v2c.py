@@ -1,16 +1,18 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Building and reading SNMPv2c messages and PDUs, including GETBULK."""
+
+from pyasn1.type import constraint, univ
+
 from pysnmp.proto import rfc1901, rfc1902, rfc1905
 from pysnmp.proto.api import v1
-from pyasn1.type import univ, constraint
 
 # Shortcuts to SNMP types
 Null = univ.Null
-null = Null('')
+null = Null("")
 ObjectIdentifier = univ.ObjectIdentifier
 
 Integer = rfc1902.Integer
@@ -24,6 +26,9 @@ TimeTicks = rfc1902.TimeTicks
 Opaque = rfc1902.Opaque
 Counter64 = rfc1902.Counter64
 Bits = rfc1902.Bits
+Float = rfc1902.Float
+Double = rfc1902.Double
+decodeOpaque = rfc1902.decodeOpaque
 
 NoSuchObject = rfc1905.NoSuchObject
 NoSuchInstance = rfc1905.NoSuchInstance
@@ -48,28 +53,58 @@ apiVarBind = v1.apiVarBind
 
 
 class PDUAPI(v1.PDUAPI):
+    """Reads and writes a v2c PDU.
+
+    Adds what v1 has no way to say: an exception value in place of a variable's
+    value, rather than failing the whole response.
+    """
+
     _errorStatus = rfc1905.errorStatus.clone(0)
-    _errorIndex = univ.Integer(0).subtype(subtypeSpec=constraint.ValueRangeConstraint(0, rfc1905.max_bindings))
+    _errorIndex = univ.Integer(0).subtype(
+        subtypeSpec=constraint.ValueRangeConstraint(0, rfc1905.max_bindings)
+    )
 
     def getResponse(self, reqPDU):
+        """An empty response PDU carrying the request's ID."""
         rspPDU = ResponsePDU()
         self.setDefaults(rspPDU)
         self.setRequestID(rspPDU, self.getRequestID(reqPDU))
         return rspPDU
 
     def getVarBindTable(self, reqPDU, rspPDU):
+        """The response's bindings as a table of one row.
+
+        Unlike v1 there is no error case to fold in: v2c reports a finished walk as an
+        `endOfMibView` value in the binding itself, so an error response has nothing
+        the caller wants and the bindings come back as they arrived.
+        """
         return [apiPDU.getVarBinds(rspPDU)]
 
     def setEndOfMibError(self, pdu, errorIndex):
+        """Mark one binding as past the end of the MIB.
+
+        v2c says this with a value rather than an error status, which is what lets a
+        single response finish some bindings and carry data for the rest -- the thing
+        v1 cannot express.
+        """
         varBindList = self.getVarBindList(pdu)
         varBindList[errorIndex - 1].setComponentByPosition(
-            1, rfc1905.endOfMibView, verifyConstraints=False, matchTags=False, matchConstraints=False
+            1,
+            rfc1905.endOfMibView,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
 
     def setNoSuchInstanceError(self, pdu, errorIndex):
+        """Mark one binding as naming an object that exists with no instance."""
         varBindList = self.getVarBindList(pdu)
         varBindList[errorIndex - 1].setComponentByPosition(
-            1, rfc1905.noSuchInstance, verifyConstraints=False, matchTags=False, matchConstraints=False
+            1,
+            rfc1905.noSuchInstance,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
 
 
@@ -77,40 +112,66 @@ apiPDU = PDUAPI()
 
 
 class BulkPDUAPI(PDUAPI):
+    """Reads and writes a GETBULK PDU's repetition counts."""
+
     _nonRepeaters = rfc1905.nonRepeaters.clone(0)
     _maxRepetitions = rfc1905.maxRepetitions.clone(10)
 
     def setDefaults(self, pdu):
+        """Stamp a request ID and the repetition counts, defaulting to 10 repetitions."""
         PDUAPI.setDefaults(self, pdu)
         pdu.setComponentByPosition(
-            0, getNextRequestID(), verifyConstraints=False, matchTags=False, matchConstraints=False
+            0,
+            getNextRequestID(),
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            1, self._nonRepeaters, verifyConstraints=False, matchTags=False, matchConstraints=False
+            1,
+            self._nonRepeaters,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         pdu.setComponentByPosition(
-            2, self._maxRepetitions, verifyConstraints=False, matchTags=False, matchConstraints=False
+            2,
+            self._maxRepetitions,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
         )
         varBindList = pdu.setComponentByPosition(3).getComponentByPosition(3)
         varBindList.clear()
 
     @staticmethod
     def getNonRepeaters(pdu):
+        """How many leading bindings are fetched once rather than repeatedly."""
         return pdu.getComponentByPosition(1)
 
     @staticmethod
     def setNonRepeaters(pdu, value):
+        """Set the non-repeater count."""
         pdu.setComponentByPosition(1, value)
 
     @staticmethod
     def getMaxRepetitions(pdu):
+        """How many times the remaining bindings are walked."""
         return pdu.getComponentByPosition(2)
 
     @staticmethod
     def setMaxRepetitions(pdu, value):
+        """Set the repetition count."""
         pdu.setComponentByPosition(2, value)
 
     def getVarBindTable(self, reqPDU, rspPDU):
+        """The response's bindings cut back into rows, one per repetition.
+
+        GETBULK returns the non-repeaters once and then the repeaters over and over,
+        flattened into one list; this is what turns that back into rows. An agent may
+        return fewer repetitions than asked for, and a short final row is dropped
+        rather than padded, since a partial row is not a row of the table.
+        """
         nonRepeaters = self.getNonRepeaters(reqPDU)
 
         reqVarBinds = self.getVarBinds(reqPDU)
@@ -124,7 +185,7 @@ class BulkPDUAPI(PDUAPI):
 
         if R:
             for i in range(0, len(rspVarBinds) - N, R):
-                varBindRow = rspVarBinds[:N] + rspVarBinds[N + i:N + R + i]
+                varBindRow = rspVarBinds[:N] + rspVarBinds[N + i : N + R + i]
                 # ignore stray OIDs / non-rectangular table
                 if len(varBindRow) == N + R:
                     varBindTable.append(varBindRow)
@@ -138,6 +199,12 @@ apiBulkPDU = BulkPDUAPI()
 
 
 class TrapPDUAPI(v1.PDUAPI):
+    """Reads and writes a v2c trap, which is an ordinary PDU.
+
+    What v1 carried in dedicated fields is here in the bindings: the uptime and
+    the trap OID are the first two, by definition.
+    """
+
     sysUpTime = (1, 3, 6, 1, 2, 1, 1, 3, 0)
     snmpTrapAddress = (1, 3, 6, 1, 6, 3, 18, 1, 3, 0)
     snmpTrapCommunity = (1, 3, 6, 1, 6, 3, 18, 1, 4, 0)
@@ -147,10 +214,17 @@ class TrapPDUAPI(v1.PDUAPI):
     _genTrap = ObjectIdentifier((1, 3, 6, 1, 6, 3, 1, 1, 5, 1))
 
     def setDefaults(self, pdu):
+        """Stamp the two bindings :RFC:`3416#section-4.2.6` requires of every v2c trap.
+
+        A v2c trap has none of v1's dedicated fields; the uptime and the trap OID are
+        ordinary bindings, and they have to be the first two.
+        """
         v1.PDUAPI.setDefaults(self, pdu)
-        varBinds = [(self.sysUpTime, self._zeroTime),
-                    # generic trap
-                    (self.snmpTrapOID, self._genTrap)]
+        varBinds = [
+            (self.sysUpTime, self._zeroTime),
+            # generic trap
+            (self.snmpTrapOID, self._genTrap),
+        ]
         self.setVarBinds(pdu, varBinds)
 
 
@@ -158,14 +232,30 @@ apiTrapPDU = TrapPDUAPI()
 
 
 class MessageAPI(v1.MessageAPI):
+    """Reads and writes a v2c message: version, community, and the PDU inside."""
+
     _version = rfc1901.version.clone(1)
 
     def setDefaults(self, msg):
-        msg.setComponentByPosition(0, self._version, verifyConstraints=False, matchTags=False, matchConstraints=False)
-        msg.setComponentByPosition(1, self._community, verifyConstraints=False, matchTags=False, matchConstraints=False)
+        """Stamp version 2c and the default community."""
+        msg.setComponentByPosition(
+            0,
+            self._version,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
+        )
+        msg.setComponentByPosition(
+            1,
+            self._community,
+            verifyConstraints=False,
+            matchTags=False,
+            matchConstraints=False,
+        )
         return msg
 
     def getResponse(self, reqMsg):
+        """A response message echoing the request's version, community and request ID."""
         rspMsg = Message()
         self.setDefaults(rspMsg)
         self.setVersion(rspMsg, self.getVersion(reqMsg))

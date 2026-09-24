@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # Copyright (C) 2014, Zebra Technologies
 # Authors: Matt Hooks <me@matthooks.com>
@@ -30,57 +29,217 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 #
-import sys
-import platform
-import traceback
-from pysnmp.carrier.base import AbstractTransportDispatcher
-from pysnmp.error import PySnmpError
+"""The asyncio transport dispatcher: the loop the engine's I/O runs on."""
 
 import asyncio
+import traceback
+
+from pysnmp import debug
+from pysnmp.carrier.base import AbstractTransportDispatcher
+from pysnmp.carrier.error import CarrierError
+from pysnmp.error import PySnmpError
 
 
 class AsyncioDispatcher(AbstractTransportDispatcher):
-    """AsyncioDispatcher based on asyncio event loop"""
+    """AsyncioDispatcher based on asyncio event loop."""
 
     def __init__(self, *args, **kwargs):
+        """Binds to an event loop, creating one where there is no running loop.
+
+        The transport count is what decides whether the timer is running: the periodic
+        call is started when the first transport registers and stopped when the last
+        goes away, so an idle dispatcher does not keep the loop awake.
+        """
         AbstractTransportDispatcher.__init__(self)
         self.__transportCount = 0
-        if 'timeout' in kwargs:
-            self.setTimerResolution(kwargs['timeout'])
+        self.__deferred = set()
+        if "timeout" in kwargs:
+            self.setTimerResolution(kwargs["timeout"])
         self.loopingcall = None
-        self.loop = kwargs.pop('loop', asyncio.get_event_loop())
+        self._timerStartHandle = None
+        self.loop = kwargs.pop("loop", None)
+        if self.loop is None:
+            try:
+                self.loop = asyncio.get_running_loop()
+            except RuntimeError:
+                self.loop = asyncio.new_event_loop()
 
     async def handle_timeout(self):
+        """Tick the dispatcher's timers forever, one sleep per resolution."""
         while True:
             await asyncio.sleep(self.getTimerResolution())
             self.handleTimerTick(self.loop.time())
 
+    def _start_timer(self):
+        """Start the ticking task, unless one is already running."""
+        self._timerStartHandle = None
+        if self.loopingcall is None:
+            self.loopingcall = self.loop.create_task(self.handle_timeout())
+
     def runDispatcher(self, timeout=0.0):
-        if not self.loop.is_running():
-            try:
+        """Run the loop until the outstanding work is done, or forever with none.
+
+        With jobs pending or writes still queued this returns once they have drained,
+        which is what a client wants. With nothing outstanding it runs forever instead
+        of returning immediately, since that is a server waiting to be asked something.
+        """
+        if self.loop.is_running():
+            return
+
+        async def run_pending_jobs():
+            while self.jobsArePending() or self.transportsAreWorking():
+                await asyncio.sleep(timeout or self.getTimerResolution())
+
+        try:
+            if self.jobsArePending() or self.transportsAreWorking():
+                self.loop.run_until_complete(run_pending_jobs())
+            else:
+                # Server mode: run the event loop indefinitely so that
+                # registered transports can receive incoming messages.
                 self.loop.run_forever()
-            except KeyboardInterrupt:
-                raise
-            except Exception:
-                raise PySnmpError(';'.join(traceback.format_exception(*sys.exc_info())))
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            raise PySnmpError(
+                ";".join(traceback.format_exception(type(e), e, e.__traceback__))
+            ) from e
+
+    #: Job id that deferred request work is counted under.
+    DEFERRED_JOB_ID = "pysnmp.carrier.asyncio.deferred"
+
+    def runDeferred(self, coro, jobId=None):
+        """Run the rest of a suspended piece of work as a task on this loop.
+
+        The task is held onto until it finishes, since asyncio only keeps a weak
+        reference to a running task and one nothing holds can be collected
+        mid-flight. Its exception is retrieved in the callback whatever happened,
+        so a failure is reported here rather than surfacing later as an exception
+        that was never retrieved.
+        """
+        if jobId is None:
+            jobId = self.DEFERRED_JOB_ID
+
+        task = self.loop.create_task(coro)
+
+        self.__deferred.add(task)
+        self.jobStarted(jobId)
+
+        def _done(task, jobId=jobId):
+            self.__deferred.discard(task)
+            self.jobFinished(jobId)
+            if task.cancelled():
+                return
+            exc = task.exception()
+            if exc is not None:
+                debug.logger & debug.flagDsp and debug.logger(
+                    f"runDeferred: deferred work failed: "
+                    f"{';'.join(traceback.format_exception(type(exc), exc, exc.__traceback__))}"
+                )
+
+        task.add_done_callback(_done)
+
+        return task
+
+    def transportsAreWorking(self):
+        """Whether any transport still has datagrams queued to send."""
+        for transport in self._AbstractTransportDispatcher__transports.values():
+            if getattr(transport, "_writeQ", None):
+                return True
+        return False
 
     def registerTransport(self, tDomain, transport):
-        if self.loopingcall is None and self.getTimerResolution() > 0:
-            self.loopingcall = asyncio.ensure_future(self.handle_timeout())
-        AbstractTransportDispatcher.registerTransport(
-            self, tDomain, transport
-        )
+        """Take a transport, adopting its event loop and starting the timer.
+
+        A server-mode transport is often built before the dispatcher and already holds
+        a loop; receiving only works if both are on the same one, so the dispatcher
+        moves rather than making the transport move.
+        """
+        # If the transport already has an event loop (e.g. server-mode
+        # transport created before the dispatcher), adopt its loop so
+        # that datagram reception works on the same loop.
+        transportLoop = getattr(transport, "loop", None)
+        if transportLoop is not None and transportLoop is not self.loop:
+            # Only while this is the first transport. Adopting a second one's
+            # loop used to leave the first bound to a loop nothing runs any
+            # more: its socket stays open and never reads again, which is a
+            # silent deafness rather than a failure. An agent serving two
+            # transports -- UDP and TCP, or IPv4 and IPv6 -- is exactly the
+            # case that hits it, so say so instead.
+            if self.__transportCount or self.loop.is_running():
+                raise CarrierError(
+                    f"Transport {transport!r} is bound to a different asyncio "
+                    f"event loop than the dispatcher it is being registered "
+                    f"with. Every transport on one dispatcher has to share its "
+                    f"loop, or only the last one registered would receive. "
+                    f"Build them with the same loop=... argument, or build "
+                    f"them inside the running loop."
+                )
+            self.loop = transportLoop
+
+        if (
+            self.loopingcall is None
+            and self._timerStartHandle is None
+            and self.getTimerResolution() > 0
+        ):
+            if self.loop.is_running():
+                self._start_timer()
+            else:
+                self._timerStartHandle = self.loop.call_soon(self._start_timer)
+        AbstractTransportDispatcher.registerTransport(self, tDomain, transport)
         self.__transportCount += 1
 
+    def _cancel_timer(self):
+        """Stop the ticking task and wait for it where the loop is not running."""
+        if self._timerStartHandle is not None:
+            self._timerStartHandle.cancel()
+            self._timerStartHandle = None
+        if self.loopingcall is None:
+            return
+        self.loopingcall.cancel()
+        if not self.loop.is_running():
+            self.loop.run_until_complete(
+                asyncio.gather(self.loopingcall, return_exceptions=True)
+            )
+        self.loopingcall = None
+
     def unregisterTransport(self, tDomain):
+        """Release a transport, stopping the timer once the last one is gone."""
         t = AbstractTransportDispatcher.getTransport(self, tDomain)
         if t is not None:
             AbstractTransportDispatcher.unregisterTransport(self, tDomain)
             self.__transportCount -= 1
 
         # The last transport has been removed, stop the timeout
-        if self.__transportCount == 0 and not self.loopingcall.done():
-            self.loopingcall.cancel()
-            self.loopingcall = None
+        if self.__transportCount == 0 and (
+            self.loopingcall is not None or self._timerStartHandle is not None
+        ):
+            self._cancel_timer()
 
+    def closeDispatcher(self):
+        """Close every transport, stop the timer and drop work still in flight.
 
+        Deferred work is cancelled rather than waited for: it is answering a
+        request through transports that are being closed underneath it, so there
+        is nowhere left for its answer to go.
+        """
+        AbstractTransportDispatcher.closeDispatcher(self)
+        for task in list(self.__deferred):
+            task.cancel()
+        self._cancel_timer()
+        self.__transportCount = 0
+
+    async def closeDispatcherAsync(self):
+        """Close every transport and stop the timer, waiting for the ticker to stop.
+
+        `closeDispatcher()` cannot wait when it is called from inside the running
+        loop -- the loop it would have to run is the one calling it -- so the timer
+        task is left cancelled but not yet finished, which asyncio reports as a task
+        destroyed while pending. Awaiting this instead closes the same things and
+        then lets the cancellation land.
+        """
+        loopingcall = self.loopingcall
+        deferred = list(self.__deferred)
+        self.closeDispatcher()
+        pending = [task for task in (*deferred, loopingcall) if task is not None]
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)

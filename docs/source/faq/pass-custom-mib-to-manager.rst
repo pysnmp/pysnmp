@@ -6,24 +6,32 @@ Q. How to make use of random MIBs at my Manager application?
 
 A. Starting from PySNMP 4.3.x, plain-text (ASN.1) MIBs can be
    automatically parsed into PySNMP form by the
-   `PySMI <http://snmplabs.com/pysmi/>`_ tool.  PySNMP will call PySMI
-   automatically, parsed PySNMP MIB will be cached in
-   $HOME/.pysnmp/mibs/ (default location).
+   `PySMI <https://github.com/pysnmp/pysmi>`_ tool.  PySNMP will call PySMI
+   automatically, parsed PySNMP MIB will be cached in your user cache
+   directory: ``$XDG_CACHE_HOME/pysnmp/mibs`` (or ``~/.cache/pysnmp/mibs``)
+   on Linux and the BSDs, ``~/Library/Caches/pysnmp/mibs`` on macOS, and
+   ``%LOCALAPPDATA%\pysnmp\Cache\mibs`` on Windows. An older
+   ``~/.pysnmp/mibs`` that already exists keeps being used, so upgrading
+   does not orphan a cache you already have. Passing ``destination=`` to
+   ``addMibCompiler()`` overrides all of it.
+
+   PySMI bundles the standard MIB set -- ``SNMPv2-SMI``, ``IF-MIB`` and the
+   rest of what a vendor MIB imports -- and searches it alongside whatever
+   sources you configure, so a MIB that only imports standard modules
+   compiles with no source configured at all and no network. Where a copy
+   you configure carries a newer ``MODULE-IDENTITY`` revision than the
+   bundled one, yours is used.
 
    MIB compiler could be configured to search for plain-text
-   MIBs at multiple local and remote locations. As for remote
+   MIBs at multiple local and remote locations, which is what a MIB
+   importing something outside that set needs. As for remote
    MIB repos, you are welcome to use our collection of ASN.1
    MIB files at
-   `https://pysnmp.github.io/mibs/asn1/ <https://pysnmp.github.io/mibs/asn1/>`_
+   `MIBs Depot <https://mibsdepot.com/browse/>`_
    as shown below.
 
-.. literalinclude:: /../../examples/hlapi/asyncore/sync/manager/cmdgen/custom-asn1-mib-search-path.py
-   :start-after: """#
-   :language: python
+.. code-block:: python
 
-.. code:
-    :language: python
-    
     # Configure the SNMP engine with access to the
     # common Linux ASN.1 (Textual) MIB directories...
     from pysnmp import hlapi
@@ -33,13 +41,11 @@ A. Starting from PySNMP 4.3.x, plain-text (ASN.1) MIBs can be
     compiler.addMibCompiler(builder, sources=[
         '/usr/share/snmp/mibs',
         os.path.expanduser('~/.snmp/mibs'),
-        'https://pysnmp.github.io/mibs/asn1/@mib@',
+        'https://data.mibsdepot.com/asn1/@mib@',
     ])
 
-:download:`Download</../../examples/hlapi/asyncore/sync/manager/cmdgen/custom-asn1-mib-search-path.py>` script.
-
 Alternatively, you can invoke the
-`mibdump.py <http://snmplabs.com/pysmi/mibdump.html>`_
+`mibdump.py <https://pypi.org/project/pysmi/>`__
 (shipped with PySMI) by hand and this way compile plain-text MIB
 into PySNMP format. Once the compiled MIBs are stored in a directory,
 add the directory to your MibBuilder's MibSources.
@@ -52,4 +58,3 @@ add the directory to your MibBuilder's MibSources.
     builder.addMibSources(builder_module.DirMibSource(
         os.path.join( HERE, 'mibs')
     ))
-

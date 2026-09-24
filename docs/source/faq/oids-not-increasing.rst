@@ -2,7 +2,7 @@
 Dealing with the "OID not increasing" error
 -------------------------------------------
 
-Q. I'm walking a particular Agent with the `nextCmd()` or `bulkCmd()`
+Q. I'm walking a particular Agent with the `next_cmd()` or `bulk_cmd()`
    functions. It works for some OIDs, but invariably fails at certain
    OID with the *OID not increasing* error. What does it mean and
    how do I fix that?
@@ -19,7 +19,7 @@ A. The Agent you are talking to seems to be broken. The
 
    If you have to work with a broken Agent and can terminate the
    GETNEXT/GETBULK command at some point, you can pass the
-   `ignoreNonIncreasingOid=True` keyword parameter to the `nextCmd()` or `bulkCmd()`
+   `ignoreNonIncreasingOid=True` keyword parameter to the `next_cmd()` or `bulk_cmd()`
    to disable OID verification at the Manager side.
 
 .. code-block:: python
@@ -27,9 +27,9 @@ A. The Agent you are talking to seems to be broken. The
     for (errorIndication,
          errorStatus,
          errorIndex,
-         varBinds) in nextCmd(SnmpEngine(),
+         varBinds) in next_cmd(SnmpEngine(),
                               CommunityData('public'),
-                              UdpTransportTarget(('demo.snmplabs.com', 161)),
+                              UdpTransportTarget(('localhost', 161)),
                               ContextData(),
                               ObjectType(ObjectIdentity('1.3.6')),
                               ignoreNonIncreasingOid=True):

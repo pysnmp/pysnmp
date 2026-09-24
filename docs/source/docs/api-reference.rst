@@ -30,17 +30,17 @@ Command Generator
 .. toctree::
    :maxdepth: 2
 
-   /docs/hlapi/asyncore/sync/manager/cmdgen/getcmd
-   /docs/hlapi/asyncore/sync/manager/cmdgen/setcmd
-   /docs/hlapi/asyncore/sync/manager/cmdgen/nextcmd
-   /docs/hlapi/asyncore/sync/manager/cmdgen/bulkcmd
+   /docs/hlapi/asyncio/manager/cmdgen/getcmd
+   /docs/hlapi/asyncio/manager/cmdgen/setcmd
+   /docs/hlapi/asyncio/manager/cmdgen/nextcmd
+   /docs/hlapi/asyncio/manager/cmdgen/bulkcmd
 
 Notification Originator
 
 .. toctree::
    :maxdepth: 2
 
-   /docs/hlapi/asyncore/sync/agent/ntforg/notification 
+   /docs/hlapi/asyncio/agent/ntforg/notification
 
 Transport configuration
 +++++++++++++++++++++++
@@ -55,53 +55,19 @@ saves its configuration for the lifetime of SNMP engine object.
 
 .. autoclass:: pysnmp.hlapi.UdpTransportTarget
    :members: setLocalAddress
+   :no-index:
 
 .. autoclass:: pysnmp.hlapi.Udp6TransportTarget
    :members: setLocalAddress
+   :no-index:
 
-Asynchronous: asyncore
-----------------------
-
-The :mod:`asyncore` module is in Python standard library since ancient
-times. Main loop is built around :mod:`select` dispatcher, user
-code is invoked through callback callables.
-
-Command Generator
-
-.. toctree::
-   :maxdepth: 2
-
-   /docs/hlapi/asyncore/manager/cmdgen/getcmd
-   /docs/hlapi/asyncore/manager/cmdgen/setcmd
-   /docs/hlapi/asyncore/manager/cmdgen/nextcmd
-   /docs/hlapi/asyncore/manager/cmdgen/bulkcmd
-
-Notification Originator
-
-.. toctree::
-   :maxdepth: 2
-
-   /docs/hlapi/asyncore/agent/ntforg/notification 
-
-Transport configuration
-+++++++++++++++++++++++
-
-.. toctree::
-   :maxdepth: 2
-
-.. autoclass:: pysnmp.hlapi.asyncore.UdpTransportTarget
+.. autoclass:: pysnmp.hlapi.TcpTransportTarget
    :members: setLocalAddress
+   :no-index:
 
-.. autoclass:: pysnmp.hlapi.asyncore.Udp6TransportTarget
+.. autoclass:: pysnmp.hlapi.Tcp6TransportTarget
    :members: setLocalAddress
-
-Asynchronous: asyncio
----------------------
-
-The :mod:`asyncio` module first appeared in standard library since
-Python 3.3 (in provisional basis). Its main design feature is that
-it makes asynchronous code looking like synchronous one. That greately
-simplifies development and maintanence.
+   :no-index:
 
 Command Generator
 
@@ -118,7 +84,7 @@ Notification Originator
 .. toctree::
    :maxdepth: 2
 
-   /docs/hlapi/asyncio/agent/ntforg/notification 
+   /docs/hlapi/asyncio/agent/ntforg/notification
 
 Transport configuration
 +++++++++++++++++++++++
@@ -132,6 +98,61 @@ Transport configuration
 .. autoclass:: pysnmp.hlapi.asyncio.Udp6TransportTarget
    :members: setLocalAddress
 
+.. autoclass:: pysnmp.hlapi.asyncio.TcpTransportTarget
+   :members: setLocalAddress
+
+.. autoclass:: pysnmp.hlapi.asyncio.Tcp6TransportTarget
+   :members: setLocalAddress
+
+Asynchronous: asyncio
+---------------------
+
+PySNMP builds its asynchronous API on the standard library :mod:`asyncio`
+module. Its main design feature is that it makes asynchronous code look
+like synchronous code, which greatly simplifies development and
+maintenance.
+
+Command Generator
+
+.. toctree::
+   :maxdepth: 2
+
+   /docs/hlapi/asyncio/manager/cmdgen/getcmd
+   /docs/hlapi/asyncio/manager/cmdgen/setcmd
+   /docs/hlapi/asyncio/manager/cmdgen/nextcmd
+   /docs/hlapi/asyncio/manager/cmdgen/bulkcmd
+   /docs/hlapi/asyncio/manager/cmdgen/walkcmd
+   /docs/hlapi/asyncio/manager/cmdgen/bulkwalkcmd
+
+Notification Originator
+
+.. toctree::
+   :maxdepth: 2
+
+   /docs/hlapi/asyncio/agent/ntforg/notification 
+
+Transport configuration
++++++++++++++++++++++++
+
+.. toctree::
+   :maxdepth: 2
+
+.. autoclass:: pysnmp.hlapi.asyncio.UdpTransportTarget
+   :members: setLocalAddress
+   :no-index:
+
+.. autoclass:: pysnmp.hlapi.asyncio.Udp6TransportTarget
+   :members: setLocalAddress
+   :no-index:
+
+.. autoclass:: pysnmp.hlapi.asyncio.TcpTransportTarget
+   :members: setLocalAddress
+   :no-index:
+
+.. autoclass:: pysnmp.hlapi.asyncio.Tcp6TransportTarget
+   :members: setLocalAddress
+   :no-index:
+
 
 SNMP Engine
 -----------
@@ -144,6 +165,32 @@ Engine object on input.
    :maxdepth: 2
 
 .. autoclass:: pysnmp.hlapi.SnmpEngine(snmpEngineID=None)
+   :members: openDispatcher, closeDispatcher
+
+An engine holds a transport dispatcher, and the dispatcher holds its sockets.
+Closing it releases them, which matters most in a process that builds an engine
+per polling cycle: skip it and the descriptors accumulate with nothing in the
+traceback to say why.
+
+The context manager forms run that teardown on the exception path as well as the
+normal one. Inside a coroutine, prefer ``async with`` -- it waits for the
+dispatcher's timer to finish being cancelled, which the synchronous form has no
+way to do:
+
+.. code-block:: python
+
+   async with SnmpEngine() as snmpEngine:
+       ...
+
+Callers of the blocking API use ``with`` instead:
+
+.. code-block:: python
+
+   with SnmpEngine() as snmpEngine:
+       ...
+
+Either way, :py:meth:`~pysnmp.hlapi.SnmpEngine.closeDispatcher` can be
+called directly, on an engine that has no dispatcher or on one already closed.
 
 Security Parameters
 -------------------
@@ -297,7 +344,7 @@ states in form of values. Those values each belong to one
 of SNMP types (:RFC:`1902#section-2`) which, in turn, are based
 on `ASN.1 <https://en.wikipedia.org/wiki/Abstract_Syntax_Notation_One>`_ 
 data description language. PySNMP types are derived from
-`Python ASN.1 types <http://snmplabs.com/pyasn1/>`_ implementation.
+`Python ASN.1 types <https://github.com/pysnmp/pyasn1>`_ implementation.
 
 .. toctree::
    :maxdepth: 2
@@ -376,6 +423,20 @@ Opaque type
 +++++++++++
 
 .. autoclass:: pysnmp.proto.rfc1902.Opaque(initializer)
+
+Float type
+++++++++++
+
+.. autoclass:: pysnmp.proto.rfc1902.Float(initializer)
+   :members: asFloat
+
+Double type
++++++++++++
+
+.. autoclass:: pysnmp.proto.rfc1902.Double(initializer)
+   :members: asFloat
+
+.. autofunction:: pysnmp.proto.rfc1902.decodeOpaque
 
 Counter64 type
 ++++++++++++++

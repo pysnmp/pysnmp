@@ -7,11 +7,8 @@ PEP 3156) featuring infrastructure for writing single-threaded concurrent
 code using coroutines, multiplexing I/O access over sockets and other
 resources.
 
-PySNMP library was originally built on top of Python's asynchronous I/O 
-library called asyncio. The asyncio module offers similar functionality 
-but uses much more modern and powerful language facilities. Functionally, 
-asyncio can replace asyncio in PySNMP however its use requires understanding 
-the concepts such as coroutines and generators. If your task is to embed SNMP
+PySNMP uses asyncio for all asynchronous I/O. Its use requires understanding
+concepts such as coroutines and generators. If your task is to embed SNMP
 stack into an existing asyncio-based app, using PySNMP's asyncio interfaces 
 greatly simplifies the task.
 
@@ -29,6 +26,7 @@ Command Responder Applications
 .. toctree::
 
    /examples/v3arch/asyncio/agent/cmdrsp/snmp-versions
+   /examples/v3arch/asyncio/agent/cmdrsp/instrumentation
 
 Notification Receiver Applications
 ----------------------------------
@@ -36,6 +34,7 @@ Notification Receiver Applications
 .. toctree::
 
    /examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks
+   /examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps
 
 For more details on PySNMP programming model and interfaces, please 
 refer to the documentation

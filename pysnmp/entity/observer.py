@@ -1,44 +1,167 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+
+"""Watching the engine's internals from outside, at named points in its work.
+
+An observer registered for an execution point is called with the engine's
+state as it passes through, which is how an application reaches values that
+are not part of any public return.
+"""
+
+from collections.abc import Iterator, Mapping, MutableMapping
+from contextlib import contextmanager
+from contextvars import ContextVar
+from types import MappingProxyType
+from typing import Any
+
 from pysnmp import error
+
+_MISSING_CONTEXT = object()
+_NO_EXECPOINTS: Mapping[str, Any] = MappingProxyType({})
+
+
+@contextmanager
+def execution_context(
+    snmpEngine: Any,
+    execpoint: str,
+    variables: MutableMapping[str, Any] | None = None,
+    **context: Any,
+) -> Iterator[MutableMapping[str, Any]]:
+    """Context manager for observer store/clear execution context.
+
+    Replaces paired ``storeExecutionContext`` / ``clearExecutionContext``
+    calls to eliminate the risk of forgetting ``clear``::
+
+        with execution_context(snmpEngine, 'rfc3412.prepareOutgoingMessage',
+                                msg=msg):
+            ...
+
+    Entering this is what reaching the execution point means, so whoever
+    registered for it is called. Putting a point back that this message
+    already passed is :py:func:`resumed_execution_context` instead.
+    """
+    with _execution_context(snmpEngine, execpoint, variables, True, context) as v:
+        yield v
+
+
+@contextmanager
+def resumed_execution_context(
+    snmpEngine: Any,
+    execpoint: str,
+    variables: MutableMapping[str, Any] | None = None,
+    **context: Any,
+) -> Iterator[MutableMapping[str, Any]]:
+    """Put back an execution point this message has already passed.
+
+    Work that suspends is finished later, off the stack it started on, and it
+    needs the point's state around it again while it runs. Nobody is told
+    about it a second time: the message reached the point once, and an
+    observer counting requests there would otherwise count the ones that
+    suspended twice and the ones that did not once -- making its count depend
+    on whether the instrumentation happened to wait.
+    """
+    with _execution_context(snmpEngine, execpoint, variables, False, context) as v:
+        yield v
+
+
+@contextmanager
+def _execution_context(
+    snmpEngine: Any,
+    execpoint: str,
+    variables: MutableMapping[str, Any] | None,
+    notify: bool,
+    context: MutableMapping[str, Any],
+) -> Iterator[MutableMapping[str, Any]]:
+    """Hold an execution point for the duration, telling observers or not."""
+    if variables is not None and context:
+        raise TypeError(
+            "execution context accepts either a mapping or keyword variables"
+        )
+
+    variables = variables if variables is not None else context
+    meta_observer = snmpEngine.observer
+    try:
+        previous = meta_observer.getExecutionContext(execpoint)
+    except KeyError:
+        previous = _MISSING_CONTEXT
+
+    def unwind():
+        meta_observer.clearExecutionContext(snmpEngine, execpoint)
+        if previous is not _MISSING_CONTEXT:
+            meta_observer._restore_execution_context(execpoint, previous)
+
+    stored = False
+    try:
+        if notify:
+            meta_observer.storeExecutionContext(snmpEngine, execpoint, variables)
+        else:
+            meta_observer._restore_execution_context(execpoint, variables)
+        stored = True
+    finally:
+        if not stored:
+            unwind()
+
+    try:
+        yield variables
+    finally:
+        unwind()
 
 
 class MetaObserver:
-    """This is a simple facility for exposing internal SNMP Engine
-       working details to pysnmp applications. These details are
-       basically local scope variables at a fixed point of execution.
+    """Expose internal SNMP engine working details to pysnmp applications.
 
-       Two modes of operations are offered:
-       1. Consumer: app can request an execution point context by execution point ID.
-       2. Provider: app can register its callback function (and context) to be invoked
-          once execution reaches specified point. All local scope variables
-          will be passed to the callback as in #1.
+    Those details are basically local scope variables at a fixed point of
+    execution.
 
-       It's important to realize that execution context is only guaranteed
-       to exist to functions that are at the same or deeper level of invocation
-       relative to execution point specified.
+    Two modes of operations are offered:
+    1. Consumer: app can request an execution point context by execution point ID.
+    2. Provider: app can register its callback function (and context) to be invoked
+       once execution reaches specified point. All local scope variables
+       will be passed to the callback as in #1.
+
+    It's important to realize that execution context is only guaranteed
+    to exist to functions that are at the same or deeper level of invocation
+    relative to execution point specified.
     """
 
     def __init__(self):
+        """Observers, their contexts and the live execution points are kept apart.
+
+        A context exists only while execution is inside the point it belongs to; the
+        three stores are separate so that registering an observer does not depend
+        on any point having been reached yet.
+
+        The live points are task-local rather than one dictionary per engine.
+        Instrumentation may suspend in the middle of serving a request, and while
+        it is suspended the engine serves another -- which reaches the same
+        execution point and would overwrite what the first request left there.
+        Access control reads that point for the requester's identity, so sharing
+        it would mean answering one request with another's credentials. A
+        context variable gives each task its own view and leaves the nesting
+        within a task working as it did.
+        """
         self.__observers = {}
         self.__contexts = {}
-        self.__execpoints = {}
+        self.__execpoints: ContextVar[Mapping[str, Any]] = ContextVar(
+            f"pysnmp-execpoints-{id(self):x}", default=_NO_EXECPOINTS
+        )
 
     def registerObserver(self, cbFun, *execpoints, **kwargs):
+        """Call `cbFun` whenever the engine passes any of these execution points."""
         if cbFun in self.__contexts:
-            raise error.PySnmpError('duplicate observer %s' % cbFun)
+            raise error.PySnmpError(f"duplicate observer {cbFun}")
         else:
-            self.__contexts[cbFun] = kwargs.get('cbCtx')
+            self.__contexts[cbFun] = kwargs.get("cbCtx")
         for execpoint in execpoints:
             if execpoint not in self.__observers:
                 self.__observers[execpoint] = []
             self.__observers[execpoint].append(cbFun)
 
     def unregisterObserver(self, cbFun=None):
+        """Drop one observer, or all of them when given none."""
         if cbFun is None:
             self.__observers.clear()
             self.__contexts.clear()
@@ -50,17 +173,26 @@ class MetaObserver:
                     del self.__observers[execpoint]
 
     def storeExecutionContext(self, snmpEngine, execpoint, variables):
-        self.__execpoints[execpoint] = variables
+        """Record the state at an execution point and call whoever is watching it."""
+        self.__execpoints.set({**self.__execpoints.get(), execpoint: variables})
         if execpoint in self.__observers:
             for cbFun in self.__observers[execpoint]:
                 cbFun(snmpEngine, execpoint, variables, self.__contexts[cbFun])
 
     def clearExecutionContext(self, snmpEngine, *execpoints):
+        """Forget the state at these execution points, or at all of them."""
         if execpoints:
+            live = dict(self.__execpoints.get())
             for execpoint in execpoints:
-                del self.__execpoints[execpoint]
+                del live[execpoint]
+            self.__execpoints.set(live)
         else:
-            self.__execpoints.clear()
+            self.__execpoints.set(_NO_EXECPOINTS)
 
     def getExecutionContext(self, execpoint):
-        return self.__execpoints[execpoint]
+        """The state recorded at an execution point."""
+        return self.__execpoints.get()[execpoint]
+
+    def _restore_execution_context(self, execpoint, variables):
+        """Restore a nested context without invoking observers again."""
+        self.__execpoints.set({**self.__execpoints.get(), execpoint: variables})

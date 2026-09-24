@@ -21,13 +21,15 @@ Functionally similar to:
 | $ snmptrap -v1 -c public localhost 1.3.6.1.4.1.20408.4.1.1.2 0.0.0.0 1 0 0 1.3.6.1.2.1.1.1.0 s "my system"
 
 """  #
+
 import asyncio
+
 from pysnmp.hlapi.asyncio import *
 
 
 async def run():
     snmpEngine = SnmpEngine()
-    errorIndication, errorStatus, errorIndex, varBinds = await sendNotification(
+    errorIndication, errorStatus, errorIndex, varBinds = await send_notification(
         snmpEngine,
         CommunityData("public", mpModel=0),
         UdpTransportTarget(("localhost", 161)),

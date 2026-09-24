@@ -1,0 +1,51 @@
+version: 2
+
+# Dependabot reads this file from the default branch (main) but opens its pull
+# requests against target-branch. next is where work integrates and where the
+# rc is cut; main only ever receives a merge from next, so bumps have to land on
+# next or the two branches drift and every promotion conflicts.
+updates:
+  # Runtime dependencies ([project].dependencies) and development-only ones
+  # ([dependency-groups]) live in the same files but are not the same kind of
+  # change, and only the first kind is worth a version:
+  #
+  #   fix(deps): bump requests from 2.31.0 to 2.32.0      -> patch release
+  #   chore(deps-dev): bump ruff from 0.8.0 to 0.9.0      -> no release
+  #
+  # A runtime bump changes what an installer resolves, so it has to reach PyPI
+  # to mean anything; a dev bump is invisible outside this repository.
+  #
+  # prefix applies to runtime dependencies and prefix-development to the rest;
+  # include: scope appends the (deps) / (deps-dev) scope that .releaserc keys
+  # its release rules on. The scope must NOT be written into the prefix itself
+  # -- dependabot appends its own, and "chore(deps)" would come out as
+  # "chore(deps)(deps): ...", which no conventional-commits parser reads.
+  #
+  # Do not group these updates: one pull request carrying both a runtime and a
+  # dev bump can only have one commit message, so the distinction is lost.
+  - package-ecosystem: "uv"
+    directory: "/"
+    target-branch: "next"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "fix"
+      prefix-development: "chore"
+      include: "scope"
+
+  # Actions are CI plumbing: nothing an installer ever resolves, so nothing to
+  # release. The scope is deliberately not "deps" -- .releaserc reads that scope
+  # as "a published dependency changed" and cuts a patch for it whatever the
+  # type is. No include: scope here, for the same reason.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "next"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "ci(actions)"

@@ -1,9 +1,10 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""The three exception values a GETNEXT or GETBULK response can carry."""
+
 from pysnmp.proto import rfc1905
 
 noSuchObject = rfc1905.noSuchObject

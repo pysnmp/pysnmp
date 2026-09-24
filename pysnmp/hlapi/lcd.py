@@ -1,24 +1,103 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
+"""Turning high-level credentials into the engine's own configuration.
+
+The local configuration datastore is what the engine actually reads. These
+configurators write `CommunityData` and `UsmUserData` into it, and cache what
+they wrote so repeating a call does not re-register anything.
+"""
+
+from typing import Any
+
+from pysnmp import error, nextid
 from pysnmp.entity import config
-from pysnmp import nextid, error
-from pysnmp.hlapi.auth import *
+from pysnmp.hlapi.auth import CommunityData, UsmUserData
 
-from pyasn1.compat.octets import null
+__all__ = ["CommandGeneratorLcdConfigurator", "NotificationOriginatorLcdConfigurator"]
 
-__all__ = ['CommandGeneratorLcdConfigurator',
-           'NotificationOriginatorLcdConfigurator']
+#: The finest resolution AbstractTransportDispatcher.setTimerResolution()
+#: accepts. Mirrored rather than imported so lowering the clock cannot raise
+#: out of configure() for a caller who merely asked for a small timeout.
+MIN_TIMER_RESOLUTION = 0.01
+
+#: What makes two `UsmUserData` the same *credentials*, rather than merely the
+#: same user. The cache is keyed on the user name and security engine ID, which
+#: say which USM row is being configured but nothing about what is in it, so
+#: these are compared separately before a cached row is reused.
+#:
+#: The key types are in the list because they decide how the key is read -- a
+#: passphrase and a pre-localized key of the same bytes are different
+#: credentials -- and `securityName` because it is what the row maps the user
+#: on to.
+USM_CREDENTIAL_ATTRIBUTES = (
+    "authProtocol",
+    "authKey",
+    "authKeyType",
+    "privProtocol",
+    "privKey",
+    "privKeyType",
+    "securityName",
+)
+
+
+def _usmCredentialsDiffer(cached, incoming):
+    """Whether these two `UsmUserData` would configure the USM row differently."""
+    return any(
+        getattr(cached, attribute, None) != getattr(incoming, attribute, None)
+        for attribute in USM_CREDENTIAL_ATTRIBUTES
+    )
+
+
+#: How many dispatcher ticks a request timeout should span.
+#:
+#: Expiry is counted in ticks, not seconds, so a timeout finer than one tick
+#: cannot be measured at all. Two is what the stock pairing already gives -- a
+#: 1 second timeout against the default 0.5 second resolution -- so requiring
+#: the same of a finer timeout keeps its precision the same rather than making
+#: it better than the default's.
+TICKS_PER_TIMEOUT = 2
+
+
+def _alignTimerResolution(snmpEngine, timeout):
+    """Make the dispatcher's clock fine enough to measure *timeout* seconds.
+
+    A target's timeout is stored faithfully, in centiseconds, and then expires
+    on a clock that ticks once per the dispatcher's timer resolution -- 0.5
+    seconds by default. So `UdpTransportTarget(addr, timeout=0.2)` was accepted,
+    reported back by __repr__, and then rounded up to the next tick by the thing
+    that acts on it. Sub-second timeouts are the normal ask for polling a large
+    estate on a LAN, where that floor sets the pace of the whole run.
+
+    The resolution is dispatcher-wide while timeouts are per-target, so this
+    only ever lowers it: fine enough for the finest target that has been
+    configured, and never coarser than it already was. It stays inside the
+    dispatcher's own 10ms floor, since the tick drives a periodic callback whose
+    cost is not free -- a timeout below that is still honoured as well as the
+    clock allows rather than being refused.
+    """
+    dispatcher = snmpEngine.transportDispatcher
+
+    if dispatcher is None or not timeout:
+        return
+
+    required = float(timeout) / TICKS_PER_TIMEOUT
+
+    if required >= dispatcher.getTimerResolution():
+        return
+
+    dispatcher.setTimerResolution(max(required, MIN_TIMER_RESOLUTION))
 
 
 class AbstractLcdConfigurator:
-    nextID = nextid.Integer(0xffffffff)
-    cacheKeys = []
+    nextID = nextid.Integer(0xFFFFFFFF)
+    #: Sections _getCache() lays out in this configurator's user context.
+    cacheKeys: list[str] = []
 
     def _getCache(self, snmpEngine):
+        """The cache this configurator keeps on the engine, created on first use."""
         cacheId = self.__class__.__name__
         cache = snmpEngine.getUserContext(cacheId)
         if cache is None:
@@ -27,20 +106,38 @@ class AbstractLcdConfigurator:
         return cache
 
     def configure(self, snmpEngine, *args, **kwargs):
+        """Write configuration to the engine. Subclasses implement this."""
+        # Subclasses provide protocol-specific configuration.
         pass
 
     def unconfigure(self, snmpEngine, *args, **kwargs):
+        """Take configuration back out. Subclasses implement this."""
+        # Subclasses provide protocol-specific cleanup.
         pass
 
 
 class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
-    cacheKeys = ['auth', 'parm', 'tran', 'addr']
+    """Configures the engine to send requests, and tears that down again.
 
-    def configure(self, snmpEngine, authData, transportTarget, contextName=null,
-                  **options):
+    Entries are reference-counted: configuring the same credentials twice adds a
+    user rather than a second set of rows, and the rows go away when the last user
+    unconfigures.
+    """
+
+    cacheKeys = ["auth", "parm", "tran", "addr"]
+
+    def configure(
+        self, snmpEngine, authData, transportTarget, contextName=b"", **options
+    ):
+        """Write the rows a request needs, reusing what is already there.
+
+        Configuring the same credentials twice adds a user of the existing rows rather
+        than a second set, which is what lets several generators share one engine
+        without treading on each other.
+        """
         cache = self._getCache(snmpEngine)
         if isinstance(authData, CommunityData):
-            if authData.communityIndex not in cache['auth']:
+            if authData.communityIndex not in cache["auth"]:
                 config.addV1System(
                     snmpEngine,
                     authData.communityIndex,
@@ -48,163 +145,195 @@ class CommandGeneratorLcdConfigurator(AbstractLcdConfigurator):
                     authData.contextEngineId,
                     authData.contextName,
                     authData.tag,
-                    authData.securityName
+                    authData.securityName,
                 )
-                cache['auth'][authData.communityIndex] = authData
+                cache["auth"][authData.communityIndex] = authData
         elif isinstance(authData, UsmUserData):
             authDataKey = authData.userName, authData.securityEngineId
-            if authDataKey not in cache['auth']:
+            cachedAuthData = cache["auth"].get(authDataKey)
+
+            # The key names the USM row; it says nothing about the credentials
+            # in it. Passing a UsmUserData with the same user name and a new
+            # authKey -- after a usmUserAuthKeyChange, or simply because the
+            # application rotated its credentials -- used to hit the cache and
+            # skip addV3User() entirely, so the engine kept the keys it was
+            # first given. The request then went out signed with the stale key
+            # and the agent answered wrongDigests, with nothing to say that the
+            # credentials just passed had been ignored.
+            if cachedAuthData is not None and _usmCredentialsDiffer(
+                cachedAuthData, authData
+            ):
+                # addV3User() on an existing row is not a replace, so the old
+                # row goes first.
+                config.delV3User(
+                    snmpEngine, authData.userName, authData.securityEngineId
+                )
+                cachedAuthData = None
+
+            if cachedAuthData is None:
                 config.addV3User(
                     snmpEngine,
                     authData.userName,
-                    authData.authProtocol, authData.authKey,
-                    authData.privProtocol, authData.privKey,
+                    authData.authProtocol,
+                    authData.authKey,
+                    authData.privProtocol,
+                    authData.privKey,
                     securityEngineId=authData.securityEngineId,
                     securityName=authData.securityName,
                     authKeyType=authData.authKeyType,
-                    privKeyType=authData.privKeyType
+                    privKeyType=authData.privKeyType,
                 )
-                cache['auth'][authDataKey] = authData
+                cache["auth"][authDataKey] = authData
         else:
-            raise error.PySnmpError('Unsupported authentication object')
+            raise error.PySnmpError("Unsupported authentication object")
 
-        paramsKey = (authData.securityName,
-                     authData.securityLevel,
-                     authData.mpModel)
-        if paramsKey in cache['parm']:
-            paramsName, useCount = cache['parm'][paramsKey]
-            cache['parm'][paramsKey] = paramsName, useCount + 1
+        paramsKey = (authData.securityName, authData.securityLevel, authData.mpModel)
+        if paramsKey in cache["parm"]:
+            paramsName, useCount = cache["parm"][paramsKey]
+            cache["parm"][paramsKey] = paramsName, useCount + 1
         else:
-            paramsName = 'p%s' % self.nextID()
+            paramsName = f"p{self.nextID()}"
             config.addTargetParams(
-                snmpEngine, paramsName,
-                authData.securityName, authData.securityLevel, authData.mpModel
+                snmpEngine,
+                paramsName,
+                authData.securityName,
+                authData.securityLevel,
+                authData.mpModel,
             )
-            cache['parm'][paramsKey] = paramsName, 1
+            cache["parm"][paramsKey] = paramsName, 1
 
-        if transportTarget.transportDomain in cache['tran']:
-            transport, useCount = cache['tran'][transportTarget.transportDomain]
+        if transportTarget.transportDomain in cache["tran"]:
+            transport, useCount = cache["tran"][transportTarget.transportDomain]
             transportTarget.verifyDispatcherCompatibility(snmpEngine)
-            cache['tran'][transportTarget.transportDomain] = transport, useCount + 1
+            cache["tran"][transportTarget.transportDomain] = transport, useCount + 1
         elif config.getTransport(snmpEngine, transportTarget.transportDomain):
             transportTarget.verifyDispatcherCompatibility(snmpEngine)
         else:
             transport = transportTarget.openClientMode()
-            config.addTransport(
-                snmpEngine,
-                transportTarget.transportDomain,
-                transport
-            )
-            cache['tran'][transportTarget.transportDomain] = transport, 1
+            config.addTransport(snmpEngine, transportTarget.transportDomain, transport)
+            cache["tran"][transportTarget.transportDomain] = transport, 1
 
-        transportKey = (paramsName, transportTarget.transportDomain,
-                        transportTarget.transportAddr,
-                        transportTarget.timeout,
-                        transportTarget.retries,
-                        transportTarget.tagList,
-                        transportTarget.iface)
+        _alignTimerResolution(snmpEngine, transportTarget.timeout)
 
-        if transportKey in cache['addr']:
-            addrName, useCount = cache['addr'][transportKey]
-            cache['addr'][transportKey] = addrName, useCount + 1
+        transportKey = (
+            paramsName,
+            transportTarget.transportDomain,
+            transportTarget.transportAddr,
+            transportTarget.timeout,
+            transportTarget.retries,
+            transportTarget.tagList,
+            transportTarget.iface,
+        )
+
+        if transportKey in cache["addr"]:
+            addrName, useCount = cache["addr"][transportKey]
+            cache["addr"][transportKey] = addrName, useCount + 1
         else:
-            addrName = 'a%s' % self.nextID()
+            addrName = f"a{self.nextID()}"
             config.addTargetAddr(
-                snmpEngine, addrName,
+                snmpEngine,
+                addrName,
                 transportTarget.transportDomain,
                 transportTarget.transportAddr,
                 paramsName,
                 transportTarget.timeout * 100,
                 transportTarget.retries,
-                transportTarget.tagList
+                transportTarget.tagList,
             )
-            cache['addr'][transportKey] = addrName, 1
+            cache["addr"][transportKey] = addrName, 1
 
         return addrName, paramsName
 
-    def unconfigure(self, snmpEngine, authData=None, contextName=null, **options):
+    def unconfigure(self, snmpEngine, authData=None, contextName=b"", **options):
+        """Remove rows once nothing is using them, or everything when given no credentials."""
         cache = self._getCache(snmpEngine)
         if authData:
+            # A community index for v1/v2c, a (user, engine id) pair for v3.
+            authDataKey: Any
             if isinstance(authData, CommunityData):
                 authDataKey = authData.communityIndex
             elif isinstance(authData, UsmUserData):
                 authDataKey = authData.userName, authData.securityEngineId
             else:
-                raise error.PySnmpError('Unsupported authentication object')
-            if authDataKey in cache['auth']:
-                authDataKeys = (authDataKey,)
+                raise error.PySnmpError("Unsupported authentication object")
+            if authDataKey in cache["auth"]:
+                authDataKeys: tuple[Any, ...] = (authDataKey,)
             else:
-                raise error.PySnmpError(f'Unknown authData {authData}')
+                raise error.PySnmpError(f"Unknown authData {authData}")
         else:
-            authDataKeys = list(cache['auth'].keys())
+            authDataKeys = tuple(cache["auth"])
 
         addrNames, paramsNames = set(), set()
 
         for authDataKey in authDataKeys:
-            authDataX = cache['auth'][authDataKey]
-            del cache['auth'][authDataKey]
+            authDataX = cache["auth"][authDataKey]
+            del cache["auth"][authDataKey]
             if isinstance(authDataX, CommunityData):
-                config.delV1System(
-                    snmpEngine,
-                    authDataX.communityIndex
-                )
+                config.delV1System(snmpEngine, authDataX.communityIndex)
             elif isinstance(authDataX, UsmUserData):
                 config.delV3User(
-                    snmpEngine,
-                    authDataX.userName,
-                    authDataX.securityEngineId
+                    snmpEngine, authDataX.userName, authDataX.securityEngineId
                 )
             else:
-                raise error.PySnmpError('Unsupported authentication object')
+                raise error.PySnmpError("Unsupported authentication object")
 
-            paramsKey = (authDataX.securityName,
-                         authDataX.securityLevel,
-                         authDataX.mpModel)
-            if paramsKey in cache['parm']:
-                paramsName, useCount = cache['parm'][paramsKey]
+            paramsKey = (
+                authDataX.securityName,
+                authDataX.securityLevel,
+                authDataX.mpModel,
+            )
+            if paramsKey in cache["parm"]:
+                paramsName, useCount = cache["parm"][paramsKey]
                 useCount -= 1
                 if useCount:
-                    cache['parm'][paramsKey] = paramsName, useCount
+                    cache["parm"][paramsKey] = paramsName, useCount
                 else:
-                    del cache['parm'][paramsKey]
-                    config.delTargetParams(
-                        snmpEngine, paramsName
-                    )
+                    del cache["parm"][paramsKey]
+                    config.delTargetParams(snmpEngine, paramsName)
                     paramsNames.add(paramsName)
             else:
-                raise error.PySnmpError(f'Unknown target {paramsKey}')
+                raise error.PySnmpError(f"Unknown target {paramsKey}")
 
-            addrKeys = [x for x in cache['addr'] if x[0] == paramsName]
+            addrKeys = [x for x in cache["addr"] if x[0] == paramsName]
 
             for addrKey in addrKeys:
-                addrName, useCount = cache['addr'][addrKey]
+                addrName, useCount = cache["addr"][addrKey]
                 useCount -= 1
                 if useCount:
-                    cache['addr'][addrKey] = addrName, useCount
+                    cache["addr"][addrKey] = addrName, useCount
                 else:
                     config.delTargetAddr(snmpEngine, addrName)
-                    del cache['addr'][addrKey]
+                    del cache["addr"][addrKey]
                     addrNames.add(addrKey)
 
-                    if addrKey[1] in cache['tran']:
-                        transport, useCount = cache['tran'][addrKey[1]]
+                    if addrKey[1] in cache["tran"]:
+                        transport, useCount = cache["tran"][addrKey[1]]
                         if useCount > 1:
                             useCount -= 1
-                            cache['tran'][addrKey[1]] = transport, useCount
+                            cache["tran"][addrKey[1]] = transport, useCount
                         else:
                             config.delTransport(snmpEngine, addrKey[1])
                             transport.closeTransport()
-                            del cache['tran'][addrKey[1]]
+                            del cache["tran"][addrKey[1]]
 
         return addrNames, paramsNames
 
 
 class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
-    cacheKeys = ['auth', 'name']
+    """Configures the engine to send notifications, and tears that down again.
+
+    Builds on the command generator's configuration, since a notification still
+    needs a target and credentials, and adds the notification and filter rows on
+    top.
+    """
+
+    cacheKeys = ["auth", "name"]
     _cmdGenLcdCfg = CommandGeneratorLcdConfigurator()
 
-    def configure(self, snmpEngine, authData, transportTarget, notifyType,
-                  contextName, **options):
+    def configure(
+        self, snmpEngine, authData, transportTarget, notifyType, contextName, **options
+    ):
+        """Write the rows a notification needs, including its notify tag."""
         cache = self._getCache(snmpEngine)
         notifyName = None
 
@@ -217,73 +346,89 @@ class NotificationOriginatorLcdConfigurator(AbstractLcdConfigurator):
             authData.tag = transportTarget.tagList.split()[0]
 
         addrName, paramsName = self._cmdGenLcdCfg.configure(
-            snmpEngine, authData, transportTarget, contextName, **options)
+            snmpEngine, authData, transportTarget, contextName, **options
+        )
         tagList = transportTarget.tagList.split()
         if not tagList:
-            tagList = ['']
+            tagList = [""]
         for tag in tagList:
             notifyNameKey = paramsName, tag, notifyType
-            if notifyNameKey in cache['name']:
-                notifyName, paramsName, useCount = cache['name'][notifyNameKey]
-                cache['name'][notifyNameKey] = notifyName, paramsName, useCount + 1
+            if notifyNameKey in cache["name"]:
+                notifyName, paramsName, useCount = cache["name"][notifyNameKey]
+                cache["name"][notifyNameKey] = notifyName, paramsName, useCount + 1
             else:
-                notifyName = 'n%s' % self.nextID()
+                notifyName = f"n{self.nextID()}"
                 config.addNotificationTarget(
-                    snmpEngine,
-                    notifyName,
-                    paramsName,
-                    tag,
-                    notifyType
+                    snmpEngine, notifyName, paramsName, tag, notifyType
                 )
-                cache['name'][notifyNameKey] = notifyName, paramsName, 1
-        authDataKey = authData.securityName, authData.securityModel, authData.securityLevel, contextName
-        if authDataKey in cache['auth']:
-            authDataX, subTree, useCount = cache['auth'][authDataKey]
-            cache['auth'][authDataKey] = authDataX, subTree, useCount + 1
+                cache["name"][notifyNameKey] = notifyName, paramsName, 1
+        authDataKey = (
+            authData.securityName,
+            authData.securityModel,
+            authData.securityLevel,
+            contextName,
+        )
+        if authDataKey in cache["auth"]:
+            authDataX, subTree, useCount = cache["auth"][authDataKey]
+            cache["auth"][authDataKey] = authDataX, subTree, useCount + 1
         else:
             subTree = (1, 3, 6)
-            config.addTrapUser(snmpEngine, authData.securityModel,
-                               authData.securityName, authData.securityLevel,
-                               subTree, contextName=contextName)
-            cache['auth'][authDataKey] = authData, subTree, 1
+            config.addTrapUser(
+                snmpEngine,
+                authData.securityModel,
+                authData.securityName,
+                authData.securityLevel,
+                subTree,
+                contextName=contextName,
+            )
+            cache["auth"][authDataKey] = authData, subTree, 1
 
         return notifyName
 
-    def unconfigure(self, snmpEngine, authData=None, contextName=null, **options):
+    def unconfigure(self, snmpEngine, authData=None, contextName=b"", **options):
+        """Remove those rows once nothing is using them."""
         cache = self._getCache(snmpEngine)
         if authData:
-            authDataKey = authData.securityName, authData.securityModel, authData.securityLevel, contextName
-            if authDataKey in cache['auth']:
+            authDataKey = (
+                authData.securityName,
+                authData.securityModel,
+                authData.securityLevel,
+                contextName,
+            )
+            if authDataKey in cache["auth"]:
                 authDataKeys = (authDataKey,)
             else:
-                raise error.PySnmpError(f'Unknown authData {authData}')
+                raise error.PySnmpError(f"Unknown authData {authData}")
         else:
-            authDataKeys = tuple(cache['auth'])
+            authDataKeys = tuple(cache["auth"])
 
         addrNames, paramsNames = self._cmdGenLcdCfg.unconfigure(
-            snmpEngine, authData, contextName, **options)
+            snmpEngine, authData, contextName, **options
+        )
 
-        notifyAndParamsNames = [(cache['name'][x], x) for x in cache['name'].keys() if x[0] in paramsNames]
+        notifyAndParamsNames = [
+            (cache["name"][x], x) for x in cache["name"] if x[0] in paramsNames
+        ]
 
         for (notifyName, paramsName, useCount), notifyNameKey in notifyAndParamsNames:
             useCount -= 1
             if useCount:
-                cache['name'][notifyNameKey] = notifyName, paramsName, useCount
+                cache["name"][notifyNameKey] = notifyName, paramsName, useCount
             else:
-                config.delNotificationTarget(
-                    snmpEngine, notifyName, paramsName
-                )
-                del cache['name'][notifyNameKey]
+                config.delNotificationTarget(snmpEngine, notifyName, paramsName)
+                del cache["name"][notifyNameKey]
 
         for authDataKey in authDataKeys:
-            authDataX, subTree, useCount = cache['auth'][authDataKey]
+            authDataX, subTree, useCount = cache["auth"][authDataKey]
             useCount -= 1
             if useCount:
-                cache['auth'][authDataKey] = authDataX, subTree, useCount
+                cache["auth"][authDataKey] = authDataX, subTree, useCount
             else:
                 config.delTrapUser(
-                    snmpEngine, authDataX.securityModel,
-                    authDataX.securityName, authDataX.securityLevel,
-                    subTree
+                    snmpEngine,
+                    authDataX.securityModel,
+                    authDataX.securityName,
+                    authDataX.securityLevel,
+                    subTree,
                 )
-                del cache['auth'][authDataKey]
+                del cache["auth"][authDataKey]

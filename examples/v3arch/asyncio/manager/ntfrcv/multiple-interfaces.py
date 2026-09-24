@@ -20,13 +20,16 @@ receiver:
 Requires Python 3.4 and later!
 
 """  #
-from pysnmp.entity import engine, config
-from pysnmp.carrier.asyncio.dgram import udp
-from pysnmp.entity.rfc3413 import ntfrcv
+
 import asyncio
 
-# Get the event loop for this thread
-loop = asyncio.get_event_loop()
+from pysnmp.carrier.asyncio.dgram import udp
+from pysnmp.entity import config, engine
+from pysnmp.entity.rfc3413 import ntfrcv
+
+# Create a new event loop
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 
 # Create SNMP engine with autogenernated engineID and pre-bound
 # to socket transport dispatcher
@@ -61,9 +64,7 @@ def cbFun(snmpEngine, stateReference, contextEngineId, contextName, varBinds, cb
         stateReference
     )
     print(
-        "Notification from {}, SNMP Engine {}, Context {}".format(
-            transportAddress, contextEngineId.prettyPrint(), contextName.prettyPrint()
-        )
+        f"Notification from {transportAddress}, SNMP Engine {contextEngineId.prettyPrint()}, Context {contextName.prettyPrint()}"
     )
     for name, val in varBinds:
         print(f"{name.prettyPrint()} = {val.prettyPrint()}")

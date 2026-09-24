@@ -1,3 +1,21 @@
+# Measures the benchmark suite, and reports the change on the pull request.
+#
+# This arrived on the 5.0.x line, where it was written for that branch: Python
+# 3.11 pinned because the asyncore carrier could not run above it, `pip install
+# . -r benchmarks/requirements.txt` because there was no lockfile to resolve
+# from, and actions two majors behind what the rest of CI uses. None of those
+# hold here -- this branch supports 3.10 through 3.14, resolves everything with
+# uv, and the benchmark dependencies are the `bench` group in pyproject.toml.
+# What the suite measures is unchanged and needed no porting: all 59
+# benchmarks run against 6.0 exactly as written.
+#
+# Distinct from the codec benchmark (.github/workflows/codec-benchmark.yml),
+# and the two are not redundant. That one times a wall clock across platforms
+# and interpreters to compare this library against net-snmp, which is why it is
+# on-demand and gates nothing: a shared runner's wall clock spreads far too
+# wide to assert on. This one runs under CPU simulation and reports
+# instructions retired, which barely moves with runner load, so it can report
+# on every pull request and mean something.
 name: CodSpeed
 
 on:
@@ -5,36 +23,73 @@ on:
     branches:
       - "main"
       - "next"
-      - "develop"
   pull_request:
-  # `workflow_dispatch` allows CodSpeed to trigger backtest
-  # performance analysis in order to generate initial data.
+    branches: [main, next]
+  # CodSpeed dispatches this by hand to backfill a baseline for a branch it has
+  # no data for yet.
   workflow_dispatch:
+
+# A new push to a ref supersedes the run still in flight for it: only the tip
+# is worth measuring.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
-  id-token: write # for OpenID Connect authentication with CodSpeed
 
 jobs:
   benchmarks:
     name: Run benchmarks
     runs-on: ubuntu-latest
+    # A fork's pull request is handed a restricted token that cannot mint an
+    # OIDC identity, so the upload below would fail after the measurement had
+    # already been taken. Skipping is quieter than a job that always fails on
+    # other people's contributions, and costs nothing that was ever going to
+    # work: a maintainer pushing the branch gets the numbers.
+    if: >-
+      github.event_name != 'pull_request'
+      || github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
+      # Scoped to this job rather than the workflow: GitHub does not restrict
+      # an OIDC token by audience, so granting it at the top level would let
+      # any job added later mint one for any service.
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      # persist-credentials: false, as the publish job in build-test-release.yml
+      # already does. Checkout otherwise leaves the job's token in .git/config,
+      # and the next step resolves and installs a dependency tree -- a build
+      # backend runs arbitrary code at install time, and there is no reason for
+      # any of it to be a `git config` away from a token. Nothing here needs git
+      # authentication: the checkout is done, and CodSpeed reads the commit from
+      # the environment rather than fetching.
+      - uses: actions/checkout@v7
         with:
-          # 3.11 is the latest interpreter this branch supports: the asyncore
-          # based carrier and `smi.builder` do not run on 3.12+.
-          python-version: "3.11"
+          persist-credentials: false
 
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      # Pinned, and not tracking the test matrix. An instruction count is a
+      # property of the code *and* the interpreter running it, so CodSpeed's
+      # history is only comparable across runs that used the same one: moving
+      # this is a decision to restart that history rather than a routine bump.
+      - name: Install the interpreter
+        run: uv python install 3.14
+
+      # --group bench rather than --group dev: dev carries mypy, which pulls a
+      # Rust extension, and the docs toolchain. Neither is anything a benchmark
+      # imports.
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install . -r benchmarks/requirements.txt
+        run: uv sync --locked --group bench --python 3.14
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v5
         with:
           mode: simulation
-          run: pytest benchmarks/ --codspeed
+          # --no-sync so the action measures the environment resolved above
+          # rather than re-resolving one inside the instrumented process.
+          run: uv run --no-sync pytest benchmarks/ --codspeed

@@ -1,5 +1,0 @@
-.github/workflows/
-deps/.*
-.*\.lock
-tests/
-examples/

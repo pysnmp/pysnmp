@@ -1,44 +1,61 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.type import univ, tag, constraint, namedtype
-from pyasn1.error import PyAsn1Error
-from pysnmp.smi.error import SmiError
-from pysnmp.proto import error
+"""The SMIv1 types: what an SNMPv1 value can be."""
 
-__all__ = ['Opaque', 'NetworkAddress', 'ObjectName', 'TimeTicks',
-           'Counter', 'Gauge', 'IpAddress']
+from pyasn1.error import PyAsn1Error
+from pyasn1.type import constraint, namedtype, tag, univ
+
+from pysnmp.proto import error
+from pysnmp.smi.error import SmiError
+
+__all__ = [
+    "Counter",
+    "Gauge",
+    "IpAddress",
+    "NetworkAddress",
+    "ObjectName",
+    "Opaque",
+    "TimeTicks",
+]
 
 
 class IpAddress(univ.OctetString):
+    """An IPv4 address, carried as four octets.
+
+    Accepts and prints the familiar dotted-quad form, which is not what goes on
+    the wire.
+    """
+
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x00)
     )
-    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(
-        4, 4
-    )
+    subtypeSpec = univ.OctetString.subtypeSpec + constraint.ValueSizeConstraint(4, 4)
 
     def prettyIn(self, value):
+        """Accept an address as dotted quad, four octets, or another `IpAddress`."""
         if isinstance(value, str) and len(value) != 4:
             try:
-                value = [int(x) for x in value.split('.')]
-            except:
-                raise error.ProtocolError('Bad IP address syntax %s' % value)
+                value = [int(x) for x in value.split(".")]
+            except Exception as exc:
+                raise error.ProtocolError(f"Bad IP address syntax {value}") from exc
         if len(value) != 4:
-            raise error.ProtocolError('Bad IP address syntax')
+            raise error.ProtocolError("Bad IP address syntax")
         return univ.OctetString.prettyIn(self, value)
 
     def prettyOut(self, value):
+        """Render as a dotted quad."""
         if value:
-            return '.'.join(['%d' % x for x in self.__class__(value).asNumbers()])
+            return ".".join([str(x) for x in self.__class__(value).asNumbers()])
         else:
-            return ''
+            return ""
 
 
 class Counter(univ.Integer):
+    """A 32-bit counter, which only ever increases and wraps at its maximum."""
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x01)
     )
@@ -48,9 +65,9 @@ class Counter(univ.Integer):
 
 
 class NetworkAddress(univ.Choice):
-    componentType = namedtype.NamedTypes(
-        namedtype.NamedType('internet', IpAddress())
-    )
+    """An address in any protocol family SNMPv1 knows, which is only IP."""
+
+    componentType = namedtype.NamedTypes(namedtype.NamedType("internet", IpAddress()))
 
     def clone(self, value=univ.noValue, **kwargs):
         """Clone this instance.
@@ -59,7 +76,7 @@ class NetworkAddress(univ.Choice):
         and itself as the component value.
 
         :param value: (Optional) the component value.
-        :type value: :py:obj:`pyasn1.type.base.Asn1ItemBase`
+        :type value: :py:obj:`pyasn1.type.base.Asn1Type`
         :return: the cloned instance.
         :rtype: :py:obj:`pysnmp.proto.rfc1155.NetworkAddress`
         :raise: :py:obj:`pysnmp.smi.error.SmiError`:
@@ -75,10 +92,33 @@ class NetworkAddress(univ.Choice):
                 value = IpAddress(value)
             try:
                 tagSet = value.tagSet
-            except AttributeError:
-                raise PyAsn1Error(f'component value {value!r} has no tag set')
+            except AttributeError as exc:
+                raise PyAsn1Error(f"component value {value!r} has no tag set") from exc
             cloned.setComponentByType(tagSet, value)
         return cloned
+
+    def prettyPrint(self, scope=0):
+        """Render as the address, not as a dump of the Choice wrapping it.
+
+        `prettyPrint()` is what the hlapi uses to render a var-bind value, so the
+        inherited `Choice` rendering put a multi-line type dump where every other
+        address type prints an address::
+
+            NetworkAddress:
+             internet=192.0.2.1
+
+        `RFC1213-MIB::atNetAddress` is the one that turns up in practice.
+
+        An unset Choice has no component to delegate to, and `prettyPrint()` is
+        the wrong place to raise -- it is most often reached while rendering
+        something for a human to read, including a traceback -- so the inherited
+        rendering stands in.
+        """
+        try:
+            return self.getComponent().prettyPrint(scope)
+
+        except PyAsn1Error:
+            return univ.Choice.prettyPrint(self, scope)
 
     # RFC 1212, section 4.1.6:
     #
@@ -88,25 +128,32 @@ class NetworkAddress(univ.Choice):
     #          indicates an IpAddress);"
 
     def cloneFromName(self, value, impliedFlag, parentRow, parentIndices):
+        """Read a network address out of an OID being used as a table index.
+
+        The leading sub-identifier is the address family, and `internet` is the only
+        one :RFC:`1155` defines, so anything else is refused rather than guessed at.
+        """
         kind = value[0]
         clone = self.clone()
         if kind == 1:
-            clone['internet'] = tuple(value[1:5])
+            clone["internet"] = tuple(value[1:5])
             return clone, value[5:]
         else:
-            raise SmiError(f'unknown NetworkAddress type {kind!r}')
+            raise SmiError(f"unknown NetworkAddress type {kind!r}")
 
     def cloneAsName(self, impliedFlag, parentRow, parentIndices):
+        """Render this address as OID sub-identifiers, for use as a table index."""
         kind = self.getName()
         component = self.getComponent()
-        if kind == 'internet':
+        if kind == "internet":
             return (1,) + tuple(component.asNumbers())
         else:
-            raise SmiError(f'unknown NetworkAddress type {kind!r}')
-
+            raise SmiError(f"unknown NetworkAddress type {kind!r}")
 
 
 class Gauge(univ.Integer):
+    """A 32-bit gauge, which rises and falls and latches at its maximum."""
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x02)
     )
@@ -116,6 +163,8 @@ class Gauge(univ.Integer):
 
 
 class TimeTicks(univ.Integer):
+    """Hundredths of a second since some epoch the object's definition names."""
+
     tagSet = univ.Integer.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x03)
     )
@@ -125,49 +174,40 @@ class TimeTicks(univ.Integer):
 
 
 class Opaque(univ.OctetString):
+    """Any other ASN.1 value, wrapped in octets so SNMPv1 can carry it."""
+
     tagSet = univ.OctetString.tagSet.tagImplicitly(
         tag.Tag(tag.tagClassApplication, tag.tagFormatSimple, 0x04)
     )
 
 
 class ObjectName(univ.ObjectIdentifier):
+    """The name of a managed object: an OID."""
+
     pass
 
 
-class TypeCoercionHackMixIn:  # XXX keep this old-style class till pyasn1 types becomes new-style
-    # Reduce ASN1 type check to simple tag check as SMIv2 objects may
-    # not be constraints-compatible with those used in SNMP PDU.
-    def _verifyComponent(self, idx, value, **kwargs):
-        componentType = self._componentType
-        if componentType:
-            if idx >= len(componentType):
-                raise PyAsn1Error('Component type error out of range')
-            t = componentType[idx].getType()
-            if not t.getTagSet().isSuperTagSetOf(value.getTagSet()):
-                raise PyAsn1Error(f'Component type error {t!r} vs {value!r}')
-
-
-class SimpleSyntax(TypeCoercionHackMixIn, univ.Choice):
+class SimpleSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('number', univ.Integer()),
-        namedtype.NamedType('string', univ.OctetString()),
-        namedtype.NamedType('object', univ.ObjectIdentifier()),
-        namedtype.NamedType('empty', univ.Null())
+        namedtype.NamedType("number", univ.Integer()),
+        namedtype.NamedType("string", univ.OctetString()),
+        namedtype.NamedType("object", univ.ObjectIdentifier()),
+        namedtype.NamedType("empty", univ.Null()),
     )
 
 
-class ApplicationSyntax(TypeCoercionHackMixIn, univ.Choice):
+class ApplicationSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('address', NetworkAddress()),
-        namedtype.NamedType('counter', Counter()),
-        namedtype.NamedType('gauge', Gauge()),
-        namedtype.NamedType('ticks', TimeTicks()),
-        namedtype.NamedType('arbitrary', Opaque())
+        namedtype.NamedType("address", NetworkAddress()),
+        namedtype.NamedType("counter", Counter()),
+        namedtype.NamedType("gauge", Gauge()),
+        namedtype.NamedType("ticks", TimeTicks()),
+        namedtype.NamedType("arbitrary", Opaque()),
     )
 
 
 class ObjectSyntax(univ.Choice):
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('simple', SimpleSyntax()),
-        namedtype.NamedType('application-wide', ApplicationSyntax())
+        namedtype.NamedType("simple", SimpleSyntax()),
+        namedtype.NamedType("application-wide", ApplicationSyntax()),
     )

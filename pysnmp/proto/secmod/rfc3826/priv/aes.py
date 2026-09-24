@@ -1,79 +1,85 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-import random
+"""CFB128-AES-128 privacy, per RFC 3826."""
+
+import secrets
+from hashlib import md5, sha1
+
 from pyasn1.type import univ
-from pysnmp.proto.secmod.rfc3414.priv import base
-from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
-from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
-from pysnmp.proto.secmod.rfc3414 import localkey
+
 from pysnmp.proto import errind, error
-
-try:
-    from Cryptodome.Cipher import AES
-except ImportError:
-    AES = None
-try:
-    from hashlib import md5, sha1
-except ImportError:
-    import md5
-    import sha
-
-    md5 = md5.new
-    sha1 = sha.new
-
-random.seed()
-
+from pysnmp.proto.secmod import cipherbackend
+from pysnmp.proto.secmod.rfc3414 import localkey
+from pysnmp.proto.secmod.rfc3414.auth import hmacmd5, hmacsha
+from pysnmp.proto.secmod.rfc3414.priv import base
+from pysnmp.proto.secmod.rfc7860.auth import hmacsha2
 
 # RFC3826
 
-#
+
+def _asOctets(data):
+    """The raw bytes of a payload that may arrive as a pyasn1 OctetString.
+
+    The padding this module used to do coerced one on its way past; without it
+    the coercion has to be asked for, since the cipher wants bytes.
+    """
+    return data.asOctets() if isinstance(data, univ.OctetString) else data
+
 
 class Aes(base.AbstractEncryptionService):
-    serviceID = (1, 3, 6, 1, 6, 3, 10, 1, 2, 4)  # usmAesCfb128Protocol
+    """CFB128-AES-128.
+
+    The salt is a counter, not a random value, so no two messages from this engine
+    share an initialization vector.
+    """
+
+    serviceID: tuple[int, ...] = (1, 3, 6, 1, 6, 3, 10, 1, 2, 4)  # usmAesCfb128Protocol
     keySize = 16
-    _localInt = random.randrange(0, 0xffffffffffffffff)
+    _localInt = secrets.randbits(64)
 
     # 3.1.2.1
     def __getEncryptionKey(self, privKey, snmpEngineBoots, snmpEngineTime):
-        salt = [self._localInt >> 56 & 0xff,
-                self._localInt >> 48 & 0xff,
-                self._localInt >> 40 & 0xff,
-                self._localInt >> 32 & 0xff,
-                self._localInt >> 24 & 0xff,
-                self._localInt >> 16 & 0xff,
-                self._localInt >> 8 & 0xff,
-                self._localInt & 0xff]
+        salt = [
+            self._localInt >> 56 & 0xFF,
+            self._localInt >> 48 & 0xFF,
+            self._localInt >> 40 & 0xFF,
+            self._localInt >> 32 & 0xFF,
+            self._localInt >> 24 & 0xFF,
+            self._localInt >> 16 & 0xFF,
+            self._localInt >> 8 & 0xFF,
+            self._localInt & 0xFF,
+        ]
 
-        if self._localInt == 0xffffffffffffffff:
+        if self._localInt == 0xFFFFFFFFFFFFFFFF:
             self._localInt = 0
         else:
             self._localInt += 1
 
-        return self.__getDecryptionKey(privKey, snmpEngineBoots, snmpEngineTime, salt) + (
-        univ.OctetString(salt).asOctets(),)
+        return self.__getDecryptionKey(
+            privKey, snmpEngineBoots, snmpEngineTime, salt
+        ) + (univ.OctetString(salt).asOctets(),)
 
-    def __getDecryptionKey(self, privKey, snmpEngineBoots,
-                           snmpEngineTime, salt):
-        snmpEngineBoots, snmpEngineTime, salt = (
-            int(snmpEngineBoots), int(snmpEngineTime), salt
-        )
+    def __getDecryptionKey(self, privKey, snmpEngineBoots, snmpEngineTime, salt):
+        snmpEngineBoots, snmpEngineTime = int(snmpEngineBoots), int(snmpEngineTime)
 
-        iv = [snmpEngineBoots >> 24 & 0xff,
-              snmpEngineBoots >> 16 & 0xff,
-              snmpEngineBoots >> 8 & 0xff,
-              snmpEngineBoots & 0xff,
-              snmpEngineTime >> 24 & 0xff,
-              snmpEngineTime >> 16 & 0xff,
-              snmpEngineTime >> 8 & 0xff,
-              snmpEngineTime & 0xff] + salt
+        iv = [
+            snmpEngineBoots >> 24 & 0xFF,
+            snmpEngineBoots >> 16 & 0xFF,
+            snmpEngineBoots >> 8 & 0xFF,
+            snmpEngineBoots & 0xFF,
+            snmpEngineTime >> 24 & 0xFF,
+            snmpEngineTime >> 16 & 0xFF,
+            snmpEngineTime >> 8 & 0xFF,
+            snmpEngineTime & 0xFF,
+        ] + salt
 
-        return privKey[:self.keySize].asOctets(), univ.OctetString(iv).asOctets()
+        return privKey[: self.keySize].asOctets(), univ.OctetString(iv).asOctets()
 
     def hashPassphrase(self, authProtocol, privKey):
+        """Hash the passphrase with whatever digest the authentication protocol uses."""
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -81,12 +87,11 @@ class Aes(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(
-                f'Unknown auth protocol {authProtocol}'
-            )
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         return localkey.hashPassphrase(privKey, hashAlgo)
 
     def localizeKey(self, authProtocol, privKey, snmpEngineID):
+        """Localize the privacy key and keep the 16 octets AES-128 needs."""
         if authProtocol == hmacmd5.HmacMd5.serviceID:
             hashAlgo = md5
         elif authProtocol == hmacsha.HmacSha.serviceID:
@@ -94,18 +99,21 @@ class Aes(base.AbstractEncryptionService):
         elif authProtocol in hmacsha2.HmacSha2.hashAlgorithms:
             hashAlgo = hmacsha2.HmacSha2.hashAlgorithms[authProtocol]
         else:
-            raise error.ProtocolError(
-                f'Unknown auth protocol {authProtocol}'
-            )
+            raise error.ProtocolError(f"Unknown auth protocol {authProtocol}")
         localPrivKey = localkey.localizeKey(privKey, snmpEngineID, hashAlgo)
-        return localPrivKey[:self.keySize]
+        return localPrivKey[: self.keySize]
 
     # 3.2.4.1
     def encryptData(self, encryptKey, privParameters, dataToEncrypt):
+        """Encrypt with AES-128-CFB, returning the ciphertext and the salt.
+
+        The IV is the boot count, the engine time and a 64-bit counter, so it does not
+        repeat within a boot; only the counter half travels, since the receiver already
+        knows the other two.
+        """
+        AES = cipherbackend.getCipher("AES")
         if AES is None:
-            raise error.StatusInformation(
-                errorIndication=errind.encryptionError
-            )
+            raise error.StatusInformation(errorIndication=errind.encryptionError)
 
         snmpEngineBoots, snmpEngineTime, salt = privParameters
 
@@ -117,28 +125,32 @@ class Aes(base.AbstractEncryptionService):
         # 3.3.1.3
         aesObj = AES.new(aesKey, AES.MODE_CFB, iv, segment_size=128)
 
-        # PyCrypto seems to require padding
-        dataToEncrypt = dataToEncrypt + univ.OctetString((0,) * (16 - len(dataToEncrypt) % 16)).asOctets()
-
-        ciphertext = aesObj.encrypt(dataToEncrypt)
+        # No padding: RFC 3826 section 3.1.4 specifies CFB128, a stream mode, so
+        # the ciphertext is the same length as the plaintext and a partial
+        # trailing segment is fine. (Contrast DES, whose CBC mode genuinely does
+        # need the plaintext brought to a block boundary -- RFC 3414 section
+        # 8.1.1.2 -- which is why priv/des.py still pads.)
+        ciphertext = aesObj.encrypt(_asOctets(dataToEncrypt))
 
         # 3.3.1.4
         return univ.OctetString(ciphertext), univ.OctetString(salt)
 
     # 3.2.4.2
     def decryptData(self, decryptKey, privParameters, encryptedData):
+        """Decrypt AES-128-CFB ciphertext, rebuilding the IV from boots, time and salt.
+
+        CFB is a stream mode, so unlike DES there is no block alignment to enforce and
+        ciphertext of any length decrypts.
+        """
+        AES = cipherbackend.getCipher("AES")
         if AES is None:
-            raise error.StatusInformation(
-                errorIndication=errind.decryptionError
-            )
+            raise error.StatusInformation(errorIndication=errind.decryptionError)
 
         snmpEngineBoots, snmpEngineTime, salt = privParameters
 
         # 3.3.2.1
         if len(salt) != 8:
-            raise error.StatusInformation(
-                errorIndication=errind.decryptionError
-            )
+            raise error.StatusInformation(errorIndication=errind.decryptionError)
 
         # 3.3.2.3
         aesKey, iv = self.__getDecryptionKey(
@@ -147,8 +159,5 @@ class Aes(base.AbstractEncryptionService):
 
         aesObj = AES.new(aesKey, AES.MODE_CFB, iv, segment_size=128)
 
-        # PyCrypto seems to require padding
-        encryptedData = encryptedData + univ.OctetString((0,) * (16 - len(encryptedData) % 16)).asOctets()
-
-        # 3.3.2.4-6
-        return aesObj.decrypt(encryptedData.asOctets())
+        # 3.3.2.4-6 -- unpadded, as above.
+        return aesObj.decrypt(_asOctets(encryptedData))

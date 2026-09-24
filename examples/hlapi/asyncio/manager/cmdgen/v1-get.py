@@ -16,13 +16,15 @@ Functionally similar to:
 | $ snmpget -v1 -c public localhost SNMPv2-MIB::sysDescr.0
 
 """  #
+
 import asyncio
+
 from pysnmp.hlapi.asyncio import *
 
 
 async def run():
     snmpEngine = SnmpEngine()
-    errorIndication, errorStatus, errorIndex, varBinds = await getCmd(
+    errorIndication, errorStatus, errorIndex, varBinds = await get_cmd(
         snmpEngine,
         CommunityData("public", mpModel=0),
         UdpTransportTarget(("localhost", 161)),

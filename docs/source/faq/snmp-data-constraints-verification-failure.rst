@@ -17,7 +17,7 @@ A. Yes, it can do that. The Manager will verify the values you pass to SET
 
 .. code-block:: python
 
-    errorIndication, errorStatus, errorIndex, varBinds = cmdGen.setCmd(
+    errorIndication, errorStatus, errorIndex, varBinds = cmdGen.set_cmd(
         cmdgen.CommunityData('public'),
         cmdgen.UdpTransportTarget(('localhost', 161)),
         ( cmdgen.MibVariable('SNMPv2-MIB', 'sysName', 0), 'new system name' )
@@ -30,7 +30,7 @@ Managed Object satisfies MIB constraints (if any).
 
 .. code-block:: python
 
-    errorIndication, errorStatus, errorIndex, varBinds = cmdGen.getCmd(
+    errorIndication, errorStatus, errorIndex, varBinds = cmdGen.get_cmd(
         cmdgen.CommunityData('public'),
         cmdgen.UdpTransportTarget(('localhost', 161)),
         cmdgen.MibVariable('SNMPv2-MIB', 'sysName', 0),

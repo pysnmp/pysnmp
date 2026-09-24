@@ -1,8 +1,7 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
 # The following routines act like sendto()/recvfrom() calls but additionally
 # support local address retrieval (what can be useful when listening on
@@ -15,54 +14,76 @@
 # Parts of the code below is taken from:
 # http://carnivore.it/2012/10/12/python3.3_sendmsg_and_recvmsg
 #
-import sys
+"""`sendto`/`recvfrom` that also carry the local address.
 
-from pysnmp import debug
+Built on POSIX `sendmsg()`/`recvmsg()`. Two things the plain calls cannot do:
+report which local address a datagram actually arrived on, which matters when
+listening on 0.0.0.0 or [::], and set the source address on the way out, which
+is what transparent proxying needs.
+"""
 
 import ctypes
 import ipaddress
 import socket
-from pysnmp.carrier import sockfix
-from pysnmp.carrier import error
+
+from pysnmp import debug
 
 uint32_t = ctypes.c_uint32
 in_addr_t = uint32_t
 
 
 class in_addr(ctypes.Structure):
-    _fields_ = [('s_addr', in_addr_t)]
+    """The C `struct in_addr`: one IPv4 address."""
+
+    _fields_ = [("s_addr", in_addr_t)]
 
 
 class in6_addr_U(ctypes.Union):
+    """The union inside `struct in6_addr`, viewing the address at three widths."""
+
     _fields_ = [
-        ('__u6_addr8', ctypes.c_uint8 * 16),
-        ('__u6_addr16', ctypes.c_uint16 * 8),
-        ('__u6_addr32', ctypes.c_uint32 * 4),
+        ("__u6_addr8", ctypes.c_uint8 * 16),
+        ("__u6_addr16", ctypes.c_uint16 * 8),
+        ("__u6_addr32", ctypes.c_uint32 * 4),
     ]
 
 
 class in6_addr(ctypes.Structure):
+    """The C `struct in6_addr`: one IPv6 address."""
+
     _fields_ = [
-        ('__in6_u', in6_addr_U),
+        ("__in6_u", in6_addr_U),
     ]
 
 
 class in_pktinfo(ctypes.Structure):
+    """The C `struct in_pktinfo`: which interface and local address a datagram used."""
+
     _fields_ = [
-        ('ipi_ifindex', ctypes.c_int),
-        ('ipi_spec_dst', in_addr),
-        ('ipi_addr', in_addr),
+        ("ipi_ifindex", ctypes.c_int),
+        ("ipi_spec_dst", in_addr),
+        ("ipi_addr", in_addr),
     ]
 
 
 class in6_pktinfo(ctypes.Structure):
+    """The C `struct in6_pktinfo`: the IPv6 form of `in_pktinfo`."""
+
     _fields_ = [
-        ('ipi6_addr', in6_addr),
-        ('ipi6_ifindex', ctypes.c_uint),
+        ("ipi6_addr", in6_addr),
+        ("ipi6_ifindex", ctypes.c_uint),
     ]
 
 
 def getRecvFrom(addressType):
+    """Build a `recvfrom()` that also reports which local address a datagram reached.
+
+    A socket bound to the wildcard answers `getsockname()` with the wildcard, which
+    is no use for deciding where a reply should come from. The kernel does know,
+    and `IP_PKTINFO` or `IPV6_PKTINFO` is how it says so: the destination address
+    arrives as ancillary data alongside the datagram, and is attached to the
+    address the caller gets back.
+    """
 
     def recvfrom(s, sz):
         _to = None
@@ -83,8 +104,9 @@ def getRecvFrom(addressType):
                 break
 
         debug.logger & debug.flagIO and debug.logger(
-            'recvfrom: received %d octets from %s to %s; '
-            'iov blob %r' % (len(data), _from, _to, ancdata))
+            f"recvfrom: received {len(data)} octets from {_from} to {_to}; "
+            f"iov blob {ancdata!r}"
+        )
 
         return data, addressType(_from).setLocalAddress(_to)
 
@@ -92,28 +114,36 @@ def getRecvFrom(addressType):
 
 
 def getSendTo(addressType):
+    """Build a `sendto()` that sends from the address the request arrived on.
+
+    This is the other half of `getRecvFrom()`: the local address recorded on the
+    destination is passed back to the kernel as ancillary data, so a reply leaves
+    by the address the request was sent to rather than whichever one routing would
+    have picked.
+    """
 
     def sendto(s, _data, _to):
         ancdata = []
-        if type(_to) == addressType:
+        if type(_to) is addressType:
             addr = ipaddress.ip_address(_to.getLocalAddress()[0])
 
         else:
             addr = ipaddress.ip_address(s.getsockname()[0])
 
-        if type(addr) == ipaddress.IPv4Address:
+        if type(addr) is ipaddress.IPv4Address:
             _f = in_pktinfo()
             _f.ipi_spec_dst = in_addr.from_buffer_copy(addr.packed)
             ancdata = [(socket.SOL_IP, socket.IP_PKTINFO, memoryview(_f).tobytes())]
 
-        elif s.family == socket.AF_INET6 and type(addr) == ipaddress.IPv6Address:
+        elif s.family == socket.AF_INET6 and type(addr) is ipaddress.IPv6Address:
             _f = in6_pktinfo()
             _f.ipi6_addr = in6_addr.from_buffer_copy(addr.packed)
             ancdata = [(socket.SOL_IPV6, socket.IPV6_PKTINFO, memoryview(_f).tobytes())]
 
         debug.logger & debug.flagIO and debug.logger(
-            'sendto: sending %d octets to %s; address %r; '
-            'iov blob %r' % (len(_data), _to, addr, ancdata))
+            f"sendto: sending {len(_data)} octets to {_to}; address {addr!r}; "
+            f"iov blob {ancdata!r}"
+        )
 
         return s.sendmsg([_data], ancdata, 0, _to)
 

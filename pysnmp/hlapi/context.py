@@ -1,20 +1,24 @@
 #
 # This file is part of pysnmp software.
 #
-# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pysnmp/license.html
+# Copyright (c) 2005-2019, Ilya Etingof deceased
 #
-from pyasn1.compat.octets import null
 
-__all__ = ['ContextData']
+"""The SNMPv3 context a request is asked in: engine ID and context name."""
+
+from dataclasses import dataclass
+from typing import Any
+
+__all__ = ["ContextData"]
 
 
+@dataclass(eq=False, repr=False)
 class ContextData:
     """Creates UDP/IPv6 configuration entry and initialize socket API if needed.
 
     This object can be used by
-    :py:class:`~pysnmp.hlapi.asyncore.AsyncCommandGenerator` or
-    :py:class:`~pysnmp.hlapi.asyncore.AsyncNotificationOriginator`
+    :py:func:`~pysnmp.hlapi.asyncio.get_cmd` and the other command-generator
+    coroutines, or by :py:func:`~pysnmp.hlapi.asyncio.send_notification`,
     and their derevatives for forming SNMP PDU and also adding new entries to
     Local Configuration Datastore (LCD) in order to support SNMPv1/v2c with
     SNMPv3 interoperability.
@@ -37,20 +41,19 @@ class ContextData:
     Examples
     --------
     >>> from pysnmp.hlapi import ContextData
+    >>> from pysnmp.proto.rfc1902 import OctetString
     >>> ContextData()
-    ContextData(contextEngineId=None, contextName='')
-    >>> ContextData(OctetString(hexValue='01020ABBA0'))
-    ContextData(contextEngineId=OctetString(hexValue='01020abba0'), contextName='')
+    ContextData(contextEngineId=None, contextName=b'')
+    >>> ContextData(OctetString(hexValue='01020ABBA0')).contextEngineId.prettyPrint()
+    '0x01020abba0'
     >>> ContextData(contextName='mycontext')
     ContextData(contextEngineId=None, contextName='mycontext')
 
     """
 
-    def __init__(self, contextEngineId=None, contextName=null):
-        self.contextEngineId = contextEngineId
-        self.contextName = contextName
+    contextEngineId: Any = None
+    contextName: Any = b""
 
-    def __repr__(self):
-        return '{}(contextEngineId={!r}, contextName={!r})'.format(
-            self.__class__.__name__, self.contextEngineId, self.contextName
-        )
+    def __repr__(self) -> str:
+        """The engine ID and context name this was built with."""
+        return f"{self.__class__.__name__}(contextEngineId={self.contextEngineId!r}, contextName={self.contextName!r})"

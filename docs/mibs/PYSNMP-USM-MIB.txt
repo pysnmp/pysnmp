@@ -16,7 +16,7 @@ IMPORTS
 pysnmpUsmMIB MODULE-IDENTITY
     LAST-UPDATED "201704140000Z"
     ORGANIZATION "The PySNMP Project"
-    CONTACT-INFO "E-mail: Ilya Etingof <etingof@gmail.com>
+    CONTACT-INFO "E-mail: Ilya Etingof deceased 
                   GitHub: https://github.com/etingof/pysnmp"
     DESCRIPTION
         "This MIB module defines objects specific to User
@@ -64,9 +64,9 @@ pysnmpUsmKeyType OBJECT-TYPE
     STATUS       current
     DESCRIPTION "When configuring USM user, the value of this enumeration
                  determines how the keys should be treated. The default
-                 value "passphrase" means that given keys are plain-text
-                 pass-phrases, "master" indicates that the keys are pre-hashed
-                 pass-phrases, while "localized" stands for pre-hashed
+                 value 'passphrase' means that given keys are plain-text
+                 pass-phrases, 'master' indicates that the keys are pre-hashed
+                 pass-phrases, while 'localized' stands for pre-hashed
                  pass-phrases mixed with SNMP Security Engine ID value."
     DEFVAL      { passphrase }
     ::= { pysnmpUsmCfg 3 }

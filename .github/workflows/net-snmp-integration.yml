@@ -1,0 +1,103 @@
+name: Net-SNMP Integration
+
+on:
+  push:
+    branches: [main, next]
+  pull_request:
+    branches: [main, next]
+
+permissions:
+  contents: read
+
+jobs:
+  net-snmp:
+    name: SNMP ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # `tests` selects the module a profile is for. The v3-dh profile runs
+          # a different agent, built with snmp-usm-dh-objects-mib, and its user
+          # is re-keyed by the tests -- so the general suite, which assumes a
+          # stable passphrase, does not run against it and vice versa.
+          - name: v1
+            profile: v1
+            tests: tests/test_netsnmp_integration.py
+          - name: v2c
+            profile: v2c
+            tests: tests/test_netsnmp_integration.py
+          - name: v3-noauth
+            profile: v3-noauth
+            tests: tests/test_netsnmp_integration.py
+          - name: v3-auth-no-priv
+            profile: v3-sha
+            tests: tests/test_netsnmp_integration.py
+          - name: v3-auth-priv-des
+            profile: v3-des
+            tests: tests/test_netsnmp_integration.py
+          - name: v3-auth-priv
+            profile: v3-aes
+            tests: tests/test_netsnmp_integration.py
+          - name: v3-diffie-hellman
+            profile: v3-dh
+            tests: tests/test_netsnmp_usm_dh.py
+    env:
+      NETSNMP_PROFILE: ${{ matrix.profile }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install UV
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Build the Net-SNMP agent image
+        run: docker build --tag pysnmp-ci-net-snmp:local .github/ci/net-snmp
+      - name: Start the Net-SNMP agent
+        run: >-
+          docker run --detach --name pysnmp-ci-net-snmp
+          --publish 127.0.0.1:1161:161/udp
+          --publish 127.0.0.1:1161:161/tcp
+          --env SNMP_PROFILE=${{ matrix.profile }}
+          pysnmp-ci-net-snmp:local
+      - name: Exercise the selected SNMP version and security profile
+        run: uv run --locked --group dev pytest ${{ matrix.tests }} -v -s
+      - name: Show agent logs on completion
+        if: always()
+        run: docker logs pysnmp-ci-net-snmp
+      - name: Remove the Net-SNMP agent
+        if: always()
+        run: docker rm --force pysnmp-ci-net-snmp
+
+  # One check name for the branch ruleset to require, standing in for the whole
+  # matrix above. Those job names are built out of the profile list
+  # (`SNMP v3-auth-priv-des`), so naming them in the ruleset would turn adding
+  # or renaming a profile into a change that quietly blocks main and next. See
+  # .github/rulesets/README.md.
+  net-snmp-gate:
+    name: net-snmp-gate
+    # always(), or a failure anywhere upstream skips this job too, and a
+    # skipped required check never reports: the pull request would just hang.
+    if: always()
+    needs:
+      - net-snmp
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless every gating job succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+
+          results = {name: job["result"] for name, job in json.loads(os.environ["NEEDS"]).items()}
+          for name, result in sorted(results.items()):
+              print(f"{name}: {result}")
+              # Skipped counts as a failure: a job that never ran has not
+              # passed, and a job whose dependency failed is skipped, not red.
+              if result != "success":
+                  print(f"::error::{name} did not succeed ({result})")
+          sys.exit(0 if all(r == "success" for r in results.values()) else 1)
+          PY
