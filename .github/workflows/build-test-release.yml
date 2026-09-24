@@ -6,8 +6,11 @@ on:
       - "main"
       - "next"
       - "develop"
+      # Maintenance lines (5.x, ...). .releaserc already treats them as
+      # release branches; without them here a fix PR against 5.x gets no CI.
+      - "[0-9]+.x"
   pull_request:
-    branches: [main, next, develop]
+    branches: [main, next, develop, "[0-9]+.x"]
   workflow_dispatch:
     inputs:
       release_type:
@@ -46,7 +49,9 @@ jobs:
       id-token: write
     environment: release
     env:
-      DRY: ${{ github.event_name != 'workflow_dispatch' && github.ref_name == 'main' }}
+      # Only a hand dispatch releases. Keying this on `main` alone would let a
+      # push to a maintenance branch publish to PyPI unasked.
+      DRY: ${{ github.event_name != 'workflow_dispatch' }}
     needs:
       - pre-commit
       - semgrep
