@@ -1,39 +1,31 @@
 name: CI
 
+# This copy of the workflow only ever runs for commits on a 5.x maintenance
+# branch: main and next carry their own. So it triggers on the maintenance
+# branches alone, and releases only from them.
 on:
   push:
     branches:
-      - "main"
-      - "next"
-      - "develop"
-      # Maintenance lines (5.x, ...). .releaserc already treats them as
-      # release branches; without them here a fix PR against 5.x gets no CI.
       - "[0-9]+.x"
   pull_request:
-    branches: [main, next, develop, "[0-9]+.x"]
+    branches: ["[0-9]+.x"]
   workflow_dispatch:
-    inputs:
-      release_type:
-        description: "Release to cut (main only)"
-        type: choice
-        options: [prerelease, ga]
-        default: prerelease
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - uses: pre-commit/action@v3.0.1
 
   semgrep:
     runs-on: ubuntu-latest
     name: security-sast-semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Semgrep
         id: semgrep
         uses: semgrep/semgrep-action@v1
@@ -42,65 +34,70 @@ jobs:
 
   publish:
     name: Build Release
+    # A pull request runs the checks above but has nothing to release.
+    if: github.event_name != 'pull_request'
     permissions:
       actions: write
       contents: write
       issues: write
       id-token: write
+    # PyPI Trusted Publishing matches this workflow's filename and this
+    # environment; 5.0.25 was published through exactly this pair.
     environment: release
     env:
-      # Only a hand dispatch releases. Keying this on `main` alone would let a
-      # push to a maintenance branch publish to PyPI unasked.
+      # Only a hand dispatch releases. Every push rehearses the release and
+      # stops.
       DRY: ${{ github.event_name != 'workflow_dispatch' }}
     needs:
       - pre-commit
       - semgrep
-      #- run-unit-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: false
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
+      - name: Setup node
+        uses: actions/setup-node@v7
         with:
-          version: "latest"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Cut prerelease from main
-        if: github.ref_name == 'main' && github.event.inputs.release_type == 'prerelease'
-        run: |
-          sed -i 's/^    "main",$/    { name: "main", prerelease: "rc" },/' .releaserc
+          # semantic-release 25 needs ^22.14, and @semantic-release/changelog
+          # and /git need ^22.22.2 || >=24.15. Same pin as next.
+          node-version: "24"
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4.0.0
+        uses: cycjimmy/semantic-release-action@v6
         id: semantic   # Need an `id` for output variables
         with:
+          semantic_version: 25
           dry_run: ${{ env.DRY }}
-          #semantic_version: 19.0.5
+          # Pinned to majors, and to the set next uses, so both lines resolve
+          # the same plugins. The preset stays on 9: 10 renders through
+          # conventional-changelog-writer@9, which semantic-release 25 does
+          # not carry.
           extra_plugins: |
-            semantic-release-replace-plugin
-            @semantic-release/git@10.0.1
-            @semantic-release/changelog@6.0.3
-            conventional-changelog-conventionalcommits@6.1.0
-            @semantic-release/exec@6.0.3               
+            @semantic-release/exec@7
+            @semantic-release/git@11
+            @google/semantic-release-replace-plugin@1
+            conventional-changelog-conventionalcommits@9
         env:
           GITHUB_TOKEN: ${{ secrets.SEMREL_TOKEN }}
       - name: Build dev preview
         if: env.DRY == 'true' && steps.semantic.outputs.new_release_version != ''
+        env:
+          VERSION: ${{ steps.semantic.outputs.new_release_version }}
         run: |
-          sed -i "s/^version *=.*/version = \"${{ steps.semantic.outputs.new_release_version }}.dev${{ github.run_number }}\"/" pyproject.toml
+          sed -i -E "s/^version ?=.*/version = \"${VERSION}.dev${{ github.run_number }}\"/" pyproject.toml
           uv build
       - name: Publish package distributions to PyPI
         if: env.DRY != 'true' && steps.semantic.outputs.new_release_published == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: hashFiles('dist/*') != ''
         with:
           name: dist

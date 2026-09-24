@@ -20,9 +20,9 @@ jobs:
     name: Run benchmarks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           # 3.11 is the latest interpreter this branch supports: the asyncore
           # based carrier and `smi.builder` do not run on 3.12+.

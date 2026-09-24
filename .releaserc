@@ -14,22 +14,30 @@
 # limitations under the License.
 #
 {
-  branches: [
+  "branches": [
     "+([0-9])?(.{+([0-9]),x}).x",
     "main",
-    { name: "develop", prerelease: "beta", channel: "beta"
-    },
+    { "name": "develop", "prerelease": "beta", "channel": "beta" }
   ],
-  plugins: [
-    "@semantic-release/commit-analyzer",
+  "plugins": [
     [
-      "semantic-release-replace-plugin",
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "breaking": true, "release": "major" },
+          { "scope": "deps-dev", "release": false },
+          { "type": "feat", "scope": "deps", "release": "minor" },
+          { "scope": "deps", "release": "patch" }
+        ]
+      }
+    ],
+    [
+      "@google/semantic-release-replace-plugin",
       {
         "replacements": [
           {
-            "files": [
-              "pysnmp/__init__.py"
-            ],
+            "files": ["pysnmp/__init__.py"],
             "from": "__version__ ?= '.*'",
             "to": "__version__ = '${nextRelease.version}'",
             "results": [
@@ -43,10 +51,8 @@
             "countMatches": true
           },
           {
-            "files": [
-              "pyproject.toml"
-            ],
-            "from": "version ?=.*",
+            "files": ["pyproject.toml"],
+            "from": "^version ?=.*",
             "to": "version = \"${nextRelease.version}\"",
             "results": [
               {
@@ -61,33 +67,24 @@
         ]
       }
     ],
-    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/release-notes-generator",
+      { "preset": "conventionalcommits" }
+    ],
     [
       "@semantic-release/git",
       {
-        "assets": [
-          "NOTICE",
-          "pyproject.toml",
-          "pysnmp/__init__.py"
-        ],
-        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}",
-      },
-    ],
-    [
-      "@semantic-release/github",
-      {
-        "assets": [
-          "NOTICE",
-          "pyproject.toml"
-        ]
+        "assets": ["NOTICE", "pyproject.toml", "pysnmp/__init__.py"],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],
     [
-      "@semantic-release/exec",
-      {
-        "publishCmd": "uv build",
-        "shell": "bash"
-      },
+      "@semantic-release/github",
+      { "assets": ["NOTICE", "pyproject.toml"] }
     ],
-  ],
+    [
+      "@semantic-release/exec",
+      { "publishCmd": "uv build", "shell": "bash" }
+    ]
+  ]
 }
