@@ -1,5 +1,10 @@
 [
   {
+    "version": "6.0.0",
+    "url": "../6.0.0/",
+    "prerelease": false
+  },
+  {
     "version": "6.0.0-rc.18",
     "url": "../6.0.0-rc.18/",
     "prerelease": true

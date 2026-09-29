@@ -1,0 +1,590 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Device details report" href="device-report.html"><link rel="prev" title="SMI table construction and cell addressing" href="smi-table-api.html">
+        <link rel="prefetch" href="../_static/logo.svg" as="image">
+        <link rel="prefetch" href="../_static/logo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Serving values an agent has to wait for - SNMP library for Python 6.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../contents.html"><div class="brand">SNMP library for Python 6.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../contents.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">SNMP library for Python 6.0.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../quick-start.html">Quick start</a><input aria-label="Toggle navigation of Quick start" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorial.html">Documentation</a><input aria-label="Toggle navigation of Documentation" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="snmp-history.html">SNMP history</a></li>
+<li class="toctree-l2"><a class="reference internal" href="snmp-design.html">SNMP design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysnmp-architecture.html">PySNMP architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysnmp-hlapi-tutorial.html">Common operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api-reference.html">Library reference</a><input aria-label="Toggle navigation of Library reference" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/getcmd.html">GET command</a><input aria-label="Toggle navigation of GET command" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/setcmd.html">SET command</a><input aria-label="Toggle navigation of SET command" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/nextcmd.html">GETNEXT command</a><input aria-label="Toggle navigation of GETNEXT command" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkcmd.html">GETBULK command</a><input aria-label="Toggle navigation of GETBULK command" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/walkcmd.html">WALK command</a><input aria-label="Toggle navigation of WALK command" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/manager/cmdgen/bulkwalkcmd.html">BULKWALK command</a><input aria-label="Toggle navigation of BULKWALK command" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="hlapi/asyncio/agent/ntforg/notification.html">TRAP/INFORM notification</a><input aria-label="Toggle navigation of TRAP/INFORM notification" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-internals.html">Errors and supporting types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="breaking-changes.html">Breaking Changes</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="security-considerations.html">Security Considerations</a><input aria-label="Toggle navigation of Security Considerations" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="smi-table-api.html">SMI table construction and cell addressing</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Serving values an agent has to wait for</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-report.html">Device details report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usm-dh-key-change.html">Diffie-Hellman USM key change</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-tools.html">MIB instance generation tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mib-corpus.html">Loading MIBs from a corpus</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loader-contract.html">MIB module loader contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observability-contract.html">Logging and tracing contract</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codec-benchmark.html">Codec benchmark</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/contents.html">Example scripts</a><input aria-label="Toggle navigation of Example scripts" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/hlapi/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/walking-operations.html">Walking operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/device-report.html">Device details report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/manager/cmdgen/advanced-topics.html">Advanced Command Generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/agent/ntforg/common-notifications.html">Common notifications</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/hlapi/asyncio/agent/ntforg/advanced-topics.html">Advanced Notification Originator</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/v3arch/asyncio/contents.html">Asynchronous: asyncio</a><input aria-label="Toggle navigation of Asynchronous: asyncio" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/snmp-versions.html">Various SNMP versions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/agent/cmdrsp/instrumentation.html">Serving values the agent has to wait for</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/transport-tweaks.html">Transport tweaks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/v3arch/asyncio/manager/ntfrcv/forwarding-traps.html">Forwarding traps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/manager/browsing-mib-tree.html">Manager side</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/manager/generated-mib-modules.html">Generated MIB modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/smi/agent/implementing-mib-objects.html">Agent side</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../download.html">Download PySNMP</a><input aria-label="Toggle navigation of Download PySNMP" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../faq.html">FAQ</a><input aria-label="Toggle navigation of FAQ" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../faq/getting-peer-information.html">Getting peer address information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/how-to-implement-agent-mib.html">How to implement MIB at the Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/ignored-snmp-packets.html">Ignored SNMP packets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/listening-on-multiple-interfaces.html">Listening on multiple network interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/non-printable-snmp-values-apps.html">Garbaged SNMP values (apps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/non-printable-snmp-values-tools.html">Garbaged SNMP values (tools)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/oids-not-increasing.html">Dealing with the “OID not increasing” error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/pass-custom-mib-to-manager.html">How to pass MIB to the Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/response-values-mib-resolution.html">Resolve response values at MIB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/snmp-data-constraints-verification-failure.html">SNMP data constraints verification error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq/walk-whole-mib.html">Walking whole MIB</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog-history.html">Historical changelog</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ci-and-releases.html">Continuous integration and releases</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Further development</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/blob/main/docs/source/docs/async-instrumentation.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/pysnmp/pysnmp/edit/main/docs/source/docs/async-instrumentation.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="serving-values-an-agent-has-to-wait-for">
+<span id="async-instrumentation"></span><h1>Serving values an agent has to wait for<a class="headerlink" href="#serving-values-an-agent-has-to-wait-for" title="Link to this heading">¶</a></h1>
+<p>An agent that answers out of a loaded MIB has its values in memory already.
+An agent that answers out of a database, a REST call, a subprocess or another
+SNMP device does not: it has to wait for them. Until now that left two poor
+options – block the event loop and stall every other request in flight, or
+run a thread pool and bridge back by hand.</p>
+<p>An instrumentation controller may declare its operations <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code>
+instead. The command responder waits for the answer, and the engine goes on
+serving other requests while it does.</p>
+<section id="a-controller-that-waits">
+<h2>A controller that waits<a class="headerlink" href="#a-controller-that-waits" title="Link to this heading">¶</a></h2>
+<p>A controller is whatever object the command responder was given; nothing has
+to be inherited. It provides three operations, matching the request types:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.proto</span><span class="w"> </span><span class="kn">import</span> <span class="n">rfc1902</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pysnmp.smi</span><span class="w"> </span><span class="kn">import</span> <span class="n">exval</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DatabaseInstrum</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Serves managed objects out of a database."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">readVars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varBinds</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">oid</span><span class="p">))</span> <span class="k">for</span> <span class="n">oid</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">varBinds</span>
+            <span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">readNextVars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varBinds</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_following</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">oid</span><span class="p">)</span> <span class="k">for</span> <span class="n">oid</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">varBinds</span>
+            <span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">writeVars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varBinds</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">):</span>
+        <span class="c1"># A SET happens completely or not at all, which is the</span>
+        <span class="c1"># transaction's job here -- see below.</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">transaction</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">oid</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">varBinds</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">oid</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">varBinds</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Register it the way any controller is registered, against the context it
+serves:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">snmpContext</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">SnmpContext</span><span class="p">(</span><span class="n">snmpEngine</span><span class="p">)</span>
+<span class="n">snmpContext</span><span class="o">.</span><span class="n">contextNames</span><span class="p">[</span><span class="sa">b</span><span class="s1">''</span><span class="p">]</span> <span class="o">=</span> <span class="n">DatabaseInstrum</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+<span class="n">cmdrsp</span><span class="o">.</span><span class="n">GetCommandResponder</span><span class="p">(</span><span class="n">snmpEngine</span><span class="p">,</span> <span class="n">snmpContext</span><span class="p">)</span>
+<span class="n">cmdrsp</span><span class="o">.</span><span class="n">NextCommandResponder</span><span class="p">(</span><span class="n">snmpEngine</span><span class="p">,</span> <span class="n">snmpContext</span><span class="p">)</span>
+<span class="n">cmdrsp</span><span class="o">.</span><span class="n">BulkCommandResponder</span><span class="p">(</span><span class="n">snmpEngine</span><span class="p">,</span> <span class="n">snmpContext</span><span class="p">)</span>
+<span class="n">cmdrsp</span><span class="o">.</span><span class="n">SetCommandResponder</span><span class="p">(</span><span class="n">snmpEngine</span><span class="p">,</span> <span class="n">snmpContext</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Nothing else changes. The same arguments arrive, the same bindings go back,
+and an SMI error raised out of a coroutine becomes the same error status it
+would have as a plain <code class="docutils literal notranslate"><span class="pre">def</span></code>.</p>
+<p>The three may be mixed: a controller whose reads come from a database and
+whose writes are refused outright can leave <code class="docutils literal notranslate"><span class="pre">writeVars</span></code> a plain function.</p>
+<p>A controller answers by returning the bindings it agrees it read or wrote,
+and refuses by raising an SMI error. Returning a <code class="docutils literal notranslate"><span class="pre">noSuchInstance</span></code> value
+from <code class="docutils literal notranslate"><span class="pre">writeVars</span></code> is not a refusal – it answers with a SET that succeeded
+and carried that value.</p>
+</section>
+<section id="set-atomicity-is-the-controller-s-and-always-was">
+<h2>SET atomicity is the controller’s, and always was<a class="headerlink" href="#set-atomicity-is-the-controller-s-and-always-was" title="Link to this heading">¶</a></h2>
+<p><span class="target" id="index-0"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc3416.html"><strong>RFC 3416</strong></a> wants a SET to happen completely or not at all. A controller
+serving a loaded MIB gets that from
+<code class="docutils literal notranslate"><span class="pre">MibInstrumController</span></code>, which runs every binding through test, commit and
+undo phases. A controller of your own replaces that machine, so it owns the
+guarantee – whether its operations are coroutines or not. Writing them
+<code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code> neither provides atomicity nor takes it away.</p>
+<p>Where the values live behind a transaction, that is what to use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">writeVars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varBinds</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">transaction</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">oid</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">varBinds</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">oid</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">varBinds</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Raising out of the <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code> rolls the transaction back and becomes the
+error status for the SET, so the requester is told the write did not happen
+and it did not. Without something playing that part, a failure part-way
+through leaves the earlier bindings written – which is the failure mode
+<span class="target" id="index-1"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc3416.html"><strong>RFC 3416</strong></a> is asking you to avoid, and no keyword prevents it.</p>
+</section>
+<section id="what-stays-true-across-the-wait">
+<h2>What stays true across the wait<a class="headerlink" href="#what-stays-true-across-the-wait" title="Link to this heading">¶</a></h2>
+<p>A request that suspends is still that request when it resumes. What a
+controller reads from the engine while it runs – notably the requester’s
+identity, at the <code class="docutils literal notranslate"><span class="pre">rfc3412.receiveMessage:request</span></code> execution point –
+belongs to the request being served and is not disturbed by the ones that
+arrive meanwhile:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">securityNameOf</span><span class="p">(</span><span class="n">snmpEngine</span><span class="p">):</span>
+    <span class="n">execCtx</span> <span class="o">=</span> <span class="n">snmpEngine</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">getExecutionContext</span><span class="p">(</span>
+        <span class="s1">'rfc3412.receiveMessage:request'</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">execCtx</span><span class="p">[</span><span class="s1">'securityName'</span><span class="p">]</span><span class="o">.</span><span class="n">prettyPrint</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This matters for exactly the agents that need to wait. One serving different
+values to different communities reads that identity to decide what to serve,
+and reads it after the wait, not before. If the engine kept one execution
+point for the whole process, a request that resumed after another had arrived
+would read the other’s identity and answer one requester with another’s data.
+Each request sees its own.</p>
+</section>
+<section id="what-this-does-not-cover">
+<h2>What this does not cover<a class="headerlink" href="#what-this-does-not-cover" title="Link to this heading">¶</a></h2>
+<p>The managed objects inside <code class="docutils literal notranslate"><span class="pre">MibInstrumController</span></code> – <code class="docutils literal notranslate"><span class="pre">MibScalarInstance</span></code>
+and the rest of the MIB tree – are still plain functions. An agent that wants to wait implements the controller contract
+above rather than plugging a coroutine into a loaded MIB tree.</p>
+<p>Access control is not awaited either. The <code class="docutils literal notranslate"><span class="pre">acFun</span></code> callback resolves from
+VACM’s in-memory tables, so there is nothing behind it to wait for.</p>
+</section>
+<section id="what-it-costs">
+<h2>What it costs<a class="headerlink" href="#what-it-costs" title="Link to this heading">¶</a></h2>
+<p>Nothing, for an agent that does not use it. A controller whose operations are
+plain functions answers on the stack it was asked on, exactly as before: no
+task is created, no loop iteration is spent, and the code path is the one that
+has always run. The deferred path is entered only when an operation actually
+hands back something to wait on.</p>
+<p>While a request is waiting, it counts as outstanding work on the transport
+dispatcher, so <code class="docutils literal notranslate"><span class="pre">runDispatcher()</span></code> told to run until its work is done waits
+for the answer rather than returning while it is still being composed. Closing the dispatcher cancels whatever is
+still in flight: the transports its answer would leave by are being closed
+underneath it.</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="device-report.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Device details report</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="smi-table-api.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">SMI table construction and cell addressing</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2005-2019, Ilya Etingof deceased 
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Serving values an agent has to wait for</a><ul>
+<li><a class="reference internal" href="#a-controller-that-waits">A controller that waits</a></li>
+<li><a class="reference internal" href="#set-atomicity-is-the-controller-s-and-always-was">SET atomicity is the controller’s, and always was</a></li>
+<li><a class="reference internal" href="#what-stays-true-across-the-wait">What stays true across the wait</a></li>
+<li><a class="reference internal" href="#what-this-does-not-cover">What this does not cover</a></li>
+<li><a class="reference internal" href="#what-it-costs">What it costs</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=cb01d673"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>
