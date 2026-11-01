@@ -140,13 +140,30 @@ class DgramAsyncioProtocol(asyncio.DatagramProtocol, AbstractAsyncioTransport):
             ) from e
         return self
 
-    def openServerMode(self, iface):
-        """Bind a socket to receive on."""
+    def openServerMode(self, iface=None, sock=None):
+        """Receive on an address or an existing datagram socket.
+
+        Pass exactly one of ``iface`` and ``sock``. A supplied socket must match
+        this transport's address family. Once the endpoint opens, asyncio owns
+        the socket and closes it when ``closeTransport()`` is called.
+        """
         self._checkLoopIsUsable()
+        if (iface is None) == (sock is None):
+            raise error.CarrierError("Pass exactly one of iface or sock")
+        if sock is not None:
+            if sock.family != self.sockFamily:
+                raise error.CarrierError(
+                    f"Socket family {sock.family!r} does not match {self.sockFamily!r}"
+                )
+            if sock.type != socket.SOCK_DGRAM:
+                raise error.CarrierError("Socket must have type SOCK_DGRAM")
         try:
-            c = self.loop.create_datagram_endpoint(
-                lambda: self, local_addr=iface, family=self.sockFamily
-            )
+            if sock is None:
+                c = self.loop.create_datagram_endpoint(
+                    lambda: self, local_addr=iface, family=self.sockFamily
+                )
+            else:
+                c = self.loop.create_datagram_endpoint(lambda: self, sock=sock)
             if self.loop.is_running():
                 self._lport = self.loop.create_task(c)
             else:
